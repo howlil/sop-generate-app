@@ -10,6 +10,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
+import { LoadingState } from '@/components/ui/loading-state'
 import { GrafikEvaluasiTahunPicker } from '@/pages/pj-evaluator/grafik-evaluasi/grafik-evaluasi-tahun-picker'
 import { useEvaluasiGrafikTahunan } from "@/api/evaluasi";
 import type { EvaluasiGrafikTahunanQueryParams } from '@/types/dto/evaluasi.dto'
@@ -37,7 +38,7 @@ function formatSkor(skor: number): string {
 }
 
 function skorColor(skor: number): string {
-  if (skor === 0) return 'text-gray-400'
+  if (skor === 0) return 'text-muted-foreground'
   if (skor >= 4) return 'text-emerald-600'
   if (skor >= 3) return 'text-blue-600'
   if (skor >= 2) return 'text-amber-600'
@@ -203,18 +204,13 @@ export function GrafikEvaluasiTahunan() {
       description={`Analitik penilaian OPD per tahun (skor ${NILAI_OPD_SKOR_MAX} poin). Satu OPD dapat dievaluasi lebih dari sekali dalam setahun.`}
     >
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-sm text-gray-500">Memuat data evaluasi...</p>
-          </div>
-        </div>
+        <LoadingState message="Memuat data evaluasi…" />
       ) : (
         <div className="space-y-4">
           {/* ── Tahun untuk query API ── */}
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-medium text-gray-500">Tahun</span>
+              <span className="text-[10px] font-medium text-muted-foreground">Tahun</span>
               <GrafikEvaluasiTahunPicker
                 open={pickerOpen}
                 onOpenChange={setPickerOpen}
@@ -225,7 +221,7 @@ export function GrafikEvaluasiTahunan() {
               />
             </div>
             {isFetching && !isLoading ? (
-              <span className="pb-2 text-[11px] text-gray-400">Memperbarui data…</span>
+              <span className="pb-2 text-[11px] text-muted-foreground" role="status">Memperbarui data…</span>
             ) : null}
           </div>
 
@@ -278,8 +274,8 @@ export function GrafikEvaluasiTahunan() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               {/* Distribusi skor */}
               {analytics && (
-                <section className="bg-white rounded-lg border border-gray-200 p-4">
-                  <h2 className="text-sm font-semibold text-gray-900 mb-3">
+                <section className="bg-surface rounded-lg border border-border p-4">
+                  <h2 className="text-sm font-semibold text-foreground mb-3">
                     Distribusi Skor — {filterTahun}
                   </h2>
 
@@ -288,15 +284,15 @@ export function GrafikEvaluasiTahunan() {
                     <ScoreBucket label="Sedang (3–3,9)" count={analytics.skorBuckets.mid} total={analytics.evaluated} color="bg-blue-500" />
                     <ScoreBucket label="Rendah (&lt;3)" count={analytics.skorBuckets.low} total={analytics.evaluated} color="bg-amber-500" />
                     {analytics.skorBuckets.none > 0 && (
-                      <ScoreBucket label="Belum ada skor" count={analytics.skorBuckets.none} total={analytics.evaluated} color="bg-gray-300" />
+                      <ScoreBucket label="Belum ada skor" count={analytics.skorBuckets.none} total={analytics.evaluated} color="bg-surface-strong" />
                     )}
                   </div>
 
                   {analytics.topOPD && (
-                    <div className="mt-4 pt-3 border-t border-gray-100">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Skor Tertinggi</p>
+                    <div className="mt-4 pt-3 border-t border-border">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Skor Tertinggi</p>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-gray-900 truncate">{analytics.topOPD.opdNama}</span>
+                        <span className="text-xs font-medium text-foreground truncate">{analytics.topOPD.opdNama}</span>
                         <span className={`text-sm font-bold tabular-nums ${skorColor(analytics.topOPD.rataRataSkor)}`}>
                           {formatSkor(analytics.topOPD.rataRataSkor)}
                         </span>
@@ -305,11 +301,11 @@ export function GrafikEvaluasiTahunan() {
                   )}
 
                   {/* Coverage ring */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-3">
+                  <div className="mt-4 pt-3 border-t border-border flex items-center gap-3">
                     <CoverageRing pct={analytics.coveragePct} />
                     <div>
-                      <p className="text-xs font-medium text-gray-800">Cakupan evaluasi</p>
-                      <p className="text-[11px] text-gray-500">
+                      <p className="text-xs font-medium text-foreground">Cakupan evaluasi</p>
+                      <p className="text-[11px] text-muted-foreground">
                         {analytics.totalOPD - analytics.evaluated} OPD belum dievaluasi
                       </p>
                     </div>
@@ -318,21 +314,26 @@ export function GrafikEvaluasiTahunan() {
               )}
 
               {/* ── Horizontal Ranked Bar Chart ── */}
-              <section className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-4">
+              <section className="lg:col-span-2 bg-surface rounded-lg border border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <h2 className="text-sm font-semibold text-gray-900">
+                  <h2 className="text-sm font-semibold text-foreground">
                     Peringkat OPD — {filterTahun}
                   </h2>
-                  <div className="flex items-center rounded-md border border-gray-200 overflow-hidden">
+                  <div
+                    className="flex items-center overflow-hidden rounded-md border border-border"
+                    role="group"
+                    aria-label="Urutkan peringkat OPD berdasarkan"
+                  >
                     {(['skor', 'evaluasi'] as const).map((key) => (
                       <button
                         key={key}
                         type="button"
                         onClick={() => setRankBy(key)}
+                        aria-pressed={rankBy === key}
                         className={`px-2.5 py-1 text-[11px] font-medium transition-all ${
                           rankBy === key
                             ? 'bg-blue-50 text-blue-700'
-                            : 'text-gray-500 hover:bg-gray-50'
+                            : 'text-muted-foreground hover:bg-surface-subtle'
                         }`}
                       >
                         {key === 'skor' ? 'Skor' : 'Jumlah'}
@@ -342,7 +343,7 @@ export function GrafikEvaluasiTahunan() {
                 </div>
 
                 {displayedData.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-gray-400">
+                  <div className="py-8 text-center text-xs text-muted-foreground">
                     Tidak ada data untuk filter yang dipilih.
                   </div>
                 ) : (
@@ -357,37 +358,37 @@ export function GrafikEvaluasiTahunan() {
                       return (
                         <div
                           key={row.opdId}
-                          className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-gray-50 transition-all"
+                          className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-surface-subtle transition-all"
                         >
                           {/* rank number */}
                           <span className={`w-5 text-[11px] tabular-nums text-right shrink-0 font-semibold ${
-                            rank <= 3 ? 'text-amber-600' : 'text-gray-400'
+                            rank <= 3 ? 'text-amber-600' : 'text-muted-foreground'
                           }`}>
                             {rank}
                           </span>
 
                           {/* OPD name */}
-                          <span className="w-40 text-xs text-gray-800 truncate shrink-0" title={row.opdNama}>
+                          <span className="w-40 text-xs text-foreground truncate shrink-0" title={row.opdNama}>
                             {row.opdNama}
                           </span>
 
                           {/* horizontal bar */}
-                          <div className="flex-1 h-5 bg-gray-50 rounded overflow-hidden relative">
+                          <div className="flex-1 h-5 bg-surface-subtle rounded overflow-hidden relative">
                             <div
-                              className={`h-full rounded transition-all ${hasEval ? barColor : 'bg-gray-200'}`}
+                              className={`h-full rounded transition-all ${hasEval ? barColor : 'bg-border'}`}
                               style={{ width: `${Math.max(pct, hasEval ? 3 : 1)}%` }}
                             />
                           </div>
 
                           {/* value */}
                           <span className={`w-10 text-right text-xs font-semibold tabular-nums shrink-0 ${
-                            hasEval ? skorColor(row.rataRataSkor) : 'text-gray-300'
+                            hasEval ? skorColor(row.rataRataSkor) : 'text-muted-foreground'
                           }`}>
                             {rankBy === 'skor' ? formatSkor(row.rataRataSkor) : row.jumlahEvaluasi}
                           </span>
 
                           {/* secondary value */}
-                          <span className="w-8 text-right text-[10px] text-gray-400 tabular-nums shrink-0">
+                          <span className="w-8 text-right text-[10px] text-muted-foreground tabular-nums shrink-0">
                             {rankBy === 'skor'
                               ? (row.jumlahEvaluasi > 0 ? `${row.jumlahEvaluasi}×` : '')
                               : (row.rataRataSkor > 0 ? formatSkor(row.rataRataSkor) : '')
@@ -413,12 +414,12 @@ export function GrafikEvaluasiTahunan() {
                     )}
 
                     {/* legend */}
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-1">
-                      <span className="text-[10px] text-gray-400">
+                    <div className="flex items-center justify-between pt-2 border-t border-border mt-1">
+                      <span className="text-[10px] text-muted-foreground">
                         {displayedData.length} / {rankedData.length} OPD
                       </span>
                       {rankBy === 'skor' && (
-                        <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500" />≥4</span>
                           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500" />3–3,9</span>
                           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-400" />2–2,9</span>
@@ -444,7 +445,7 @@ function skorBarColor(skor: number): string {
   if (skor >= 3) return 'bg-blue-500'
   if (skor >= 2) return 'bg-amber-400'
   if (skor > 0) return 'bg-red-400'
-  return 'bg-gray-200'
+  return 'bg-border'
 }
 
 function CoverageRing({ pct }: { pct: number }) {
@@ -452,7 +453,7 @@ function CoverageRing({ pct }: { pct: number }) {
   const filled = (pct / 100) * circumference
   return (
     <div className="relative w-14 h-14 shrink-0">
-      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90" aria-hidden>
         <circle cx="18" cy="18" r="14" fill="none" stroke="#f3f4f6" strokeWidth="3" />
         <circle
           cx="18" cy="18" r="14"
@@ -463,7 +464,7 @@ function CoverageRing({ pct }: { pct: number }) {
           strokeDasharray={`${filled} ${circumference - filled}`}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-gray-900">
+      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-foreground">
         {pct}%
       </span>
     </div>
@@ -492,25 +493,25 @@ function KPICard({
   sub?: string
 }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-all">
+    <div className="bg-surface rounded-lg border border-border p-3 hover:shadow-surface transition-all">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[11px] text-gray-500 font-medium">{label}</p>
+        <p className="text-[11px] text-muted-foreground font-medium">{label}</p>
         <div className={`w-7 h-7 rounded-md ${iconBg} flex items-center justify-center shrink-0`}>
           {icon}
         </div>
       </div>
       <div className="mt-1 flex items-baseline gap-1.5">
-        <span className="text-xl font-bold text-gray-900 tabular-nums">
+        <span className="text-xl font-bold text-foreground tabular-nums">
           {isDecimal ? value.toFixed(1) : value}
         </span>
-        {suffix && <span className="text-xs text-gray-400">{suffix}</span>}
+        {suffix && <span className="text-xs text-muted-foreground">{suffix}</span>}
       </div>
       <div className="mt-1 flex items-center gap-1.5">
         {pctDelta != null && <DeltaBadge value={pctDelta} />}
         {sub ? (
-          <span className="text-[10px] text-gray-400">{sub}</span>
+          <span className="text-[10px] text-muted-foreground">{sub}</span>
         ) : (
-          <span className="text-[10px] text-gray-400">tahun {year}</span>
+          <span className="text-[10px] text-muted-foreground">tahun {year}</span>
         )}
       </div>
     </div>
@@ -550,10 +551,10 @@ function ScoreBucket({
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="text-xs text-gray-700">{label}</span>
-        <span className="text-xs font-semibold text-gray-900 tabular-nums">{count}</span>
+        <span className="text-xs text-secondary-foreground">{label}</span>
+        <span className="text-xs font-semibold text-foreground tabular-nums">{count}</span>
       </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${Math.max(pct, count > 0 ? 4 : 0)}%` }} />
       </div>
     </div>

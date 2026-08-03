@@ -56,42 +56,45 @@ export function ArsipSopPanel({
   return (
     <section
       className={cn(
-        'flex h-full min-h-0 flex-col bg-white',
-        !embedded && 'min-h-[calc(100vh-12rem)] max-h-[calc(100vh-12rem)] rounded-xl border border-slate-200 shadow-sm',
+        'flex h-full min-h-0 flex-col bg-surface',
+        !embedded && 'min-h-[calc(100vh-12rem)] max-h-[calc(100vh-12rem)] rounded-xl border border-border shadow-surface',
       )}
       aria-label={title}
     >
       {!hideHeader ? (
-        <header className="border-b border-slate-100 px-4 py-4 sm:px-5">
-          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-          {subtitle ? <p className="mt-0.5 text-sm text-slate-600">{subtitle}</p> : null}
+        <header className="border-b border-border px-4 py-4 sm:px-5">
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+          {subtitle ? <p className="mt-0.5 text-sm text-secondary-foreground">{subtitle}</p> : null}
         </header>
       ) : null}
       {showSopSearchFilter && onSopSearchChange ? (
-        <div className={cn('border-b border-slate-100', embedded ? 'px-2 py-2 sm:px-3' : 'px-4 py-3 sm:px-5')}>
+        <div className={cn('border-b border-border', embedded ? 'px-2 py-2 sm:px-3' : 'px-4 py-3 sm:px-5')}>
           <ArsipSearchField
             id="arsip-sop-filter"
             value={sopSearch}
             onChange={onSopSearchChange}
             placeholder="Cari judul atau nomor SOP…"
           />
-          <p className="mt-1.5 text-xs text-slate-500">Kosongkan untuk melihat semua SOP OPD ini.</p>
+          <p className="mt-1.5 text-xs text-muted-foreground">Kosongkan untuk melihat semua SOP OPD ini.</p>
         </div>
       ) : null}
       <div className={cn('flex-1 overflow-y-auto', embedded ? 'p-2 sm:p-3' : 'p-4 sm:p-5')}>
         {isLoading ? (
-          <SopPanelSkeleton />
+          <div role="status" aria-busy="true">
+            <span className="sr-only">Memuat daftar SOP</span>
+            <SopPanelSkeleton />
+          </div>
         ) : null}
         {isError ? (
-          <Card className="border-red-200 bg-red-50 p-6 text-center text-sm text-red-800">
+          <Card role="alert" className="border-red-200 bg-red-50 p-6 text-center text-sm text-red-800">
             Gagal memuat daftar SOP.
           </Card>
         ) : null}
         {!isLoading && !isError && items.length === 0 ? (
           <Card className="p-10 text-center">
-            <FileText className="mx-auto mb-3 h-10 w-10 text-slate-300" aria-hidden />
-            <p className="font-medium text-slate-800">{emptyTitle}</p>
-            <p className="mt-1 text-sm text-slate-500">{emptyHint}</p>
+            <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground" aria-hidden />
+            <p className="font-medium text-foreground">{emptyTitle}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{emptyHint}</p>
           </Card>
         ) : null}
         {!isLoading && !isError && items.length > 0 ? (
@@ -107,13 +110,13 @@ export function ArsipSopPanel({
         ) : null}
       </div>
       {isFetching && !isLoading ? (
-        <p className="flex items-center justify-center gap-2 border-t border-slate-100 py-2 text-sm text-slate-500">
+        <p className="flex items-center justify-center gap-2 border-t border-border py-2 text-sm text-muted-foreground" role="status">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           Memperbarui…
         </p>
       ) : null}
       {pagination && !isLoading && !isError ? (
-        <div className={cn('border-t border-slate-100', embedded ? 'px-2 py-2 sm:px-3' : 'px-4 py-4 sm:px-5')}>
+        <div className={cn('border-t border-border', embedded ? 'px-2 py-2 sm:px-3' : 'px-4 py-4 sm:px-5')}>
           <Pagination
             currentPage={page}
             totalItems={pagination.totalItems}

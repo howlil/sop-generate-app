@@ -118,6 +118,12 @@ export type LogEditSopDomainField = $Result.DefaultSelection<Prisma.$LogEditSopD
  */
 export type PengajuanEvaluasi = $Result.DefaultSelection<Prisma.$PengajuanEvaluasiPayload>
 /**
+ * Model PengingatWhatsApp
+ * State reminder WhatsApp yang masih aktif. Baris dihapus saat status pengajuan berubah;
+ * tabel ini bukan riwayat pengiriman dan tidak diekspos melalui API.
+ */
+export type PengingatWhatsApp = $Result.DefaultSelection<Prisma.$PengingatWhatsAppPayload>
+/**
  * Model NilaiEvaluasi
  * Hasil penilaian per DetailSOP dalam satu pengajuan evaluasi.
  * Umpan balik evaluasi resmi = catatan + statusTindakLanjut pada baris ini (bukan tabel Komentar).
@@ -181,6 +187,7 @@ export const StatusSOP: {
   DIAJUKAN_EVALUASI: 'DIAJUKAN_EVALUASI',
   SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
   REVISI_DARI_EVALUATOR: 'REVISI_DARI_EVALUATOR',
+  DITOLAK_EVALUATOR: 'DITOLAK_EVALUATOR',
   MENUNGGU_TTD_PJ_EVALUATOR: 'MENUNGGU_TTD_PJ_EVALUATOR',
   DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: 'DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI',
   BERLAKU: 'BERLAKU',
@@ -222,6 +229,7 @@ export type JenisPengajuanEvaluasi = (typeof JenisPengajuanEvaluasi)[keyof typeo
 
 export const StatusPengajuanEvaluasi: {
   SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
+  DITOLAK: 'DITOLAK',
   SELESAI_DIEVALUASI: 'SELESAI_DIEVALUASI',
   DITANDATANGANI_PJ_EVALUATOR: 'DITANDATANGANI_PJ_EVALUATOR',
   DITANDATANGANI_PJ_PENYUSUN: 'DITANDATANGANI_PJ_PENYUSUN',
@@ -233,7 +241,8 @@ export type StatusPengajuanEvaluasi = (typeof StatusPengajuanEvaluasi)[keyof typ
 
 export const HasilEvaluasi: {
   SESUAI: 'SESUAI',
-  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN'
+  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN',
+  DITOLAK: 'DITOLAK'
 };
 
 export type HasilEvaluasi = (typeof HasilEvaluasi)[keyof typeof HasilEvaluasi]
@@ -245,6 +254,16 @@ export const JenisDokumenTte: {
 };
 
 export type JenisDokumenTte = (typeof JenisDokumenTte)[keyof typeof JenisDokumenTte]
+
+
+export const JenisPengingatWhatsApp: {
+  EVALUASI_SOP: 'EVALUASI_SOP',
+  TTD_BA_PJ_EVALUATOR: 'TTD_BA_PJ_EVALUATOR',
+  TTD_BA_PJ_PENYUSUN: 'TTD_BA_PJ_PENYUSUN',
+  TTD_SOP_KEPALA_OPD: 'TTD_SOP_KEPALA_OPD'
+};
+
+export type JenisPengingatWhatsApp = (typeof JenisPengingatWhatsApp)[keyof typeof JenisPengingatWhatsApp]
 
 
 export const StatusTindakLanjut: {
@@ -325,6 +344,10 @@ export const HasilEvaluasi: typeof $Enums.HasilEvaluasi
 export type JenisDokumenTte = $Enums.JenisDokumenTte
 
 export const JenisDokumenTte: typeof $Enums.JenisDokumenTte
+
+export type JenisPengingatWhatsApp = $Enums.JenisPengingatWhatsApp
+
+export const JenisPengingatWhatsApp: typeof $Enums.JenisPengingatWhatsApp
 
 export type StatusTindakLanjut = $Enums.StatusTindakLanjut
 
@@ -656,6 +679,16 @@ export class PrismaClient<
     * ```
     */
   get pengajuanEvaluasi(): Prisma.PengajuanEvaluasiDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pengingatWhatsApp`: Exposes CRUD operations for the **PengingatWhatsApp** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PengingatWhatsApps
+    * const pengingatWhatsApps = await prisma.pengingatWhatsApp.findMany()
+    * ```
+    */
+  get pengingatWhatsApp(): Prisma.PengingatWhatsAppDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.nilaiEvaluasi`: Exposes CRUD operations for the **NilaiEvaluasi** model.
@@ -1189,6 +1222,7 @@ export namespace Prisma {
     LogEditSOP: 'LogEditSOP',
     LogEditSopDomainField: 'LogEditSopDomainField',
     PengajuanEvaluasi: 'PengajuanEvaluasi',
+    PengingatWhatsApp: 'PengingatWhatsApp',
     NilaiEvaluasi: 'NilaiEvaluasi',
     LogNilaiEvaluasi: 'LogNilaiEvaluasi',
     DokumenTte: 'DokumenTte',
@@ -1212,7 +1246,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranPeringatan" | "lampiranKualifikasiPelaksanaan" | "lampiranPeralatanPerlengkapan" | "lampiranPencatatanPendataan" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "logEditSopDomainField" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "dokumenTte" | "riwayatTandaTangan" | "konfigurasiDiagramSOP" | "overridePanahDiagramSOP" | "titikTekukPanahDiagramSOP" | "overrideLabelDiagramSOP"
+      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranPeringatan" | "lampiranKualifikasiPelaksanaan" | "lampiranPeralatanPerlengkapan" | "lampiranPencatatanPendataan" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "logEditSopDomainField" | "pengajuanEvaluasi" | "pengingatWhatsApp" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "dokumenTte" | "riwayatTandaTangan" | "konfigurasiDiagramSOP" | "overridePanahDiagramSOP" | "titikTekukPanahDiagramSOP" | "overrideLabelDiagramSOP"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2470,6 +2504,72 @@ export namespace Prisma {
           }
         }
       }
+      PengingatWhatsApp: {
+        payload: Prisma.$PengingatWhatsAppPayload<ExtArgs>
+        fields: Prisma.PengingatWhatsAppFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PengingatWhatsAppFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PengingatWhatsAppFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>
+          }
+          findFirst: {
+            args: Prisma.PengingatWhatsAppFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PengingatWhatsAppFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>
+          }
+          findMany: {
+            args: Prisma.PengingatWhatsAppFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>[]
+          }
+          create: {
+            args: Prisma.PengingatWhatsAppCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>
+          }
+          createMany: {
+            args: Prisma.PengingatWhatsAppCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PengingatWhatsAppDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>
+          }
+          update: {
+            args: Prisma.PengingatWhatsAppUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>
+          }
+          deleteMany: {
+            args: Prisma.PengingatWhatsAppDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PengingatWhatsAppUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PengingatWhatsAppUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PengingatWhatsAppPayload>
+          }
+          aggregate: {
+            args: Prisma.PengingatWhatsAppAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePengingatWhatsApp>
+          }
+          groupBy: {
+            args: Prisma.PengingatWhatsAppGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PengingatWhatsAppGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PengingatWhatsAppCountArgs<ExtArgs>
+            result: $Utils.Optional<PengingatWhatsAppCountAggregateOutputType> | number
+          }
+        }
+      }
       NilaiEvaluasi: {
         payload: Prisma.$NilaiEvaluasiPayload<ExtArgs>
         fields: Prisma.NilaiEvaluasiFieldRefs
@@ -3125,6 +3225,7 @@ export namespace Prisma {
     logEditSOP?: LogEditSOPOmit
     logEditSopDomainField?: LogEditSopDomainFieldOmit
     pengajuanEvaluasi?: PengajuanEvaluasiOmit
+    pengingatWhatsApp?: PengingatWhatsAppOmit
     nilaiEvaluasi?: NilaiEvaluasiOmit
     logNilaiEvaluasi?: LogNilaiEvaluasiOmit
     dokumenTte?: DokumenTteOmit
@@ -3220,9 +3321,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi: number
     nilaiEvaluasiDitindaklanjuti: number
     pengajuanEvaluasiDiselesaikan: number
+    pengajuanEvaluasiDitolak: number
     pengajuanEvaluasiDitandatangani: number
     pengajuanEvaluasiDiverifikasi: number
     peraturanTerakhirDiedit: number
+    pengingatWhatsApp: number
     riwayatOpd: number
     tandaTangan: number
   }
@@ -3235,9 +3338,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: boolean | PenggunaCountOutputTypeCountNilaiEvaluasiDiisiArgs
     nilaiEvaluasiDitindaklanjuti?: boolean | PenggunaCountOutputTypeCountNilaiEvaluasiDitindaklanjutiArgs
     pengajuanEvaluasiDiselesaikan?: boolean | PenggunaCountOutputTypeCountPengajuanEvaluasiDiselesaikanArgs
+    pengajuanEvaluasiDitolak?: boolean | PenggunaCountOutputTypeCountPengajuanEvaluasiDitolakArgs
     pengajuanEvaluasiDitandatangani?: boolean | PenggunaCountOutputTypeCountPengajuanEvaluasiDitandatanganiArgs
     pengajuanEvaluasiDiverifikasi?: boolean | PenggunaCountOutputTypeCountPengajuanEvaluasiDiverifikasiArgs
     peraturanTerakhirDiedit?: boolean | PenggunaCountOutputTypeCountPeraturanTerakhirDieditArgs
+    pengingatWhatsApp?: boolean | PenggunaCountOutputTypeCountPengingatWhatsAppArgs
     riwayatOpd?: boolean | PenggunaCountOutputTypeCountRiwayatOpdArgs
     tandaTangan?: boolean | PenggunaCountOutputTypeCountTandaTanganArgs
   }
@@ -3305,6 +3410,13 @@ export namespace Prisma {
   /**
    * PenggunaCountOutputType without action
    */
+  export type PenggunaCountOutputTypeCountPengajuanEvaluasiDitolakArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PengajuanEvaluasiWhereInput
+  }
+
+  /**
+   * PenggunaCountOutputType without action
+   */
   export type PenggunaCountOutputTypeCountPengajuanEvaluasiDitandatanganiArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PengajuanEvaluasiWhereInput
   }
@@ -3321,6 +3433,13 @@ export namespace Prisma {
    */
   export type PenggunaCountOutputTypeCountPeraturanTerakhirDieditArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PeraturanWhereInput
+  }
+
+  /**
+   * PenggunaCountOutputType without action
+   */
+  export type PenggunaCountOutputTypeCountPengingatWhatsAppArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PengingatWhatsAppWhereInput
   }
 
   /**
@@ -3770,12 +3889,14 @@ export namespace Prisma {
     logNilaiEvaluasi: number
     nilaiEvaluasi: number
     dokumenTte: number
+    pengingatWhatsApp: number
   }
 
   export type PengajuanEvaluasiCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     logNilaiEvaluasi?: boolean | PengajuanEvaluasiCountOutputTypeCountLogNilaiEvaluasiArgs
     nilaiEvaluasi?: boolean | PengajuanEvaluasiCountOutputTypeCountNilaiEvaluasiArgs
     dokumenTte?: boolean | PengajuanEvaluasiCountOutputTypeCountDokumenTteArgs
+    pengingatWhatsApp?: boolean | PengajuanEvaluasiCountOutputTypeCountPengingatWhatsAppArgs
   }
 
   // Custom InputTypes
@@ -3808,6 +3929,13 @@ export namespace Prisma {
    */
   export type PengajuanEvaluasiCountOutputTypeCountDokumenTteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DokumenTteWhereInput
+  }
+
+  /**
+   * PengajuanEvaluasiCountOutputType without action
+   */
+  export type PengajuanEvaluasiCountOutputTypeCountPengingatWhatsAppArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PengingatWhatsAppWhereInput
   }
 
 
@@ -4273,10 +4401,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: boolean | Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs>
     nilaiEvaluasiDitindaklanjuti?: boolean | Pengguna$nilaiEvaluasiDitindaklanjutiArgs<ExtArgs>
     pengajuanEvaluasiDiselesaikan?: boolean | Pengguna$pengajuanEvaluasiDiselesaikanArgs<ExtArgs>
+    pengajuanEvaluasiDitolak?: boolean | Pengguna$pengajuanEvaluasiDitolakArgs<ExtArgs>
     pengajuanEvaluasiDitandatangani?: boolean | Pengguna$pengajuanEvaluasiDitandatanganiArgs<ExtArgs>
     pengajuanEvaluasiDiverifikasi?: boolean | Pengguna$pengajuanEvaluasiDiverifikasiArgs<ExtArgs>
     peraturanTerakhirDiedit?: boolean | Pengguna$peraturanTerakhirDieditArgs<ExtArgs>
     opd?: boolean | OPDDefaultArgs<ExtArgs>
+    pengingatWhatsApp?: boolean | Pengguna$pengingatWhatsAppArgs<ExtArgs>
     riwayatOpd?: boolean | Pengguna$riwayatOpdArgs<ExtArgs>
     tandaTangan?: boolean | Pengguna$tandaTanganArgs<ExtArgs>
     _count?: boolean | PenggunaCountOutputTypeDefaultArgs<ExtArgs>
@@ -4316,10 +4446,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: boolean | Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs>
     nilaiEvaluasiDitindaklanjuti?: boolean | Pengguna$nilaiEvaluasiDitindaklanjutiArgs<ExtArgs>
     pengajuanEvaluasiDiselesaikan?: boolean | Pengguna$pengajuanEvaluasiDiselesaikanArgs<ExtArgs>
+    pengajuanEvaluasiDitolak?: boolean | Pengguna$pengajuanEvaluasiDitolakArgs<ExtArgs>
     pengajuanEvaluasiDitandatangani?: boolean | Pengguna$pengajuanEvaluasiDitandatanganiArgs<ExtArgs>
     pengajuanEvaluasiDiverifikasi?: boolean | Pengguna$pengajuanEvaluasiDiverifikasiArgs<ExtArgs>
     peraturanTerakhirDiedit?: boolean | Pengguna$peraturanTerakhirDieditArgs<ExtArgs>
     opd?: boolean | OPDDefaultArgs<ExtArgs>
+    pengingatWhatsApp?: boolean | Pengguna$pengingatWhatsAppArgs<ExtArgs>
     riwayatOpd?: boolean | Pengguna$riwayatOpdArgs<ExtArgs>
     tandaTangan?: boolean | Pengguna$tandaTanganArgs<ExtArgs>
     _count?: boolean | PenggunaCountOutputTypeDefaultArgs<ExtArgs>
@@ -4335,10 +4467,12 @@ export namespace Prisma {
       nilaiEvaluasiDiisi: Prisma.$NilaiEvaluasiPayload<ExtArgs>[]
       nilaiEvaluasiDitindaklanjuti: Prisma.$NilaiEvaluasiPayload<ExtArgs>[]
       pengajuanEvaluasiDiselesaikan: Prisma.$PengajuanEvaluasiPayload<ExtArgs>[]
+      pengajuanEvaluasiDitolak: Prisma.$PengajuanEvaluasiPayload<ExtArgs>[]
       pengajuanEvaluasiDitandatangani: Prisma.$PengajuanEvaluasiPayload<ExtArgs>[]
       pengajuanEvaluasiDiverifikasi: Prisma.$PengajuanEvaluasiPayload<ExtArgs>[]
       peraturanTerakhirDiedit: Prisma.$PeraturanPayload<ExtArgs>[]
       opd: Prisma.$OPDPayload<ExtArgs>
+      pengingatWhatsApp: Prisma.$PengingatWhatsAppPayload<ExtArgs>[]
       riwayatOpd: Prisma.$RiwayatOpdPenggunaPayload<ExtArgs>[]
       tandaTangan: Prisma.$RiwayatTandaTanganPayload<ExtArgs>[]
     }
@@ -4710,10 +4844,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi<T extends Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NilaiEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     nilaiEvaluasiDitindaklanjuti<T extends Pengguna$nilaiEvaluasiDitindaklanjutiArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$nilaiEvaluasiDitindaklanjutiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NilaiEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     pengajuanEvaluasiDiselesaikan<T extends Pengguna$pengajuanEvaluasiDiselesaikanArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$pengajuanEvaluasiDiselesaikanArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengajuanEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pengajuanEvaluasiDitolak<T extends Pengguna$pengajuanEvaluasiDitolakArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$pengajuanEvaluasiDitolakArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengajuanEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     pengajuanEvaluasiDitandatangani<T extends Pengguna$pengajuanEvaluasiDitandatanganiArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$pengajuanEvaluasiDitandatanganiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengajuanEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     pengajuanEvaluasiDiverifikasi<T extends Pengguna$pengajuanEvaluasiDiverifikasiArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$pengajuanEvaluasiDiverifikasiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengajuanEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     peraturanTerakhirDiedit<T extends Pengguna$peraturanTerakhirDieditArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$peraturanTerakhirDieditArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PeraturanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     opd<T extends OPDDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OPDDefaultArgs<ExtArgs>>): Prisma__OPDClient<$Result.GetResult<Prisma.$OPDPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    pengingatWhatsApp<T extends Pengguna$pengingatWhatsAppArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$pengingatWhatsAppArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     riwayatOpd<T extends Pengguna$riwayatOpdArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$riwayatOpdArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RiwayatOpdPenggunaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tandaTangan<T extends Pengguna$tandaTanganArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$tandaTanganArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RiwayatTandaTanganPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -5281,6 +5417,30 @@ export namespace Prisma {
   }
 
   /**
+   * Pengguna.pengajuanEvaluasiDitolak
+   */
+  export type Pengguna$pengajuanEvaluasiDitolakArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengajuanEvaluasi
+     */
+    select?: PengajuanEvaluasiSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengajuanEvaluasi
+     */
+    omit?: PengajuanEvaluasiOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengajuanEvaluasiInclude<ExtArgs> | null
+    where?: PengajuanEvaluasiWhereInput
+    orderBy?: PengajuanEvaluasiOrderByWithRelationInput | PengajuanEvaluasiOrderByWithRelationInput[]
+    cursor?: PengajuanEvaluasiWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PengajuanEvaluasiScalarFieldEnum | PengajuanEvaluasiScalarFieldEnum[]
+  }
+
+  /**
    * Pengguna.pengajuanEvaluasiDitandatangani
    */
   export type Pengguna$pengajuanEvaluasiDitandatanganiArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5350,6 +5510,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PeraturanScalarFieldEnum | PeraturanScalarFieldEnum[]
+  }
+
+  /**
+   * Pengguna.pengingatWhatsApp
+   */
+  export type Pengguna$pengingatWhatsAppArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    where?: PengingatWhatsAppWhereInput
+    orderBy?: PengingatWhatsAppOrderByWithRelationInput | PengingatWhatsAppOrderByWithRelationInput[]
+    cursor?: PengingatWhatsAppWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PengingatWhatsAppScalarFieldEnum | PengingatWhatsAppScalarFieldEnum[]
   }
 
   /**
@@ -10797,7 +10981,7 @@ export namespace Prisma {
       dibuatOlehId: string | null
       terakhirDieditOlehId: string | null
       /**
-       * Versi sumber saat dibuat dari SOP BERLAKU (revisi resmi).
+       * Versi sumber snapshot saat membuat revisi baru (BERLAKU, DIGANTIKAN, atau DICABUT).
        */
       revisiDariDetailSopId: string | null
       createdAt: Date
@@ -22765,6 +22949,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun: Date | null
     diselesaikanOlehId: string | null
     tanggalDiselesaikan: Date | null
+    alasanPenolakan: string | null
+    ditolakOlehId: string | null
+    tanggalDitolak: Date | null
     version: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -22784,6 +22971,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun: Date | null
     diselesaikanOlehId: string | null
     tanggalDiselesaikan: Date | null
+    alasanPenolakan: string | null
+    ditolakOlehId: string | null
+    tanggalDitolak: Date | null
     version: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -22803,6 +22993,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun: number
     diselesaikanOlehId: number
     tanggalDiselesaikan: number
+    alasanPenolakan: number
+    ditolakOlehId: number
+    tanggalDitolak: number
     version: number
     createdAt: number
     updatedAt: number
@@ -22834,6 +23027,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: true
     diselesaikanOlehId?: true
     tanggalDiselesaikan?: true
+    alasanPenolakan?: true
+    ditolakOlehId?: true
+    tanggalDitolak?: true
     version?: true
     createdAt?: true
     updatedAt?: true
@@ -22853,6 +23049,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: true
     diselesaikanOlehId?: true
     tanggalDiselesaikan?: true
+    alasanPenolakan?: true
+    ditolakOlehId?: true
+    tanggalDitolak?: true
     version?: true
     createdAt?: true
     updatedAt?: true
@@ -22872,6 +23071,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: true
     diselesaikanOlehId?: true
     tanggalDiselesaikan?: true
+    alasanPenolakan?: true
+    ditolakOlehId?: true
+    tanggalDitolak?: true
     version?: true
     createdAt?: true
     updatedAt?: true
@@ -22978,6 +23180,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun: Date | null
     diselesaikanOlehId: string | null
     tanggalDiselesaikan: Date | null
+    alasanPenolakan: string | null
+    ditolakOlehId: string | null
+    tanggalDitolak: Date | null
     version: number
     createdAt: Date
     updatedAt: Date
@@ -23016,16 +23221,21 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: boolean
     diselesaikanOlehId?: boolean
     tanggalDiselesaikan?: boolean
+    alasanPenolakan?: boolean
+    ditolakOlehId?: boolean
+    tanggalDitolak?: boolean
     version?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     logNilaiEvaluasi?: boolean | PengajuanEvaluasi$logNilaiEvaluasiArgs<ExtArgs>
     nilaiEvaluasi?: boolean | PengajuanEvaluasi$nilaiEvaluasiArgs<ExtArgs>
     diselesaikanOleh?: boolean | PengajuanEvaluasi$diselesaikanOlehArgs<ExtArgs>
+    ditolakOleh?: boolean | PengajuanEvaluasi$ditolakOlehArgs<ExtArgs>
     ditandatanganiOlehPjPenyusunUser?: boolean | PengajuanEvaluasi$ditandatanganiOlehPjPenyusunUserArgs<ExtArgs>
     diverifikasiOlehUser?: boolean | PengajuanEvaluasi$diverifikasiOlehUserArgs<ExtArgs>
     dokumenTte?: boolean | PengajuanEvaluasi$dokumenTteArgs<ExtArgs>
     opd?: boolean | OPDDefaultArgs<ExtArgs>
+    pengingatWhatsApp?: boolean | PengajuanEvaluasi$pengingatWhatsAppArgs<ExtArgs>
     _count?: boolean | PengajuanEvaluasiCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["pengajuanEvaluasi"]>
 
@@ -23045,20 +23255,25 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: boolean
     diselesaikanOlehId?: boolean
     tanggalDiselesaikan?: boolean
+    alasanPenolakan?: boolean
+    ditolakOlehId?: boolean
+    tanggalDitolak?: boolean
     version?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PengajuanEvaluasiOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengajuanEvaluasiId" | "opdId" | "jenis" | "status" | "nomorBA" | "tanggalPermintaan" | "tanggalEvaluasi" | "nilaiOPD" | "diverifikasiOlehUserId" | "ditandatanganiOlehPjPenyusunUserId" | "tanggalTTDBaPjPenyusun" | "diselesaikanOlehId" | "tanggalDiselesaikan" | "version" | "createdAt" | "updatedAt", ExtArgs["result"]["pengajuanEvaluasi"]>
+  export type PengajuanEvaluasiOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengajuanEvaluasiId" | "opdId" | "jenis" | "status" | "nomorBA" | "tanggalPermintaan" | "tanggalEvaluasi" | "nilaiOPD" | "diverifikasiOlehUserId" | "ditandatanganiOlehPjPenyusunUserId" | "tanggalTTDBaPjPenyusun" | "diselesaikanOlehId" | "tanggalDiselesaikan" | "alasanPenolakan" | "ditolakOlehId" | "tanggalDitolak" | "version" | "createdAt" | "updatedAt", ExtArgs["result"]["pengajuanEvaluasi"]>
   export type PengajuanEvaluasiInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     logNilaiEvaluasi?: boolean | PengajuanEvaluasi$logNilaiEvaluasiArgs<ExtArgs>
     nilaiEvaluasi?: boolean | PengajuanEvaluasi$nilaiEvaluasiArgs<ExtArgs>
     diselesaikanOleh?: boolean | PengajuanEvaluasi$diselesaikanOlehArgs<ExtArgs>
+    ditolakOleh?: boolean | PengajuanEvaluasi$ditolakOlehArgs<ExtArgs>
     ditandatanganiOlehPjPenyusunUser?: boolean | PengajuanEvaluasi$ditandatanganiOlehPjPenyusunUserArgs<ExtArgs>
     diverifikasiOlehUser?: boolean | PengajuanEvaluasi$diverifikasiOlehUserArgs<ExtArgs>
     dokumenTte?: boolean | PengajuanEvaluasi$dokumenTteArgs<ExtArgs>
     opd?: boolean | OPDDefaultArgs<ExtArgs>
+    pengingatWhatsApp?: boolean | PengajuanEvaluasi$pengingatWhatsAppArgs<ExtArgs>
     _count?: boolean | PengajuanEvaluasiCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -23068,10 +23283,12 @@ export namespace Prisma {
       logNilaiEvaluasi: Prisma.$LogNilaiEvaluasiPayload<ExtArgs>[]
       nilaiEvaluasi: Prisma.$NilaiEvaluasiPayload<ExtArgs>[]
       diselesaikanOleh: Prisma.$PenggunaPayload<ExtArgs> | null
+      ditolakOleh: Prisma.$PenggunaPayload<ExtArgs> | null
       ditandatanganiOlehPjPenyusunUser: Prisma.$PenggunaPayload<ExtArgs> | null
       diverifikasiOlehUser: Prisma.$PenggunaPayload<ExtArgs> | null
       dokumenTte: Prisma.$DokumenTtePayload<ExtArgs>[]
       opd: Prisma.$OPDPayload<ExtArgs>
+      pengingatWhatsApp: Prisma.$PengingatWhatsAppPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       pengajuanEvaluasiId: string
@@ -23091,6 +23308,12 @@ export namespace Prisma {
        */
       diselesaikanOlehId: string | null
       tanggalDiselesaikan: Date | null
+      /**
+       * Alasan resmi evaluator saat menolak pengajuan. Wajib ketika status DITOLAK.
+       */
+      alasanPenolakan: string | null
+      ditolakOlehId: string | null
+      tanggalDitolak: Date | null
       /**
        * Versi untuk optimistic locking — increment di setiap update status.
        * Service: UPDATE ... SET status = ?, version = version + 1 WHERE id = ? AND version = ?
@@ -23441,10 +23664,12 @@ export namespace Prisma {
     logNilaiEvaluasi<T extends PengajuanEvaluasi$logNilaiEvaluasiArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$logNilaiEvaluasiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LogNilaiEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     nilaiEvaluasi<T extends PengajuanEvaluasi$nilaiEvaluasiArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$nilaiEvaluasiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NilaiEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     diselesaikanOleh<T extends PengajuanEvaluasi$diselesaikanOlehArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$diselesaikanOlehArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    ditolakOleh<T extends PengajuanEvaluasi$ditolakOlehArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$ditolakOlehArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     ditandatanganiOlehPjPenyusunUser<T extends PengajuanEvaluasi$ditandatanganiOlehPjPenyusunUserArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$ditandatanganiOlehPjPenyusunUserArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     diverifikasiOlehUser<T extends PengajuanEvaluasi$diverifikasiOlehUserArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$diverifikasiOlehUserArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     dokumenTte<T extends PengajuanEvaluasi$dokumenTteArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$dokumenTteArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DokumenTtePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     opd<T extends OPDDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OPDDefaultArgs<ExtArgs>>): Prisma__OPDClient<$Result.GetResult<Prisma.$OPDPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    pengingatWhatsApp<T extends PengajuanEvaluasi$pengingatWhatsAppArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasi$pengingatWhatsAppArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -23487,6 +23712,9 @@ export namespace Prisma {
     readonly tanggalTTDBaPjPenyusun: FieldRef<"PengajuanEvaluasi", 'DateTime'>
     readonly diselesaikanOlehId: FieldRef<"PengajuanEvaluasi", 'String'>
     readonly tanggalDiselesaikan: FieldRef<"PengajuanEvaluasi", 'DateTime'>
+    readonly alasanPenolakan: FieldRef<"PengajuanEvaluasi", 'String'>
+    readonly ditolakOlehId: FieldRef<"PengajuanEvaluasi", 'String'>
+    readonly tanggalDitolak: FieldRef<"PengajuanEvaluasi", 'DateTime'>
     readonly version: FieldRef<"PengajuanEvaluasi", 'Int'>
     readonly createdAt: FieldRef<"PengajuanEvaluasi", 'DateTime'>
     readonly updatedAt: FieldRef<"PengajuanEvaluasi", 'DateTime'>
@@ -23905,6 +24133,25 @@ export namespace Prisma {
   }
 
   /**
+   * PengajuanEvaluasi.ditolakOleh
+   */
+  export type PengajuanEvaluasi$ditolakOlehArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Pengguna
+     */
+    select?: PenggunaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Pengguna
+     */
+    omit?: PenggunaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PenggunaInclude<ExtArgs> | null
+    where?: PenggunaWhereInput
+  }
+
+  /**
    * PengajuanEvaluasi.ditandatanganiOlehPjPenyusunUser
    */
   export type PengajuanEvaluasi$ditandatanganiOlehPjPenyusunUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -23967,6 +24214,30 @@ export namespace Prisma {
   }
 
   /**
+   * PengajuanEvaluasi.pengingatWhatsApp
+   */
+  export type PengajuanEvaluasi$pengingatWhatsAppArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    where?: PengingatWhatsAppWhereInput
+    orderBy?: PengingatWhatsAppOrderByWithRelationInput | PengingatWhatsAppOrderByWithRelationInput[]
+    cursor?: PengingatWhatsAppWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PengingatWhatsAppScalarFieldEnum | PengingatWhatsAppScalarFieldEnum[]
+  }
+
+  /**
    * PengajuanEvaluasi without action
    */
   export type PengajuanEvaluasiDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -23982,6 +24253,1066 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PengajuanEvaluasiInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PengingatWhatsApp
+   */
+
+  export type AggregatePengingatWhatsApp = {
+    _count: PengingatWhatsAppCountAggregateOutputType | null
+    _avg: PengingatWhatsAppAvgAggregateOutputType | null
+    _sum: PengingatWhatsAppSumAggregateOutputType | null
+    _min: PengingatWhatsAppMinAggregateOutputType | null
+    _max: PengingatWhatsAppMaxAggregateOutputType | null
+  }
+
+  export type PengingatWhatsAppAvgAggregateOutputType = {
+    consecutiveFailures: number | null
+  }
+
+  export type PengingatWhatsAppSumAggregateOutputType = {
+    consecutiveFailures: number | null
+  }
+
+  export type PengingatWhatsAppMinAggregateOutputType = {
+    pengingatWhatsAppId: string | null
+    pengajuanEvaluasiId: string | null
+    penggunaId: string | null
+    jenis: $Enums.JenisPengingatWhatsApp | null
+    nomorTujuan: string | null
+    nextSendAt: Date | null
+    lastSentAt: Date | null
+    consecutiveFailures: number | null
+    lastErrorKind: string | null
+    lockedUntil: Date | null
+    lockToken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PengingatWhatsAppMaxAggregateOutputType = {
+    pengingatWhatsAppId: string | null
+    pengajuanEvaluasiId: string | null
+    penggunaId: string | null
+    jenis: $Enums.JenisPengingatWhatsApp | null
+    nomorTujuan: string | null
+    nextSendAt: Date | null
+    lastSentAt: Date | null
+    consecutiveFailures: number | null
+    lastErrorKind: string | null
+    lockedUntil: Date | null
+    lockToken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PengingatWhatsAppCountAggregateOutputType = {
+    pengingatWhatsAppId: number
+    pengajuanEvaluasiId: number
+    penggunaId: number
+    jenis: number
+    nomorTujuan: number
+    nextSendAt: number
+    lastSentAt: number
+    consecutiveFailures: number
+    lastErrorKind: number
+    lockedUntil: number
+    lockToken: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PengingatWhatsAppAvgAggregateInputType = {
+    consecutiveFailures?: true
+  }
+
+  export type PengingatWhatsAppSumAggregateInputType = {
+    consecutiveFailures?: true
+  }
+
+  export type PengingatWhatsAppMinAggregateInputType = {
+    pengingatWhatsAppId?: true
+    pengajuanEvaluasiId?: true
+    penggunaId?: true
+    jenis?: true
+    nomorTujuan?: true
+    nextSendAt?: true
+    lastSentAt?: true
+    consecutiveFailures?: true
+    lastErrorKind?: true
+    lockedUntil?: true
+    lockToken?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PengingatWhatsAppMaxAggregateInputType = {
+    pengingatWhatsAppId?: true
+    pengajuanEvaluasiId?: true
+    penggunaId?: true
+    jenis?: true
+    nomorTujuan?: true
+    nextSendAt?: true
+    lastSentAt?: true
+    consecutiveFailures?: true
+    lastErrorKind?: true
+    lockedUntil?: true
+    lockToken?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PengingatWhatsAppCountAggregateInputType = {
+    pengingatWhatsAppId?: true
+    pengajuanEvaluasiId?: true
+    penggunaId?: true
+    jenis?: true
+    nomorTujuan?: true
+    nextSendAt?: true
+    lastSentAt?: true
+    consecutiveFailures?: true
+    lastErrorKind?: true
+    lockedUntil?: true
+    lockToken?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PengingatWhatsAppAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PengingatWhatsApp to aggregate.
+     */
+    where?: PengingatWhatsAppWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PengingatWhatsApps to fetch.
+     */
+    orderBy?: PengingatWhatsAppOrderByWithRelationInput | PengingatWhatsAppOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PengingatWhatsAppWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PengingatWhatsApps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PengingatWhatsApps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PengingatWhatsApps
+    **/
+    _count?: true | PengingatWhatsAppCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PengingatWhatsAppAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PengingatWhatsAppSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PengingatWhatsAppMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PengingatWhatsAppMaxAggregateInputType
+  }
+
+  export type GetPengingatWhatsAppAggregateType<T extends PengingatWhatsAppAggregateArgs> = {
+        [P in keyof T & keyof AggregatePengingatWhatsApp]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePengingatWhatsApp[P]>
+      : GetScalarType<T[P], AggregatePengingatWhatsApp[P]>
+  }
+
+
+
+
+  export type PengingatWhatsAppGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PengingatWhatsAppWhereInput
+    orderBy?: PengingatWhatsAppOrderByWithAggregationInput | PengingatWhatsAppOrderByWithAggregationInput[]
+    by: PengingatWhatsAppScalarFieldEnum[] | PengingatWhatsAppScalarFieldEnum
+    having?: PengingatWhatsAppScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PengingatWhatsAppCountAggregateInputType | true
+    _avg?: PengingatWhatsAppAvgAggregateInputType
+    _sum?: PengingatWhatsAppSumAggregateInputType
+    _min?: PengingatWhatsAppMinAggregateInputType
+    _max?: PengingatWhatsAppMaxAggregateInputType
+  }
+
+  export type PengingatWhatsAppGroupByOutputType = {
+    pengingatWhatsAppId: string
+    pengajuanEvaluasiId: string
+    penggunaId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date
+    lastSentAt: Date | null
+    consecutiveFailures: number
+    lastErrorKind: string | null
+    lockedUntil: Date | null
+    lockToken: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PengingatWhatsAppCountAggregateOutputType | null
+    _avg: PengingatWhatsAppAvgAggregateOutputType | null
+    _sum: PengingatWhatsAppSumAggregateOutputType | null
+    _min: PengingatWhatsAppMinAggregateOutputType | null
+    _max: PengingatWhatsAppMaxAggregateOutputType | null
+  }
+
+  type GetPengingatWhatsAppGroupByPayload<T extends PengingatWhatsAppGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PengingatWhatsAppGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PengingatWhatsAppGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PengingatWhatsAppGroupByOutputType[P]>
+            : GetScalarType<T[P], PengingatWhatsAppGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PengingatWhatsAppSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    pengingatWhatsAppId?: boolean
+    pengajuanEvaluasiId?: boolean
+    penggunaId?: boolean
+    jenis?: boolean
+    nomorTujuan?: boolean
+    nextSendAt?: boolean
+    lastSentAt?: boolean
+    consecutiveFailures?: boolean
+    lastErrorKind?: boolean
+    lockedUntil?: boolean
+    lockToken?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
+    pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pengingatWhatsApp"]>
+
+
+
+  export type PengingatWhatsAppSelectScalar = {
+    pengingatWhatsAppId?: boolean
+    pengajuanEvaluasiId?: boolean
+    penggunaId?: boolean
+    jenis?: boolean
+    nomorTujuan?: boolean
+    nextSendAt?: boolean
+    lastSentAt?: boolean
+    consecutiveFailures?: boolean
+    lastErrorKind?: boolean
+    lockedUntil?: boolean
+    lockToken?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PengingatWhatsAppOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengingatWhatsAppId" | "pengajuanEvaluasiId" | "penggunaId" | "jenis" | "nomorTujuan" | "nextSendAt" | "lastSentAt" | "consecutiveFailures" | "lastErrorKind" | "lockedUntil" | "lockToken" | "createdAt" | "updatedAt", ExtArgs["result"]["pengingatWhatsApp"]>
+  export type PengingatWhatsAppInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
+    pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
+  }
+
+  export type $PengingatWhatsAppPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PengingatWhatsApp"
+    objects: {
+      pengajuanEvaluasi: Prisma.$PengajuanEvaluasiPayload<ExtArgs>
+      pengguna: Prisma.$PenggunaPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      pengingatWhatsAppId: string
+      pengajuanEvaluasiId: string
+      penggunaId: string
+      jenis: $Enums.JenisPengingatWhatsApp
+      nomorTujuan: string
+      nextSendAt: Date
+      lastSentAt: Date | null
+      consecutiveFailures: number
+      lastErrorKind: string | null
+      lockedUntil: Date | null
+      lockToken: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["pengingatWhatsApp"]>
+    composites: {}
+  }
+
+  type PengingatWhatsAppGetPayload<S extends boolean | null | undefined | PengingatWhatsAppDefaultArgs> = $Result.GetResult<Prisma.$PengingatWhatsAppPayload, S>
+
+  type PengingatWhatsAppCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PengingatWhatsAppFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PengingatWhatsAppCountAggregateInputType | true
+    }
+
+  export interface PengingatWhatsAppDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PengingatWhatsApp'], meta: { name: 'PengingatWhatsApp' } }
+    /**
+     * Find zero or one PengingatWhatsApp that matches the filter.
+     * @param {PengingatWhatsAppFindUniqueArgs} args - Arguments to find a PengingatWhatsApp
+     * @example
+     * // Get one PengingatWhatsApp
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PengingatWhatsAppFindUniqueArgs>(args: SelectSubset<T, PengingatWhatsAppFindUniqueArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PengingatWhatsApp that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PengingatWhatsAppFindUniqueOrThrowArgs} args - Arguments to find a PengingatWhatsApp
+     * @example
+     * // Get one PengingatWhatsApp
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PengingatWhatsAppFindUniqueOrThrowArgs>(args: SelectSubset<T, PengingatWhatsAppFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PengingatWhatsApp that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppFindFirstArgs} args - Arguments to find a PengingatWhatsApp
+     * @example
+     * // Get one PengingatWhatsApp
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PengingatWhatsAppFindFirstArgs>(args?: SelectSubset<T, PengingatWhatsAppFindFirstArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PengingatWhatsApp that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppFindFirstOrThrowArgs} args - Arguments to find a PengingatWhatsApp
+     * @example
+     * // Get one PengingatWhatsApp
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PengingatWhatsAppFindFirstOrThrowArgs>(args?: SelectSubset<T, PengingatWhatsAppFindFirstOrThrowArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PengingatWhatsApps that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PengingatWhatsApps
+     * const pengingatWhatsApps = await prisma.pengingatWhatsApp.findMany()
+     * 
+     * // Get first 10 PengingatWhatsApps
+     * const pengingatWhatsApps = await prisma.pengingatWhatsApp.findMany({ take: 10 })
+     * 
+     * // Only select the `pengingatWhatsAppId`
+     * const pengingatWhatsAppWithPengingatWhatsAppIdOnly = await prisma.pengingatWhatsApp.findMany({ select: { pengingatWhatsAppId: true } })
+     * 
+     */
+    findMany<T extends PengingatWhatsAppFindManyArgs>(args?: SelectSubset<T, PengingatWhatsAppFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PengingatWhatsApp.
+     * @param {PengingatWhatsAppCreateArgs} args - Arguments to create a PengingatWhatsApp.
+     * @example
+     * // Create one PengingatWhatsApp
+     * const PengingatWhatsApp = await prisma.pengingatWhatsApp.create({
+     *   data: {
+     *     // ... data to create a PengingatWhatsApp
+     *   }
+     * })
+     * 
+     */
+    create<T extends PengingatWhatsAppCreateArgs>(args: SelectSubset<T, PengingatWhatsAppCreateArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PengingatWhatsApps.
+     * @param {PengingatWhatsAppCreateManyArgs} args - Arguments to create many PengingatWhatsApps.
+     * @example
+     * // Create many PengingatWhatsApps
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PengingatWhatsAppCreateManyArgs>(args?: SelectSubset<T, PengingatWhatsAppCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PengingatWhatsApp.
+     * @param {PengingatWhatsAppDeleteArgs} args - Arguments to delete one PengingatWhatsApp.
+     * @example
+     * // Delete one PengingatWhatsApp
+     * const PengingatWhatsApp = await prisma.pengingatWhatsApp.delete({
+     *   where: {
+     *     // ... filter to delete one PengingatWhatsApp
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PengingatWhatsAppDeleteArgs>(args: SelectSubset<T, PengingatWhatsAppDeleteArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PengingatWhatsApp.
+     * @param {PengingatWhatsAppUpdateArgs} args - Arguments to update one PengingatWhatsApp.
+     * @example
+     * // Update one PengingatWhatsApp
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PengingatWhatsAppUpdateArgs>(args: SelectSubset<T, PengingatWhatsAppUpdateArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PengingatWhatsApps.
+     * @param {PengingatWhatsAppDeleteManyArgs} args - Arguments to filter PengingatWhatsApps to delete.
+     * @example
+     * // Delete a few PengingatWhatsApps
+     * const { count } = await prisma.pengingatWhatsApp.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PengingatWhatsAppDeleteManyArgs>(args?: SelectSubset<T, PengingatWhatsAppDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PengingatWhatsApps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PengingatWhatsApps
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PengingatWhatsAppUpdateManyArgs>(args: SelectSubset<T, PengingatWhatsAppUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PengingatWhatsApp.
+     * @param {PengingatWhatsAppUpsertArgs} args - Arguments to update or create a PengingatWhatsApp.
+     * @example
+     * // Update or create a PengingatWhatsApp
+     * const pengingatWhatsApp = await prisma.pengingatWhatsApp.upsert({
+     *   create: {
+     *     // ... data to create a PengingatWhatsApp
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PengingatWhatsApp we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PengingatWhatsAppUpsertArgs>(args: SelectSubset<T, PengingatWhatsAppUpsertArgs<ExtArgs>>): Prisma__PengingatWhatsAppClient<$Result.GetResult<Prisma.$PengingatWhatsAppPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PengingatWhatsApps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppCountArgs} args - Arguments to filter PengingatWhatsApps to count.
+     * @example
+     * // Count the number of PengingatWhatsApps
+     * const count = await prisma.pengingatWhatsApp.count({
+     *   where: {
+     *     // ... the filter for the PengingatWhatsApps we want to count
+     *   }
+     * })
+    **/
+    count<T extends PengingatWhatsAppCountArgs>(
+      args?: Subset<T, PengingatWhatsAppCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PengingatWhatsAppCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PengingatWhatsApp.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PengingatWhatsAppAggregateArgs>(args: Subset<T, PengingatWhatsAppAggregateArgs>): Prisma.PrismaPromise<GetPengingatWhatsAppAggregateType<T>>
+
+    /**
+     * Group by PengingatWhatsApp.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PengingatWhatsAppGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PengingatWhatsAppGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PengingatWhatsAppGroupByArgs['orderBy'] }
+        : { orderBy?: PengingatWhatsAppGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PengingatWhatsAppGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPengingatWhatsAppGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PengingatWhatsApp model
+   */
+  readonly fields: PengingatWhatsAppFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PengingatWhatsApp.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PengingatWhatsAppClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    pengajuanEvaluasi<T extends PengajuanEvaluasiDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PengajuanEvaluasiDefaultArgs<ExtArgs>>): Prisma__PengajuanEvaluasiClient<$Result.GetResult<Prisma.$PengajuanEvaluasiPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    pengguna<T extends PenggunaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PenggunaDefaultArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PengingatWhatsApp model
+   */
+  interface PengingatWhatsAppFieldRefs {
+    readonly pengingatWhatsAppId: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly pengajuanEvaluasiId: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly penggunaId: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly jenis: FieldRef<"PengingatWhatsApp", 'JenisPengingatWhatsApp'>
+    readonly nomorTujuan: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly nextSendAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
+    readonly lastSentAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
+    readonly consecutiveFailures: FieldRef<"PengingatWhatsApp", 'Int'>
+    readonly lastErrorKind: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly lockedUntil: FieldRef<"PengingatWhatsApp", 'DateTime'>
+    readonly lockToken: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly createdAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
+    readonly updatedAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PengingatWhatsApp findUnique
+   */
+  export type PengingatWhatsAppFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * Filter, which PengingatWhatsApp to fetch.
+     */
+    where: PengingatWhatsAppWhereUniqueInput
+  }
+
+  /**
+   * PengingatWhatsApp findUniqueOrThrow
+   */
+  export type PengingatWhatsAppFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * Filter, which PengingatWhatsApp to fetch.
+     */
+    where: PengingatWhatsAppWhereUniqueInput
+  }
+
+  /**
+   * PengingatWhatsApp findFirst
+   */
+  export type PengingatWhatsAppFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * Filter, which PengingatWhatsApp to fetch.
+     */
+    where?: PengingatWhatsAppWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PengingatWhatsApps to fetch.
+     */
+    orderBy?: PengingatWhatsAppOrderByWithRelationInput | PengingatWhatsAppOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PengingatWhatsApps.
+     */
+    cursor?: PengingatWhatsAppWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PengingatWhatsApps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PengingatWhatsApps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PengingatWhatsApps.
+     */
+    distinct?: PengingatWhatsAppScalarFieldEnum | PengingatWhatsAppScalarFieldEnum[]
+  }
+
+  /**
+   * PengingatWhatsApp findFirstOrThrow
+   */
+  export type PengingatWhatsAppFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * Filter, which PengingatWhatsApp to fetch.
+     */
+    where?: PengingatWhatsAppWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PengingatWhatsApps to fetch.
+     */
+    orderBy?: PengingatWhatsAppOrderByWithRelationInput | PengingatWhatsAppOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PengingatWhatsApps.
+     */
+    cursor?: PengingatWhatsAppWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PengingatWhatsApps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PengingatWhatsApps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PengingatWhatsApps.
+     */
+    distinct?: PengingatWhatsAppScalarFieldEnum | PengingatWhatsAppScalarFieldEnum[]
+  }
+
+  /**
+   * PengingatWhatsApp findMany
+   */
+  export type PengingatWhatsAppFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * Filter, which PengingatWhatsApps to fetch.
+     */
+    where?: PengingatWhatsAppWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PengingatWhatsApps to fetch.
+     */
+    orderBy?: PengingatWhatsAppOrderByWithRelationInput | PengingatWhatsAppOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PengingatWhatsApps.
+     */
+    cursor?: PengingatWhatsAppWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PengingatWhatsApps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PengingatWhatsApps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PengingatWhatsApps.
+     */
+    distinct?: PengingatWhatsAppScalarFieldEnum | PengingatWhatsAppScalarFieldEnum[]
+  }
+
+  /**
+   * PengingatWhatsApp create
+   */
+  export type PengingatWhatsAppCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PengingatWhatsApp.
+     */
+    data: XOR<PengingatWhatsAppCreateInput, PengingatWhatsAppUncheckedCreateInput>
+  }
+
+  /**
+   * PengingatWhatsApp createMany
+   */
+  export type PengingatWhatsAppCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PengingatWhatsApps.
+     */
+    data: PengingatWhatsAppCreateManyInput | PengingatWhatsAppCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PengingatWhatsApp update
+   */
+  export type PengingatWhatsAppUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PengingatWhatsApp.
+     */
+    data: XOR<PengingatWhatsAppUpdateInput, PengingatWhatsAppUncheckedUpdateInput>
+    /**
+     * Choose, which PengingatWhatsApp to update.
+     */
+    where: PengingatWhatsAppWhereUniqueInput
+  }
+
+  /**
+   * PengingatWhatsApp updateMany
+   */
+  export type PengingatWhatsAppUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PengingatWhatsApps.
+     */
+    data: XOR<PengingatWhatsAppUpdateManyMutationInput, PengingatWhatsAppUncheckedUpdateManyInput>
+    /**
+     * Filter which PengingatWhatsApps to update
+     */
+    where?: PengingatWhatsAppWhereInput
+    /**
+     * Limit how many PengingatWhatsApps to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PengingatWhatsApp upsert
+   */
+  export type PengingatWhatsAppUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PengingatWhatsApp to update in case it exists.
+     */
+    where: PengingatWhatsAppWhereUniqueInput
+    /**
+     * In case the PengingatWhatsApp found by the `where` argument doesn't exist, create a new PengingatWhatsApp with this data.
+     */
+    create: XOR<PengingatWhatsAppCreateInput, PengingatWhatsAppUncheckedCreateInput>
+    /**
+     * In case the PengingatWhatsApp was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PengingatWhatsAppUpdateInput, PengingatWhatsAppUncheckedUpdateInput>
+  }
+
+  /**
+   * PengingatWhatsApp delete
+   */
+  export type PengingatWhatsAppDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
+    /**
+     * Filter which PengingatWhatsApp to delete.
+     */
+    where: PengingatWhatsAppWhereUniqueInput
+  }
+
+  /**
+   * PengingatWhatsApp deleteMany
+   */
+  export type PengingatWhatsAppDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PengingatWhatsApps to delete
+     */
+    where?: PengingatWhatsAppWhereInput
+    /**
+     * Limit how many PengingatWhatsApps to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PengingatWhatsApp without action
+   */
+  export type PengingatWhatsAppDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PengingatWhatsApp
+     */
+    select?: PengingatWhatsAppSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PengingatWhatsApp
+     */
+    omit?: PengingatWhatsAppOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PengingatWhatsAppInclude<ExtArgs> | null
   }
 
 
@@ -32712,12 +34043,34 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun: 'tanggalTTDBaPjPenyusun',
     diselesaikanOlehId: 'diselesaikanOlehId',
     tanggalDiselesaikan: 'tanggalDiselesaikan',
+    alasanPenolakan: 'alasanPenolakan',
+    ditolakOlehId: 'ditolakOlehId',
+    tanggalDitolak: 'tanggalDitolak',
     version: 'version',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type PengajuanEvaluasiScalarFieldEnum = (typeof PengajuanEvaluasiScalarFieldEnum)[keyof typeof PengajuanEvaluasiScalarFieldEnum]
+
+
+  export const PengingatWhatsAppScalarFieldEnum: {
+    pengingatWhatsAppId: 'pengingatWhatsAppId',
+    pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+    penggunaId: 'penggunaId',
+    jenis: 'jenis',
+    nomorTujuan: 'nomorTujuan',
+    nextSendAt: 'nextSendAt',
+    lastSentAt: 'lastSentAt',
+    consecutiveFailures: 'consecutiveFailures',
+    lastErrorKind: 'lastErrorKind',
+    lockedUntil: 'lockedUntil',
+    lockToken: 'lockToken',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PengingatWhatsAppScalarFieldEnum = (typeof PengingatWhatsAppScalarFieldEnum)[keyof typeof PengingatWhatsAppScalarFieldEnum]
 
 
   export const NilaiEvaluasiScalarFieldEnum: {
@@ -33053,10 +34406,24 @@ export namespace Prisma {
     nomorBA: 'nomorBA',
     diverifikasiOlehUserId: 'diverifikasiOlehUserId',
     ditandatanganiOlehPjPenyusunUserId: 'ditandatanganiOlehPjPenyusunUserId',
-    diselesaikanOlehId: 'diselesaikanOlehId'
+    diselesaikanOlehId: 'diselesaikanOlehId',
+    alasanPenolakan: 'alasanPenolakan',
+    ditolakOlehId: 'ditolakOlehId'
   };
 
   export type PengajuanEvaluasiOrderByRelevanceFieldEnum = (typeof PengajuanEvaluasiOrderByRelevanceFieldEnum)[keyof typeof PengajuanEvaluasiOrderByRelevanceFieldEnum]
+
+
+  export const PengingatWhatsAppOrderByRelevanceFieldEnum: {
+    pengingatWhatsAppId: 'pengingatWhatsAppId',
+    pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+    penggunaId: 'penggunaId',
+    nomorTujuan: 'nomorTujuan',
+    lastErrorKind: 'lastErrorKind',
+    lockToken: 'lockToken'
+  };
+
+  export type PengingatWhatsAppOrderByRelevanceFieldEnum = (typeof PengingatWhatsAppOrderByRelevanceFieldEnum)[keyof typeof PengingatWhatsAppOrderByRelevanceFieldEnum]
 
 
   export const NilaiEvaluasiOrderByRelevanceFieldEnum: {
@@ -33228,6 +34595,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'JenisPengingatWhatsApp'
+   */
+  export type EnumJenisPengingatWhatsAppFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisPengingatWhatsApp'>
+    
+
+
+  /**
    * Reference to a field of type 'HasilEvaluasi'
    */
   export type EnumHasilEvaluasiFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HasilEvaluasi'>
@@ -33310,10 +34684,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiListRelationFilter
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiListRelationFilter
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiListRelationFilter
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiListRelationFilter
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiListRelationFilter
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiListRelationFilter
     peraturanTerakhirDiedit?: PeraturanListRelationFilter
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
+    pengingatWhatsApp?: PengingatWhatsAppListRelationFilter
     riwayatOpd?: RiwayatOpdPenggunaListRelationFilter
     tandaTangan?: RiwayatTandaTanganListRelationFilter
   }
@@ -33346,10 +34722,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiOrderByRelationAggregateInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiOrderByRelationAggregateInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiOrderByRelationAggregateInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiOrderByRelationAggregateInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiOrderByRelationAggregateInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiOrderByRelationAggregateInput
     peraturanTerakhirDiedit?: PeraturanOrderByRelationAggregateInput
     opd?: OPDOrderByWithRelationInput
+    pengingatWhatsApp?: PengingatWhatsAppOrderByRelationAggregateInput
     riwayatOpd?: RiwayatOpdPenggunaOrderByRelationAggregateInput
     tandaTangan?: RiwayatTandaTanganOrderByRelationAggregateInput
     _relevance?: PenggunaOrderByRelevanceInput
@@ -33386,10 +34764,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiListRelationFilter
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiListRelationFilter
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiListRelationFilter
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiListRelationFilter
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiListRelationFilter
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiListRelationFilter
     peraturanTerakhirDiedit?: PeraturanListRelationFilter
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
+    pengingatWhatsApp?: PengingatWhatsAppListRelationFilter
     riwayatOpd?: RiwayatOpdPenggunaListRelationFilter
     tandaTangan?: RiwayatTandaTanganListRelationFilter
   }, "penggunaId" | "email" | "nip">
@@ -34666,16 +36046,21 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     diselesaikanOlehId?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
     tanggalDiselesaikan?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
+    alasanPenolakan?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
+    ditolakOlehId?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
+    tanggalDitolak?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     version?: IntFilter<"PengajuanEvaluasi"> | number
     createdAt?: DateTimeFilter<"PengajuanEvaluasi"> | Date | string
     updatedAt?: DateTimeFilter<"PengajuanEvaluasi"> | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiListRelationFilter
     nilaiEvaluasi?: NilaiEvaluasiListRelationFilter
     diselesaikanOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
+    ditolakOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     ditandatanganiOlehPjPenyusunUser?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     diverifikasiOlehUser?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     dokumenTte?: DokumenTteListRelationFilter
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
+    pengingatWhatsApp?: PengingatWhatsAppListRelationFilter
   }
 
   export type PengajuanEvaluasiOrderByWithRelationInput = {
@@ -34692,16 +36077,21 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: SortOrderInput | SortOrder
     diselesaikanOlehId?: SortOrderInput | SortOrder
     tanggalDiselesaikan?: SortOrderInput | SortOrder
+    alasanPenolakan?: SortOrderInput | SortOrder
+    ditolakOlehId?: SortOrderInput | SortOrder
+    tanggalDitolak?: SortOrderInput | SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     logNilaiEvaluasi?: LogNilaiEvaluasiOrderByRelationAggregateInput
     nilaiEvaluasi?: NilaiEvaluasiOrderByRelationAggregateInput
     diselesaikanOleh?: PenggunaOrderByWithRelationInput
+    ditolakOleh?: PenggunaOrderByWithRelationInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaOrderByWithRelationInput
     diverifikasiOlehUser?: PenggunaOrderByWithRelationInput
     dokumenTte?: DokumenTteOrderByRelationAggregateInput
     opd?: OPDOrderByWithRelationInput
+    pengingatWhatsApp?: PengingatWhatsAppOrderByRelationAggregateInput
     _relevance?: PengajuanEvaluasiOrderByRelevanceInput
   }
 
@@ -34722,16 +36112,21 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     diselesaikanOlehId?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
     tanggalDiselesaikan?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
+    alasanPenolakan?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
+    ditolakOlehId?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
+    tanggalDitolak?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     version?: IntFilter<"PengajuanEvaluasi"> | number
     createdAt?: DateTimeFilter<"PengajuanEvaluasi"> | Date | string
     updatedAt?: DateTimeFilter<"PengajuanEvaluasi"> | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiListRelationFilter
     nilaiEvaluasi?: NilaiEvaluasiListRelationFilter
     diselesaikanOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
+    ditolakOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     ditandatanganiOlehPjPenyusunUser?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     diverifikasiOlehUser?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     dokumenTte?: DokumenTteListRelationFilter
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
+    pengingatWhatsApp?: PengingatWhatsAppListRelationFilter
   }, "pengajuanEvaluasiId" | "nomorBA">
 
   export type PengajuanEvaluasiOrderByWithAggregationInput = {
@@ -34748,6 +36143,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: SortOrderInput | SortOrder
     diselesaikanOlehId?: SortOrderInput | SortOrder
     tanggalDiselesaikan?: SortOrderInput | SortOrder
+    alasanPenolakan?: SortOrderInput | SortOrder
+    ditolakOlehId?: SortOrderInput | SortOrder
+    tanggalDitolak?: SortOrderInput | SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -34775,9 +36173,114 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: DateTimeNullableWithAggregatesFilter<"PengajuanEvaluasi"> | Date | string | null
     diselesaikanOlehId?: StringNullableWithAggregatesFilter<"PengajuanEvaluasi"> | string | null
     tanggalDiselesaikan?: DateTimeNullableWithAggregatesFilter<"PengajuanEvaluasi"> | Date | string | null
+    alasanPenolakan?: StringNullableWithAggregatesFilter<"PengajuanEvaluasi"> | string | null
+    ditolakOlehId?: StringNullableWithAggregatesFilter<"PengajuanEvaluasi"> | string | null
+    tanggalDitolak?: DateTimeNullableWithAggregatesFilter<"PengajuanEvaluasi"> | Date | string | null
     version?: IntWithAggregatesFilter<"PengajuanEvaluasi"> | number
     createdAt?: DateTimeWithAggregatesFilter<"PengajuanEvaluasi"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PengajuanEvaluasi"> | Date | string
+  }
+
+  export type PengingatWhatsAppWhereInput = {
+    AND?: PengingatWhatsAppWhereInput | PengingatWhatsAppWhereInput[]
+    OR?: PengingatWhatsAppWhereInput[]
+    NOT?: PengingatWhatsAppWhereInput | PengingatWhatsAppWhereInput[]
+    pengingatWhatsAppId?: StringFilter<"PengingatWhatsApp"> | string
+    pengajuanEvaluasiId?: StringFilter<"PengingatWhatsApp"> | string
+    penggunaId?: StringFilter<"PengingatWhatsApp"> | string
+    jenis?: EnumJenisPengingatWhatsAppFilter<"PengingatWhatsApp"> | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFilter<"PengingatWhatsApp"> | string
+    nextSendAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    lastSentAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    consecutiveFailures?: IntFilter<"PengingatWhatsApp"> | number
+    lastErrorKind?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    lockedUntil?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    lockToken?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    createdAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    updatedAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
+    pengguna?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
+  }
+
+  export type PengingatWhatsAppOrderByWithRelationInput = {
+    pengingatWhatsAppId?: SortOrder
+    pengajuanEvaluasiId?: SortOrder
+    penggunaId?: SortOrder
+    jenis?: SortOrder
+    nomorTujuan?: SortOrder
+    nextSendAt?: SortOrder
+    lastSentAt?: SortOrderInput | SortOrder
+    consecutiveFailures?: SortOrder
+    lastErrorKind?: SortOrderInput | SortOrder
+    lockedUntil?: SortOrderInput | SortOrder
+    lockToken?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    pengajuanEvaluasi?: PengajuanEvaluasiOrderByWithRelationInput
+    pengguna?: PenggunaOrderByWithRelationInput
+    _relevance?: PengingatWhatsAppOrderByRelevanceInput
+  }
+
+  export type PengingatWhatsAppWhereUniqueInput = Prisma.AtLeast<{
+    pengingatWhatsAppId?: string
+    pengajuanEvaluasiId_penggunaId_jenis?: PengingatWhatsAppPengajuanEvaluasiIdPenggunaIdJenisCompoundUniqueInput
+    AND?: PengingatWhatsAppWhereInput | PengingatWhatsAppWhereInput[]
+    OR?: PengingatWhatsAppWhereInput[]
+    NOT?: PengingatWhatsAppWhereInput | PengingatWhatsAppWhereInput[]
+    pengajuanEvaluasiId?: StringFilter<"PengingatWhatsApp"> | string
+    penggunaId?: StringFilter<"PengingatWhatsApp"> | string
+    jenis?: EnumJenisPengingatWhatsAppFilter<"PengingatWhatsApp"> | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFilter<"PengingatWhatsApp"> | string
+    nextSendAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    lastSentAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    consecutiveFailures?: IntFilter<"PengingatWhatsApp"> | number
+    lastErrorKind?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    lockedUntil?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    lockToken?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    createdAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    updatedAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
+    pengguna?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
+  }, "pengingatWhatsAppId" | "pengajuanEvaluasiId_penggunaId_jenis">
+
+  export type PengingatWhatsAppOrderByWithAggregationInput = {
+    pengingatWhatsAppId?: SortOrder
+    pengajuanEvaluasiId?: SortOrder
+    penggunaId?: SortOrder
+    jenis?: SortOrder
+    nomorTujuan?: SortOrder
+    nextSendAt?: SortOrder
+    lastSentAt?: SortOrderInput | SortOrder
+    consecutiveFailures?: SortOrder
+    lastErrorKind?: SortOrderInput | SortOrder
+    lockedUntil?: SortOrderInput | SortOrder
+    lockToken?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PengingatWhatsAppCountOrderByAggregateInput
+    _avg?: PengingatWhatsAppAvgOrderByAggregateInput
+    _max?: PengingatWhatsAppMaxOrderByAggregateInput
+    _min?: PengingatWhatsAppMinOrderByAggregateInput
+    _sum?: PengingatWhatsAppSumOrderByAggregateInput
+  }
+
+  export type PengingatWhatsAppScalarWhereWithAggregatesInput = {
+    AND?: PengingatWhatsAppScalarWhereWithAggregatesInput | PengingatWhatsAppScalarWhereWithAggregatesInput[]
+    OR?: PengingatWhatsAppScalarWhereWithAggregatesInput[]
+    NOT?: PengingatWhatsAppScalarWhereWithAggregatesInput | PengingatWhatsAppScalarWhereWithAggregatesInput[]
+    pengingatWhatsAppId?: StringWithAggregatesFilter<"PengingatWhatsApp"> | string
+    pengajuanEvaluasiId?: StringWithAggregatesFilter<"PengingatWhatsApp"> | string
+    penggunaId?: StringWithAggregatesFilter<"PengingatWhatsApp"> | string
+    jenis?: EnumJenisPengingatWhatsAppWithAggregatesFilter<"PengingatWhatsApp"> | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringWithAggregatesFilter<"PengingatWhatsApp"> | string
+    nextSendAt?: DateTimeWithAggregatesFilter<"PengingatWhatsApp"> | Date | string
+    lastSentAt?: DateTimeNullableWithAggregatesFilter<"PengingatWhatsApp"> | Date | string | null
+    consecutiveFailures?: IntWithAggregatesFilter<"PengingatWhatsApp"> | number
+    lastErrorKind?: StringNullableWithAggregatesFilter<"PengingatWhatsApp"> | string | null
+    lockedUntil?: DateTimeNullableWithAggregatesFilter<"PengingatWhatsApp"> | Date | string | null
+    lockToken?: StringNullableWithAggregatesFilter<"PengingatWhatsApp"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PengingatWhatsApp"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PengingatWhatsApp"> | Date | string
   }
 
   export type NilaiEvaluasiWhereInput = {
@@ -35542,10 +37045,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -35578,9 +37083,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -35612,10 +37119,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -35648,9 +37157,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -36918,16 +38429,20 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateInput = {
@@ -36944,12 +38459,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUpdateInput = {
@@ -36962,16 +38481,20 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateInput = {
@@ -36988,12 +38511,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiCreateManyInput = {
@@ -37010,6 +38537,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -37025,6 +38555,8 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37044,7 +38576,120 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppCreateInput = {
+    pengingatWhatsAppId?: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutPengingatWhatsAppInput
+    pengguna: PenggunaCreateNestedOneWithoutPengingatWhatsAppInput
+  }
+
+  export type PengingatWhatsAppUncheckedCreateInput = {
+    pengingatWhatsAppId?: string
+    pengajuanEvaluasiId: string
+    penggunaId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PengingatWhatsAppUpdateInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
+    pengguna?: PenggunaUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppCreateManyInput = {
+    pengingatWhatsAppId?: string
+    pengajuanEvaluasiId: string
+    penggunaId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PengingatWhatsAppUpdateManyMutationInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateManyInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37908,6 +39553,12 @@ export namespace Prisma {
     isNot?: OPDWhereInput
   }
 
+  export type PengingatWhatsAppListRelationFilter = {
+    every?: PengingatWhatsAppWhereInput
+    some?: PengingatWhatsAppWhereInput
+    none?: PengingatWhatsAppWhereInput
+  }
+
   export type RiwayatOpdPenggunaListRelationFilter = {
     every?: RiwayatOpdPenggunaWhereInput
     some?: RiwayatOpdPenggunaWhereInput
@@ -37946,6 +39597,10 @@ export namespace Prisma {
   }
 
   export type PeraturanOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PengingatWhatsAppOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -39134,6 +40789,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: SortOrder
     diselesaikanOlehId?: SortOrder
     tanggalDiselesaikan?: SortOrder
+    alasanPenolakan?: SortOrder
+    ditolakOlehId?: SortOrder
+    tanggalDitolak?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -39158,6 +40816,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: SortOrder
     diselesaikanOlehId?: SortOrder
     tanggalDiselesaikan?: SortOrder
+    alasanPenolakan?: SortOrder
+    ditolakOlehId?: SortOrder
+    tanggalDitolak?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -39177,6 +40838,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: SortOrder
     diselesaikanOlehId?: SortOrder
     tanggalDiselesaikan?: SortOrder
+    alasanPenolakan?: SortOrder
+    ditolakOlehId?: SortOrder
+    tanggalDitolak?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -39223,6 +40887,96 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type EnumJenisPengingatWhatsAppFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisPengingatWhatsApp | EnumJenisPengingatWhatsAppFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisPengingatWhatsApp[]
+    notIn?: $Enums.JenisPengingatWhatsApp[]
+    not?: NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel> | $Enums.JenisPengingatWhatsApp
+  }
+
+  export type PengajuanEvaluasiScalarRelationFilter = {
+    is?: PengajuanEvaluasiWhereInput
+    isNot?: PengajuanEvaluasiWhereInput
+  }
+
+  export type PengingatWhatsAppOrderByRelevanceInput = {
+    fields: PengingatWhatsAppOrderByRelevanceFieldEnum | PengingatWhatsAppOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type PengingatWhatsAppPengajuanEvaluasiIdPenggunaIdJenisCompoundUniqueInput = {
+    pengajuanEvaluasiId: string
+    penggunaId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+  }
+
+  export type PengingatWhatsAppCountOrderByAggregateInput = {
+    pengingatWhatsAppId?: SortOrder
+    pengajuanEvaluasiId?: SortOrder
+    penggunaId?: SortOrder
+    jenis?: SortOrder
+    nomorTujuan?: SortOrder
+    nextSendAt?: SortOrder
+    lastSentAt?: SortOrder
+    consecutiveFailures?: SortOrder
+    lastErrorKind?: SortOrder
+    lockedUntil?: SortOrder
+    lockToken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PengingatWhatsAppAvgOrderByAggregateInput = {
+    consecutiveFailures?: SortOrder
+  }
+
+  export type PengingatWhatsAppMaxOrderByAggregateInput = {
+    pengingatWhatsAppId?: SortOrder
+    pengajuanEvaluasiId?: SortOrder
+    penggunaId?: SortOrder
+    jenis?: SortOrder
+    nomorTujuan?: SortOrder
+    nextSendAt?: SortOrder
+    lastSentAt?: SortOrder
+    consecutiveFailures?: SortOrder
+    lastErrorKind?: SortOrder
+    lockedUntil?: SortOrder
+    lockToken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PengingatWhatsAppMinOrderByAggregateInput = {
+    pengingatWhatsAppId?: SortOrder
+    pengajuanEvaluasiId?: SortOrder
+    penggunaId?: SortOrder
+    jenis?: SortOrder
+    nomorTujuan?: SortOrder
+    nextSendAt?: SortOrder
+    lastSentAt?: SortOrder
+    consecutiveFailures?: SortOrder
+    lastErrorKind?: SortOrder
+    lockedUntil?: SortOrder
+    lockToken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PengingatWhatsAppSumOrderByAggregateInput = {
+    consecutiveFailures?: SortOrder
+  }
+
+  export type EnumJenisPengingatWhatsAppWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisPengingatWhatsApp | EnumJenisPengingatWhatsAppFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisPengingatWhatsApp[]
+    notIn?: $Enums.JenisPengingatWhatsApp[]
+    not?: NestedEnumJenisPengingatWhatsAppWithAggregatesFilter<$PrismaModel> | $Enums.JenisPengingatWhatsApp
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel>
+    _max?: NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel>
+  }
+
   export type EnumHasilEvaluasiNullableFilter<$PrismaModel = never> = {
     equals?: $Enums.HasilEvaluasi | EnumHasilEvaluasiFieldRefInput<$PrismaModel> | null
     in?: $Enums.HasilEvaluasi[] | null
@@ -39235,11 +40989,6 @@ export namespace Prisma {
     in?: $Enums.StatusTindakLanjut[] | null
     notIn?: $Enums.StatusTindakLanjut[] | null
     not?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel> | $Enums.StatusTindakLanjut | null
-  }
-
-  export type PengajuanEvaluasiScalarRelationFilter = {
-    is?: PengajuanEvaluasiWhereInput
-    isNot?: PengajuanEvaluasiWhereInput
   }
 
   export type NilaiEvaluasiOrderByRelevanceInput = {
@@ -39943,6 +41692,13 @@ export namespace Prisma {
     connect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
   }
 
+  export type PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput = {
+    create?: XOR<PengajuanEvaluasiCreateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput> | PengajuanEvaluasiCreateWithoutDitolakOlehInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput[]
+    connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput | PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput[]
+    createMany?: PengajuanEvaluasiCreateManyDitolakOlehInputEnvelope
+    connect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+  }
+
   export type PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput = {
     create?: XOR<PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput, PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput> | PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput[]
     connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput | PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput[]
@@ -39968,6 +41724,13 @@ export namespace Prisma {
     create?: XOR<OPDCreateWithoutPenggunaInput, OPDUncheckedCreateWithoutPenggunaInput>
     connectOrCreate?: OPDCreateOrConnectWithoutPenggunaInput
     connect?: OPDWhereUniqueInput
+  }
+
+  export type PengingatWhatsAppCreateNestedManyWithoutPenggunaInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPenggunaInput, PengingatWhatsAppUncheckedCreateWithoutPenggunaInput> | PengingatWhatsAppCreateWithoutPenggunaInput[] | PengingatWhatsAppUncheckedCreateWithoutPenggunaInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPenggunaInput | PengingatWhatsAppCreateOrConnectWithoutPenggunaInput[]
+    createMany?: PengingatWhatsAppCreateManyPenggunaInputEnvelope
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
   }
 
   export type RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput = {
@@ -40033,6 +41796,13 @@ export namespace Prisma {
     connect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
   }
 
+  export type PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput = {
+    create?: XOR<PengajuanEvaluasiCreateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput> | PengajuanEvaluasiCreateWithoutDitolakOlehInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput[]
+    connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput | PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput[]
+    createMany?: PengajuanEvaluasiCreateManyDitolakOlehInputEnvelope
+    connect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+  }
+
   export type PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput = {
     create?: XOR<PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput, PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput> | PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput[]
     connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput | PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput[]
@@ -40052,6 +41822,13 @@ export namespace Prisma {
     connectOrCreate?: PeraturanCreateOrConnectWithoutLastEditedByInput | PeraturanCreateOrConnectWithoutLastEditedByInput[]
     createMany?: PeraturanCreateManyLastEditedByInputEnvelope
     connect?: PeraturanWhereUniqueInput | PeraturanWhereUniqueInput[]
+  }
+
+  export type PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPenggunaInput, PengingatWhatsAppUncheckedCreateWithoutPenggunaInput> | PengingatWhatsAppCreateWithoutPenggunaInput[] | PengingatWhatsAppUncheckedCreateWithoutPenggunaInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPenggunaInput | PengingatWhatsAppCreateOrConnectWithoutPenggunaInput[]
+    createMany?: PengingatWhatsAppCreateManyPenggunaInputEnvelope
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
   }
 
   export type RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput = {
@@ -40194,6 +41971,20 @@ export namespace Prisma {
     deleteMany?: PengajuanEvaluasiScalarWhereInput | PengajuanEvaluasiScalarWhereInput[]
   }
 
+  export type PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput = {
+    create?: XOR<PengajuanEvaluasiCreateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput> | PengajuanEvaluasiCreateWithoutDitolakOlehInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput[]
+    connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput | PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput[]
+    upsert?: PengajuanEvaluasiUpsertWithWhereUniqueWithoutDitolakOlehInput | PengajuanEvaluasiUpsertWithWhereUniqueWithoutDitolakOlehInput[]
+    createMany?: PengajuanEvaluasiCreateManyDitolakOlehInputEnvelope
+    set?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    disconnect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    delete?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    connect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    update?: PengajuanEvaluasiUpdateWithWhereUniqueWithoutDitolakOlehInput | PengajuanEvaluasiUpdateWithWhereUniqueWithoutDitolakOlehInput[]
+    updateMany?: PengajuanEvaluasiUpdateManyWithWhereWithoutDitolakOlehInput | PengajuanEvaluasiUpdateManyWithWhereWithoutDitolakOlehInput[]
+    deleteMany?: PengajuanEvaluasiScalarWhereInput | PengajuanEvaluasiScalarWhereInput[]
+  }
+
   export type PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput = {
     create?: XOR<PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput, PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput> | PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput[]
     connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput | PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput[]
@@ -40242,6 +42033,20 @@ export namespace Prisma {
     upsert?: OPDUpsertWithoutPenggunaInput
     connect?: OPDWhereUniqueInput
     update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutPenggunaInput, OPDUpdateWithoutPenggunaInput>, OPDUncheckedUpdateWithoutPenggunaInput>
+  }
+
+  export type PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPenggunaInput, PengingatWhatsAppUncheckedCreateWithoutPenggunaInput> | PengingatWhatsAppCreateWithoutPenggunaInput[] | PengingatWhatsAppUncheckedCreateWithoutPenggunaInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPenggunaInput | PengingatWhatsAppCreateOrConnectWithoutPenggunaInput[]
+    upsert?: PengingatWhatsAppUpsertWithWhereUniqueWithoutPenggunaInput | PengingatWhatsAppUpsertWithWhereUniqueWithoutPenggunaInput[]
+    createMany?: PengingatWhatsAppCreateManyPenggunaInputEnvelope
+    set?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    disconnect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    delete?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    update?: PengingatWhatsAppUpdateWithWhereUniqueWithoutPenggunaInput | PengingatWhatsAppUpdateWithWhereUniqueWithoutPenggunaInput[]
+    updateMany?: PengingatWhatsAppUpdateManyWithWhereWithoutPenggunaInput | PengingatWhatsAppUpdateManyWithWhereWithoutPenggunaInput[]
+    deleteMany?: PengingatWhatsAppScalarWhereInput | PengingatWhatsAppScalarWhereInput[]
   }
 
   export type RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput = {
@@ -40370,6 +42175,20 @@ export namespace Prisma {
     deleteMany?: PengajuanEvaluasiScalarWhereInput | PengajuanEvaluasiScalarWhereInput[]
   }
 
+  export type PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput = {
+    create?: XOR<PengajuanEvaluasiCreateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput> | PengajuanEvaluasiCreateWithoutDitolakOlehInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput[]
+    connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput | PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput[]
+    upsert?: PengajuanEvaluasiUpsertWithWhereUniqueWithoutDitolakOlehInput | PengajuanEvaluasiUpsertWithWhereUniqueWithoutDitolakOlehInput[]
+    createMany?: PengajuanEvaluasiCreateManyDitolakOlehInputEnvelope
+    set?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    disconnect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    delete?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    connect?: PengajuanEvaluasiWhereUniqueInput | PengajuanEvaluasiWhereUniqueInput[]
+    update?: PengajuanEvaluasiUpdateWithWhereUniqueWithoutDitolakOlehInput | PengajuanEvaluasiUpdateWithWhereUniqueWithoutDitolakOlehInput[]
+    updateMany?: PengajuanEvaluasiUpdateManyWithWhereWithoutDitolakOlehInput | PengajuanEvaluasiUpdateManyWithWhereWithoutDitolakOlehInput[]
+    deleteMany?: PengajuanEvaluasiScalarWhereInput | PengajuanEvaluasiScalarWhereInput[]
+  }
+
   export type PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput = {
     create?: XOR<PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput, PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput> | PengajuanEvaluasiCreateWithoutDitandatanganiOlehPjPenyusunUserInput[] | PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput[]
     connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput | PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput[]
@@ -40410,6 +42229,20 @@ export namespace Prisma {
     update?: PeraturanUpdateWithWhereUniqueWithoutLastEditedByInput | PeraturanUpdateWithWhereUniqueWithoutLastEditedByInput[]
     updateMany?: PeraturanUpdateManyWithWhereWithoutLastEditedByInput | PeraturanUpdateManyWithWhereWithoutLastEditedByInput[]
     deleteMany?: PeraturanScalarWhereInput | PeraturanScalarWhereInput[]
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPenggunaInput, PengingatWhatsAppUncheckedCreateWithoutPenggunaInput> | PengingatWhatsAppCreateWithoutPenggunaInput[] | PengingatWhatsAppUncheckedCreateWithoutPenggunaInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPenggunaInput | PengingatWhatsAppCreateOrConnectWithoutPenggunaInput[]
+    upsert?: PengingatWhatsAppUpsertWithWhereUniqueWithoutPenggunaInput | PengingatWhatsAppUpsertWithWhereUniqueWithoutPenggunaInput[]
+    createMany?: PengingatWhatsAppCreateManyPenggunaInputEnvelope
+    set?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    disconnect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    delete?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    update?: PengingatWhatsAppUpdateWithWhereUniqueWithoutPenggunaInput | PengingatWhatsAppUpdateWithWhereUniqueWithoutPenggunaInput[]
+    updateMany?: PengingatWhatsAppUpdateManyWithWhereWithoutPenggunaInput | PengingatWhatsAppUpdateManyWithWhereWithoutPenggunaInput[]
+    deleteMany?: PengingatWhatsAppScalarWhereInput | PengingatWhatsAppScalarWhereInput[]
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput = {
@@ -42144,6 +43977,12 @@ export namespace Prisma {
     connect?: PenggunaWhereUniqueInput
   }
 
+  export type PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput = {
+    create?: XOR<PenggunaCreateWithoutPengajuanEvaluasiDitolakInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitolakInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutPengajuanEvaluasiDitolakInput
+    connect?: PenggunaWhereUniqueInput
+  }
+
   export type PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput = {
     create?: XOR<PenggunaCreateWithoutPengajuanEvaluasiDitandatanganiInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitandatanganiInput>
     connectOrCreate?: PenggunaCreateOrConnectWithoutPengajuanEvaluasiDitandatanganiInput
@@ -42169,6 +44008,13 @@ export namespace Prisma {
     connect?: OPDWhereUniqueInput
   }
 
+  export type PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput> | PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput[] | PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput | PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput[]
+    createMany?: PengingatWhatsAppCreateManyPengajuanEvaluasiInputEnvelope
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+  }
+
   export type LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput = {
     create?: XOR<LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput, LogNilaiEvaluasiUncheckedCreateWithoutPengajuanEvaluasiInput> | LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput[] | LogNilaiEvaluasiUncheckedCreateWithoutPengajuanEvaluasiInput[]
     connectOrCreate?: LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput | LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput[]
@@ -42188,6 +44034,13 @@ export namespace Prisma {
     connectOrCreate?: DokumenTteCreateOrConnectWithoutPengajuanEvaluasiInput | DokumenTteCreateOrConnectWithoutPengajuanEvaluasiInput[]
     createMany?: DokumenTteCreateManyPengajuanEvaluasiInputEnvelope
     connect?: DokumenTteWhereUniqueInput | DokumenTteWhereUniqueInput[]
+  }
+
+  export type PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput> | PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput[] | PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput | PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput[]
+    createMany?: PengingatWhatsAppCreateManyPengajuanEvaluasiInputEnvelope
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
   }
 
   export type EnumJenisPengajuanEvaluasiFieldUpdateOperationsInput = {
@@ -42244,6 +44097,16 @@ export namespace Prisma {
     update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutPengajuanEvaluasiDiselesaikanInput, PenggunaUpdateWithoutPengajuanEvaluasiDiselesaikanInput>, PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDiselesaikanInput>
   }
 
+  export type PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput = {
+    create?: XOR<PenggunaCreateWithoutPengajuanEvaluasiDitolakInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitolakInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutPengajuanEvaluasiDitolakInput
+    upsert?: PenggunaUpsertWithoutPengajuanEvaluasiDitolakInput
+    disconnect?: PenggunaWhereInput | boolean
+    delete?: PenggunaWhereInput | boolean
+    connect?: PenggunaWhereUniqueInput
+    update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutPengajuanEvaluasiDitolakInput, PenggunaUpdateWithoutPengajuanEvaluasiDitolakInput>, PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDitolakInput>
+  }
+
   export type PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput = {
     create?: XOR<PenggunaCreateWithoutPengajuanEvaluasiDitandatanganiInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitandatanganiInput>
     connectOrCreate?: PenggunaCreateOrConnectWithoutPengajuanEvaluasiDitandatanganiInput
@@ -42286,6 +44149,20 @@ export namespace Prisma {
     update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutPengajuanEvaluasiInput, OPDUpdateWithoutPengajuanEvaluasiInput>, OPDUncheckedUpdateWithoutPengajuanEvaluasiInput>
   }
 
+  export type PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput> | PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput[] | PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput | PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput[]
+    upsert?: PengingatWhatsAppUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput | PengingatWhatsAppUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput[]
+    createMany?: PengingatWhatsAppCreateManyPengajuanEvaluasiInputEnvelope
+    set?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    disconnect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    delete?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    update?: PengingatWhatsAppUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput | PengingatWhatsAppUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput[]
+    updateMany?: PengingatWhatsAppUpdateManyWithWhereWithoutPengajuanEvaluasiInput | PengingatWhatsAppUpdateManyWithWhereWithoutPengajuanEvaluasiInput[]
+    deleteMany?: PengingatWhatsAppScalarWhereInput | PengingatWhatsAppScalarWhereInput[]
+  }
+
   export type LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput = {
     create?: XOR<LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput, LogNilaiEvaluasiUncheckedCreateWithoutPengajuanEvaluasiInput> | LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput[] | LogNilaiEvaluasiUncheckedCreateWithoutPengajuanEvaluasiInput[]
     connectOrCreate?: LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput | LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput[]
@@ -42326,6 +44203,52 @@ export namespace Prisma {
     update?: DokumenTteUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput | DokumenTteUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput[]
     updateMany?: DokumenTteUpdateManyWithWhereWithoutPengajuanEvaluasiInput | DokumenTteUpdateManyWithWhereWithoutPengajuanEvaluasiInput[]
     deleteMany?: DokumenTteScalarWhereInput | DokumenTteScalarWhereInput[]
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput = {
+    create?: XOR<PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput> | PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput[] | PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput[]
+    connectOrCreate?: PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput | PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput[]
+    upsert?: PengingatWhatsAppUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput | PengingatWhatsAppUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput[]
+    createMany?: PengingatWhatsAppCreateManyPengajuanEvaluasiInputEnvelope
+    set?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    disconnect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    delete?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    connect?: PengingatWhatsAppWhereUniqueInput | PengingatWhatsAppWhereUniqueInput[]
+    update?: PengingatWhatsAppUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput | PengingatWhatsAppUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput[]
+    updateMany?: PengingatWhatsAppUpdateManyWithWhereWithoutPengajuanEvaluasiInput | PengingatWhatsAppUpdateManyWithWhereWithoutPengajuanEvaluasiInput[]
+    deleteMany?: PengingatWhatsAppScalarWhereInput | PengingatWhatsAppScalarWhereInput[]
+  }
+
+  export type PengajuanEvaluasiCreateNestedOneWithoutPengingatWhatsAppInput = {
+    create?: XOR<PengajuanEvaluasiCreateWithoutPengingatWhatsAppInput, PengajuanEvaluasiUncheckedCreateWithoutPengingatWhatsAppInput>
+    connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutPengingatWhatsAppInput
+    connect?: PengajuanEvaluasiWhereUniqueInput
+  }
+
+  export type PenggunaCreateNestedOneWithoutPengingatWhatsAppInput = {
+    create?: XOR<PenggunaCreateWithoutPengingatWhatsAppInput, PenggunaUncheckedCreateWithoutPengingatWhatsAppInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutPengingatWhatsAppInput
+    connect?: PenggunaWhereUniqueInput
+  }
+
+  export type EnumJenisPengingatWhatsAppFieldUpdateOperationsInput = {
+    set?: $Enums.JenisPengingatWhatsApp
+  }
+
+  export type PengajuanEvaluasiUpdateOneRequiredWithoutPengingatWhatsAppNestedInput = {
+    create?: XOR<PengajuanEvaluasiCreateWithoutPengingatWhatsAppInput, PengajuanEvaluasiUncheckedCreateWithoutPengingatWhatsAppInput>
+    connectOrCreate?: PengajuanEvaluasiCreateOrConnectWithoutPengingatWhatsAppInput
+    upsert?: PengajuanEvaluasiUpsertWithoutPengingatWhatsAppInput
+    connect?: PengajuanEvaluasiWhereUniqueInput
+    update?: XOR<XOR<PengajuanEvaluasiUpdateToOneWithWhereWithoutPengingatWhatsAppInput, PengajuanEvaluasiUpdateWithoutPengingatWhatsAppInput>, PengajuanEvaluasiUncheckedUpdateWithoutPengingatWhatsAppInput>
+  }
+
+  export type PenggunaUpdateOneRequiredWithoutPengingatWhatsAppNestedInput = {
+    create?: XOR<PenggunaCreateWithoutPengingatWhatsAppInput, PenggunaUncheckedCreateWithoutPengingatWhatsAppInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutPengingatWhatsAppInput
+    upsert?: PenggunaUpsertWithoutPengingatWhatsAppInput
+    connect?: PenggunaWhereUniqueInput
+    update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutPengingatWhatsAppInput, PenggunaUpdateWithoutPengingatWhatsAppInput>, PenggunaUncheckedUpdateWithoutPengingatWhatsAppInput>
   }
 
   export type PenggunaCreateNestedOneWithoutNilaiEvaluasiDiisiInput = {
@@ -43140,6 +45063,23 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisPengingatWhatsApp | EnumJenisPengingatWhatsAppFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisPengingatWhatsApp[]
+    notIn?: $Enums.JenisPengingatWhatsApp[]
+    not?: NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel> | $Enums.JenisPengingatWhatsApp
+  }
+
+  export type NestedEnumJenisPengingatWhatsAppWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisPengingatWhatsApp | EnumJenisPengingatWhatsAppFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisPengingatWhatsApp[]
+    notIn?: $Enums.JenisPengingatWhatsApp[]
+    not?: NestedEnumJenisPengingatWhatsAppWithAggregatesFilter<$PrismaModel> | $Enums.JenisPengingatWhatsApp
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel>
+    _max?: NestedEnumJenisPengingatWhatsAppFilter<$PrismaModel>
+  }
+
   export type NestedEnumHasilEvaluasiNullableFilter<$PrismaModel = never> = {
     equals?: $Enums.HasilEvaluasi | EnumHasilEvaluasiFieldRefInput<$PrismaModel> | null
     in?: $Enums.HasilEvaluasi[] | null
@@ -43554,15 +45494,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutDiselesaikanOlehInput = {
@@ -43578,12 +45522,16 @@ export namespace Prisma {
     ditandatanganiOlehPjPenyusunUserId?: string | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutDiselesaikanOlehInput = {
@@ -43593,6 +45541,66 @@ export namespace Prisma {
 
   export type PengajuanEvaluasiCreateManyDiselesaikanOlehInputEnvelope = {
     data: PengajuanEvaluasiCreateManyDiselesaikanOlehInput | PengajuanEvaluasiCreateManyDiselesaikanOlehInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PengajuanEvaluasiCreateWithoutDitolakOlehInput = {
+    pengajuanEvaluasiId?: string
+    jenis: $Enums.JenisPengajuanEvaluasi
+    status?: $Enums.StatusPengajuanEvaluasi
+    nomorBA?: string | null
+    tanggalPermintaan?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    tanggalTTDBaPjPenyusun?: Date | string | null
+    tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
+    nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
+    diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
+    diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
+    dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
+    opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
+  }
+
+  export type PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput = {
+    pengajuanEvaluasiId?: string
+    opdId: string
+    jenis: $Enums.JenisPengajuanEvaluasi
+    status?: $Enums.StatusPengajuanEvaluasi
+    nomorBA?: string | null
+    tanggalPermintaan?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    diverifikasiOlehUserId?: string | null
+    ditandatanganiOlehPjPenyusunUserId?: string | null
+    tanggalTTDBaPjPenyusun?: Date | string | null
+    diselesaikanOlehId?: string | null
+    tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+  }
+
+  export type PengajuanEvaluasiCreateOrConnectWithoutDitolakOlehInput = {
+    where: PengajuanEvaluasiWhereUniqueInput
+    create: XOR<PengajuanEvaluasiCreateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput>
+  }
+
+  export type PengajuanEvaluasiCreateManyDitolakOlehInputEnvelope = {
+    data: PengajuanEvaluasiCreateManyDitolakOlehInput | PengajuanEvaluasiCreateManyDitolakOlehInput[]
     skipDuplicates?: boolean
   }
 
@@ -43606,15 +45614,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutDitandatanganiOlehPjPenyusunUserInput = {
@@ -43630,12 +45642,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutDitandatanganiOlehPjPenyusunUserInput = {
@@ -43658,15 +45674,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutDiverifikasiOlehUserInput = {
@@ -43682,12 +45702,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutDiverifikasiOlehUserInput = {
@@ -43763,6 +45787,46 @@ export namespace Prisma {
   export type OPDCreateOrConnectWithoutPenggunaInput = {
     where: OPDWhereUniqueInput
     create: XOR<OPDCreateWithoutPenggunaInput, OPDUncheckedCreateWithoutPenggunaInput>
+  }
+
+  export type PengingatWhatsAppCreateWithoutPenggunaInput = {
+    pengingatWhatsAppId?: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutPengingatWhatsAppInput
+  }
+
+  export type PengingatWhatsAppUncheckedCreateWithoutPenggunaInput = {
+    pengingatWhatsAppId?: string
+    pengajuanEvaluasiId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PengingatWhatsAppCreateOrConnectWithoutPenggunaInput = {
+    where: PengingatWhatsAppWhereUniqueInput
+    create: XOR<PengingatWhatsAppCreateWithoutPenggunaInput, PengingatWhatsAppUncheckedCreateWithoutPenggunaInput>
+  }
+
+  export type PengingatWhatsAppCreateManyPenggunaInputEnvelope = {
+    data: PengingatWhatsAppCreateManyPenggunaInput | PengingatWhatsAppCreateManyPenggunaInput[]
+    skipDuplicates?: boolean
   }
 
   export type RiwayatOpdPenggunaCreateWithoutPenggunaInput = {
@@ -44027,9 +46091,28 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     diselesaikanOlehId?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
     tanggalDiselesaikan?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
+    alasanPenolakan?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
+    ditolakOlehId?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
+    tanggalDitolak?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     version?: IntFilter<"PengajuanEvaluasi"> | number
     createdAt?: DateTimeFilter<"PengajuanEvaluasi"> | Date | string
     updatedAt?: DateTimeFilter<"PengajuanEvaluasi"> | Date | string
+  }
+
+  export type PengajuanEvaluasiUpsertWithWhereUniqueWithoutDitolakOlehInput = {
+    where: PengajuanEvaluasiWhereUniqueInput
+    update: XOR<PengajuanEvaluasiUpdateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedUpdateWithoutDitolakOlehInput>
+    create: XOR<PengajuanEvaluasiCreateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedCreateWithoutDitolakOlehInput>
+  }
+
+  export type PengajuanEvaluasiUpdateWithWhereUniqueWithoutDitolakOlehInput = {
+    where: PengajuanEvaluasiWhereUniqueInput
+    data: XOR<PengajuanEvaluasiUpdateWithoutDitolakOlehInput, PengajuanEvaluasiUncheckedUpdateWithoutDitolakOlehInput>
+  }
+
+  export type PengajuanEvaluasiUpdateManyWithWhereWithoutDitolakOlehInput = {
+    where: PengajuanEvaluasiScalarWhereInput
+    data: XOR<PengajuanEvaluasiUpdateManyMutationInput, PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehInput>
   }
 
   export type PengajuanEvaluasiUpsertWithWhereUniqueWithoutDitandatanganiOlehPjPenyusunUserInput = {
@@ -44129,6 +46212,41 @@ export namespace Prisma {
     riwayatOpdPengguna?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutOpdNestedInput
     opdPeraturan?: OPDPeraturanUncheckedUpdateManyWithoutOpdNestedInput
     sop?: SOPUncheckedUpdateManyWithoutOpdNestedInput
+  }
+
+  export type PengingatWhatsAppUpsertWithWhereUniqueWithoutPenggunaInput = {
+    where: PengingatWhatsAppWhereUniqueInput
+    update: XOR<PengingatWhatsAppUpdateWithoutPenggunaInput, PengingatWhatsAppUncheckedUpdateWithoutPenggunaInput>
+    create: XOR<PengingatWhatsAppCreateWithoutPenggunaInput, PengingatWhatsAppUncheckedCreateWithoutPenggunaInput>
+  }
+
+  export type PengingatWhatsAppUpdateWithWhereUniqueWithoutPenggunaInput = {
+    where: PengingatWhatsAppWhereUniqueInput
+    data: XOR<PengingatWhatsAppUpdateWithoutPenggunaInput, PengingatWhatsAppUncheckedUpdateWithoutPenggunaInput>
+  }
+
+  export type PengingatWhatsAppUpdateManyWithWhereWithoutPenggunaInput = {
+    where: PengingatWhatsAppScalarWhereInput
+    data: XOR<PengingatWhatsAppUpdateManyMutationInput, PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaInput>
+  }
+
+  export type PengingatWhatsAppScalarWhereInput = {
+    AND?: PengingatWhatsAppScalarWhereInput | PengingatWhatsAppScalarWhereInput[]
+    OR?: PengingatWhatsAppScalarWhereInput[]
+    NOT?: PengingatWhatsAppScalarWhereInput | PengingatWhatsAppScalarWhereInput[]
+    pengingatWhatsAppId?: StringFilter<"PengingatWhatsApp"> | string
+    pengajuanEvaluasiId?: StringFilter<"PengingatWhatsApp"> | string
+    penggunaId?: StringFilter<"PengingatWhatsApp"> | string
+    jenis?: EnumJenisPengingatWhatsAppFilter<"PengingatWhatsApp"> | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFilter<"PengingatWhatsApp"> | string
+    nextSendAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    lastSentAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    consecutiveFailures?: IntFilter<"PengingatWhatsApp"> | number
+    lastErrorKind?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    lockedUntil?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    lockToken?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    createdAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
+    updatedAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
   }
 
   export type RiwayatOpdPenggunaUpsertWithWhereUniqueWithoutPenggunaInput = {
@@ -44231,15 +46349,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutOpdInput = {
@@ -44255,12 +46377,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutOpdInput = {
@@ -44300,9 +46426,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -44334,9 +46462,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -44635,10 +46765,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
 
@@ -44670,9 +46802,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -44756,10 +46890,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
 
@@ -44791,9 +46927,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -44868,9 +47006,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -44903,8 +47043,10 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -44994,9 +47136,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -45029,8 +47173,10 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -45504,10 +47650,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -45539,9 +47687,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -45598,10 +47748,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -45633,9 +47785,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -46147,10 +48301,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -46182,9 +48338,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -46253,10 +48411,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -46288,9 +48448,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -48734,10 +50896,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -48769,9 +50933,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -48907,10 +51073,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -48942,9 +51110,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -49137,10 +51307,12 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -49172,9 +51344,11 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -49182,6 +51356,83 @@ export namespace Prisma {
   export type PenggunaCreateOrConnectWithoutPengajuanEvaluasiDiselesaikanInput = {
     where: PenggunaWhereUniqueInput
     create: XOR<PenggunaCreateWithoutPengajuanEvaluasiDiselesaikanInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDiselesaikanInput>
+  }
+
+  export type PenggunaCreateWithoutPengajuanEvaluasiDitolakInput = {
+    penggunaId?: string
+    email: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    sesiTokenVersion?: number
+    refreshTokenHash?: string | null
+    refreshTokenExpiresAt?: Date | string | null
+    passwordChangedAt?: Date | string | null
+    ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
+    logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
+    peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
+    opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
+    riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+  }
+
+  export type PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitolakInput = {
+    penggunaId?: string
+    email: string
+    opdId: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    sesiTokenVersion?: number
+    refreshTokenHash?: string | null
+    refreshTokenExpiresAt?: Date | string | null
+    passwordChangedAt?: Date | string | null
+    ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
+    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
+    peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type PenggunaCreateOrConnectWithoutPengajuanEvaluasiDitolakInput = {
+    where: PenggunaWhereUniqueInput
+    create: XOR<PenggunaCreateWithoutPengajuanEvaluasiDitolakInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitolakInput>
   }
 
   export type PenggunaCreateWithoutPengajuanEvaluasiDitandatanganiInput = {
@@ -49211,9 +51462,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -49246,8 +51499,10 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -49284,9 +51539,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -49319,8 +51576,10 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -49411,6 +51670,46 @@ export namespace Prisma {
     create: XOR<OPDCreateWithoutPengajuanEvaluasiInput, OPDUncheckedCreateWithoutPengajuanEvaluasiInput>
   }
 
+  export type PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput = {
+    pengingatWhatsAppId?: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    pengguna: PenggunaCreateNestedOneWithoutPengingatWhatsAppInput
+  }
+
+  export type PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput = {
+    pengingatWhatsAppId?: string
+    penggunaId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PengingatWhatsAppCreateOrConnectWithoutPengajuanEvaluasiInput = {
+    where: PengingatWhatsAppWhereUniqueInput
+    create: XOR<PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput>
+  }
+
+  export type PengingatWhatsAppCreateManyPengajuanEvaluasiInputEnvelope = {
+    data: PengingatWhatsAppCreateManyPengajuanEvaluasiInput | PengingatWhatsAppCreateManyPengajuanEvaluasiInput[]
+    skipDuplicates?: boolean
+  }
+
   export type LogNilaiEvaluasiUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput = {
     where: LogNilaiEvaluasiWhereUniqueInput
     update: XOR<LogNilaiEvaluasiUpdateWithoutPengajuanEvaluasiInput, LogNilaiEvaluasiUncheckedUpdateWithoutPengajuanEvaluasiInput>
@@ -49480,10 +51779,12 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -49515,9 +51816,94 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type PenggunaUpsertWithoutPengajuanEvaluasiDitolakInput = {
+    update: XOR<PenggunaUpdateWithoutPengajuanEvaluasiDitolakInput, PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDitolakInput>
+    create: XOR<PenggunaCreateWithoutPengajuanEvaluasiDitolakInput, PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitolakInput>
+    where?: PenggunaWhereInput
+  }
+
+  export type PenggunaUpdateToOneWithWhereWithoutPengajuanEvaluasiDitolakInput = {
+    where?: PenggunaWhereInput
+    data: XOR<PenggunaUpdateWithoutPengajuanEvaluasiDitolakInput, PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDitolakInput>
+  }
+
+  export type PenggunaUpdateWithoutPengajuanEvaluasiDitolakInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    sesiTokenVersion?: IntFieldUpdateOperationsInput | number
+    refreshTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
+    logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
+    opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+  }
+
+  export type PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDitolakInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    sesiTokenVersion?: IntFieldUpdateOperationsInput | number
+    refreshTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
+    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -49560,9 +51946,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -49595,8 +51983,10 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -49639,9 +52029,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -49674,8 +52066,10 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -49733,6 +52127,298 @@ export namespace Prisma {
     sop?: SOPUncheckedUpdateManyWithoutOpdNestedInput
   }
 
+  export type PengingatWhatsAppUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput = {
+    where: PengingatWhatsAppWhereUniqueInput
+    update: XOR<PengingatWhatsAppUpdateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedUpdateWithoutPengajuanEvaluasiInput>
+    create: XOR<PengingatWhatsAppCreateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedCreateWithoutPengajuanEvaluasiInput>
+  }
+
+  export type PengingatWhatsAppUpdateWithWhereUniqueWithoutPengajuanEvaluasiInput = {
+    where: PengingatWhatsAppWhereUniqueInput
+    data: XOR<PengingatWhatsAppUpdateWithoutPengajuanEvaluasiInput, PengingatWhatsAppUncheckedUpdateWithoutPengajuanEvaluasiInput>
+  }
+
+  export type PengingatWhatsAppUpdateManyWithWhereWithoutPengajuanEvaluasiInput = {
+    where: PengingatWhatsAppScalarWhereInput
+    data: XOR<PengingatWhatsAppUpdateManyMutationInput, PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiInput>
+  }
+
+  export type PengajuanEvaluasiCreateWithoutPengingatWhatsAppInput = {
+    pengajuanEvaluasiId?: string
+    jenis: $Enums.JenisPengajuanEvaluasi
+    status?: $Enums.StatusPengajuanEvaluasi
+    nomorBA?: string | null
+    tanggalPermintaan?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    tanggalTTDBaPjPenyusun?: Date | string | null
+    tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
+    nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
+    diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
+    ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
+    diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
+    dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
+    opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+  }
+
+  export type PengajuanEvaluasiUncheckedCreateWithoutPengingatWhatsAppInput = {
+    pengajuanEvaluasiId?: string
+    opdId: string
+    jenis: $Enums.JenisPengajuanEvaluasi
+    status?: $Enums.StatusPengajuanEvaluasi
+    nomorBA?: string | null
+    tanggalPermintaan?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    diverifikasiOlehUserId?: string | null
+    ditandatanganiOlehPjPenyusunUserId?: string | null
+    tanggalTTDBaPjPenyusun?: Date | string | null
+    diselesaikanOlehId?: string | null
+    tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+  }
+
+  export type PengajuanEvaluasiCreateOrConnectWithoutPengingatWhatsAppInput = {
+    where: PengajuanEvaluasiWhereUniqueInput
+    create: XOR<PengajuanEvaluasiCreateWithoutPengingatWhatsAppInput, PengajuanEvaluasiUncheckedCreateWithoutPengingatWhatsAppInput>
+  }
+
+  export type PenggunaCreateWithoutPengingatWhatsAppInput = {
+    penggunaId?: string
+    email: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    sesiTokenVersion?: number
+    refreshTokenHash?: string | null
+    refreshTokenExpiresAt?: Date | string | null
+    passwordChangedAt?: Date | string | null
+    ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
+    logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
+    peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
+    opd: OPDCreateNestedOneWithoutPenggunaInput
+    riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+  }
+
+  export type PenggunaUncheckedCreateWithoutPengingatWhatsAppInput = {
+    penggunaId?: string
+    email: string
+    opdId: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    sesiTokenVersion?: number
+    refreshTokenHash?: string | null
+    refreshTokenExpiresAt?: Date | string | null
+    passwordChangedAt?: Date | string | null
+    ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
+    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
+    peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type PenggunaCreateOrConnectWithoutPengingatWhatsAppInput = {
+    where: PenggunaWhereUniqueInput
+    create: XOR<PenggunaCreateWithoutPengingatWhatsAppInput, PenggunaUncheckedCreateWithoutPengingatWhatsAppInput>
+  }
+
+  export type PengajuanEvaluasiUpsertWithoutPengingatWhatsAppInput = {
+    update: XOR<PengajuanEvaluasiUpdateWithoutPengingatWhatsAppInput, PengajuanEvaluasiUncheckedUpdateWithoutPengingatWhatsAppInput>
+    create: XOR<PengajuanEvaluasiCreateWithoutPengingatWhatsAppInput, PengajuanEvaluasiUncheckedCreateWithoutPengingatWhatsAppInput>
+    where?: PengajuanEvaluasiWhereInput
+  }
+
+  export type PengajuanEvaluasiUpdateToOneWithWhereWithoutPengingatWhatsAppInput = {
+    where?: PengajuanEvaluasiWhereInput
+    data: XOR<PengajuanEvaluasiUpdateWithoutPengingatWhatsAppInput, PengajuanEvaluasiUncheckedUpdateWithoutPengingatWhatsAppInput>
+  }
+
+  export type PengajuanEvaluasiUpdateWithoutPengingatWhatsAppInput = {
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.JenisPengajuanEvaluasi
+    status?: EnumStatusPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.StatusPengajuanEvaluasi
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalPermintaan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
+    nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
+    diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
+    ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
+    diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
+    dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
+    opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+  }
+
+  export type PengajuanEvaluasiUncheckedUpdateWithoutPengingatWhatsAppInput = {
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.JenisPengajuanEvaluasi
+    status?: EnumStatusPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.StatusPengajuanEvaluasi
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalPermintaan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    diverifikasiOlehUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditandatanganiOlehPjPenyusunUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+  }
+
+  export type PenggunaUpsertWithoutPengingatWhatsAppInput = {
+    update: XOR<PenggunaUpdateWithoutPengingatWhatsAppInput, PenggunaUncheckedUpdateWithoutPengingatWhatsAppInput>
+    create: XOR<PenggunaCreateWithoutPengingatWhatsAppInput, PenggunaUncheckedCreateWithoutPengingatWhatsAppInput>
+    where?: PenggunaWhereInput
+  }
+
+  export type PenggunaUpdateToOneWithWhereWithoutPengingatWhatsAppInput = {
+    where?: PenggunaWhereInput
+    data: XOR<PenggunaUpdateWithoutPengingatWhatsAppInput, PenggunaUncheckedUpdateWithoutPengingatWhatsAppInput>
+  }
+
+  export type PenggunaUpdateWithoutPengingatWhatsAppInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    sesiTokenVersion?: IntFieldUpdateOperationsInput | number
+    refreshTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
+    logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
+    opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+  }
+
+  export type PenggunaUncheckedUpdateWithoutPengingatWhatsAppInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    sesiTokenVersion?: IntFieldUpdateOperationsInput | number
+    refreshTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
+    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
+    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type PenggunaCreateWithoutNilaiEvaluasiDiisiInput = {
     penggunaId?: string
     email: string
@@ -49759,10 +52445,12 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -49794,9 +52482,11 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -49832,10 +52522,12 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -49867,9 +52559,11 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -49889,15 +52583,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutNilaiEvaluasiInput = {
@@ -49914,11 +52612,15 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutNilaiEvaluasiInput = {
@@ -50065,10 +52767,12 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -50100,9 +52804,11 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -50144,10 +52850,12 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -50179,9 +52887,11 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -50207,15 +52917,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutNilaiEvaluasiInput = {
@@ -50232,11 +52946,15 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type DetailSOPUpsertWithoutNilaiEvaluasiInput = {
@@ -50352,10 +53070,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
   }
@@ -50387,9 +53107,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
   }
@@ -50409,15 +53131,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutPengajuanEvaluasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutLogNilaiEvaluasiInput = {
@@ -50434,11 +53160,15 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutLogNilaiEvaluasiInput = {
@@ -50516,10 +53246,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -50551,9 +53283,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -50579,15 +53313,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutLogNilaiEvaluasiInput = {
@@ -50604,11 +53342,15 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type NilaiEvaluasiUpsertWithoutLogNilaiEvaluasiInput = {
@@ -50725,15 +53467,19 @@ export namespace Prisma {
     nilaiOPD?: number | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput
     diselesaikanOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiselesaikanInput
+    ditolakOleh?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitolakInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDitandatanganiInput
     diverifikasiOlehUser?: PenggunaCreateNestedOneWithoutPengajuanEvaluasiDiverifikasiInput
     opd: OPDCreateNestedOneWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiUncheckedCreateWithoutDokumenTteInput = {
@@ -50750,11 +53496,15 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPengajuanEvaluasiInput
   }
 
   export type PengajuanEvaluasiCreateOrConnectWithoutDokumenTteInput = {
@@ -50894,15 +53644,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutDokumenTteInput = {
@@ -50919,11 +53673,15 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type RiwayatTandaTanganUpsertWithWhereUniqueWithoutDokumenTteInput = {
@@ -51014,10 +53772,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
     opd: OPDCreateNestedOneWithoutPenggunaInput
+    pengingatWhatsApp?: PengingatWhatsAppCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
   }
 
@@ -51049,9 +53809,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitolakOlehInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedCreateNestedManyWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
   }
 
@@ -51149,10 +53911,12 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
   }
 
@@ -51184,9 +53948,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
   }
 
@@ -51958,6 +54724,30 @@ export namespace Prisma {
     ditandatanganiOlehPjPenyusunUserId?: string | null
     tanggalTTDBaPjPenyusun?: Date | string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
+    version?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PengajuanEvaluasiCreateManyDitolakOlehInput = {
+    pengajuanEvaluasiId?: string
+    opdId: string
+    jenis: $Enums.JenisPengajuanEvaluasi
+    status?: $Enums.StatusPengajuanEvaluasi
+    nomorBA?: string | null
+    tanggalPermintaan?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    diverifikasiOlehUserId?: string | null
+    ditandatanganiOlehPjPenyusunUserId?: string | null
+    tanggalTTDBaPjPenyusun?: Date | string | null
+    diselesaikanOlehId?: string | null
+    tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51976,6 +54766,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51994,6 +54787,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52005,6 +54801,21 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PengingatWhatsAppCreateManyPenggunaInput = {
+    pengingatWhatsAppId?: string
+    pengajuanEvaluasiId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52349,15 +55160,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutDiselesaikanOlehInput = {
@@ -52373,12 +55188,16 @@ export namespace Prisma {
     ditandatanganiOlehPjPenyusunUserId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehInput = {
@@ -52394,6 +55213,80 @@ export namespace Prisma {
     ditandatanganiOlehPjPenyusunUserId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengajuanEvaluasiUpdateWithoutDitolakOlehInput = {
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.JenisPengajuanEvaluasi
+    status?: EnumStatusPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.StatusPengajuanEvaluasi
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalPermintaan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
+    nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
+    diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
+    diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
+    dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
+    opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
+  }
+
+  export type PengajuanEvaluasiUncheckedUpdateWithoutDitolakOlehInput = {
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.JenisPengajuanEvaluasi
+    status?: EnumStatusPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.StatusPengajuanEvaluasi
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalPermintaan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    diverifikasiOlehUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditandatanganiOlehPjPenyusunUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+  }
+
+  export type PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehInput = {
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.JenisPengajuanEvaluasi
+    status?: EnumStatusPengajuanEvaluasiFieldUpdateOperationsInput | $Enums.StatusPengajuanEvaluasi
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalPermintaan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    diverifikasiOlehUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditandatanganiOlehPjPenyusunUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52409,15 +55302,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutDitandatanganiOlehPjPenyusunUserInput = {
@@ -52433,12 +55330,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserInput = {
@@ -52454,6 +55355,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52469,15 +55373,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
     opd?: OPDUpdateOneRequiredWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutDiverifikasiOlehUserInput = {
@@ -52493,12 +55401,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserInput = {
@@ -52514,6 +55426,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52549,6 +55464,51 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppUpdateWithoutPenggunaInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateWithoutPenggunaInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -52639,6 +55599,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: Date | string | null
     diselesaikanOlehId?: string | null
     tanggalDiselesaikan?: Date | string | null
+    alasanPenolakan?: string | null
+    ditolakOlehId?: string | null
+    tanggalDitolak?: Date | string | null
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52721,15 +55684,19 @@ export namespace Prisma {
     nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput
     diselesaikanOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiselesaikanNestedInput
+    ditolakOleh?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitolakNestedInput
     ditandatanganiOlehPjPenyusunUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDitandatanganiNestedInput
     diverifikasiOlehUser?: PenggunaUpdateOneWithoutPengajuanEvaluasiDiverifikasiNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateWithoutOpdInput = {
@@ -52745,12 +55712,16 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiNestedInput
   }
 
   export type PengajuanEvaluasiUncheckedUpdateManyWithoutOpdInput = {
@@ -52766,6 +55737,9 @@ export namespace Prisma {
     tanggalTTDBaPjPenyusun?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     diselesaikanOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalDiselesaikan?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    alasanPenolakan?: NullableStringFieldUpdateOperationsInput | string | null
+    ditolakOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalDitolak?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52798,9 +55772,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
   }
@@ -52832,9 +55808,11 @@ export namespace Prisma {
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
     pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitolak?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitolakOlehNestedInput
     pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
+    pengingatWhatsApp?: PengingatWhatsAppUncheckedUpdateManyWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -54085,6 +57063,21 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type PengingatWhatsAppCreateManyPengajuanEvaluasiInput = {
+    pengingatWhatsAppId?: string
+    penggunaId: string
+    jenis: $Enums.JenisPengingatWhatsApp
+    nomorTujuan: string
+    nextSendAt: Date | string
+    lastSentAt?: Date | string | null
+    consecutiveFailures?: number
+    lastErrorKind?: string | null
+    lockedUntil?: Date | string | null
+    lockToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LogNilaiEvaluasiUpdateWithoutPengajuanEvaluasiInput = {
     hasilSebelum?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
@@ -54223,6 +57216,51 @@ export namespace Prisma {
     pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppUpdateWithoutPengajuanEvaluasiInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pengguna?: PenggunaUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateWithoutPengajuanEvaluasiInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PengingatWhatsAppUncheckedUpdateManyWithoutPengajuanEvaluasiInput = {
+    pengingatWhatsAppId?: StringFieldUpdateOperationsInput | string
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisPengingatWhatsAppFieldUpdateOperationsInput | $Enums.JenisPengingatWhatsApp
+    nomorTujuan?: StringFieldUpdateOperationsInput | string
+    nextSendAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consecutiveFailures?: IntFieldUpdateOperationsInput | number
+    lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

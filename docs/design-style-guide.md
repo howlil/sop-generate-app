@@ -16,15 +16,20 @@
 
 #### Sidebar
 ```css
-width: 56px (3.5rem / 14 in Tailwind)
+width-collapsed: 56px (navigation rail)
+width-expanded: 240px
+header-height: 64px
 background: white
 border-right: 1px solid #E5E7EB (gray-200)
 ```
 
 **Characteristics:**
-- Ultra-thin vertical navigation
-- Icon-only with tooltips on hover
-- Fixed position
+- Dua mode resmi: navigation rail 56px dan expanded sidebar 240px
+- Mode rail menggunakan ikon saja dengan tooltip pada hover/focus
+- Mode expanded menampilkan ikon dan label tanpa mengubah urutan menu
+- State aktif menggunakan latar primary-subtle dan indikator sisi kiri
+- Kontrol buka/tutup ditempatkan pada footer sidebar, bukan mengambang di area konten
+- Preferensi mode disimpan dan dipakai konsisten pada seluruh dashboard
 - Logo: 36px × 36px (w-9 h-9)
 - Icon buttons: 40px × 40px (w-10 h-10)
 - Icon size: 20px (w-5 h-5)

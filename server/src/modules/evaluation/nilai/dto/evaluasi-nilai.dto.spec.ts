@@ -2,6 +2,7 @@ import { validate } from 'class-validator';
 import { HasilEvaluasi } from '../../../../generated/prisma';
 import { IsiNilaiEvaluasiDto } from './isi-nilai-evaluasi.dto';
 import { SelesaiEvaluasiDto } from './selesai-evaluasi.dto';
+import { TolakPengajuanEvaluasiDto } from './tolak-pengajuan-evaluasi.dto';
 
 describe('Pengujian DTO Evaluasi Nilai', () => {
   it('seharusnya menerima payload isi nilai valid', async () => {
@@ -21,6 +22,27 @@ describe('Pengujian DTO Evaluasi Nilai', () => {
 
     const errors = await validate(dto);
     expect(errors.map((error) => error.property)).toContain('hasil');
+  });
+
+  it('seharusnya menolak DITOLAK pada endpoint nilai per SOP', async () => {
+    const dto = new IsiNilaiEvaluasiDto();
+    Object.assign(dto, { hasil: HasilEvaluasi.DITOLAK, version: 0 });
+
+    const errors = await validate(dto);
+    expect(errors.map((error) => error.property)).toContain('hasil');
+  });
+
+  it('seharusnya memvalidasi alasan dan version penolakan pengajuan', async () => {
+    const valid = new TolakPengajuanEvaluasiDto();
+    Object.assign(valid, { alasan: 'Tidak sesuai ruang lingkup', version: 0 });
+    await expect(validate(valid)).resolves.toHaveLength(0);
+
+    const invalid = new TolakPengajuanEvaluasiDto();
+    Object.assign(invalid, { alasan: '', version: -1 });
+    const errors = await validate(invalid);
+    expect(errors.map((error) => error.property)).toEqual(
+      expect.arrayContaining(['alasan', 'version']),
+    );
   });
 
   it('seharusnya menolak version negatif dan pecahan', async () => {

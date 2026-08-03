@@ -3,6 +3,7 @@ import { FileSignature } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 
 function TableLoadingRows({
   rows = 5,
@@ -18,11 +19,14 @@ function TableLoadingRows({
   )
   return (
     <>
-      {rowKeys.map((rowKey) => (
+      {rowKeys.map((rowKey, rowIndex) => (
         <Table.BodyRow key={rowKey}>
-          {columnKeys.map((columnKey) => (
+          {columnKeys.map((columnKey, columnIndex) => (
             <Table.Td key={`${rowKey}-${columnKey}`}>
-              <div className="h-3 animate-pulse rounded bg-gray-200" />
+              {rowIndex === 0 && columnIndex === 0 ? (
+                <span className="sr-only" role="status">Memuat data pengajuan…</span>
+              ) : null}
+              <Skeleton className="h-3 w-full" />
             </Table.Td>
           ))}
         </Table.BodyRow>
@@ -32,7 +36,7 @@ function TableLoadingRows({
 }
 
 export function PengajuanBaNumberCell({ value }: { value?: string | null }) {
-  return <span className="font-mono text-[11px] text-gray-700">{value?.trim() || '-'}</span>
+  return <span className="font-mono text-secondary-foreground">{value?.trim() || '-'}</span>
 }
 
 export function PengajuanDateCell({
@@ -42,7 +46,7 @@ export function PengajuanDateCell({
   value?: string | null
   formatter: (value: string | null | undefined) => string
 }) {
-  return <span className="whitespace-nowrap text-gray-700">{formatter(value)}</span>
+  return <span className="whitespace-nowrap text-secondary-foreground">{formatter(value)}</span>
 }
 
 export interface PengajuanTableColumn<T> {
@@ -112,10 +116,10 @@ export function PengajuanTabbedTable<T>({
                           {column.header}
                         </Table.Th>
                       ))}
-                      <Table.Th align="center">Aksi</Table.Th>
+                      <Table.ActionTh>Aksi</Table.ActionTh>
                     </Table.HeadRow>
                   </thead>
-                  <tbody>
+                  <tbody aria-busy={isLoading || undefined}>
                     {isLoading ? (
                       <TableLoadingRows
                         rows={loadingRows}
@@ -137,7 +141,7 @@ export function PengajuanTabbedTable<T>({
                               {column.render(row)}
                             </Table.Td>
                           ))}
-                          <Table.Td align="center">{renderAction(row)}</Table.Td>
+                          <Table.ActionTd>{renderAction(row)}</Table.ActionTd>
                         </Table.BodyRow>
                       ))
                     )}

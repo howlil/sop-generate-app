@@ -1,6 +1,6 @@
 # Rencana System Testing End-to-End Berbasis Playwright
 
-Dokumen ini berisi rancangan skenario pengujian fungsionalitas sistem menggunakan metode Black-Box dengan pendekatan otomatisasi End-to-End (E2E) berbasis Playwright untuk Sistem Informasi Pengelolaan SOP Biro Organisasi Sumbar.
+Dokumen ini berisi rancangan skenario pengujian fungsionalitas sistem menggunakan metode Black-Box dengan pendekatan otomatisasi End-to-End (E2E) berbasis Playwright untuk SOPFlow.
 
 ## Posisi Pengujian
 

@@ -1,4 +1,5 @@
 import { cn } from '@/utils/cn'
+import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -8,26 +9,45 @@ interface ToastProps {
   className?: string
   /** Role for aria-live region. Use 'status' for polite, 'alert' for assertive */
   role?: 'status' | 'alert'
+  onDismiss?: () => void
 }
 
 const typeClasses: Record<ToastType, string> = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
+  success: 'border-green-300 bg-success-subtle text-success-foreground',
+  error: 'border-red-300 bg-danger-subtle text-danger-foreground',
+  info: 'border-blue-300 bg-info-subtle text-info-foreground',
 }
 
-export function Toast({ message, type = 'success', className, role = 'status' }: ToastProps) {
+const typeIcons: Record<ToastType, typeof CheckCircle2> = {
+  success: CheckCircle2,
+  error: AlertCircle,
+  info: Info,
+}
+
+export function Toast({ message, type = 'success', className, role = 'status', onDismiss }: ToastProps) {
+  const Icon = typeIcons[type]
   return (
     <div
       role={role}
       aria-live={role === 'alert' ? 'assertive' : 'polite'}
       className={cn(
-        'rounded-md border px-4 py-2 text-sm flex items-start gap-2 max-w-sm w-full',
+        'flex w-full max-w-sm items-start gap-3 rounded-surface border px-4 py-3 text-sm leading-5 shadow-raised',
         typeClasses[type],
         className
       )}
     >
+      <Icon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
       <span className="flex-1 break-words whitespace-pre-wrap">{message}</span>
+      {onDismiss ? (
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="-my-2 -mr-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+          aria-label="Tutup notifikasi"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
+      ) : null}
     </div>
   )
 }

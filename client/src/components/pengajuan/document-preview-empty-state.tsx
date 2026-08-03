@@ -12,7 +12,7 @@ export function DocumentPreviewEmptyState({
   return (
     <div
       className={cn(
-        'flex h-full min-h-[240px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-sm text-gray-500',
+        'flex h-full min-h-[240px] items-center justify-center rounded-lg border border-dashed border-border bg-surface text-sm text-muted-foreground',
         className,
       )}
     >

@@ -56,13 +56,13 @@ export function FormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(SIZE_MAP[size], 'max-h-[90vh] overflow-y-auto scrollbar-hide', className)}>
         <DialogHeader>
-          <DialogTitle className="text-sm">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           {description != null && (
-            <DialogDescription className="text-xs">{description}</DialogDescription>
+            <DialogDescription>{description}</DialogDescription>
           )}
         </DialogHeader>
 
-        <div className={cn('space-y-3', contentClassName)}>{children}</div>
+        <div className={cn('space-y-4', contentClassName)}>{children}</div>
 
         <DialogFooterActions
           cancelLabel={cancelLabel}

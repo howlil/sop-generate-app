@@ -731,10 +731,11 @@ export class TteRepository {
     userOpdId: string;
     peran: PeranPengguna;
     signedAt: Date;
+    /** Objek yang sama dengan tanggal yang sudah dicetak pada PDF resmi. */
+    tanggalEfektif: Date;
     artifacts: FinalizeSopPengesahanArtifactInput[];
   }) {
     return this.prisma.$transaction(async (tx) => {
-      const tanggalEfektif = toWibDateOnly(params.signedAt);
       const pengajuan = await tx.pengajuanEvaluasi.findUnique({
         where: { pengajuanEvaluasiId: params.pengajuanEvaluasiId },
         include: {
@@ -825,7 +826,7 @@ export class TteRepository {
           data: {
             status: StatusSOP.BERLAKU,
             terakhirDieditOlehId: params.userId,
-            tanggalEfektif,
+            tanggalEfektif: params.tanggalEfektif,
           },
         });
         await tx.$executeRaw`

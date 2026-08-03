@@ -1,6 +1,6 @@
 # Playwright End-to-End Test Suite
 
-Suite ini mengotomatisasi skenario Black-Box E2E untuk aplikasi web Sistem Informasi Pengelolaan SOP.
+Suite ini mengotomatisasi skenario Black-Box E2E untuk aplikasi web SOPFlow.
 
 ## Menjalankan
 
@@ -73,6 +73,7 @@ E2E_PENYUSUN_PASSWORD
 - `master-data.spec.ts`: dialog master data OPD, evaluator, penyusun, pelaksana, dan peraturan.
 - `public-pages.spec.ts`: arsip publik, validasi PDF, dan validasi pengesahan.
 - `sop-authoring.spec.ts`: pembuatan draft SOP, validasi dialog, dan dialog pengajuan evaluasi.
+- `sop-version-history.spec.ts`: pembuatan versi dari riwayat, versi dicabut, revisi aktif, RBAC, dan request serentak.
 - `profile-tte.spec.ts`: profil akun, kata sandi, dan visibilitas TTE sesuai role.
 - `evaluasi-workflow.spec.ts`: pengajuan evaluasi, penilaian, revisi, kirim ulang, selesai evaluasi, dan konsistensi lintas peran.
 - `tte-pengesahan.spec.ts`: setup TTE, urutan tanda tangan BA, pengesahan SOP, pencabutan, dan penggantian versi.

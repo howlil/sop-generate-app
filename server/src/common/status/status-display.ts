@@ -21,6 +21,7 @@ const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
   [StatusSOP.DIAJUKAN_EVALUASI]: 'Diajukan evaluasi',
   [StatusSOP.SEDANG_DIEVALUASI]: 'Dalam penilaian',
   [StatusSOP.REVISI_DARI_EVALUATOR]: 'Perlu revisi',
+  [StatusSOP.DITOLAK_EVALUATOR]: 'Ditolak evaluator',
   [StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR]: 'Menunggu TTD PJ Evaluator',
   [StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI]: 'Menunggu pengesahan Kepala OPD',
   [StatusSOP.BERLAKU]: 'Berlaku',
@@ -30,6 +31,7 @@ const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
 
 const PENGAJUAN_STATUS_LABELS: Record<StatusPengajuanEvaluasi, string> = {
   [StatusPengajuanEvaluasi.SEDANG_DIEVALUASI]: 'Sedang dinilai tim',
+  [StatusPengajuanEvaluasi.DITOLAK]: 'Ditolak evaluator',
   [StatusPengajuanEvaluasi.SELESAI_DIEVALUASI]: 'Menunggu tanda tangan BA',
   [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR]: 'BA ditandatangani PJ Evaluator',
   [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN]: 'Menunggu pengesahan Kepala OPD',
@@ -39,6 +41,7 @@ const PENGAJUAN_STATUS_LABELS: Record<StatusPengajuanEvaluasi, string> = {
 const HASIL_EVALUASI_LABELS: Record<HasilEvaluasi, string> = {
   [HasilEvaluasi.SESUAI]: 'Sesuai',
   [HasilEvaluasi.PERLU_PERBAIKAN]: 'Perlu perbaikan',
+  [HasilEvaluasi.DITOLAK]: 'Ditolak',
 };
 
 const TAMPILAN_ALUR_LABELS: Record<TampilanAlurEvaluasi, string> = {

@@ -22,7 +22,7 @@ function ManajemenSOPPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[40vh] items-center justify-center text-sm text-gray-600">
+        <div className="flex min-h-[40vh] items-center justify-center text-sm text-secondary-foreground">
           Memuat daftar SOP…
         </div>
       }

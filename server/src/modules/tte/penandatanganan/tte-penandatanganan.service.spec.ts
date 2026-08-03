@@ -11,6 +11,7 @@ import type { JwtAccessPayload } from '../../../common/types/jwt-access-payload.
 import type { TteRepository } from '../shared/repository/tte.repository';
 import { TtePenandatangananService } from './tte-penandatanganan.service';
 import { TtePublicUrlResolver } from '../shared/utils/tte-public-url.resolver';
+import { toWibDateOnly } from '../../../common/date/wib-date.util';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
@@ -340,7 +341,7 @@ describe('Pengujian TtePenandatangananService', () => {
     });
     const pdfService = {
       buildUnsignedOfficialPdf: jest.fn().mockReturnValue(Buffer.from('%PDF-1.7\n')),
-      stampSignatureQrCode: jest.fn().mockResolvedValue(Buffer.from('%PDF-1.7 stamped\n')),
+      stampPengesahanMetadata: jest.fn().mockResolvedValue(Buffer.from('%PDF-1.7 stamped\n')),
     };
     const storageService = {
       buildRelativePath: jest.fn().mockReturnValue('opd-1/sop-1/v1-ds-1.pdf'),
@@ -488,10 +489,15 @@ describe('Pengujian TtePenandatangananService', () => {
       expect(actual.totalSopDitandatangani).toBe(5);
       expect(actual.pengajuanEvaluasiId).toBe('pid-1');
       expect(actual.ditandatanganiPada).toBeDefined();
-      expect(pdfService.stampSignatureQrCode).toHaveBeenCalledWith({
+      const finalizeParams = repo.finalizeSopPengesahanWithArtifacts.mock.calls[0]?.[0];
+      expect(finalizeParams).toBeDefined();
+      if (finalizeParams === undefined) throw new Error('Finalisasi pengesahan tidak dipanggil.');
+      expect(finalizeParams.tanggalEfektif).toEqual(toWibDateOnly(finalizeParams.signedAt));
+      expect(pdfService.stampPengesahanMetadata).toHaveBeenCalledWith({
         detailSopId: 'ds-1',
         pdfBuffer: Buffer.from('%PDF-1.7\n'),
         qrPayload: 'https://verify.test/validasi/pengesahan/doc-1/user-kep',
+        tanggalEfektif: finalizeParams.tanggalEfektif,
       });
       expect(pdfSigningService.signOfficialSopPdfWithUserCertificate).toHaveBeenCalledWith(
         expect.objectContaining({

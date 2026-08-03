@@ -38,7 +38,7 @@ export function DocumentPreviewTabs<TValue extends string = string>({
     >
       <div
         data-print-hide
-        className={cn('border-b border-gray-200 px-2 py-2', headerClassName)}
+        className={cn('border-b border-border px-2 py-2', headerClassName)}
       >
         <TabsList
           className={cn('h-8 gap-2 bg-transparent p-0', listClassName)}

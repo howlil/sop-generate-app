@@ -21,3 +21,20 @@ export function useTandaiTindakLanjutSelesai(detailSopId: string | undefined) {
     errorMessagePrefix: 'Gagal menandai tindak lanjut',
   })
 }
+
+export function useTolakPengajuanEvaluasi() {
+  return useMutationWithToast({
+    mutationFn: ({
+      pengajuanEvaluasiId,
+      alasan,
+      version,
+    }: {
+      pengajuanEvaluasiId: string
+      alasan: string
+      version: number
+    }) => evaluasiApi.tolak(pengajuanEvaluasiId, { alasan, version }),
+    invalidateKeys: SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
+    successMessage: 'Pengajuan evaluasi berhasil ditolak',
+    errorMessagePrefix: 'Gagal menolak pengajuan evaluasi',
+  })
+}

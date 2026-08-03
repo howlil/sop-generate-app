@@ -7,6 +7,7 @@ export type StatusSOP =
   | "DIAJUKAN_EVALUASI"
   | "SEDANG_DIEVALUASI"
   | "REVISI_DARI_EVALUATOR"
+  | "DITOLAK_EVALUATOR"
   | "MENUNGGU_TTD_PJ_EVALUATOR"
   | "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI"
   | "BERLAKU"
@@ -61,6 +62,7 @@ export interface SopRiwayatVersiRow {
   revisiDariVersi: number | null;
   updatedAt: string;
   canHapusDraft: boolean;
+  canBuatVersiBaru: boolean;
 }
 
 /** Header SOP + meta lama (POST/PATCH detail, mock); daftar penyusun memakai `SopDaftarRow`. */

@@ -12,7 +12,7 @@ import {
   UserRound,
   XCircle,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { tteApi, usePdfSigningStatus } from "@/api/tte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,8 +57,8 @@ function SignatureResultCard({ signature }: { signature: PdfSignatureVerificatio
   const tteMatched = signature.valid && signature.tteMatch.matched;
 
   return (
-    <Card className="border-slate-200 shadow-sm">
-      <CardHeader className="border-b border-slate-100 pb-3">
+    <Card className="border-border shadow-surface">
+      <CardHeader className="border-b border-border pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-3">
             <div
@@ -75,12 +75,12 @@ function SignatureResultCard({ signature }: { signature: PdfSignatureVerificatio
               )}
             </div>
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-foreground">
                 {tteMatched
                   ? "TTE ini sudah cocok dengan signature PDF"
                   : "TTE belum cocok dengan signature PDF"}
               </h3>
-              <p className="mt-1 text-sm leading-5 text-slate-600">
+              <p className="mt-1 text-sm leading-5 text-secondary-foreground">
                 {tteMatched
                   ? "Signature PDF valid dan sesuai dengan riwayat TTE yang tersimpan di aplikasi."
                   : signature.tteMatch.reason || signature.reason}
@@ -100,7 +100,7 @@ function SignatureResultCard({ signature }: { signature: PdfSignatureVerificatio
       <CardContent className="space-y-4 pt-4">
         {!signature.valid ? (
           <InfoCard variant="warning" title="Alasan tidak valid" icon={<AlertCircle />}>
-            <p className="text-slate-800">{signature.reason}</p>
+            <p className="text-foreground">{signature.reason}</p>
           </InfoCard>
         ) : null}
 
@@ -149,7 +149,7 @@ function ResultNotice({ result }: { result: VerifyPdfResponse }) {
       }
       className="text-sm"
     >
-      <p className="text-slate-800">
+      <p className="text-foreground">
         {result.hasSignatures
           ? `Ditemukan ${result.signatures.length} signature PDF.`
           : "PDF belum memuat signature digital yang bisa diverifikasi."}
@@ -164,8 +164,15 @@ export function ValidasiPdfPage() {
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [result, setResult] = useState<VerifyPdfResponse | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
-  useDocumentTitle("Verifikasi tanda tangan PDF - Sistem Informasi SOP");
+  useDocumentTitle("Verifikasi tanda tangan PDF");
+
+  useEffect(() => {
+    if (result || verifyError) {
+      feedbackRef.current?.focus();
+    }
+  }, [result, verifyError]);
 
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -195,20 +202,12 @@ export function ValidasiPdfPage() {
       const response = await tteApi.verifyPdf(pdfBase64);
       setResult(response);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        setVerifyError(
-          "Endpoint verifikasi PDF tidak ditemukan. Pastikan server Nest sudah di-restart dan client dev mem-proxy ke port yang benar (cek log [vite] Proxy API).",
-        );
-        return;
-      }
-      if (error instanceof ApiError && error.status === 503) {
-        setVerifyError(
-          `${error.message} Setelah memperbaiki server/.env, restart server Nest lalu unduh ulang PDF (PDF lama mungkin belum ditandatangani dengan sertifikat yang sama).`,
-        );
-        return;
-      }
+      const serviceUnavailable =
+        error instanceof ApiError && (error.status === 404 || error.status === 503);
       setVerifyError(
-        error instanceof ApiError ? error.message : "Gagal memverifikasi PDF. Coba lagi.",
+        serviceUnavailable
+          ? "Layanan verifikasi PDF sedang tidak tersedia. Silakan coba beberapa saat lagi atau hubungi pengelola sistem."
+          : "PDF belum dapat diverifikasi. Pastikan berkas dapat dibuka, lalu coba lagi.",
       );
     } finally {
       setVerifyLoading(false);
@@ -219,22 +218,26 @@ export function ValidasiPdfPage() {
     <div className="min-h-screen bg-[var(--color-bg-body)] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="flex items-start gap-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+          <div className="rounded-lg border border-border bg-surface p-2 shadow-surface">
             <Shield className="h-8 w-8 text-blue-600" aria-hidden />
           </div>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
               Verifikasi tanda tangan PDF
             </h1>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
+            <p className="mt-1 text-sm leading-6 text-secondary-foreground">
               Unggah PDF untuk memastikan TTE aplikasi sudah cocok dengan signature PDF.
             </p>
           </div>
         </div>
 
         {statusQuery.isLoading ? (
-          <Card className="border-slate-200 shadow-sm">
-            <CardContent className="flex items-center justify-center gap-2 py-10 text-slate-600">
+          <Card className="border-border shadow-surface">
+            <CardContent
+              className="flex items-center justify-center gap-2 py-10 text-secondary-foreground"
+              role="status"
+              aria-live="polite"
+            >
               <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
               <span>Memuat status penandatanganan PDF...</span>
             </CardContent>
@@ -253,33 +256,33 @@ export function ValidasiPdfPage() {
             className="text-sm"
           >
             {statusQuery.data.enabled ? (
-              <p className="text-slate-800">
+              <p className="text-foreground">
                 PDF yang sudah disahkan dapat diverifikasi di halaman ini.
               </p>
             ) : (
-              <p className="text-slate-800">
-                {statusQuery.data.configError ??
-                  "Aktifkan konfigurasi PDF signing di server agar dokumen dapat memuat signature PDF."}
+              <p className="text-foreground">
+                Layanan penandatanganan PDF sedang tidak tersedia. Silakan coba
+                beberapa saat lagi atau hubungi pengelola sistem.
               </p>
             )}
           </InfoCard>
         ) : null}
 
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="border-b border-slate-100 pb-3">
-            <h2 className="text-base font-semibold text-slate-900">Unggah berkas PDF</h2>
+        <Card className="border-border shadow-surface">
+          <CardHeader className="border-b border-border pb-3">
+            <h2 className="text-base font-semibold text-foreground">Unggah berkas PDF</h2>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50/80 px-4 py-8 text-center transition hover:border-blue-300 hover:bg-blue-50/50">
+            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-surface border border-dashed border-border-strong bg-surface-subtle/80 px-4 py-8 text-center transition hover:border-primary hover:bg-primary-subtle/50 focus-within:border-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
               {selectedFile ? (
                 <FileCheck2 className="h-8 w-8 text-blue-600" aria-hidden />
               ) : (
-                <FileUp className="h-8 w-8 text-slate-500" aria-hidden />
+                <FileUp className="h-8 w-8 text-muted-foreground" aria-hidden />
               )}
-              <span className="max-w-full break-words text-sm font-medium text-slate-800">
+              <span className="max-w-full break-words text-sm font-medium text-foreground">
                 {selectedFile ? selectedFile.name : "Klik untuk memilih PDF"}
               </span>
-              <span className="text-xs text-slate-500">Maks. 20 MB</span>
+              <span className="text-xs text-muted-foreground">Maks. 20 MB</span>
               <input
                 type="file"
                 accept="application/pdf,.pdf"
@@ -303,35 +306,39 @@ export function ValidasiPdfPage() {
           </CardContent>
         </Card>
 
-        {verifyError ? (
-          <InfoCard
-            variant="warning"
-            title="Verifikasi gagal"
-            icon={<AlertCircle className="h-4 w-4" />}
-            className="text-sm"
-          >
-            <p className="text-slate-800">{verifyError}</p>
-          </InfoCard>
-        ) : null}
+        <div ref={feedbackRef} tabIndex={-1} className="space-y-6 focus:outline-none">
+          {verifyError ? (
+            <div role="alert">
+              <InfoCard
+                variant="warning"
+                title="Verifikasi gagal"
+                icon={<AlertCircle className="h-4 w-4" />}
+                className="text-sm"
+              >
+                <p className="text-foreground">{verifyError}</p>
+              </InfoCard>
+            </div>
+          ) : null}
 
-        {result ? (
-          <>
-            <ResultNotice result={result} />
+          {result ? (
+            <div role="status" aria-live="polite" className="space-y-6">
+              <ResultNotice result={result} />
 
-            {result.signatures.map((signature) => (
-              <SignatureResultCard key={signature.index} signature={signature} />
-            ))}
-          </>
-        ) : (
-          <Card className="border-slate-200 shadow-sm">
-            <EmptyState
-              icon={<FileCheck2 />}
-              title="Hasil verifikasi akan tampil di sini"
-              description="Informasi yang ditampilkan dibatasi ke status kecocokan TTE, penandatangan, penerbit, dan waktu tanda tangan."
-              className="py-10"
-            />
-          </Card>
-        )}
+              {result.signatures.map((signature) => (
+                <SignatureResultCard key={signature.index} signature={signature} />
+              ))}
+            </div>
+          ) : !verifyError ? (
+            <Card className="border-border shadow-surface">
+              <EmptyState
+                icon={<FileCheck2 />}
+                title="Hasil verifikasi akan tampil di sini"
+                description="Informasi yang ditampilkan dibatasi ke status kecocokan TTE, penandatangan, penerbit, dan waktu tanda tangan."
+                className="py-10"
+              />
+            </Card>
+          ) : null}
+        </div>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Button variant="outline" asChild className="gap-2">

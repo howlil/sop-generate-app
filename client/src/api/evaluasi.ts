@@ -40,6 +40,7 @@ export {
 } from "@/lib/evaluasi/hooks/evaluasi-derived-hooks";
 export {
   useTandaiTindakLanjutSelesai,
+  useTolakPengajuanEvaluasi,
 } from "@/api/evaluasi-mutations";
 export {
   useEvaluasiDraft,

@@ -2,8 +2,9 @@
  * Timeline aktivitas penilaian SOP di workspace evaluator.
  * Log beruntun dalam idle window digabung di klien (mirip tab Aktivitas log edit SOP).
  */
-import { Activity, Loader2 } from 'lucide-react'
+import { Activity } from 'lucide-react'
 import { EmptyState } from '@/components/ui/empty-state'
+import { LoadingState } from '@/components/ui/loading-state'
 import {
   groupLogNilaiEvaluasiSessions,
   type LogNilaiEvaluasiSession,
@@ -84,12 +85,7 @@ export function RiwayatNilaiEvaluasiPanel({
   isLoading = false,
 }: RiwayatNilaiEvaluasiPanelProps) {
   if (isLoading && entries.length === 0) {
-    return (
-      <div className="flex items-center justify-center gap-2 py-6 text-xs text-gray-500">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        Memuat aktivitas penilaian…
-      </div>
-    )
+    return <LoadingState compact message="Memuat aktivitas penilaian…" />
   }
 
   const sessions = groupLogNilaiEvaluasiSessions(entries)
@@ -126,43 +122,40 @@ export function RiwayatNilaiEvaluasiPanel({
   return (
     <div className="space-y-4">
       {isLoading ? (
-        <p className="text-[10px] text-gray-400 flex items-center gap-1">
-          <Loader2 className="w-3 h-3 animate-spin" />
-          Memperbarui…
-        </p>
+        <LoadingState compact className="justify-start py-0" message="Memperbarui…" />
       ) : null}
       {groups.map((group) => (
         <div key={group.key}>
-          <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-2">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">
             {group.label}
           </p>
           <div className="relative pl-4">
-            <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-200" />
+            <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
             <ul className="space-y-3">
               {group.items.map((session) => {
                 const summary = ringkasanPerubahan(session)
                 const catatan = session.catatanSesudah?.trim()
                 return (
                   <li key={session.id} className="relative flex gap-3">
-                    <span className="absolute left-[-13px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white" />
+                    <span className="absolute left-[-13px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-surface" />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-x-1.5 text-xs">
-                        <span className="text-gray-500 tabular-nums">
+                        <span className="text-muted-foreground tabular-nums">
                           {formatTime(session.createdAt)}
                         </span>
-                        <span className="font-medium text-gray-800">
+                        <span className="font-medium text-foreground">
                           {session.evaluatorNama}
                         </span>
                         {session.count > 1 ? (
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-[10px] text-muted-foreground">
                             · {session.count} perubahan
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-xs text-gray-700 mt-0.5">{summary}</p>
+                      <p className="text-xs text-secondary-foreground mt-0.5">{summary}</p>
                       {catatan ? (
                         <p
-                          className="text-[11px] text-gray-500 mt-1 leading-snug line-clamp-2"
+                          className="text-[11px] text-muted-foreground mt-1 leading-snug line-clamp-2"
                           title={catatan}
                         >
                           {catatan}

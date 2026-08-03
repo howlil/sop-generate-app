@@ -24,6 +24,7 @@ export type UmpanBalikEvaluasiRow = Readonly<{
   version: number;
   dinilaiOleh: { penggunaId: string; nama: string } | null;
   ditindaklanjutiOleh: { penggunaId: string; nama: string } | null;
+  pengajuanEvaluasi: { status: StatusPengajuanEvaluasi };
 }>;
 
 @Injectable()
@@ -64,11 +65,22 @@ export class EvaluasiNilaiRepository {
     return this.prisma.nilaiEvaluasi.findFirst({
       where: {
         detailSopId,
-        hasil: HasilEvaluasi.PERLU_PERBAIKAN,
-        pengajuanEvaluasi: {
-          opdId,
-          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-        },
+        OR: [
+          {
+            hasil: HasilEvaluasi.PERLU_PERBAIKAN,
+            pengajuanEvaluasi: {
+              opdId,
+              status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            },
+          },
+          {
+            hasil: HasilEvaluasi.DITOLAK,
+            pengajuanEvaluasi: {
+              opdId,
+              status: StatusPengajuanEvaluasi.DITOLAK,
+            },
+          },
+        ],
       },
       orderBy: { updatedAt: 'desc' },
       select: {
@@ -81,6 +93,7 @@ export class EvaluasiNilaiRepository {
         version: true,
         dinilaiOleh: { select: { penggunaId: true, nama: true } },
         ditindaklanjutiOleh: { select: { penggunaId: true, nama: true } },
+        pengajuanEvaluasi: { select: { status: true } },
       },
     });
   }

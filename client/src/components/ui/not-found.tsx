@@ -24,17 +24,17 @@ export function NotFoundPage({
   return (
     <div
       className={cn(
-        'min-h-[100dvh] flex flex-col items-center justify-center bg-gray-50 px-4 py-12',
+        'min-h-[100dvh] flex flex-col items-center justify-center bg-surface-subtle px-4 py-12',
         className
       )}
     >
       <div className="w-full max-w-md mx-auto text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center">
-          <FileQuestion className="w-10 h-10 text-gray-400" strokeWidth={1.5} />
+        <div className="w-20 h-20 mx-auto mb-6 rounded-xl bg-surface-muted border border-border flex items-center justify-center">
+          <FileQuestion className="w-10 h-10 text-muted-foreground" strokeWidth={1.5} />
         </div>
 
-        <h1 className="text-lg font-semibold text-gray-900 mb-2">{title}</h1>
-        <p className="text-sm text-gray-600 mb-8 max-w-sm mx-auto">
+        <h1 className="mb-2 text-xl font-semibold leading-7 text-foreground">{title}</h1>
+        <p className="text-sm text-secondary-foreground mb-8 max-w-sm mx-auto">
           {description}
         </p>
 
@@ -77,17 +77,17 @@ export function NotFoundWithBack({
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 bg-gray-50 p-6 max-w-lg',
+        'rounded-lg border border-border bg-surface-subtle p-6 max-w-lg',
         className
       )}
     >
       <div className="flex gap-4">
-        <div className="shrink-0 w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-          <FileQuestion className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+        <div className="shrink-0 w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center">
+          <FileQuestion className="w-5 h-5 text-muted-foreground" strokeWidth={1.5} />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-gray-900 mb-1">Tidak ditemukan</h2>
-          <p className="text-sm text-gray-600">{message}</p>
+          <h2 className="text-sm font-semibold text-foreground mb-1">Tidak ditemukan</h2>
+          <p className="text-sm text-secondary-foreground">{message}</p>
           {children}
           <div className="mt-4">{backAction}</div>
         </div>

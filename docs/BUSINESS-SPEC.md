@@ -87,6 +87,7 @@ MENUNGGU_PENGAJUAN_EVALUASI
 DIAJUKAN_EVALUASI
 SEDANG_DIEVALUASI
 REVISI_DARI_EVALUATOR
+DITOLAK_EVALUATOR
 MENUNGGU_TTD_PJ_EVALUATOR
 DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI
 BERLAKU
@@ -104,6 +105,7 @@ Makna status:
 | `DIAJUKAN_EVALUASI` | Status transisi manual dari PJ Penyusun sebelum masuk pengajuan aktif. |
 | `SEDANG_DIEVALUASI` | SOP sedang berada dalam pengajuan evaluasi aktif. |
 | `REVISI_DARI_EVALUATOR` | Evaluator memberi hasil `PERLU_PERBAIKAN`; dokumen dapat diedit penyusun. |
+| `DITOLAK_EVALUATOR` | Versi ditolak final bersama pengajuannya; tidak dapat diedit atau diajukan ulang dan hanya dapat dijadikan sumber versi baru. |
 | `MENUNGGU_TTD_PJ_EVALUATOR` | Semua nilai dalam pengajuan sudah `SESUAI`; menunggu TTE BA. |
 | `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` | BA sudah ditandatangani PJ Penyusun; SOP menunggu pengesahan Kepala OPD. |
 | `BERLAKU` | SOP sudah disahkan Kepala OPD dan dapat muncul di arsip publik. |
@@ -121,6 +123,7 @@ REVISI_DARI_EVALUATOR
 Status terminal arsip:
 
 ```text
+DITOLAK_EVALUATOR
 BERLAKU
 DIGANTIKAN
 DICABUT
@@ -389,6 +392,8 @@ Efek hasil:
 | `SESUAI` | `hasil = SESUAI`, tindak lanjut dikosongkan | Status dokumen tidak langsung berubah. |
 | `PERLU_PERBAIKAN` | `hasil = PERLU_PERBAIKAN`, `statusTindakLanjut = TERBUKA` | Jika status dokumen `DIAJUKAN_EVALUASI` atau `SEDANG_DIEVALUASI`, ubah ke `REVISI_DARI_EVALUATOR`. |
 
+Penolakan final dilakukan pada tingkat pengajuan melalui `PATCH /evaluasi/:pengajuanEvaluasiId/tolak`. Aksi ini mengubah pengajuan menjadi `DITOLAK`, seluruh nilai menjadi `DITOLAK`, dan seluruh versi SOP di dalamnya menjadi `DITOLAK_EVALUATOR`. Pengajuan dan versi lama tidak dapat dikirim ulang. Penyusun wajib membuat versi baru, kemudian PJ Penyusun membuat pengajuan evaluasi baru.
+
 ### 5.3 Revisi Campuran dalam Satu Pengajuan
 
 Contoh: ada 5 SOP dalam satu pengajuan, 1 perlu perbaikan.
@@ -549,7 +554,7 @@ Efek:
 - Setiap SOP ditandatangani Kepala OPD.
 - Versi `BERLAKU` lain pada header SOP yang sama menjadi `DIGANTIKAN`.
 - SOP yang ditandatangani menjadi `BERLAKU`.
-- `tanggalEfektif` diisi tanggal pengesahan kalender WIB.
+- Server menghitung satu nilai `tanggalEfektif` dari waktu pengesahan kalender WIB, menempelkannya ke PDF resmi sebelum tanda tangan digital, lalu menyimpan objek tanggal yang sama pada `DetailSOP`.
 - Pengajuan menjadi `SELESAI`.
 
 ### 6.4 Tanda Tangan PDF
@@ -1188,6 +1193,19 @@ Then SOP kembali ke jalur evaluasi
 
 When Penyusun biasa melakukan aksi yang sama
 Then request ditolak
+```
+
+**AC-EVL-07B: Penolakan pengajuan bersifat final untuk seluruh versi SOP**
+
+```text
+Given PengajuanEvaluasi berstatus SEDANG_DIEVALUASI dan berisi satu atau lebih versi SOP
+When Evaluator PATCH /evaluasi/:pengajuanId/tolak dengan alasan dan version yang valid
+Then PengajuanEvaluasi.status = DITOLAK
+And seluruh NilaiEvaluasi.hasil = DITOLAK
+And seluruh DetailSOP.status = DITOLAK_EVALUATOR
+And seluruh versi lama tidak dapat diedit atau diajukan ulang
+And penyusun dapat membuat versi baru dari versi yang ditolak
+And versi baru wajib masuk melalui pengajuan evaluasi baru
 ```
 
 **AC-EVL-08: Selesai evaluasi ditolak jika ada nilai belum SESUAI**

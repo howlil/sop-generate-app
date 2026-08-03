@@ -32,7 +32,7 @@ export function EvaluasiStatusLegend() {
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 gap-1 px-2 text-xs text-gray-600"
+          className="h-7 gap-1 px-2 text-xs text-secondary-foreground"
         >
           <HelpCircle className="h-3.5 w-3.5" />
           Apa arti status?
@@ -44,7 +44,7 @@ export function EvaluasiStatusLegend() {
         </DialogHeader>
         <div className="space-y-4 pt-1">
           <div>
-            <p className="text-gray-600 mb-2">
+            <p className="text-secondary-foreground mb-2">
               <strong>Pengajuan evaluasi</strong> — progres pengajuan evaluasi OPD (penilaian → tanda tangan → selesai).
             </p>
             <PengajuanStatusBadge
@@ -54,7 +54,7 @@ export function EvaluasiStatusLegend() {
             />
           </div>
           <div>
-            <p className="text-gray-600 mb-2">
+            <p className="text-secondary-foreground mb-2">
               <strong>Dokumen</strong> — siklus hidup SOP di sistem (disusun → berlaku).
             </p>
             <SopStatusBadge
@@ -64,7 +64,7 @@ export function EvaluasiStatusLegend() {
             />
           </div>
           <div>
-            <p className="text-gray-600 mb-2">
+            <p className="text-secondary-foreground mb-2">
               <strong>Penilaian</strong> — keputusan evaluator per dokumen.
             </p>
             <div className="flex flex-wrap gap-2">

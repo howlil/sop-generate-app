@@ -10,6 +10,7 @@ import { STATUS_HASIL_EVALUASI } from '@/types/dto/evaluasi.dto'
 /** Tahap penilaian per SOP di workspace evaluator (turunan hasil + tindak lanjut + status dokumen). */
 export type TahapPenilaianSop =
   | 'belum_dinilai'
+  | 'ditolak'
   | 'menunggu_perbaikan_opd'
   | 'tinjauan_ulang'
   | 'sesuai'
@@ -27,6 +28,9 @@ export interface DeriveTahapPenilaianInput {
 
 export function deriveTahapPenilaianSop(input: DeriveTahapPenilaianInput): TahapPenilaianSop {
   const hasil = input.hasil
+  if (hasil === 'DITOLAK') {
+    return 'ditolak'
+  }
   if (hasil === STATUS_HASIL_EVALUASI.SESUAI) {
     return 'sesuai'
   }
@@ -70,6 +74,14 @@ export interface TahapPenilaianCopy {
 
 export function getTahapPenilaianCopy(tahap: TahapPenilaianSop): TahapPenilaianCopy {
   switch (tahap) {
+    case 'ditolak':
+      return {
+        badgeLabel: 'Ditolak',
+        badgeClassName: 'bg-red-100 text-red-800 border-red-200',
+        bannerTitle: 'Versi SOP ditolak',
+        bannerDescription:
+          'Versi ini ditutup dan tidak dapat diajukan ulang. Penyusun wajib membuat versi baru untuk melanjutkan.',
+      }
     case 'tinjauan_ulang':
       return {
         badgeLabel: 'Siap tinjau ulang',
@@ -96,7 +108,7 @@ export function getTahapPenilaianCopy(tahap: TahapPenilaianSop): TahapPenilaianC
     case 'belum_dinilai':
       return {
         badgeLabel: 'Belum dinilai',
-        badgeClassName: 'bg-gray-100 text-gray-700 border-gray-200',
+        badgeClassName: 'bg-surface-muted text-secondary-foreground border-border',
         bannerTitle: null,
         bannerDescription: null,
       }
@@ -135,7 +147,8 @@ export function hasHasilEvaluasiTersimpan(
 ): boolean {
   return (
     hasil === STATUS_HASIL_EVALUASI.SESUAI ||
-    hasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN
+    hasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN ||
+    hasil === 'DITOLAK'
   )
 }
 
@@ -183,7 +196,7 @@ export function canKirimUlangSetelahRevisi(
   if (!umpanBalik) {
     return false
   }
-  return true
+  return umpanBalik.pengajuanStatus !== 'DITOLAK' && umpanBalik.hasil !== 'DITOLAK'
 }
 
 export function getKirimUlangBlockingReason(
@@ -191,6 +204,9 @@ export function getKirimUlangBlockingReason(
 ): string | null {
   if (!umpanBalik) {
     return 'Tidak ada umpan balik evaluasi aktif untuk dokumen ini.'
+  }
+  if (umpanBalik.pengajuanStatus === 'DITOLAK' || umpanBalik.hasil === 'DITOLAK') {
+    return 'Versi yang ditolak tidak dapat dikirim ulang. Buat versi baru untuk melanjutkan.'
   }
   return null
 }

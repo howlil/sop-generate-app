@@ -3,7 +3,7 @@
  */
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Send, List } from "lucide-react";
+import { Send, List, XCircle } from "lucide-react";
 import { SOPPreviewTemplate } from "@/components/sop/sop-preview-template";
 import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-evaluasi-status-header";
 import { SOPListCard } from "@/components/sop/sop-list-card";
@@ -24,6 +24,7 @@ import {
   usePengajuanEvaluasiAktif,
   buildAjukanEvaluasiSnapshotRows,
   getAjukanEvaluasiBlockingReason,
+  useTolakPengajuanEvaluasi,
 } from "@/api/evaluasi";
 import { deriveTahapPenilaianSop } from "@/lib/evaluasi/evaluasi-domain";
 import { ApiError } from "@/lib/api/api-client";
@@ -38,6 +39,7 @@ import type {
 } from "@/types/dto/evaluasi.dto";
 
 import { DetailEvaluasiOPDSubmitDialog } from "./components/DetailEvaluasiOPDSubmitDialog";
+import { TolakPengajuanEvaluasiDialog } from "./components/TolakPengajuanEvaluasiDialog";
 import { DetailEvaluasiOPDFormPanel } from "./components/DetailEvaluasiOPDFormPanel";
 import type { DetailEvaluasiActiveTab } from "./components/DetailEvaluasiOPDFormPanel";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -127,9 +129,14 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
       status: fp.status,
       statusLabel: fp.statusLabel ?? fp.status,
       jenis: fp.jenis ?? "EVALUASI_REQUEST_EVALUATOR",
+      version: fp.version,
+      alasanPenolakan: fp.alasanPenolakan ?? null,
+      tanggalDitolak: fp.tanggalDitolak ?? null,
       nilaiPerDetail: fp.nilaiEvaluasi.map((n) => {
         const hasil =
-          n.hasil === "SESUAI" || n.hasil === "PERLU_PERBAIKAN"
+          n.hasil === "SESUAI" ||
+          n.hasil === "PERLU_PERBAIKAN" ||
+          n.hasil === "DITOLAK"
             ? n.hasil
             : ("BELUM_DINILAI" as const);
         return {
@@ -140,6 +147,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
               ? "Sesuai"
               : n.hasil === "PERLU_PERBAIKAN"
                 ? "Perlu perbaikan"
+                : n.hasil === "DITOLAK"
+                  ? "Ditolak"
                 : "Belum dinilai",
           catatan: n.catatan ?? null,
           version: n.version,
@@ -308,6 +317,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
   );
 
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+  const [isTolakOpen, setIsTolakOpen] = useState(false);
   const [diagramPreviewTab, setDiagramPreviewTab] = useState<"flowchart" | "bpmn">("flowchart");
   const [activeFormTab, setActiveFormTab] =
     useState<DetailEvaluasiActiveTab>("sop");
@@ -391,6 +401,21 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     },
   });
 
+  const tolakPengajuan = useTolakPengajuanEvaluasi();
+  const handleTolakPengajuan = useCallback(
+    async (alasan: string) => {
+      if (!pengajuanAktifEffektif) return;
+      await tolakPengajuan.mutateAsync({
+        pengajuanEvaluasiId: pengajuanAktifEffektif.id,
+        alasan,
+        version: pengajuanAktifEffektif.version,
+      });
+      setIsTolakOpen(false);
+      navigate({ to: listHref });
+    },
+    [listHref, navigate, pengajuanAktifEffektif, tolakPengajuan],
+  );
+
   useDocumentTitle(opd ? `Evaluasi SOP — ${opd.nama}` : undefined);
 
   const riwayatOpd = useMemo(() => {
@@ -450,7 +475,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         description=""
         backTo={listHref}
         main={
-          <p className="p-4 text-sm text-gray-600">Memuat data evaluasi…</p>
+          <p className="p-4 text-sm text-secondary-foreground">Memuat data evaluasi…</p>
         }
       />
     );
@@ -485,7 +510,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         title="Evaluasi SOP"
         description=""
         backTo={listHref}
-        main={<p className="p-4 text-sm text-gray-600">{notFoundMessage}</p>}
+        main={<p className="p-4 text-sm text-secondary-foreground">{notFoundMessage}</p>}
       />
     );
   }
@@ -500,7 +525,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         description=""
         backTo={listHref}
         main={
-          <p className="p-4 text-sm text-gray-600">Memuat data OPD…</p>
+          <p className="p-4 text-sm text-secondary-foreground">Memuat data OPD…</p>
         }
       />
     );
@@ -515,7 +540,9 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         ]}
         title={`Evaluasi SOP — ${opd.nama}`}
         description={
-          isPengajuanReadOnly
+          pengajuanAktifEffektif?.status === "DITOLAK"
+            ? "Pengajuan ditolak final. Seluruh versi SOP di dalamnya tidak dapat diajukan ulang dan penyusun wajib membuat versi baru."
+            : isPengajuanReadOnly
             ? "Mode baca — pengajuan evaluasi ini sudah selesai. Lihat hasil dan riwayat di panel kanan."
             : "Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
         }
@@ -524,21 +551,31 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         header={
           <>
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-sm font-semibold text-gray-900">
+              <h2 className="text-sm font-semibold text-foreground">
                 Penilaian SOP
               </h2>
               <div className="flex items-center gap-2">
                 {!isPengajuanReadOnly ? (
-                  <Button
-                    size="sm"
-                    className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-50"
-                    onClick={() => {
-                      clearEvaluasiSubmitError();
-                      setIsSubmitOpen(true);
-                    }}
-                  >
-                    <Send className="w-3.5 h-3.5" /> Ajukan Persetujuan Evaluasi
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 border-red-200 px-3 text-xs text-red-700 hover:bg-red-50"
+                      onClick={() => setIsTolakOpen(true)}
+                    >
+                      <XCircle className="w-3.5 h-3.5" /> Tolak Pengajuan
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-8 gap-1.5 rounded-control bg-primary px-3 text-xs text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+                      onClick={() => {
+                        clearEvaluasiSubmitError();
+                        setIsSubmitOpen(true);
+                      }}
+                    >
+                      <Send className="w-3.5 h-3.5" /> Ajukan Persetujuan Evaluasi
+                    </Button>
+                  </>
                 ) : null}
               </div>
             </div>
@@ -550,15 +587,24 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                 className="pt-1"
               />
             ) : null}
-            <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-gray-700">
+            {pengajuanAktifEffektif?.status === "DITOLAK" &&
+            pengajuanAktifEffektif.alasanPenolakan ? (
+              <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">
+                <p className="font-medium">Alasan penolakan</p>
+                <p className="mt-1 whitespace-pre-wrap break-words">
+                  {pengajuanAktifEffektif.alasanPenolakan}
+                </p>
+              </div>
+            ) : null}
+            <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-secondary-foreground">
               <span>
-                <span className="text-gray-500">Evaluator (SOP ini):</span>{" "}
+                <span className="text-muted-foreground">Evaluator (SOP ini):</span>{" "}
                 <span className="font-medium">
                   {evaluatorSopTerpilih ?? "—"}
                 </span>
               </span>
               <span>
-                <span className="text-gray-500">Terakhir evaluasi:</span>{" "}
+                <span className="text-muted-foreground">Terakhir evaluasi:</span>{" "}
                 {tanggalTerakhirEvaluasi
                   ? formatDateId(tanggalTerakhirEvaluasi)
                   : "—"}
@@ -583,7 +629,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                 <CollapsibleSidePanelHeader
                   side="left"
                   onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
                 >
                   <SimplePanelHeader
                     title="Daftar SOP"
@@ -592,7 +638,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                 </CollapsibleSidePanelHeader>
                 <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
                   <div className="flex flex-col h-full min-h-0">
-                    <p className="px-2 pb-2 text-[10px] text-gray-500 leading-snug shrink-0">
+                    <p className="px-2 pb-2 text-[10px] text-muted-foreground leading-snug shrink-0">
                       Dokumen = status SOP di sistem; Penilaian = hasil evaluasi Anda per dokumen.
                     </p>
                     <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
@@ -611,8 +657,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         }
         main={
           <div className="flex h-full min-h-0 flex-col">
-            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 print:hidden">
-              <h3 className="text-xs font-semibold text-gray-700">
+            <div className="p-2 border-b border-border bg-surface-subtle flex-shrink-0 print:hidden">
+              <h3 className="text-xs font-semibold text-secondary-foreground">
                 Preview SOP
               </h3>
             </div>
@@ -639,7 +685,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                   />
                 )
               ) : (
-                <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
+                <div className="flex items-center justify-center flex-1 text-xs text-muted-foreground">
                   Pilih SOP di daftar kiri
                 </div>
               )}
@@ -711,6 +757,13 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         onConfirm={(nomorBA: string) => void handleSubmitAll(nomorBA)}
         isSubmitting={isAjukanSubmitting}
         evaluasiSubmitError={submitErrorObj}
+      />
+      <TolakPengajuanEvaluasiDialog
+        open={isTolakOpen}
+        onOpenChange={setIsTolakOpen}
+        jumlahSop={pengajuanAktifEffektif?.nilaiPerDetail.length ?? 0}
+        onConfirm={(alasan) => void handleTolakPengajuan(alasan)}
+        isSubmitting={tolakPengajuan.isPending}
       />
     </>
   );

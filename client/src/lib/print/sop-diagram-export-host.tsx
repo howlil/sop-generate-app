@@ -82,7 +82,7 @@ export function SopDiagramExportHost({
     },
   }
   return (
-    <div data-sop-diagram-export-root className="bg-white">
+    <div data-sop-diagram-export-root className="bg-surface">
       {kinds.includes('flowchart') && (
         <div className={`sop-print-diagram-flowchart ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
           <SOPDiagramFlowchart {...flowchartProps} />

@@ -28,6 +28,7 @@ const pengajuanEvaluasiDetailInclude = Prisma.validator<Prisma.PengajuanEvaluasi
     },
   },
   diselesaikanOleh: { select: { penggunaId: true, nama: true } },
+  ditolakOleh: { select: { penggunaId: true, nama: true } },
   diverifikasiOlehUser: { select: { penggunaId: true, nama: true } },
   ditandatanganiOlehPjPenyusunUser: { select: { penggunaId: true, nama: true } },
   dokumenTte: {

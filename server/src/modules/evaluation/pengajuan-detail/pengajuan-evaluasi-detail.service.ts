@@ -317,6 +317,13 @@ export class PengajuanEvaluasiDetailService {
           : undefined,
       timEvaluasi: row.diselesaikanOleh?.nama ?? '',
       tanggalDiselesaikan: row.tanggalDiselesaikan?.toISOString(),
+      alasanPenolakan: row.alasanPenolakan ?? undefined,
+      tanggalDitolak: row.tanggalDitolak?.toISOString(),
+      ditolakOlehId: row.ditolakOlehId ?? undefined,
+      ditolakOleh:
+        row.ditolakOleh !== null && row.ditolakOleh !== undefined
+          ? { id: row.ditolakOleh.penggunaId, nama: row.ditolakOleh.nama }
+          : undefined,
       sopItems,
       nilaiEvaluasi,
       timelineNilai,

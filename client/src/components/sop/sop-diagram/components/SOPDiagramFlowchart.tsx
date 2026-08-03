@@ -791,7 +791,7 @@ function FlowchartPage({
         )}
 
         <table
-          className="w-full border-collapse border-2 border-black table-fixed text-sm bg-white"
+          className="w-full border-collapse border-2 border-black table-fixed text-sm bg-surface"
         >
           <colgroup>
             <col style={{ width: '5%' }} />

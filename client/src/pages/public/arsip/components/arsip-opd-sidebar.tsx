@@ -47,27 +47,28 @@ export function ArsipOpdSidebar({
   return (
     <aside
       className={cn(
-        'flex h-full min-h-0 flex-col bg-white',
-        !embedded && 'max-h-[calc(100vh-12rem)] min-h-[calc(100vh-12rem)] rounded-xl border border-slate-200 shadow-sm',
+        'flex h-full min-h-0 flex-col bg-surface',
+        !embedded && 'max-h-[calc(100vh-12rem)] min-h-[calc(100vh-12rem)] rounded-xl border border-border shadow-surface',
       )}
       aria-label="Daftar OPD"
     >
       <OpdSidebarHeader opdFilter={opdFilter} onOpdFilterChange={onOpdFilterChange} />
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
-          <div className="space-y-2 p-2" aria-busy="true">
+          <div className="space-y-2 p-2" aria-busy="true" role="status">
+            <span className="sr-only">Memuat daftar OPD</span>
             {Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="h-12 rounded-lg" />
             ))}
           </div>
         ) : null}
         {isError ? (
-          <Card className="m-2 border-red-200 bg-red-50 p-4 text-center text-sm text-red-800">
+          <Card role="alert" className="m-2 border-red-200 bg-red-50 p-4 text-center text-sm text-red-800">
             Gagal memuat daftar OPD.
           </Card>
         ) : null}
         {!isLoading && !isError && items.length === 0 ? (
-          <p className="p-4 text-center text-sm text-slate-500">
+          <p className="p-4 text-center text-sm text-muted-foreground">
             {hasFilter
               ? 'Tidak ada OPD yang cocok. Coba kata kunci lain.'
               : 'Ketik nama OPD di kotak saring, atau gunakan halaman berikutnya.'}
@@ -88,20 +89,20 @@ export function ArsipOpdSidebar({
                       'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition',
                       isSelected
                         ? 'border border-blue-200 bg-blue-50 ring-1 ring-blue-100'
-                        : 'border border-transparent hover:bg-slate-50',
+                        : 'border border-transparent hover:bg-surface-subtle',
                     )}
                   >
                     <span
                       className={cn(
                         'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                        isSelected ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600',
+                        isSelected ? 'bg-blue-100 text-blue-700' : 'bg-surface-muted text-secondary-foreground',
                       )}
                     >
                       <Building2 className="h-4 w-4" aria-hidden />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-slate-900">{opd.nama}</span>
-                      <span className="text-xs text-slate-500">{opd.jumlahSopBerlaku} SOP berlaku</span>
+                      <span className="block truncate text-sm font-medium text-foreground">{opd.nama}</span>
+                      <span className="text-xs text-muted-foreground">{opd.jumlahSopBerlaku} SOP berlaku</span>
                     </span>
                   </button>
                 </li>
@@ -111,13 +112,13 @@ export function ArsipOpdSidebar({
         ) : null}
       </div>
       {isFetching && !isLoading ? (
-        <p className="flex items-center justify-center gap-2 border-t border-slate-100 py-2 text-xs text-slate-500">
+        <p className="flex items-center justify-center gap-2 border-t border-border py-2 text-xs text-muted-foreground" role="status">
           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
           Memperbarui…
         </p>
       ) : null}
       {pagination && onPageChange && !isLoading && !isError ? (
-        <div className={cn('border-t border-slate-100', compactPagination ? 'px-2 py-2' : 'px-3 py-3')}>
+        <div className={cn('border-t border-border', compactPagination ? 'px-2 py-2' : 'px-3 py-3')}>
           <Pagination
             currentPage={page}
             totalItems={pagination.totalItems}
@@ -141,8 +142,8 @@ function OpdSidebarHeader({
   onOpdFilterChange: (value: string) => void
 }) {
   return (
-    <div className="border-b border-slate-100 p-3">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Organisasi (OPD)</p>
+    <div className="border-b border-border p-3">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Organisasi (OPD)</p>
       <ArsipSearchField
         id="arsip-opd-filter"
         value={opdFilter}

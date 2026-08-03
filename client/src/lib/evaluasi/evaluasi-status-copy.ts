@@ -3,7 +3,7 @@ import type { StatusPengajuanEvaluasi } from '@/types/dto/evaluasi.dto'
 export type EvaluasiBannerRole = 'EVALUATOR' | 'PJ_EVALUATOR' | 'PJ_PENYUSUN' | 'KEPALA_OPD' | 'GENERAL'
 
 export interface EvaluasiStatusBanner {
-  variant: 'info' | 'success' | 'warning'
+  variant: 'info' | 'success' | 'warning' | 'danger'
   title: string
   message: string
 }
@@ -27,6 +27,13 @@ export function getEvaluasiStatusBanner(
         variant: 'info',
         title: 'Pengajuan evaluasi sedang dinilai tim evaluator',
         message: 'Menunggu penilaian selesai untuk seluruh dokumen dalam pengajuan ini.',
+      }
+    case 'DITOLAK':
+      return {
+        variant: 'danger',
+        title: 'Pengajuan ditolak evaluator',
+        message:
+          'Seluruh versi SOP dalam pengajuan ini ditutup dan tidak dapat diajukan ulang. Penyusun wajib membuat versi baru dan pengajuan baru.',
       }
     case 'SELESAI_DIEVALUASI':
       if (role === 'PJ_EVALUATOR') {

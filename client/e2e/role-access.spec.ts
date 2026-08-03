@@ -37,17 +37,17 @@ interface Opd {
 
 const navLabelByRoute: Record<string, string> = {
   '/pj-evaluator/grafik-evaluasi': 'Grafik Evaluasi',
-  '/pj-evaluator/opd': 'Manajemen OPD',
-  '/pj-evaluator/penyusun': 'Manajemen Penyusun',
-  '/pj-evaluator/evaluator': 'Manajemen Evaluator',
-  '/pj-evaluator/evaluasi': 'Manajemen Evaluasi SOP',
+  '/pj-evaluator/opd': 'OPD',
+  '/pj-evaluator/penyusun': 'Penyusun',
+  '/pj-evaluator/evaluator': 'Evaluator',
+  '/pj-evaluator/evaluasi': 'Evaluasi SOP',
   '/evaluator/evaluasi': 'Evaluasi SOP',
   '/kepala-opd/sop': 'Pantau SOP',
   '/kepala-opd/pengajuan': 'Pengajuan SOP',
-  '/penyusun/sop': 'Manajemen SOP',
-  '/penyusun/pelaksana': 'Manajemen Pelaksana SOP',
-  '/penyusun/peraturan': 'Manajemen Peraturan',
-  '/penyusun/pj-penyusun/berita-acara': 'Berita Acara PJ Penyusun',
+  '/penyusun/sop': 'SOP',
+  '/penyusun/pelaksana': 'Pelaksana SOP',
+  '/penyusun/peraturan': 'Peraturan',
+  '/penyusun/pj-penyusun/berita-acara': 'Berita Acara',
 }
 
 test.describe('E2E otorisasi dan navigasi per role', () => {

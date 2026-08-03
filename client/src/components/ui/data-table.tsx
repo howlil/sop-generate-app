@@ -3,78 +3,91 @@ import * as React from 'react'
 import { cn } from '@/utils/cn'
 import { Pagination } from '@/components/ui/pagination'
 
+const tableSurfaceClassName =
+  'relative isolate overflow-clip rounded-surface border border-border bg-surface shadow-surface'
+
 /** Wrapper overflow-x-auto; untuk scroll horizontal tabel. */
 const DataTableRoot = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('overflow-x-auto', className)} {...props} />
+>(({ className, 'aria-label': ariaLabel, ...props }, ref) => (
+  <div
+    ref={ref}
+    role="region"
+    tabIndex={0}
+    aria-label={ariaLabel ?? 'Tabel data; gulir secara horizontal untuk melihat kolom lainnya'}
+    className={cn(
+      'w-full overflow-x-auto overscroll-x-contain focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
+      className,
+    )}
+    {...props}
+  />
 ))
 DataTableRoot.displayName = 'DataTableRoot'
 
-/** Card + overflow: bg-white rounded-lg border border-gray-200 overflow-x-auto. */
+/** Shell tabel non-paginasi; Table.Root menangani scroll horizontal di dalamnya. */
 const DataTableCard = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('bg-white rounded-lg border border-gray-200 overflow-x-auto', className)}
+    className={cn(tableSurfaceClassName, className)}
     {...props}
   />
 ))
 DataTableCard.displayName = 'DataTableCard'
 
-/** <table> dengan w-full text-xs. */
+/** Tabel produktif: 13px untuk data padat tanpa mengorbankan keterbacaan. */
 const DataTableTable = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
   <table
     ref={ref}
-    className={cn('w-full text-xs border-collapse', className)}
+    className={cn('w-full border-collapse text-[13px]/[18px] text-foreground', className)}
     {...props}
   />
 ))
 DataTableTable.displayName = 'DataTableTable'
 
-/** Baris header: border-b border-gray-200 bg-blue-50. */
+/** Baris header: border-b border-border bg-blue-50. */
 const DataTableHeaderRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, ...props }, ref) => (
   <tr
     ref={ref}
-    className={cn('border-b border-gray-200 bg-blue-50', className)}
+    className={cn('sticky top-0 z-10 border-b border-border bg-primary-subtle shadow-[0_1px_0_var(--color-border)]', className)}
     {...props}
   />
 ))
 DataTableHeaderRow.displayName = 'DataTableHeaderRow'
 
-/** Baris body: border-b border-gray-100 hover:bg-gray-50 transition-all. */
+/** Baris body: border-b border-border hover:bg-surface-subtle transition-all. */
 const DataTableBodyRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, ...props }, ref) => (
   <tr
     ref={ref}
-    className={cn('border-b border-gray-100 hover:bg-gray-50 transition-all', className)}
+    className={cn('border-b border-border transition-colors hover:bg-surface-subtle focus-within:bg-primary-subtle/50', className)}
     {...props}
   />
 ))
 DataTableBodyRow.displayName = 'DataTableBodyRow'
 
-/** <th>: py-2.5 px-3 font-medium text-gray-700. Default left; gunakan align="center" hanya untuk kolom Aksi/tengah. */
+/** <th>: 12px medium agar hierarki jelas tanpa terlihat berat. Default left. */
 const DataTableTh = React.forwardRef<
   HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement> & { align?: 'left' | 'center' }
+  React.ThHTMLAttributes<HTMLTableCellElement> & { align?: 'left' | 'center' | 'right' }
 >(({ className, align = 'left', ...props }, ref) => (
   <th
     ref={ref}
     scope="col"
     className={cn(
-      'py-2.5 px-3 font-medium text-gray-700',
-      align === 'center' ? 'text-center' : 'text-left',
+      'whitespace-nowrap px-3 py-2 text-ui-label font-medium text-secondary-foreground',
+      align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left',
       className
     )}
     {...props}
@@ -82,14 +95,39 @@ const DataTableTh = React.forwardRef<
 ))
 DataTableTh.displayName = 'DataTableTh'
 
-/** <td>: py-2.5 px-3. */
+/** <td>: padding ringkas untuk kepadatan tabel desktop yang nyaman. */
 const DataTableTd = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => (
-  <td ref={ref} className={cn('py-2.5 px-3', className)} {...props} />
+  <td ref={ref} className={cn('px-3 py-2', className)} {...props} />
 ))
 DataTableTd.displayName = 'DataTableTd'
+
+/** Kolom aksi global: ringkas, tidak melebar, dan konsisten rata kiri. */
+const DataTableActionTh = React.forwardRef<
+  HTMLTableCellElement,
+  Omit<React.ThHTMLAttributes<HTMLTableCellElement>, 'align'>
+>(({ className, ...props }, ref) => (
+  <DataTableTh
+    ref={ref}
+    className={cn('w-0 whitespace-nowrap text-left', className)}
+    {...props}
+  />
+))
+DataTableActionTh.displayName = 'DataTableActionTh'
+
+const DataTableActionTd = React.forwardRef<
+  HTMLTableCellElement,
+  React.TdHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <DataTableTd
+    ref={ref}
+    className={cn('w-0 whitespace-nowrap text-left align-middle', className)}
+    {...props}
+  />
+))
+DataTableActionTd.displayName = 'DataTableActionTd'
 
 // ==================== Paginated Table ====================
 
@@ -129,7 +167,7 @@ function PaginatedTable<T>({
   const showPagination = data.length > pageSize
 
   return (
-    <div className={cn('bg-white rounded-lg border border-gray-200', className)}>
+    <div className={cn(tableSurfaceClassName, className)}>
       {children(pageData, startIndex)}
       {showPagination && (
         <Pagination
@@ -154,6 +192,8 @@ export {
   DataTableBodyRow,
   DataTableTh,
   DataTableTd,
+  DataTableActionTh,
+  DataTableActionTd,
   PaginatedTable,
 }
 
@@ -168,6 +208,8 @@ export const Table = {
   BodyRow: DataTableBodyRow,
   Th: DataTableTh,
   Td: DataTableTd,
+  ActionTh: DataTableActionTh,
+  ActionTd: DataTableActionTd,
   Pagination,
   Paginated: PaginatedTable,
 }

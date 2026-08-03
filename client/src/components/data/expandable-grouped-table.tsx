@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Pagination } from '@/components/ui/pagination'
+import { LoadingState } from '@/components/ui/loading-state'
 import type { PaginationMetaDto } from '@/types/dto/evaluasi.dto'
 import { cn } from '@/utils/cn'
 
@@ -37,6 +38,7 @@ export function ExpandableGroupedTable<TGroup>({
   className,
 }: ExpandableGroupedTableProps<TGroup>) {
   const [expandedGroupIds, setExpandedGroupIds] = useState<string[]>([])
+  const panelIdPrefix = useId()
 
   useEffect(() => {
     if (isLoading) return
@@ -62,30 +64,33 @@ export function ExpandableGroupedTable<TGroup>({
 
   return (
     <div className={cn('space-y-3', className)}>
-      {isLoading ? loadingContent : null}
+      {isLoading ? (loadingContent ?? <LoadingState />) : null}
       {!isLoading && groups.length === 0 ? emptyContent : null}
       {!isLoading
         ? groups.map((group) => {
             const groupId = getGroupId(group)
             const isExpanded = expandedGroupIds.includes(groupId)
+            const panelId = `${panelIdPrefix}-${groupId}`
             return (
               <div
                 key={groupId}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+                className="overflow-hidden rounded-surface border border-border bg-surface shadow-surface"
               >
                 <button
                   type="button"
-                  className="w-full px-4 py-3 border-b border-gray-100 bg-gray-50/70 hover:bg-gray-100/70 transition-colors"
+                  className="w-full border-b border-border bg-surface-subtle/70 px-3 py-2.5 text-left transition-colors hover:bg-surface-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                   onClick={() => toggleGroup(groupId)}
+                  aria-expanded={isExpanded}
+                  aria-controls={panelId}
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center sm:gap-3">
                     <div className="flex items-center gap-2 min-w-0">
                       {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
+                        <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-gray-500 shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                       )}
-                      <span className="font-semibold text-sm text-gray-900 truncate">
+                      <span className="truncate text-[13px] font-medium text-foreground">
                         {renderGroupTitle(group)}
                       </span>
                       {renderGroupMeta ? (
@@ -95,19 +100,23 @@ export function ExpandableGroupedTable<TGroup>({
                       ) : null}
                     </div>
                     {renderGroupAside ? (
-                      <span className="text-xs text-gray-600 whitespace-nowrap">
+                      <span className="pl-6 text-xs text-secondary-foreground sm:pl-0">
                         {renderGroupAside(group)}
                       </span>
                     ) : null}
                   </div>
                 </button>
-                {isExpanded ? renderRows(group) : null}
+                {isExpanded ? (
+                  <div id={panelId}>
+                    <Table.Root>{renderRows(group)}</Table.Root>
+                  </div>
+                ) : null}
               </div>
             )
           })
         : null}
       {pagination && onPageChange ? (
-        <div className="bg-white rounded-lg border border-gray-200">
+        <div className="rounded-surface border border-border bg-surface shadow-surface">
           <Pagination
             totalItems={pagination.totalItems}
             currentPage={pagination.page}
@@ -127,7 +136,7 @@ export function GroupedTableState({
   children: ReactNode
 }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="overflow-hidden rounded-surface border border-border bg-surface shadow-surface">
       <Table.Table>
         <tbody>{children}</tbody>
       </Table.Table>

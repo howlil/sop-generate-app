@@ -7,7 +7,7 @@ import { EvaluasiNilaiService } from './evaluasi-nilai.service';
 describe('Pengujian EvaluasiNilaiController', () => {
   let controller: EvaluasiNilaiController;
   let service: jest.Mocked<
-    Pick<EvaluasiNilaiService, 'isiNilai' | 'tandaiTindakLanjutSelesai' | 'selesai'>
+    Pick<EvaluasiNilaiService, 'isiNilai' | 'tandaiTindakLanjutSelesai' | 'selesai' | 'tolak'>
   >;
 
   const user: JwtAccessPayload = {
@@ -37,6 +37,7 @@ describe('Pengujian EvaluasiNilaiController', () => {
       isiNilai: jest.fn(),
       tandaiTindakLanjutSelesai: jest.fn(),
       selesai: jest.fn(),
+      tolak: jest.fn(),
     };
     controller = new EvaluasiNilaiController(service as unknown as EvaluasiNilaiService);
   });
@@ -93,6 +94,36 @@ describe('Pengujian EvaluasiNilaiController', () => {
       message: 'Pengajuan evaluasi berhasil diselesaikan',
       success: true,
       data: selesaiResponse,
+    });
+  });
+
+  it('seharusnya meneruskan alasan dan versi ke service penolakan', async () => {
+    const response = {
+      id: 'p1',
+      opdId: 'opd-1',
+      status: 'DITOLAK',
+      alasanPenolakan: 'Dokumen belum lengkap',
+      ditolakOlehId: user.sub,
+      tanggalDitolak: '2026-08-02T08:00:00.000Z',
+      version: 1,
+      createdAt: '2026-08-01T08:00:00.000Z',
+      updatedAt: '2026-08-02T08:00:00.000Z',
+    };
+    service.tolak.mockResolvedValueOnce(response);
+
+    const actual = await controller.tolak(req, 'p1', {
+      alasan: 'Dokumen belum lengkap',
+      version: 0,
+    });
+
+    expect(service.tolak).toHaveBeenCalledWith(user, 'p1', {
+      alasan: 'Dokumen belum lengkap',
+      version: 0,
+    });
+    expect(actual).toEqual({
+      message: 'Pengajuan evaluasi berhasil ditolak',
+      success: true,
+      data: response,
     });
   });
 });

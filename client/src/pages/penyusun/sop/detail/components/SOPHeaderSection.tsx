@@ -52,13 +52,13 @@ function MetadataFieldCard({
   action?: ReactNode
 }) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <div className="flex items-start justify-between gap-2 border-b border-gray-100 px-3 py-2.5">
+    <section className="rounded-lg border border-border bg-surface shadow-surface">
+      <div className="flex items-start justify-between gap-2 border-b border-border px-3 py-2.5">
         <div className="flex min-w-0 items-start gap-2">
-          <div className="mt-0.5 shrink-0 text-gray-500">{icon}</div>
+          <div className="mt-0.5 shrink-0 text-muted-foreground">{icon}</div>
           <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-gray-900">{title}</h3>
-            {subtitle ? <p className="mt-0.5 text-[11px] leading-snug text-gray-500">{subtitle}</p> : null}
+            <h3 className="text-xs font-semibold text-foreground">{title}</h3>
+            {subtitle ? <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{subtitle}</p> : null}
           </div>
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
@@ -81,11 +81,11 @@ function ReadOnlyTextBlock({
   return (
     <div
       className={cn(
-        'rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-800',
+        'rounded-md border border-border bg-surface-subtle px-3 py-2 text-xs text-foreground',
         multiline ? 'whitespace-pre-wrap leading-relaxed min-h-[84px]' : 'min-h-9 flex items-center',
       )}
     >
-      {hasValue ? value : <span className="text-gray-400">{placeholder}</span>}
+      {hasValue ? value : <span className="text-muted-foreground">{placeholder}</span>}
     </div>
   )
 }
@@ -108,14 +108,14 @@ export function SOPHeaderSection({
   const { metadata, handleMetadataChange, implementers, setImplementers, isReadOnly } =
     useSopEditor()
 
-  const roInput = isReadOnly ? 'cursor-default bg-gray-50 text-gray-800' : ''
+  const roInput = isReadOnly ? 'cursor-default bg-surface-subtle text-foreground' : ''
   const institutionText = metadataInstitutionTextareaValue(metadata)
   const sopName = metadataDisplayName(metadata)
   const sopNumber = metadataDisplayNumber(metadata)
 
   return (
     <div className="space-y-3">
-      <p className="px-0.5 text-xs font-semibold text-gray-700">
+      <p className="px-0.5 text-xs font-semibold text-secondary-foreground">
         Header SOP{isReadOnly ? ' (lihat)' : ''}
       </p>
 
@@ -151,7 +151,7 @@ export function SOPHeaderSection({
         title="Identitas SOP"
         subtitle="Judul dan nomor dokumen SOP."
       >
-        <FormField label={<span className="font-medium text-gray-800">Nama SOP</span>}>
+        <FormField label={<span className="font-medium text-foreground">Nama SOP</span>}>
           {isReadOnly ? (
             <ReadOnlyTextBlock value={sopName} placeholder="Belum ada nama SOP." />
           ) : (
@@ -171,7 +171,7 @@ export function SOPHeaderSection({
             />
           )}
         </FormField>
-        <FormField label={<span className="font-medium text-gray-800">Nomor SOP</span>}>
+        <FormField label={<span className="font-medium text-foreground">Nomor SOP</span>}>
           {isReadOnly ? (
             <ReadOnlyTextBlock value={sopNumber} placeholder="Belum ada nomor SOP." />
           ) : (
@@ -203,14 +203,14 @@ export function SOPHeaderSection({
       >
         <div className="space-y-1">
           {(metadata.lawBasis ?? []).length === 0 ? (
-            <p className="text-xs text-gray-500">Belum ada dasar hukum.</p>
+            <p className="text-xs text-muted-foreground">Belum ada dasar hukum.</p>
           ) : (
             (metadata.lawBasis ?? []).map((item: string, idx: number) =>
               !isReadOnly ? (
                 <FieldWithCornerRemoveButton
                   key={`${idx}-${item}`}
-                  className="rounded-md border border-gray-200 bg-gray-50"
-                  contentClassName="px-3 py-2 pr-8 text-xs text-gray-700"
+                  className="rounded-md border border-border bg-surface-subtle"
+                  contentClassName="px-3 py-2 pr-8 text-xs text-secondary-foreground"
                   onRemove={() => {
                     const nextLabels = (metadata.lawBasis ?? []).filter((_, i) => i !== idx)
                     const nextIds = (metadata.lawBasisIds ?? []).filter((_, i) => i !== idx)
@@ -221,7 +221,7 @@ export function SOPHeaderSection({
                   • {item}
                 </FieldWithCornerRemoveButton>
               ) : (
-                <p key={`${idx}-${item}`} className="text-xs text-gray-700">
+                <p key={`${idx}-${item}`} className="text-xs text-secondary-foreground">
                   • {item}
                 </p>
               ),
@@ -242,14 +242,14 @@ export function SOPHeaderSection({
       >
         <div className="space-y-1">
           {(metadata.relatedSop ?? []).length === 0 ? (
-            <p className="text-xs text-gray-500">Belum ada keterkaitan SOP.</p>
+            <p className="text-xs text-muted-foreground">Belum ada keterkaitan SOP.</p>
           ) : (
             (metadata.relatedSop ?? []).map((item: string, idx: number) =>
               !isReadOnly ? (
                 <FieldWithCornerRemoveButton
                   key={`${idx}-${item}`}
-                  className="rounded-md border border-gray-200 bg-gray-50"
-                  contentClassName="px-3 py-2 pr-8 text-xs text-gray-700"
+                  className="rounded-md border border-border bg-surface-subtle"
+                  contentClassName="px-3 py-2 pr-8 text-xs text-secondary-foreground"
                   onRemove={() => {
                     const nextLabels = (metadata.relatedSop ?? []).filter((_, i) => i !== idx)
                     const nextIds = (metadata.relatedSopDetailIds ?? []).filter((_, i) => i !== idx)
@@ -260,7 +260,7 @@ export function SOPHeaderSection({
                   • {item}
                 </FieldWithCornerRemoveButton>
               ) : (
-                <p key={`${idx}-${item}`} className="text-xs text-gray-700">
+                <p key={`${idx}-${item}`} className="text-xs text-secondary-foreground">
                   • {item}
                 </p>
               ),
@@ -287,10 +287,10 @@ export function SOPHeaderSection({
         {isReadOnly ? (
           <ul className="space-y-1 list-disc pl-4">
             {asArray(metadata.warning).length === 0 ? (
-              <li className="text-xs text-gray-500">Tidak ada peringatan.</li>
+              <li className="text-xs text-muted-foreground">Tidak ada peringatan.</li>
             ) : (
               asArray(metadata.warning).map((line, idx) => (
-                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                <li key={`${idx}-${line}`} className="text-xs text-secondary-foreground">
                   {line}
                 </li>
               ))
@@ -328,10 +328,10 @@ export function SOPHeaderSection({
         {isReadOnly ? (
           <ul className="space-y-1 list-disc pl-4">
             {asArray(metadata.implementQualification).length === 0 ? (
-              <li className="text-xs text-gray-500">Belum ada kualifikasi.</li>
+              <li className="text-xs text-muted-foreground">Belum ada kualifikasi.</li>
             ) : (
               asArray(metadata.implementQualification).map((line, idx) => (
-                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                <li key={`${idx}-${line}`} className="text-xs text-secondary-foreground">
                   {line}
                 </li>
               ))
@@ -366,10 +366,10 @@ export function SOPHeaderSection({
         {isReadOnly ? (
           <ul className="space-y-1 list-disc pl-4">
             {asArray(metadata.equipment).length === 0 ? (
-              <li className="text-xs text-gray-500">Belum ada peralatan/perlengkapan.</li>
+              <li className="text-xs text-muted-foreground">Belum ada peralatan/perlengkapan.</li>
             ) : (
               asArray(metadata.equipment).map((line, idx) => (
-                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                <li key={`${idx}-${line}`} className="text-xs text-secondary-foreground">
                   {line}
                 </li>
               ))
@@ -404,10 +404,10 @@ export function SOPHeaderSection({
         {isReadOnly ? (
           <ul className="space-y-1 list-disc pl-4">
             {asArray(metadata.recordData).length === 0 ? (
-              <li className="text-xs text-gray-500">Belum ada pencatatan/pendataan.</li>
+              <li className="text-xs text-muted-foreground">Belum ada pencatatan/pendataan.</li>
             ) : (
               asArray(metadata.recordData).map((line, idx) => (
-                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                <li key={`${idx}-${line}`} className="text-xs text-secondary-foreground">
                   {line}
                 </li>
               ))
@@ -436,20 +436,20 @@ export function SOPHeaderSection({
       >
         <div className="space-y-1">
           {implementers.length === 0 ? (
-            <p className="text-xs text-gray-500">Belum ada aktor pelaksana.</p>
+            <p className="text-xs text-muted-foreground">Belum ada aktor pelaksana.</p>
           ) : (
             implementers.map((imp, idx) =>
               !isReadOnly ? (
                 <FieldWithCornerRemoveButton
                   key={imp.id}
-                  className="rounded-md border border-gray-200 bg-gray-50"
-                  contentClassName="px-3 py-2 pr-8 text-xs text-gray-700"
+                  className="rounded-md border border-border bg-surface-subtle"
+                  contentClassName="px-3 py-2 pr-8 text-xs text-secondary-foreground"
                   onRemove={() => setImplementers((prev) => prev.filter((_, i) => i !== idx))}
                 >
                   • {imp.name}
                 </FieldWithCornerRemoveButton>
               ) : (
-                <p key={imp.id} className="text-xs text-gray-700">
+                <p key={imp.id} className="text-xs text-secondary-foreground">
                   • {imp.name}
                 </p>
               ),

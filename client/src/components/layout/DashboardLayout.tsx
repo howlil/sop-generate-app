@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   Building2,
@@ -10,24 +10,28 @@ import {
   FileSignature,
   FileText,
   UserCog,
+  Menu,
+  X,
 } from "lucide-react";
 import logoSvg from "@/assets/logo.svg";
 import { HeaderBar } from "@/components/layout/HeaderBar";
 import { PageHeaderProvider } from "@/components/layout/PageHeaderProvider";
+import { APP_DISPLAY_NAME } from "@/config/env";
+import {
+  AppSidebar,
+  type AppSidebarItem,
+} from "@/components/layout/AppSidebar";
 import { useAuthStore } from "@/stores/authStore";
+import { useUIStore } from "@/stores/uiStore";
 import type { RoleKey } from "@/types/dto/access.dto";
 import { cn } from "@/utils/cn";
 import { ROUTES } from "@/utils/constants";
 import { toNavigationRole } from "@/utils/role-key";
 
-interface SidebarItem {
-  to: string;
-  label: string;
-  icon: LucideIcon;
-}
+const DESKTOP_SIDEBAR_STORAGE_KEY = "ui:desktop-sidebar-collapsed";
 
 /** Item pertama per peran harus selaras dengan @/utils/role-routing ROLE_DEFAULT_LANDING (redirect setelah login & `/`). */
-const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
+const SIDEBAR_ITEMS: Record<RoleKey, AppSidebarItem[]> = {
   PJ_EVALUATOR: [
     {
       to: ROUTES.PJ_EVALUATOR.GRAFIK_EVALUASI,
@@ -36,61 +40,61 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
     },
     {
       to: ROUTES.PJ_EVALUATOR.OPD,
-      label: "Manajemen OPD",
+      label: "OPD",
       icon: Building2,
     },
     {
       to: ROUTES.PJ_EVALUATOR.PENYUSUN,
-      label: "Manajemen Penyusun",
+      label: "Penyusun",
       icon: UserPlus,
     },
     {
       to: ROUTES.PJ_EVALUATOR.EVALUATOR,
-      label: "Manajemen Evaluator",
+      label: "Evaluator",
       icon: Users,
     },
     {
       to: ROUTES.PJ_EVALUATOR.EVALUASI,
-      label: "Manajemen Evaluasi SOP",
+      label: "Evaluasi SOP",
       icon: FileCheck,
     },
   ],
   PENYUSUN: [
     {
       to: ROUTES.PENYUSUN.SOP,
-      label: "Manajemen SOP",
+      label: "SOP",
       icon: FileText,
     },
     {
       to: ROUTES.PENYUSUN.PELAKSANA,
-      label: "Manajemen Pelaksana SOP",
+      label: "Pelaksana SOP",
       icon: UserCog,
     },
     {
       to: ROUTES.PENYUSUN.PERATURAN,
-      label: "Manajemen Peraturan",
+      label: "Peraturan",
       icon: BookOpen,
     },
   ],
   PJ_PENYUSUN: [
     {
       to: ROUTES.PENYUSUN.SOP,
-      label: "Manajemen SOP",
+      label: "SOP",
       icon: FileText,
     },
     {
       to: ROUTES.PENYUSUN.PELAKSANA,
-      label: "Manajemen Pelaksana SOP",
+      label: "Pelaksana SOP",
       icon: UserCog,
     },
     {
       to: ROUTES.PENYUSUN.PERATURAN,
-      label: "Manajemen Peraturan",
+      label: "Peraturan",
       icon: BookOpen,
     },
     {
       to: ROUTES.PENYUSUN.PJ_PENYUSUN_BERITA_ACARA,
-      label: "Berita Acara PJ Penyusun",
+      label: "Berita Acara",
       icon: FileSignature,
     },
   ],
@@ -113,77 +117,100 @@ function isActivePath(pathname: string, itemTo: string): boolean {
 
 export function DashboardLayout() {
   const { pathname } = useLocation();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const isDesktopNavOpen = useUIStore((state) => state.sidebarOpen);
+  const setDesktopNavOpen = useUIStore((state) => state.setSidebarOpen);
   const navRole = user?.peran !== undefined ? toNavigationRole(user.peran) : undefined;
   const sidebarItems = navRole !== undefined ? SIDEBAR_ITEMS[navRole] ?? [] : [];
+  const activeItem = sidebarItems.find(({ to }) => isActivePath(pathname, to));
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    try {
+      setDesktopNavOpen(
+        window.localStorage.getItem(DESKTOP_SIDEBAR_STORAGE_KEY) !== "true",
+      );
+    } catch {
+      // Preferensi visual tetap opsional ketika storage browser tidak tersedia.
+    }
+  }, [setDesktopNavOpen]);
+
+  const handleDesktopSidebarOpenChange = (open: boolean) => {
+    setDesktopNavOpen(open);
+    try {
+      window.localStorage.setItem(
+        DESKTOP_SIDEBAR_STORAGE_KEY,
+        String(!open),
+      );
+    } catch {
+      // Sidebar tetap dapat digunakan walau storage browser diblokir.
+    }
+  };
 
   return (
     <div suppressHydrationWarning className="flex h-[100dvh] flex-col md:flex-row md:h-screen">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-md focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[60] focus:rounded-control focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-raised focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       >
-        Skip to main content
+        Lewati ke konten utama
       </a>
 
       {/* Mobile nav */}
       <nav
         data-print-hide
-        className="md:hidden flex shrink-0 items-stretch gap-0 border-b border-gray-200 bg-white px-2 py-2"
+        className="shrink-0 border-b border-border bg-surface md:hidden"
         aria-label="Navigasi utama"
       >
-        <div suppressHydrationWarning className="flex items-center pr-2 border-r border-gray-100">
-          <img src={logoSvg} alt="Logo" className="w-9 h-9" />
+        <div className="flex min-h-14 items-center gap-3 px-3">
+          <img src={logoSvg} alt={APP_DISPLAY_NAME} className="h-9 w-9 shrink-0" />
+          <span className="min-w-0 flex-1 text-ui-body font-semibold text-foreground">
+            {activeItem?.label ?? APP_DISPLAY_NAME}
+          </span>
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-control text-secondary-foreground hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={isMobileNavOpen ? "Tutup navigasi" : "Buka navigasi"}
+            aria-expanded={isMobileNavOpen}
+            aria-controls="mobile-main-navigation"
+            onClick={() => setIsMobileNavOpen((open) => !open)}
+          >
+            {isMobileNavOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+          </button>
         </div>
-        <div suppressHydrationWarning className="flex-1 flex overflow-x-auto gap-1 min-w-0 scrollbar-hide">
+        <div
+          id="mobile-main-navigation"
+          className={cn("grid gap-1 border-t border-border p-2", !isMobileNavOpen && "hidden")}
+        >
           {sidebarItems.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
+              aria-current={isActivePath(pathname, to) ? "page" : undefined}
               className={cn(
-                "shrink-0 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors flex items-center gap-1.5",
+                "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-ui-body transition-colors",
                 isActivePath(pathname, to)
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100",
+                  ? "bg-primary-subtle font-semibold text-primary"
+                  : "text-secondary-foreground hover:bg-surface-muted",
               )}
             >
-              <Icon className="w-3.5 h-3.5 shrink-0 opacity-80" />
+              <Icon className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
               {label}
             </Link>
           ))}
         </div>
       </nav>
 
-      {/* Desktop sidebar */}
-      <aside
-        data-print-hide
-        className="hidden md:flex w-14 bg-white border-r border-gray-200 flex-col flex-shrink-0"
-      >
-        <div suppressHydrationWarning className="p-2 flex flex-col items-center">
-          <img src={logoSvg} alt="Logo" className="w-9 h-9" />
-        </div>
-        <nav
-          className="flex-1 flex flex-col items-center gap-1 pt-4"
-          aria-label="Navigasi ikon"
-        >
-          {sidebarItems.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className={cn(
-                "w-10 h-10 flex items-center justify-center rounded-md transition-all",
-                isActivePath(pathname, to)
-                  ? "bg-blue-50 text-blue-600"
-                  : "hover:bg-gray-100 text-gray-600",
-              )}
-              title={label}
-              aria-label={label}
-            >
-              <Icon className="w-5 h-5" />
-            </Link>
-          ))}
-        </nav>
-      </aside>
+      <AppSidebar
+        items={sidebarItems}
+        isItemActive={(to) => isActivePath(pathname, to)}
+        open={isDesktopNavOpen}
+        onOpenChange={handleDesktopSidebarOpenChange}
+      />
 
       {/* Main content */}
       <div suppressHydrationWarning className="flex-1 flex flex-col min-w-0 min-h-0">
@@ -191,9 +218,13 @@ export function DashboardLayout() {
           <HeaderBar />
           <main
             id="main-content"
-            className="flex-1 overflow-auto scrollbar-hide p-3 sm:p-4 md:p-6 bg-white relative"
+            className="relative flex-1 overflow-auto bg-background scrollbar-hide"
           >
-            <Outlet />
+            <div data-scroll-content className="min-h-full p-3 sm:p-4 md:p-page">
+              <div data-app-content className="mx-auto w-full max-w-app">
+                <Outlet />
+              </div>
+            </div>
           </main>
         </PageHeaderProvider>
       </div>

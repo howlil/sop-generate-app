@@ -43,7 +43,7 @@ describe('Pengujian SopCatalogService', () => {
       | 'updateDetailSopStatus'
       | 'transitionDetailSopRevisiToSedangDievaluasi'
       | 'updateSopHeaderTransaction'
-      | 'cloneDetailSopFromBerlaku'
+      | 'cloneDetailSopFromSource'
       | 'findRiwayatVersiBySopId'
       | 'deleteVersiDraft'
       | 'deleteSopDraftAwal'
@@ -60,7 +60,7 @@ describe('Pengujian SopCatalogService', () => {
     updateDetailSopStatus: jest.fn(),
     transitionDetailSopRevisiToSedangDievaluasi: jest.fn(),
     updateSopHeaderTransaction: jest.fn(),
-    cloneDetailSopFromBerlaku: jest.fn(),
+    cloneDetailSopFromSource: jest.fn(),
     findRiwayatVersiBySopId: jest.fn(),
     deleteVersiDraft: jest.fn(),
     deleteSopDraftAwal: jest.fn(),
@@ -1360,7 +1360,7 @@ describe('Pengujian SopCatalogService', () => {
     });
   });
 
-  describe('Pengujian buat versi baru dari SOP berlaku', () => {
+  describe('Pengujian buat versi baru dari sumber aktif atau riwayat', () => {
     const t = new Date('2026-05-20T08:00:00.000Z');
     const workbenchV2 = {
       detailSopId: 'det-v2',
@@ -1401,7 +1401,7 @@ describe('Pengujian SopCatalogService', () => {
       logEditSop: [],
     } as unknown as SopWorkbenchDbPayload;
 
-    it('seharusnya mengkloning dari versi berlaku dan mengembalikan workbench', async () => {
+    it('seharusnya mengkloning versi berlaku yang dipilih dan mengembalikan workbench', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValue({
         detailSopId: 'det-v1',
         sopId: 'sop-v1',
@@ -1412,24 +1412,144 @@ describe('Pengujian SopCatalogService', () => {
         status: StatusSOP.BERLAKU,
         sopOpdId: 'opd-1',
       });
-      repoMock.cloneDetailSopFromBerlaku.mockResolvedValue({
+      repoMock.cloneDetailSopFromSource.mockResolvedValue({
         ok: true,
         data: { detailSopId: 'det-v2', versi: 2 },
       });
       repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValue(workbenchV2);
-      const actual = await service.buatVersiBaruDariBerlaku(user, 'det-v1');
-      expect(repoMock.cloneDetailSopFromBerlaku).toHaveBeenCalledWith({
+      const actual = await service.buatVersiBaruDariSumber(user, 'det-v1');
+      expect(repoMock.cloneDetailSopFromSource).toHaveBeenCalledWith({
         sourceDetailSopId: 'det-v1',
         penggunaId: 'pengguna-1',
       });
       expect(actual.detail.id).toBe('det-v2');
     });
 
+    it('seharusnya memakai versi riwayat yang dipilih tanpa dialihkan ke versi berlaku', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValue({
+        detailSopId: 'det-v1',
+        sopId: 'sop-v1',
+      });
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-v1',
+        sopId: 'sop-v1',
+        status: StatusSOP.DIGANTIKAN,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.cloneDetailSopFromSource.mockResolvedValue({
+        ok: true,
+        data: { detailSopId: 'det-v3', versi: 3 },
+      });
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValue({
+        ...workbenchV2,
+        detailSopId: 'det-v3',
+        versi: 3,
+        revisiDariDetailSopId: 'det-v1',
+      });
+
+      const actual = await service.buatVersiBaruDariSumber(user, 'det-v1');
+
+      expect(repoMock.cloneDetailSopFromSource).toHaveBeenCalledWith({
+        sourceDetailSopId: 'det-v1',
+        penggunaId: 'pengguna-1',
+      });
+      expect(repoMock.findRiwayatVersiBySopId).not.toHaveBeenCalled();
+      expect(actual.detail.id).toBe('det-v3');
+    });
+
     it('seharusnya melempar ForbiddenException ketika pengguna bukan penyusun', async () => {
       const evaluator: JwtAccessPayload = { ...user, peran: PeranPengguna.EVALUATOR };
-      await expect(service.buatVersiBaruDariBerlaku(evaluator, 'det-v1')).rejects.toBeInstanceOf(
+      await expect(service.buatVersiBaruDariSumber(evaluator, 'det-v1')).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+
+    it('riwayat menandai semua versi terminal layak menjadi sumber jika tidak ada revisi aktif', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValue({
+        detailSopId: 'det-v2',
+        sopId: 'sop-v1',
+      });
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-v2',
+        sopId: 'sop-v1',
+        status: StatusSOP.BERLAKU,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-v0',
+          versi: 0,
+          nomorSOP: 'SOP-V0',
+          status: StatusSOP.DITOLAK_EVALUATOR,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+        {
+          detailSopId: 'det-v1',
+          versi: 1,
+          nomorSOP: 'SOP-V1',
+          status: StatusSOP.DIGANTIKAN,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+        {
+          detailSopId: 'det-v2',
+          versi: 2,
+          nomorSOP: 'SOP-V2',
+          status: StatusSOP.BERLAKU,
+          revisiDariDetailSopId: 'det-v1',
+          revisiDariVersi: 1,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+      ]);
+
+      const rows = await service.getRiwayatVersi(user, 'sop-v1');
+
+      expect(rows.map((row) => row.canBuatVersiBaru)).toEqual([true, true, true]);
+    });
+
+    it('riwayat menonaktifkan semua sumber ketika masih ada revisi aktif', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValue({
+        detailSopId: 'det-v2',
+        sopId: 'sop-v1',
+      });
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-v2',
+        sopId: 'sop-v1',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-v1',
+          versi: 1,
+          nomorSOP: 'SOP-V1',
+          status: StatusSOP.BERLAKU,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+        {
+          detailSopId: 'det-v2',
+          versi: 2,
+          nomorSOP: 'SOP-V2',
+          status: StatusSOP.DRAFT,
+          revisiDariDetailSopId: 'det-v1',
+          revisiDariVersi: 1,
+          updatedAt: t,
+          canHapusDraft: true,
+        },
+      ]);
+
+      const rows = await service.getRiwayatVersi(user, 'sop-v1');
+
+      expect(rows.map((row) => row.canBuatVersiBaru)).toEqual([false, false]);
     });
   });
 

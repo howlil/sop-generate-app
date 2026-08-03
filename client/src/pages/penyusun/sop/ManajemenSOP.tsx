@@ -91,7 +91,7 @@ export function ManajemenSOP() {
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-900">
+                <p className="text-xs font-semibold text-foreground">
                   Filter SOP
                 </p>
                 {filters.activeFilterCount > 0 && (
@@ -158,7 +158,7 @@ export function ManajemenSOP() {
                   <Table.Th>Pembuat</Table.Th>
                   <Table.Th>Terakhir diedit</Table.Th>
                   <Table.Th>Status</Table.Th>
-                  <Table.Th>Aksi</Table.Th>
+                  <Table.ActionTh>Aksi</Table.ActionTh>
                 </Table.HeadRow>
               </thead>
               <tbody>
@@ -183,7 +183,7 @@ export function ManajemenSOP() {
                         <SopVersionCell value={sop.versi} />
                       </Table.Td>
                       <Table.Td>
-                        <p className="text-gray-700">{sop.pembuat ?? "—"}</p>
+                        <p className="text-secondary-foreground">{sop.pembuat ?? "—"}</p>
                       </Table.Td>
                       <Table.Td>
                         <SopUpdatedByCell
@@ -197,7 +197,7 @@ export function ManajemenSOP() {
                           label={sop.statusLabel}
                         />
                       </Table.Td>
-                      <Table.Td>
+                      <Table.ActionTd>
                         <RowActions
                           actions={[
                             sop.status && canEditSop(sop.status as StatusSOP)
@@ -212,7 +212,6 @@ export function ManajemenSOP() {
                                   to: ROUTES.PENYUSUN.DETAIL_SOP,
                                   params: { id: sop.detailSopId ?? sop.id },
                                   title: "Lihat",
-                                  variant: "outline",
                                 },
                             ...(canHapusSopDraftAwal(sop)
                               ? [
@@ -226,7 +225,7 @@ export function ManajemenSOP() {
                               : []),
                           ]}
                         />
-                      </Table.Td>
+                      </Table.ActionTd>
                     </Table.BodyRow>
                   ))
                 )}

@@ -57,11 +57,22 @@ describe('Pengujian EvaluasiNilaiRepository', () => {
     expect(prismaMock.nilaiEvaluasi.findFirst).toHaveBeenCalledWith({
       where: {
         detailSopId: 'd1',
-        hasil: HasilEvaluasi.PERLU_PERBAIKAN,
-        pengajuanEvaluasi: {
-          opdId: 'opd-1',
-          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-        },
+        OR: [
+          {
+            hasil: HasilEvaluasi.PERLU_PERBAIKAN,
+            pengajuanEvaluasi: {
+              opdId: 'opd-1',
+              status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            },
+          },
+          {
+            hasil: HasilEvaluasi.DITOLAK,
+            pengajuanEvaluasi: {
+              opdId: 'opd-1',
+              status: StatusPengajuanEvaluasi.DITOLAK,
+            },
+          },
+        ],
       },
       orderBy: { updatedAt: 'desc' },
       select: {
@@ -74,6 +85,7 @@ describe('Pengujian EvaluasiNilaiRepository', () => {
         version: true,
         dinilaiOleh: { select: { penggunaId: true, nama: true } },
         ditindaklanjutiOleh: { select: { penggunaId: true, nama: true } },
+        pengajuanEvaluasi: { select: { status: true } },
       },
     });
   });

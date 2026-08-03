@@ -28,5 +28,5 @@ export function getStatusTindakLanjutBadgeClass(
   if (status === 'TERBUKA') {
     return 'bg-blue-600 text-white border-0'
   }
-  return 'bg-gray-500 text-white border-0'
+  return 'bg-surface-subtle0 text-white border-0'
 }

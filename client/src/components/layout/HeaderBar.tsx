@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { usePageHeaderContext } from "@/components/layout/PageHeaderProvider";
 import { useAppRole } from "@/hooks/useAppRole";
 import { useAuth } from "@/api/auth";
@@ -38,31 +37,35 @@ export function HeaderBar() {
   return (
     <header
       data-print-hide
-      className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0 gap-4"
+      className="flex min-h-[var(--header-height)] flex-shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-3 py-1.5 shadow-surface sm:px-4 md:px-page"
     >
-      <div suppressHydrationWarning className="flex items-center gap-2 min-w-0 flex-1">
+      <div suppressHydrationWarning className="order-1 flex min-w-0 flex-1 items-center gap-2">
         {headerContent ? (
           <>
             {headerContent.leading && (
               <div className="flex-shrink-0">{headerContent.leading}</div>
             )}
-            {headerContent.breadcrumb.length > 0 && (
-              <Breadcrumb
-                items={headerContent.breadcrumb}
-                className="min-w-0"
-              />
-            )}
+            <h1 className="min-w-0 truncate text-ui-title font-semibold text-foreground">
+              {headerContent.title}
+            </h1>
           </>
         ) : null}
       </div>
-      <div suppressHydrationWarning className="flex items-center gap-2 flex-shrink-0">
+      <div
+        suppressHydrationWarning
+        className={
+          headerContent
+            ? "order-2 flex w-full flex-shrink-0 flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-end"
+            : "order-2 ml-auto flex flex-shrink-0 items-center justify-end gap-2"
+        }
+      >
         {headerContent?.actions}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full p-0 bg-gray-100 hover:bg-gray-200 text-blue-600 transition-colors"
+              className="rounded-full bg-surface-muted p-0 text-primary transition-colors hover:bg-border"
               aria-label="Profil"
             >
               <CircleUserRound className="w-4 h-4" strokeWidth={1.5} />
@@ -71,12 +74,12 @@ export function HeaderBar() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col gap-0.5">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-foreground">
                   {displayName}
                 </p>
-                <p className="text-xs text-gray-500">{roleLabel}</p>
+                <p className="text-xs text-muted-foreground">{roleLabel}</p>
                 {nip && nip !== "" && (
-                  <p className="text-xs text-gray-500">NIP. {nip}</p>
+                  <p className="text-xs text-muted-foreground">NIP. {nip}</p>
                 )}
               </div>
             </DropdownMenuLabel>

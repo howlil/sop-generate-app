@@ -1099,4 +1099,123 @@ describe('EvaluasiNilaiService', () => {
       ).rejects.toBeInstanceOf(ConflictException);
     });
   });
+
+  describe('tolak', () => {
+    it('seharusnya menolak pengajuan secara atomik dan mengunci semua versi SOP', async () => {
+      const pengajuan = basePengajuanRow({
+        nilaiEvaluasi: [
+          {
+            ...baseNilaiRow({ detailSop: { status: StatusSOP.SEDANG_DIEVALUASI } }),
+          },
+        ],
+      });
+      const hasilDitolak = basePengajuanRow({
+        status: StatusPengajuanEvaluasi.DITOLAK,
+        alasanPenolakan: 'Lengkapi dasar hukum.',
+        ditolakOlehId: user.sub,
+        tanggalDitolak: new Date('2026-05-06T10:00:00.000Z'),
+        version: 1,
+      });
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValueOnce(pengajuan)
+            .mockResolvedValueOnce(hasilDitolak),
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        },
+        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({}) },
+        nilaiEvaluasi: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+        detailSOP: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
+        fn(mockTx),
+      );
+      const service = new EvaluasiNilaiService(
+        { runTransaction } as unknown as EvaluasiNilaiRepository,
+        noopPengajuanRepo,
+      );
+
+      const actual = await service.tolak(user, 'p1', {
+        alasan: '  Lengkapi dasar hukum.  ',
+        version: 0,
+      });
+
+      expect(mockTx.pengajuanEvaluasi.updateMany).toHaveBeenCalledWith({
+        where: {
+          pengajuanEvaluasiId: 'p1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          version: 0,
+        },
+        data: expect.objectContaining({
+          status: StatusPengajuanEvaluasi.DITOLAK,
+          alasanPenolakan: 'Lengkapi dasar hukum.',
+          ditolakOlehId: user.sub,
+          version: { increment: 1 },
+        }),
+      });
+      expect(mockTx.nilaiEvaluasi.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            hasil: HasilEvaluasi.DITOLAK,
+            catatan: 'Lengkapi dasar hukum.',
+            statusTindakLanjut: null,
+          }),
+        }),
+      );
+      expect(mockTx.detailSOP.updateMany).toHaveBeenCalledWith({
+        where: {
+          detailSopId: { in: ['d1'] },
+          status: {
+            in: [
+              StatusSOP.DIAJUKAN_EVALUASI,
+              StatusSOP.SEDANG_DIEVALUASI,
+              StatusSOP.REVISI_DARI_EVALUATOR,
+            ],
+          },
+        },
+        data: { status: StatusSOP.DITOLAK_EVALUATOR },
+      });
+      expect(actual).toEqual(
+        expect.objectContaining({
+          status: StatusPengajuanEvaluasi.DITOLAK,
+          alasanPenolakan: 'Lengkapi dasar hukum.',
+          ditolakOlehId: user.sub,
+          version: 1,
+        }),
+      );
+    });
+
+    it('seharusnya melarang penolakan oleh selain evaluator', async () => {
+      const runTransaction = jest.fn();
+      const service = new EvaluasiNilaiService(
+        { runTransaction } as unknown as EvaluasiNilaiRepository,
+        noopPengajuanRepo,
+      );
+
+      await expect(
+        service.tolak(pjEvaluatorUser, 'p1', { alasan: 'Tidak sesuai', version: 0 }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(runTransaction).not.toHaveBeenCalled();
+    });
+
+    it('seharusnya menolak versi pengajuan yang sudah berubah', async () => {
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue(basePengajuanRow({ version: 2 })),
+        },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
+        fn(mockTx),
+      );
+      const service = new EvaluasiNilaiService(
+        { runTransaction } as unknown as EvaluasiNilaiRepository,
+        noopPengajuanRepo,
+      );
+
+      await expect(
+        service.tolak(user, 'p1', { alasan: 'Tidak sesuai', version: 1 }),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+  });
 });

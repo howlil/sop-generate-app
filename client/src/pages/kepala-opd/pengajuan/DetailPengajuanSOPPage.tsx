@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle, FileText, Loader2 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
 import { buildSopArsipPdfBase64FromPreviewProps, canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
@@ -161,10 +162,7 @@ export function DetailPengajuanSOPPage() {
 
   if (loading && pengajuan === null) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 min-h-[320px] text-gray-600 text-sm">
-        <Loader2 className="h-9 w-9 animate-spin text-gray-400" aria-hidden />
-        <p>Memuat detail pengajuan SOP...</p>
-      </div>
+      <LoadingState className="min-h-[320px]" message="Memuat detail pengajuan SOP…" />
     );
   }
 
@@ -195,7 +193,7 @@ export function DetailPengajuanSOPPage() {
         header={
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-sm font-semibold text-gray-900">Informasi Pengajuan</h2>
+              <h2 className="text-sm font-semibold text-foreground">Informasi Pengajuan</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <PengajuanCetakArsipButtons
                   printScope="pj-penyusun-kepala-opd"
@@ -274,7 +272,7 @@ export function DetailPengajuanSOPPage() {
                 <CollapsibleSidePanelHeader
                   side="left"
                   onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
                 >
                   <SimplePanelHeader title="Daftar SOP" />
                 </CollapsibleSidePanelHeader>

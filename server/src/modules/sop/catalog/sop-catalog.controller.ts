@@ -299,9 +299,9 @@ export class SopCatalogController {
   @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Buat versi baru dari DetailSOP BERLAKU (salin isi dokumen, status DRAFT)',
+    summary: 'Buat versi baru dari snapshot DetailSOP yang dipilih (status DRAFT)',
     description:
-      'Param boleh detailSopId atau sopId. Jika bukan BERLAKU, server memakai versi BERLAKU pada SOP yang sama bila ada.',
+      'detailSopId menjadi sumber snapshot secara eksplisit dan boleh berstatus DITOLAK_EVALUATOR, BERLAKU, DIGANTIKAN, atau DICABUT. Jika sopId dikirim untuk kompatibilitas, versi terbaru menjadi sumber.',
   })
   @ApiQuery({
     name: 'logsLimit',
@@ -309,7 +309,9 @@ export class SopCatalogController {
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 201, type: PenyusunWorkbenchDataDto })
-  @ApiConflictResponse({ description: 'Bukan BERLAKU atau masih ada revisi yang sedang berjalan' })
+  @ApiConflictResponse({
+    description: 'Sumber bukan versi terminal atau masih ada revisi yang sedang berjalan',
+  })
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
   async buatVersiBaru(
@@ -317,7 +319,7 @@ export class SopCatalogController {
     @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
     @Query('logsLimit', new DefaultValuePipe(100), ParseIntPipe) logsLimit: number,
   ): Promise<ApiSuccessResponse<PenyusunWorkbenchDataDto>> {
-    const data = await this.sopCatalogService.buatVersiBaruDariBerlaku(
+    const data = await this.sopCatalogService.buatVersiBaruDariSumber(
       req.user,
       detailSopId,
       logsLimit,

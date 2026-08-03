@@ -24,14 +24,19 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
         return (
           <span key={i} className="flex items-center gap-1">
             {i > 0 && (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" aria-hidden />
             )}
-            {isLast || !item.to ? (
-              <span className="text-gray-700 font-medium">{item.label}</span>
+            {!item.to ? (
+              <span
+                className="font-medium text-secondary-foreground"
+                aria-current={isLast ? 'page' : undefined}
+              >
+                {item.label}
+              </span>
             ) : (
               <Link
                 to={item.to}
-                className="text-gray-500 hover:text-blue-600 transition-colors"
+                className="text-muted-foreground transition-colors hover:text-primary"
               >
                 {item.label}
               </Link>

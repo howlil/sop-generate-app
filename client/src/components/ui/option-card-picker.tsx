@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { FormField } from '@/components/ui/form-field'
 import { cn } from '@/utils/cn'
 
@@ -15,30 +15,30 @@ export interface OptionCardOption<T> {
 const VARIANT_STYLES: Record<OptionCardVariant, { selected: string; icon: string; label: string }> = {
   success: {
     selected: 'border-green-600 bg-green-50',
-    icon: 'text-green-600',
-    label: 'text-green-600',
+    icon: 'text-green-700',
+    label: 'text-green-800',
   },
   warning: {
     selected: 'border-amber-600 bg-amber-50',
-    icon: 'text-amber-600',
-    label: 'text-amber-600',
+    icon: 'text-amber-700',
+    label: 'text-amber-900',
   },
   neutral: {
-    selected: 'border-gray-600 bg-gray-50',
-    icon: 'text-gray-600',
-    label: 'text-gray-600',
+    selected: 'border-border-strong bg-surface-muted',
+    icon: 'text-secondary-foreground',
+    label: 'text-secondary-foreground',
   },
   info: {
-    selected: 'border-blue-600 bg-blue-50',
-    icon: 'text-blue-600',
-    label: 'text-blue-600',
+    selected: 'border-primary bg-primary-subtle',
+    icon: 'text-primary',
+    label: 'text-info-foreground',
   },
 }
 
 const BASE_OPTION_CLASS =
-  'p-3 rounded-lg border transition-all border-gray-200 bg-white hover:bg-gray-50 text-left w-full'
-const UNSELECTED_LABEL = 'text-gray-700'
-const UNSELECTED_ICON = 'text-gray-400'
+  'w-full rounded-surface border border-border-strong bg-surface p-card text-left transition-all hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+const UNSELECTED_LABEL = 'text-secondary-foreground'
+const UNSELECTED_ICON = 'text-muted-foreground'
 
 export interface OptionCardPickerProps<T> {
   /** Opsi yang bisa dipilih (value, label, deskripsi, icon, variant warna) */
@@ -79,15 +79,42 @@ export function OptionCardPicker<T>({
   optionClassName,
   disabled = false,
 }: OptionCardPickerProps<T>) {
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
   const gridClass = {
     2: 'grid-cols-2',
     3: 'grid-cols-3',
     4: 'grid-cols-4',
   }[columns]
 
+  const handleRadioKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (disabled || options.length === 0) return
+    let nextIndex: number | null = null
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = (index + 1) % options.length
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = (index - 1 + options.length) % options.length
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = options.length - 1
+    }
+    if (nextIndex == null) return
+    event.preventDefault()
+    const nextOption = options[nextIndex]
+    if (!nextOption) return
+    onChange(nextOption.value)
+    optionRefs.current[nextIndex]?.focus()
+  }
+
   const content = (
-    <div className={cn('grid gap-2', gridClass, className)}>
-      {options.map((opt) => {
+    <div
+      className={cn('grid gap-2', gridClass, className)}
+      role="radiogroup"
+      aria-label={typeof label === 'string' ? label : 'Pilih satu opsi'}
+      aria-required={required || undefined}
+      aria-disabled={disabled || undefined}
+    >
+      {options.map((opt, index) => {
         const selected = isEqual(value, opt.value)
         const variant = opt.variant ?? 'neutral'
         const styles = VARIANT_STYLES[variant]
@@ -95,18 +122,25 @@ export function OptionCardPicker<T>({
           <button
             key={String(opt.value)}
             type="button"
+            role="radio"
+            aria-checked={selected}
+            tabIndex={selected || (value === null && index === 0) ? 0 : -1}
+            ref={(node) => {
+              optionRefs.current[index] = node
+            }}
             disabled={disabled}
             className={cn(
               BASE_OPTION_CLASS,
               selected ? styles.selected : '',
               optionClassName,
-              disabled && 'opacity-50 cursor-not-allowed hover:bg-white',
+              disabled && 'opacity-50 cursor-not-allowed hover:bg-surface',
             )}
             onClick={() => {
               if (!disabled) {
                 onChange(opt.value);
               }
             }}
+            onKeyDown={(event) => handleRadioKeyDown(event, index)}
           >
             {opt.icon && (
               <div
@@ -127,7 +161,7 @@ export function OptionCardPicker<T>({
               {opt.label}
             </span>
             {opt.description && (
-              <span className="text-[10px] text-gray-500 block mt-0.5">
+              <span className="text-[10px] text-muted-foreground block mt-0.5">
                 {opt.description}
               </span>
             )}

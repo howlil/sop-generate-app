@@ -28,13 +28,6 @@ export const useUIStore = create<UIState>((set) => ({
   addToast: (message, type = 'info') => {
     const id = crypto.randomUUID()
     set((state) => ({ toasts: [...state.toasts, { message, type, id }] }))
-
-    // Auto-dismiss after 5 seconds (increased for accessibility)
-    setTimeout(() => {
-      set((state) => ({
-        toasts: state.toasts.filter((t) => t.id !== id)
-      }))
-    }, 5000)
   },
 
   removeToast: (id) => {

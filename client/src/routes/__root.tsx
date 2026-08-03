@@ -9,6 +9,7 @@ import { GlobalToast } from "@/components/layout/GlobalToast";
 import { NotFoundPage } from "@/components/ui/not-found";
 import { RouteErrorPage } from "@/components/ui/route-error";
 import { RouteFocusManager } from "@/components/ui/route-focus-manager";
+import { APP_DISPLAY_NAME } from "@/config/env";
 import { queryClient } from "@/config/query-client";
 import { useAuthStore, ensureAuthHydrated, syncAuthFromCookie } from "@/stores/authStore";
 import {
@@ -57,10 +58,10 @@ export const Route = createRootRoute({
     }
   },
   pendingComponent: () => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-surface-subtle">
       <div className="text-center">
         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <p className="text-gray-600">Memuat...</p>
+        <p className="text-secondary-foreground">Memuat...</p>
       </div>
     </div>
   ),
@@ -76,7 +77,7 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Sistem Informasi SOP",
+        title: APP_DISPLAY_NAME,
       },
       // Security headers
       {

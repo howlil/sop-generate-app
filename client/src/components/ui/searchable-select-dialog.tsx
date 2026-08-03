@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/components/ui/search-input'
@@ -53,6 +53,7 @@ export function SearchableSelectDialog<T>({
   itemClassName,
   onConfirm,
 }: SearchableSelectDialogProps<T>) {
+  const selectionStatusId = useId()
   const [query, setQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
@@ -102,7 +103,7 @@ export function SearchableSelectDialog<T>({
           <DialogHeader className="px-4 pt-3 pb-2">
             <DialogTitle className="text-sm">{title}</DialogTitle>
             {description != null ? (
-              <DialogDescription className="text-xs text-gray-500 mt-1 leading-snug">
+              <DialogDescription className="mt-1 leading-snug">
                 {description}
               </DialogDescription>
             ) : null}
@@ -113,17 +114,30 @@ export function SearchableSelectDialog<T>({
               placeholder={searchPlaceholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full max-w-none border border-gray-200 rounded-md bg-gray-50/50 focus-within:bg-white focus-within:border-gray-300 h-8 px-2.5"
+              className="h-10 w-full max-w-none rounded-control border border-border-strong bg-surface-subtle px-2.5 focus-within:border-primary focus-within:bg-surface focus-within:ring-2 focus-within:ring-primary"
               inputClassName="border-0 bg-transparent focus:ring-0 focus-visible:ring-0 text-xs"
             />
           </div>
 
-          <div className="px-4 pb-3 border-t border-gray-100 pt-2">
-            <div className="border border-gray-200 rounded-md overflow-hidden">
-              <div className={cn('overflow-auto scrollbar-hide', listClassName)}>
-                <div className="divide-y divide-gray-100">
+          <div className="px-4 pb-3 border-t border-border pt-2">
+            <p
+              id={selectionStatusId}
+              className="mb-2 text-xs text-secondary-foreground"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {filteredItems.length} pilihan ditemukan
+              {selectedIds.length > 0 ? ` · ${selectedIds.length} dipilih` : ''}
+            </p>
+            <div className="overflow-hidden rounded-control border border-border">
+              <div
+                className={cn('overflow-auto scrollbar-hide', listClassName)}
+                aria-describedby={selectionStatusId}
+              >
+                <div className="divide-y divide-border">
                   {filteredItems.length === 0 ? (
-                    <div className="py-4 text-center text-xs text-gray-500">
+                    <div className="py-4 text-center text-sm text-muted-foreground">
                       {items.length === 0 ? emptyMessage : emptySearchMessage}
                     </div>
                   ) : (
@@ -132,39 +146,38 @@ export function SearchableSelectDialog<T>({
                       const already = existingIdSet.has(id)
                       const selected = selectedIds.includes(id)
                       return (
-                        <div
+                        <label
                           key={id}
-                          role="button"
-                          tabIndex={already ? -1 : 0}
-                          aria-disabled={already}
-                          aria-pressed={selected}
                           className={cn(
-                            'w-full text-left py-2 px-3 hover:bg-gray-50 flex items-start gap-3 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 rounded',
+                            'relative flex min-h-11 w-full cursor-pointer items-start gap-3 rounded-control px-3 py-2 text-left transition-colors hover:bg-surface-subtle focus-within:z-[1] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-1',
+                            selected && 'bg-primary-subtle/70',
                             already && 'opacity-60 cursor-not-allowed',
                             itemClassName,
                           )}
-                          onClick={() => toggle(id)}
-                          onKeyDown={(e) => {
-                            if (already) return
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              toggle(id)
-                            }
-                          }}
                         >
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={selected || already}
+                            disabled={already}
+                            onChange={() => toggle(id)}
+                          />
                           <span
                             className={cn(
-                              'mt-0.5 h-3 w-3 shrink-0 rounded border flex items-center justify-center',
-                              selected
-                                ? 'bg-blue-600 border-blue-600'
-                                : 'border-gray-300 bg-white',
+                              'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border',
+                              selected || already
+                                ? 'border-primary bg-primary'
+                                : 'border-border-strong bg-surface',
                             )}
                             aria-hidden
                           >
-                            {selected ? <Check className="h-2 w-2 text-white" /> : null}
+                            {selected || already ? <Check className="h-3 w-3 text-white" /> : null}
                           </span>
-                          {renderItem(item)}
-                        </div>
+                          <div className="min-w-0 flex-1">
+                            {renderItem(item)}
+                            {already ? <span className="sr-only"> Sudah ditambahkan.</span> : null}
+                          </div>
+                        </label>
                       )
                     })
                   )}
@@ -173,18 +186,16 @@ export function SearchableSelectDialog<T>({
             </div>
           </div>
 
-          <DialogFooter className="px-4 py-3 gap-2 border-t border-gray-100">
+          <DialogFooter className="px-4 py-3 gap-2 border-t border-border">
             <Button
               variant="outline"
-              size="sm"
-              className="h-7 text-xs"
+              size="default"
               onClick={handleClose}
             >
               {cancelLabel}
             </Button>
             <Button
-              size="sm"
-              className="h-7 text-xs"
+              size="default"
               disabled={selectedIds.length === 0}
               onClick={handleConfirm}
             >

@@ -67,10 +67,10 @@ export const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, AutoResi
         onChange={handleChange}
         onInput={handleInput}
         className={cn(
-          'flex w-full rounded-md border border-gray-200 px-3 py-2 text-xs',
-          'placeholder:text-gray-400',
-          'focus:outline-none focus:ring-1 focus:ring-blue-500',
-          'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50',
+          'flex w-full rounded-control border border-border-strong bg-surface px-3 py-2 text-sm text-foreground',
+          'placeholder:text-muted-foreground',
+          'focus:outline-none focus:ring-2 focus:ring-primary',
+          'disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-50',
           'resize-none',
           className,
         )}

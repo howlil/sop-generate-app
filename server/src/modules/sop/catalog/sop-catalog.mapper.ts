@@ -1,5 +1,8 @@
 import { displayStatusSop } from '../../../common/status/status-display';
-import { hasRevisiInFlight } from '../../../common/status/sop-editable.util';
+import {
+  hasRevisiInFlight,
+  TERMINAL_DETAIL_STATUSES,
+} from '../../../common/status/sop-editable.util';
 import { StatusSOP } from '../../../generated/prisma';
 import { buildNilaiEvaluasiClientId } from '../../evaluation/nilai/nilai-evaluasi-client-id';
 import { encodeLogEditSopClientId } from '../collaboration/log-edit-session.helper';
@@ -247,9 +250,9 @@ export function mapVersiSlice(slice: {
 
 export function mapDaftarRow(row: SopDaftarDbRow): SopDaftarRowDto {
   const d = row.detail;
-  const hasBerlaku = row.versiBerlaku !== null;
   const inFlight = hasRevisiInFlight(row.allStatuses);
-  const canBuatVersiBaru = hasBerlaku && !inFlight;
+  const hasTerminalSource = row.allStatuses.some((status) => TERMINAL_DETAIL_STATUSES.has(status));
+  const canBuatVersiBaru = hasTerminalSource && !inFlight;
   const canCabutSop =
     row.versiBerlaku !== null && row.versiBerlaku.status === StatusSOP.BERLAKU && !inFlight;
   const canHapusSopDraft =

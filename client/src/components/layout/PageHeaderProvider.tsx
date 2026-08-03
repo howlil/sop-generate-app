@@ -10,7 +10,6 @@ import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 export interface PageHeaderContent {
   breadcrumb: BreadcrumbItem[]
   title: string
-  description?: string
   leading?: ReactNode
   actions?: ReactNode
 }
@@ -91,8 +90,6 @@ export interface SetPageHeaderProps {
   breadcrumb: BreadcrumbItem[]
   /** Judul halaman */
   title: string
-  /** Deskripsi singkat di bawah judul (opsional) */
-  description?: string
   /** Konten di kiri (sebelah kiri judul), mis. tombol kembali */
   leading?: ReactNode
   /** Konten tambahan di kanan (tombol aksi, dll.) */
@@ -109,13 +106,12 @@ export interface SetPageHeaderProps {
 export function SetPageHeader({
   breadcrumb,
   title,
-  description,
   leading,
   actions,
 }: SetPageHeaderProps) {
   const ctx = usePageHeaderContext()
-  const propsRef = useRef({ breadcrumb, title, description, leading, actions })
-  propsRef.current = { breadcrumb, title, description, leading, actions }
+  const propsRef = useRef({ breadcrumb, title, leading, actions })
+  propsRef.current = { breadcrumb, title, leading, actions }
 
   const breadcrumbKey = JSON.stringify(breadcrumb)
   const setHeader = ctx?.setHeaderContent
@@ -128,7 +124,7 @@ export function SetPageHeader({
     return () => {
       setHeaderRef.current?.(null)
     }
-  }, [breadcrumbKey, title, description])
+  }, [breadcrumbKey, title])
 
   return null
 }

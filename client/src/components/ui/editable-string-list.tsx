@@ -81,7 +81,7 @@ export function EditableStringList({
           </FieldWithCornerRemoveButton>
         ))}
         {items.length === 0 && (
-          <p className="text-[11px] text-gray-500">{emptyMessage}</p>
+          <p className="text-[11px] text-muted-foreground">{emptyMessage}</p>
         )}
       </div>
     </>

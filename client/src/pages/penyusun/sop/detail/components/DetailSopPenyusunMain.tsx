@@ -110,7 +110,7 @@ export function DetailSOPPenyusunMain({
 
   const toolbar = (
     <div
-      className="inline-flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-lg bg-white/55 p-0.5 ring-1 ring-gray-200/70"
+      className="inline-flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-lg bg-surface/55 p-0.5 ring-1 ring-border/70"
       role="group"
       aria-label="Kontrol dokumen SOP"
     >
@@ -121,10 +121,10 @@ export function DetailSOPPenyusunMain({
             variant="ghost"
             size="sm"
             className={cn(
-              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700',
+              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-secondary-foreground',
               isEditingSteps
-                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/90'
-                : 'hover:bg-white/90',
+                ? 'bg-surface text-foreground shadow-surface ring-1 ring-border/90'
+                : 'hover:bg-surface/90',
             )}
             title={
               isEditingSteps
@@ -133,7 +133,7 @@ export function DetailSOPPenyusunMain({
             }
             onClick={() => setIsEditingSteps(!isEditingSteps)}
           >
-            <ListTree className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+            <ListTree className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
             {isEditingSteps ? 'Diagram' : 'Langkah'}
           </Button>
           <Button
@@ -141,15 +141,15 @@ export function DetailSOPPenyusunMain({
             variant="ghost"
             size="sm"
             className={cn(
-              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90',
+              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-secondary-foreground hover:bg-surface/90',
               diagramConfig.isEditingDiagramPaths
-                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/90'
+                ? 'bg-surface text-foreground shadow-surface ring-1 ring-border/90'
                 : '',
             )}
             onClick={handleToggleManualEdit}
             title="Edit path panah diagram secara manual"
           >
-            <PenLine className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+            <PenLine className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
             Edit Manual
           </Button>
           {diagramConfig.isEditingDiagramPaths ? (
@@ -157,11 +157,11 @@ export function DetailSOPPenyusunMain({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90"
+              className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-secondary-foreground hover:bg-surface/90"
               onClick={diagramConfig.handleResetAllPaths}
               title="Reset semua path ke routing otomatis"
             >
-              <RotateCcw className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+              <RotateCcw className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
               Reset semua path
             </Button>
           ) : null}

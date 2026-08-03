@@ -13,7 +13,6 @@ import { useLocation } from '@tanstack/react-router'
  */
 export function RouteFocusManager({ children }: { children: React.ReactNode }) {
   const location = useLocation()
-  const mainRef = useRef<HTMLElement>(null)
   const previousPathRef = useRef<string>(location.pathname)
 
   useEffect(() => {
@@ -21,16 +20,32 @@ export function RouteFocusManager({ children }: { children: React.ReactNode }) {
     const previousPath = previousPathRef.current
 
     if (currentPath !== previousPath) {
-      const announcement = `Navigated to ${currentPath}`
-
       requestAnimationFrame(() => {
-        mainRef.current?.focus()
-      })
+        const focusTarget = document.querySelector<HTMLElement>(
+          '#main-content h1, main h1, h1, #main-content, main',
+        )
+        if (focusTarget) {
+          const hadTabIndex = focusTarget.hasAttribute('tabindex')
+          if (!hadTabIndex) focusTarget.setAttribute('tabindex', '-1')
+          focusTarget.focus({ preventScroll: false })
+          if (!hadTabIndex) {
+            focusTarget.addEventListener(
+              'blur',
+              () => focusTarget.removeAttribute('tabindex'),
+              { once: true },
+            )
+          }
+        }
 
-      const liveRegion = document.getElementById('route-announcer')
-      if (liveRegion) {
-        liveRegion.textContent = announcement
-      }
+        const pageName =
+          document.querySelector<HTMLElement>('h1')?.textContent?.trim() ||
+          document.title ||
+          'halaman baru'
+        const liveRegion = document.getElementById('route-announcer')
+        if (liveRegion) {
+          liveRegion.textContent = `Berpindah ke halaman ${pageName}`
+        }
+      })
 
       previousPathRef.current = currentPath
     }
@@ -46,14 +61,9 @@ export function RouteFocusManager({ children }: { children: React.ReactNode }) {
         className="sr-only"
       />
 
-      <main
-        ref={mainRef}
-        tabIndex={-1}
-        className="outline-none"
-        data-testid="main-content"
-      >
+      <div data-testid="app-content">
         {children}
-      </main>
+      </div>
     </>
   )
 }

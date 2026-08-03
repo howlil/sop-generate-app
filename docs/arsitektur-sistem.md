@@ -2,7 +2,7 @@
 
 ## 1. Gambaran Umum Arsitektur
 
-Sistem Pengelolaan SOP Biro Organisasi dirancang sebagai aplikasi web berbasis arsitektur client-server. Pada arsitektur ini, frontend berperan sebagai antarmuka pengguna yang menyediakan halaman kerja untuk setiap aktor, sedangkan backend berperan sebagai penyedia layanan aplikasi, validasi proses bisnis, pengelolaan autentikasi, serta penghubung antara aplikasi dan basis data. Pemisahan tersebut membuat tanggung jawab sistem menjadi lebih jelas karena proses penyajian tampilan, pengelolaan status antarmuka, dan komunikasi API berada pada sisi client, sedangkan aturan bisnis utama, otorisasi, transaksi data, serta integritas domain dikendalikan pada sisi server.
+SOPFlow dirancang sebagai aplikasi web berbasis arsitektur client-server. Pada arsitektur ini, frontend berperan sebagai antarmuka pengguna yang menyediakan halaman kerja untuk setiap aktor, sedangkan backend berperan sebagai penyedia layanan aplikasi, validasi proses bisnis, pengelolaan autentikasi, serta penghubung antara aplikasi dan basis data. Pemisahan tersebut membuat tanggung jawab sistem menjadi lebih jelas karena proses penyajian tampilan, pengelolaan status antarmuka, dan komunikasi API berada pada sisi client, sedangkan aturan bisnis utama, otorisasi, transaksi data, serta integritas domain dikendalikan pada sisi server.
 
 Secara umum, sistem terdiri atas tiga komponen utama. Komponen pertama adalah frontend berbasis React yang dibangun menggunakan Vite, TanStack Router, TanStack Query, Zustand, dan Tailwind CSS. Komponen ini menangani navigasi, manajemen sesi pada sisi klien, pemanggilan API, serta penyajian fitur berdasarkan peran pengguna. Komponen kedua adalah backend berbasis NestJS yang menyediakan REST API dengan prefix `/api` dan versioning URI melalui `/api/v1`. Komponen ini memuat modul-modul domain seperti autentikasi, master data, SOP, evaluasi, tanda tangan elektronik, dan arsip publik. Komponen ketiga adalah basis data MySQL yang diakses backend menggunakan Prisma ORM.
 
@@ -24,7 +24,7 @@ Diagram berikut menggambarkan arsitektur lengkap sistem pada lingkungan produksi
 
 ```plantuml
 @startuml
-title Arsitektur Production-Grade Sistem Pengelolaan SOP
+title Arsitektur Production-Grade SOPFlow
 
 skinparam {
   componentStyle rectangle
@@ -150,7 +150,7 @@ Kode PlantUML berikut menyesuaikan penjelasan arsitektur backend pada laporan, y
 
 ```plantuml
 @startuml
-title Arsitektur Backend Sistem Pengelolaan SOP
+title Arsitektur Backend SOPFlow
 
 skinparam {
   componentStyle rectangle
@@ -341,7 +341,7 @@ Kode PlantUML berikut menyesuaikan penjelasan arsitektur *frontend* pada laporan
 
 ```plantuml
 @startuml
-title Arsitektur Frontend Sistem Pengelolaan SOP
+title Arsitektur Frontend SOPFlow
 
 skinparam {
   componentStyle rectangle

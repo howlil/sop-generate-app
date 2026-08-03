@@ -1,4 +1,3 @@
-import { UserCheck } from 'lucide-react'
 import {
   getAccountStatusColors,
   getAccountStatusLabel,
@@ -25,7 +24,6 @@ export function AccountStatusBadge({
       colors={getAccountStatusColors(status)}
       className={className}
       showDomain={showDomain}
-      icon={<UserCheck className="h-2.5 w-2.5 shrink-0 opacity-70" aria-hidden />}
     />
   )
 }

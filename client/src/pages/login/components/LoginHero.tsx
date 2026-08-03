@@ -51,7 +51,7 @@ export function LoginHero() {
 
         {/* Feature Cards */}
         <div className="space-y-3 mb-8">
-          <div className="flex items-center gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all group">
+          <div className="flex items-center gap-3 p-3 bg-surface/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-surface/10 transition-all group">
             <div className="w-9 h-9 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center shrink-0 border border-green-400/20">
               <CheckCircle className="w-4 h-4 text-green-400" />
             </div>
@@ -66,7 +66,7 @@ export function LoginHero() {
             <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all group">
+          <div className="flex items-center gap-3 p-3 bg-surface/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-surface/10 transition-all group">
             <div className="w-9 h-9 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center shrink-0 border border-blue-400/20">
               <Shield className="w-4 h-4 text-blue-400" />
             </div>
@@ -81,7 +81,7 @@ export function LoginHero() {
             <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all group">
+          <div className="flex items-center gap-3 p-3 bg-surface/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-surface/10 transition-all group">
             <div className="w-9 h-9 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-lg flex items-center justify-center shrink-0 border border-amber-400/20">
               <Zap className="w-4 h-4 text-amber-400" />
             </div>

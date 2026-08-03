@@ -1,6 +1,6 @@
 # Rancangan User Acceptance Testing (UAT)
 
-Dokumen ini berisi rancangan User Acceptance Testing (UAT) untuk Sistem Informasi Pengelolaan SOP Biro Organisasi Sumbar. Penyusunan dilakukan berdasarkan:
+Dokumen ini berisi rancangan User Acceptance Testing (UAT) untuk SOPFlow. Penyusunan dilakukan berdasarkan:
 
 1. Dasar teori UAT yang dilampirkan, yaitu UAT sebagai pengujian penerimaan akhir berbasis skenario penggunaan dan penilaian pengguna akhir.
 2. Dasar instrumen ISO/IEC 25010:2023 yang dilampirkan, dengan pembatasan pada karakteristik yang dapat dinilai pengguna setelah mencoba sistem.

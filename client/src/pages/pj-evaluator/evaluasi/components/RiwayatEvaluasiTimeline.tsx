@@ -12,6 +12,7 @@ import { formatDateId } from "@/utils/format-date"
 
 import type { LogNilaiEvaluasi } from "@/types/dto/evaluasi.dto"
 import { HasilEvaluasiBadge } from "@/components/status/hasil-evaluasi-badge"
+import { EmptyState } from "@/components/ui/empty-state"
 
 
 
@@ -27,7 +28,7 @@ export interface RiwayatEvaluasiTimelineProps {
 
 function HasilBadge({ hasil }: { hasil?: string | null }) {
 
-  if (!hasil) return <span className="text-gray-400 text-xs">Belum dinilai</span>
+  if (!hasil) return <span className="text-muted-foreground text-xs">Belum dinilai</span>
 
   const label =
     hasil === "SESUAI"
@@ -48,15 +49,12 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
     return (
 
-      <div className="flex flex-col items-center justify-center py-8 text-gray-400">
-
-        <History className="w-10 h-10 mb-2 opacity-50" />
-
-        <p className="text-xs text-center">Belum ada riwayat evaluasi</p>
-
-        <p className="text-[10px] text-center mt-1 text-gray-300">Perubahan hasil evaluasi akan tercatat di sini</p>
-
-      </div>
+      <EmptyState
+        icon={<History />}
+        title="Belum ada riwayat evaluasi"
+        description="Perubahan hasil evaluasi akan tercatat di sini."
+        className="min-h-0 py-8"
+      />
 
     )
 
@@ -80,7 +78,7 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
             key={log.id}
 
-            className="relative space-y-1.5 rounded-lg border border-gray-200 bg-gray-50 p-2.5 shadow-sm"
+            className="relative space-y-1.5 rounded-lg border border-border bg-surface-subtle p-2.5 shadow-surface"
 
           >
 
@@ -88,9 +86,9 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
               <div className="flex items-center gap-2">
 
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-subtle">
 
-                  <span className="text-[10px] font-semibold text-blue-700">
+                  <span className="text-[10px] font-semibold text-primary">
 
                     {log.evaluatorNama?.charAt(0) ?? "E"}
 
@@ -100,9 +98,9 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
                 <div>
 
-                  <p className="text-xs font-medium text-gray-900">{log.evaluatorNama ?? "Evaluator"}</p>
+                  <p className="text-xs font-medium text-foreground">{log.evaluatorNama ?? "Evaluator"}</p>
 
-                  <p className="text-[10px] text-gray-500">{formatDateId(log.createdAt)}</p>
+                  <p className="text-[10px] text-muted-foreground">{formatDateId(log.createdAt)}</p>
 
                 </div>
 
@@ -126,11 +124,11 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
               <div className="flex flex-wrap items-center gap-2 text-[11px]">
 
-                <span className="text-gray-500">Perubahan:</span>
+                <span className="text-muted-foreground">Perubahan:</span>
 
                 <HasilBadge hasil={log.hasilSebelum} />
 
-                <span className="text-gray-400">→</span>
+                <span className="text-muted-foreground">→</span>
 
                 <HasilBadge hasil={log.hasilSesudah} />
 
@@ -142,9 +140,9 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
             {log.catatanSesudah ? (
 
-              <div className="flex items-start gap-1.5 rounded border border-gray-100 bg-white p-1.5 text-xs text-gray-600">
+              <div className="flex items-start gap-1.5 rounded border border-border bg-surface p-1.5 text-xs text-secondary-foreground">
 
-                <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-gray-400" />
+                <MessageSquare className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
 
                 <p className="whitespace-pre-wrap">{log.catatanSesudah}</p>
 

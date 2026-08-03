@@ -37,7 +37,7 @@ export function SearchToolbar({
   return (
     <div
       className={cn(
-        "bg-white rounded-lg border border-gray-200 p-3 flex items-center gap-2 flex-wrap",
+        "flex flex-col gap-3 rounded-surface border border-border bg-surface p-card shadow-surface sm:flex-row sm:items-center",
         className,
       )}
     >
@@ -50,7 +50,7 @@ export function SearchToolbar({
         />
       ) : null}
       {children != null ? (
-        <div className="ml-auto flex gap-2 flex-wrap">{children}</div>
+        <div className="flex w-full flex-wrap gap-2 [&>button]:min-w-0 [&>button]:flex-1 sm:ml-auto sm:w-auto sm:justify-end sm:[&>button]:flex-none">{children}</div>
       ) : null}
     </div>
   );

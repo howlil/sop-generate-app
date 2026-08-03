@@ -27,7 +27,7 @@ const caAttrs = [
 ];
 
 const signingAttrs = [
-  { name: 'commonName', value: process.argv[3] ?? 'Sistem Informasi SOP Penandatangan PDF' },
+  { name: 'commonName', value: process.argv[3] ?? 'SOPFlow Penandatangan PDF' },
   { name: 'organizationName', value: orgName },
   { name: 'organizationalUnitName', value: ouName },
   { name: 'countryName', value: 'ID' },

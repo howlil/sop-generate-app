@@ -8,6 +8,9 @@ describe('getEvaluasiWorkflowActiveStep', () => {
   it('should_map_SEDANG_DIEVALUASI_to_step_1', () => {
     expect(getEvaluasiWorkflowActiveStep('SEDANG_DIEVALUASI')).toBe(1)
   })
+  it('should_keep_DITOLAK_at_step_1', () => {
+    expect(getEvaluasiWorkflowActiveStep('DITOLAK')).toBe(1)
+  })
   it('should_map_SELESAI_DIEVALUASI_to_step_2', () => {
     expect(getEvaluasiWorkflowActiveStep('SELESAI_DIEVALUASI')).toBe(2)
   })

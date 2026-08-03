@@ -24,9 +24,10 @@ Transisi lain dikendalikan oleh proses evaluasi dan TTE:
 
 - Saat pengajuan evaluasi dibuat, `DetailSOP.MENUNGGU_PENGAJUAN_EVALUASI` berubah menjadi `SEDANG_DIEVALUASI`.
 - Jika evaluator memberi `PERLU_PERBAIKAN`, `DetailSOP` berubah menjadi `REVISI_DARI_EVALUATOR`.
+- Jika evaluator menolak pengajuan, seluruh `DetailSOP` di dalamnya berubah menjadi `DITOLAK_EVALUATOR`. Status ini terminal: versi lama tidak dapat diedit atau diajukan ulang, tetapi dapat dijadikan sumber versi baru.
 - Jika seluruh nilai evaluasi `SESUAI`, `DetailSOP` berubah menjadi `MENUNGGU_TTD_PJ_EVALUATOR`.
 - Setelah BA ditandatangani `PJ_PENYUSUN`, `DetailSOP` berubah menjadi `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI`.
-- `DetailSOP.BERLAKU` hanya boleh terjadi melalui TTE `KEPALA_OPD`; service membuat `DokumenTte` jenis `SOP_BERLAKU`, mencatat `RiwayatTandaTangan`, mengisi `tanggalEfektif`, dan mengganti versi lama yang `BERLAKU` menjadi `DIGANTIKAN`.
+- `DetailSOP.BERLAKU` hanya boleh terjadi melalui TTE `KEPALA_OPD`; service menghitung satu tanggal efektif kalender WIB, menempelkannya ke PDF sebelum tanda tangan digital, memakai objek tanggal yang sama untuk `DetailSOP.tanggalEfektif`, membuat `DokumenTte` jenis `SOP_BERLAKU`, mencatat `RiwayatTandaTangan`, dan mengganti versi lama yang `BERLAKU` menjadi `DIGANTIKAN`.
 
 Database juga menjaga maksimal satu `DetailSOP.BERLAKU` per `SOP`.
 
@@ -35,6 +36,7 @@ Database juga menjaga maksimal satu `DetailSOP.BERLAKU` per `SOP`.
 Alur status pengajuan evaluasi:
 
 - `SEDANG_DIEVALUASI`: evaluator mengisi nilai per SOP.
+- `DITOLAK`: penolakan final oleh evaluator; semua nilai menjadi `DITOLAK`, semua versi SOP menjadi `DITOLAK_EVALUATOR`, dan pengajuan tidak dapat dibuka kembali.
 - `SELESAI_DIEVALUASI`: hanya boleh jika seluruh `NilaiEvaluasi.hasil = SESUAI`; untuk pengajuan `EVALUASI_REQUEST_EVALUATOR`, `nilaiOPD` wajib 1 sampai 5.
 - `DITANDATANGANI_PJ_EVALUATOR`: terjadi setelah BA ditandatangani `PJ_EVALUATOR`.
 - `DITANDATANGANI_PJ_PENYUSUN`: terjadi setelah BA ditandatangani `PJ_PENYUSUN`.
@@ -45,6 +47,7 @@ Service memakai optimistic locking melalui `PengajuanEvaluasi.version` saat muta
 ## Invariant NilaiEvaluasi dan Tindak Lanjut
 
 - `NilaiEvaluasi.hasil = PERLU_PERBAIKAN` wajib memiliki `catatan` tidak kosong.
+- `NilaiEvaluasi.hasil = DITOLAK` hanya dapat ditetapkan oleh aksi penolakan tingkat pengajuan dan tidak memiliki tindak lanjut pada versi yang sama.
 - Saat hasil menjadi `PERLU_PERBAIKAN`, `statusTindakLanjut` wajib `TERBUKA`, sedangkan `ditindaklanjutiPada` dan `ditindaklanjutiOlehId` dikosongkan.
 - Penyusun atau PJ Penyusun hanya boleh menandai tindak lanjut `SELESAI` jika `hasil = PERLU_PERBAIKAN`, `statusTindakLanjut = TERBUKA`, dan `DetailSOP` sedang `REVISI_DARI_EVALUATOR`.
 - Pengajuan hanya boleh diselesaikan evaluator jika seluruh hasil sudah `SESUAI`.

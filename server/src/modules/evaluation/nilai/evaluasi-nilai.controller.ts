@@ -20,6 +20,7 @@ import { IsiNilaiEvaluasiDto } from './dto/isi-nilai-evaluasi.dto';
 import { NilaiEvaluasiPatchResponseDto } from './dto/nilai-evaluasi-patch-response.dto';
 import { PengajuanEvaluasiSelesaiResponseDto } from './dto/pengajuan-evaluasi-selesai-response.dto';
 import { SelesaiEvaluasiDto } from './dto/selesai-evaluasi.dto';
+import { TolakPengajuanEvaluasiDto } from './dto/tolak-pengajuan-evaluasi.dto';
 import { EvaluasiNilaiService } from './evaluasi-nilai.service';
 
 @ApiTags('Evaluasi')
@@ -112,6 +113,32 @@ export class EvaluasiNilaiController {
     const data = await this.evaluasiNilaiService.selesai(req.user, pengajuanEvaluasiId, dto);
     return {
       message: 'Pengajuan evaluasi berhasil diselesaikan',
+      success: true,
+      data,
+    };
+  }
+
+  @Patch(':pengajuanEvaluasiId/tolak')
+  @Roles(PeranPengguna.EVALUATOR)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Tolak final pengajuan evaluasi beserta seluruh versi SOP di dalamnya',
+    description:
+      'Hanya pengajuan SEDANG_DIEVALUASI. Alasan wajib. Seluruh versi SOP menjadi DITOLAK_EVALUATOR dan tidak dapat diajukan ulang; penyusun wajib membuat versi baru dan pengajuan baru.',
+  })
+  @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
+  @ApiResponse({ status: 200, type: PengajuanEvaluasiSelesaiResponseDto })
+  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR' })
+  @ApiNotFoundResponse({ description: 'Pengajuan tidak ditemukan' })
+  @ApiConflictResponse({ description: 'Status atau versi pengajuan sudah berubah' })
+  async tolak(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('pengajuanEvaluasiId', ParseUUIDPipe) pengajuanEvaluasiId: string,
+    @Body() dto: TolakPengajuanEvaluasiDto,
+  ): Promise<ApiSuccessResponse<PengajuanEvaluasiSelesaiResponseDto>> {
+    const data = await this.evaluasiNilaiService.tolak(req.user, pengajuanEvaluasiId, dto);
+    return {
+      message: 'Pengajuan evaluasi berhasil ditolak',
       success: true,
       data,
     };

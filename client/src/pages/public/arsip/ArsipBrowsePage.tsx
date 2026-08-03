@@ -18,6 +18,21 @@ export function ArsipBrowsePage() {
   const browse = useArsipBrowse()
   useDocumentTitle('Arsip SOP — Telusuri Dokumen')
   const { workspaceProps } = browse
+  const handleCloseMobilePreview = () => {
+    const selectedId = browse.mobile.detailSopId
+    browse.handleClosePreview()
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const candidates = document.querySelectorAll<HTMLElement>('[data-arsip-sop-id]')
+        const trigger = Array.from(candidates).find(
+          (candidate) =>
+            candidate.dataset.arsipSopId === selectedId && candidate.offsetParent !== null,
+        )
+        trigger?.focus()
+      })
+    })
+  }
   return (
     <ArsipSopShell>
       <ArsipPageIntro />
@@ -83,7 +98,7 @@ export function ArsipBrowsePage() {
             pdfUrl={browse.selectedSop?.pdfUrl}
             title={browse.selectedSop?.judul}
             opdName={browse.selectedSop?.opdNama}
-            onClose={browse.handleClosePreview}
+            onClose={handleCloseMobilePreview}
             onRefresh={browse.workspaceProps.onRefreshPreview}
             variant="overlay"
           />

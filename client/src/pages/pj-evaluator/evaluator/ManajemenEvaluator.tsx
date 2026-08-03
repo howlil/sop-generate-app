@@ -173,7 +173,8 @@ export function ManajemenEvaluator() {
     >
       <Table.Paginated data={evaluatorList} label="anggota">
         {(pageData) => (
-          <Table.Table>
+          <Table.Root>
+            <Table.Table>
             <thead>
               <Table.HeadRow>
                 <Table.Th>Nama Lengkap</Table.Th>
@@ -183,7 +184,7 @@ export function ManajemenEvaluator() {
                 <Table.Th>Email</Table.Th>
                 <Table.Th>No. HP</Table.Th>
                 <Table.Th>Status</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
+                <Table.ActionTh>Aksi</Table.ActionTh>
               </Table.HeadRow>
             </thead>
             <tbody>
@@ -224,8 +225,8 @@ export function ManajemenEvaluator() {
                         subtext={tim.berakhirPada ? `Selesai: ${formatDateId(tim.berakhirPada)}` : undefined}
                       />
                     </Table.Td>
-                    <Table.Td className="text-center">
-                      <div className="flex flex-wrap items-center justify-center gap-1">
+                    <Table.ActionTd>
+                      <div className="flex flex-wrap items-center justify-start gap-1">
                         <RowActions
                           wrap
                           actions={[
@@ -247,12 +248,13 @@ export function ManajemenEvaluator() {
                           ]}
                         />
                       </div>
-                    </Table.Td>
+                    </Table.ActionTd>
                   </Table.BodyRow>
                 ))
               )}
             </tbody>
-          </Table.Table>
+            </Table.Table>
+          </Table.Root>
         )}
       </Table.Paginated>
 

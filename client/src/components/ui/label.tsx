@@ -17,14 +17,14 @@ const Label = React.forwardRef<
   <LabelPrimitive.Root
     ref={ref}
     className={cn(
-      'text-xs font-medium leading-none block',
-      variant === 'muted' ? 'text-gray-500 mb-1' : 'text-gray-700 mb-1',
+      'mb-1 block text-sm font-medium leading-5',
+      variant === 'muted' ? 'text-muted-foreground' : 'text-secondary-foreground',
       className
     )}
     {...props}
   >
     {children}
-    {required && <span className="text-red-500/80"> *</span>}
+    {required && <span className="text-danger"> *</span>}
   </LabelPrimitive.Root>
 ))
 Label.displayName = LabelPrimitive.Root.displayName

@@ -58,23 +58,23 @@ export const allUsers = Object.values(users)
 export const navByRole: Record<RoleKey, string[]> = {
   PJ_EVALUATOR: [
     'Grafik Evaluasi',
-    'Manajemen OPD',
-    'Manajemen Penyusun',
-    'Manajemen Evaluator',
-    'Manajemen Evaluasi SOP',
+    'OPD',
+    'Penyusun',
+    'Evaluator',
+    'Evaluasi SOP',
   ],
   EVALUATOR: ['Evaluasi SOP'],
   KEPALA_OPD: ['Pantau SOP', 'Pengajuan SOP'],
   PJ_PENYUSUN: [
-    'Manajemen SOP',
-    'Manajemen Pelaksana SOP',
-    'Manajemen Peraturan',
-    'Berita Acara PJ Penyusun',
+    'SOP',
+    'Pelaksana SOP',
+    'Peraturan',
+    'Berita Acara',
   ],
   PENYUSUN: [
-    'Manajemen SOP',
-    'Manajemen Pelaksana SOP',
-    'Manajemen Peraturan',
+    'SOP',
+    'Pelaksana SOP',
+    'Peraturan',
   ],
 }
 

@@ -9,6 +9,7 @@ const EDITABLE_STATUSES: ReadonlySet<StatusSOP> = new Set([
 
 /** Status terminal — versi tidak boleh diedit isi dokumen. */
 export const TERMINAL_DETAIL_STATUSES: ReadonlySet<StatusSOP> = new Set([
+  StatusSOP.DITOLAK_EVALUATOR,
   StatusSOP.BERLAKU,
   StatusSOP.DIGANTIKAN,
   StatusSOP.DICABUT,

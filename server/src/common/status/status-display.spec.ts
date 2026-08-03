@@ -72,9 +72,10 @@ describe('Pengujian displayHasilEvaluasi', () => {
     expect(actual.label).toBe('Belum dinilai');
   });
 
-  it('seharusnya memetakan SESUAI dan PERLU_PERBAIKAN', () => {
+  it('seharusnya memetakan SESUAI, PERLU_PERBAIKAN, dan DITOLAK', () => {
     expect(displayHasilEvaluasi(HasilEvaluasi.SESUAI).label).toBe('Sesuai');
     expect(displayHasilEvaluasi(HasilEvaluasi.PERLU_PERBAIKAN).label).toBe('Perlu perbaikan');
+    expect(displayHasilEvaluasi(HasilEvaluasi.DITOLAK).label).toBe('Ditolak');
   });
 });
 

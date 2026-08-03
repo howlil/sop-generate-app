@@ -108,6 +108,61 @@ test.describe('E2E workflow pengajuan, evaluasi, revisi, dan konsistensi status'
     }
   })
 
+  test('Evaluator menolak final seluruh SOP dan PJ Penyusun wajib membuat versi baru', async () => {
+    const pjPenyusun = await createAuthenticatedApiContext(users.pjPenyusun)
+    const evaluator = await createAuthenticatedApiContext(users.evaluator)
+    try {
+      const sop = await createReadySopFixture(pjPenyusun, 'EVAL-REJECT')
+      const pengajuanId = await createPengajuanForSop(pjPenyusun, sop.detailSopId)
+      const alasan = 'Dasar hukum dan keluaran proses belum lengkap.'
+
+      const ditolak = await apiPatch<{
+        status: string
+        alasanPenolakan: string
+        version: number
+      }>(evaluator, `/evaluasi/${pengajuanId}/tolak`, {
+        alasan,
+        version: 0,
+      })
+      expect(ditolak.status).toBe('DITOLAK')
+      expect(ditolak.alasanPenolakan).toBe(alasan)
+
+      const umpanBalik = await apiGet<{
+        pengajuanStatus: string
+        hasil: string
+        catatan: string
+      }>(pjPenyusun, `/evaluasi/umpan-balik/detail/${sop.detailSopId}`)
+      expect(umpanBalik).toMatchObject({
+        pengajuanStatus: 'DITOLAK',
+        hasil: 'DITOLAK',
+        catatan: alasan,
+      })
+
+      await expectApiRejected(
+        pjPenyusun,
+        'patch',
+        `/evaluasi/${pengajuanId}/nilai/${sop.detailSopId}/tindak-lanjut-selesai`,
+      )
+      await expectApiRejected(
+        pjPenyusun,
+        'post',
+        `/sop/penyusun-workbench/${sop.detailSopId}/kirim-ulang-evaluasi`,
+      )
+
+      const versiBaru = await apiPost<{
+        detail: { id: string; status: string; versi: number }
+      }>(pjPenyusun, `/sop/${sop.detailSopId}/buat-versi-baru`)
+      expect(versiBaru.detail.id).not.toBe(sop.detailSopId)
+      expect(versiBaru.detail.status).toBe('DRAFT')
+      expect(versiBaru.detail.versi).toBeGreaterThan(1)
+
+      const tetapDitolak = await apiGet<{ status: string }>(evaluator, `/evaluasi/${pengajuanId}`)
+      expect(tetapDitolak.status).toBe('DITOLAK')
+    } finally {
+      await Promise.all([pjPenyusun.dispose(), evaluator.dispose()])
+    }
+  })
+
   test('E2E-69: status SOP konsisten setelah refresh, logout-login, dan perpindahan peran', async ({ page }) => {
     const approved = await createApprovedSopFixture('CONSISTENT')
 

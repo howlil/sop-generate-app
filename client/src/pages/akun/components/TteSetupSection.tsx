@@ -80,11 +80,16 @@ function PinInputField({
         {showToggle && onToggleShow && (
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute right-0 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
             onClick={onToggleShow}
-            tabIndex={-1}
+            aria-label={show ? "Sembunyikan PIN" : "Tampilkan PIN"}
+            aria-pressed={show}
           >
-            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {show ? (
+              <EyeOff className="w-4 h-4" aria-hidden />
+            ) : (
+              <Eye className="w-4 h-4" aria-hidden />
+            )}
           </button>
         )}
       </div>
@@ -103,14 +108,14 @@ function SetupProgressBar({ step }: { step: SetupStep }) {
         <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${isForm ? "bg-blue-600 text-white" : "bg-blue-600 text-white"}`}>
           {isForm ? <CheckCircle2 className="w-3.5 h-3.5" /> : "1"}
         </div>
-        <span className="text-xs font-medium text-gray-700">Sertifikat</span>
+        <span className="text-xs font-medium text-secondary-foreground">Sertifikat</span>
       </div>
-      <div className="flex-1 h-px bg-gray-200 mx-1" />
+      <div className="flex-1 h-px bg-border mx-1" />
       <div className="flex items-center gap-1.5">
-        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-gray-100 text-gray-400">
+        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-surface-muted text-muted-foreground">
           2
         </div>
-        <span className="text-xs text-gray-400">PIN TTE</span>
+        <span className="text-xs text-muted-foreground">PIN TTE</span>
       </div>
     </div>
   );
@@ -172,8 +177,8 @@ function SetupWizard({
       <div className="space-y-5">
         <SetupProgressBar step={step} />
         <div>
-          <p className="text-sm font-medium text-gray-900 mb-1">Pilih jenis sertifikat</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-sm font-medium text-foreground mb-1">Pilih jenis sertifikat</p>
+          <p className="text-xs text-muted-foreground">
             Sertifikat digunakan untuk menandatangani dokumen PDF secara digital. Pilih sesuai kebutuhan.
           </p>
         </div>
@@ -190,14 +195,14 @@ function SetupWizard({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-gray-900">Buat Otomatis</p>
-                  <span className="text-[10px] font-medium bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Rekomendasi</span>
+                  <p className="text-sm font-semibold text-foreground">Buat Otomatis</p>
+                  <span className="inline-flex min-h-6 items-center rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800">Rekomendasi</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   Sistem membuat sertifikat personal untuk Anda. Cocok untuk penggunaan internal.
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-300 shrink-0 mt-0.5 group-hover:text-blue-400 transition-colors" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5 group-hover:text-blue-400 transition-colors" />
             </div>
           </button>
 
@@ -205,19 +210,19 @@ function SetupWizard({
           <button
             type="button"
             onClick={() => { setStep("upload-bsre"); resetPinFields(); }}
-            className="w-full text-left rounded-xl border-2 border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50/60 transition-all p-4 group"
+            className="group w-full rounded-xl border-2 border-border-strong bg-surface p-4 text-left transition-all hover:bg-surface-subtle/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 w-8 h-8 rounded-lg bg-gray-600 flex items-center justify-center shrink-0 group-hover:bg-gray-700 transition-colors">
+              <div className="mt-0.5 w-8 h-8 rounded-lg bg-secondary-foreground flex items-center justify-center shrink-0 group-hover:bg-foreground transition-colors">
                 <Upload className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">Unggah dari BSrE</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                <p className="text-sm font-semibold text-foreground">Unggah dari BSrE</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   Gunakan file P12 resmi dari Badan Siber dan Sandi Negara (BSrE/BSSN).
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-300 shrink-0 mt-0.5 group-hover:text-gray-500 transition-colors" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5 group-hover:text-muted-foreground transition-colors" />
             </div>
           </button>
         </div>
@@ -232,20 +237,20 @@ function SetupWizard({
         <SetupProgressBar step={step} />
 
         {/* Identitas */}
-        <div className="rounded-lg bg-gray-50 border border-gray-100 px-3.5 py-3 flex items-center gap-3">
+        <div className="rounded-lg bg-surface-subtle border border-border px-3.5 py-3 flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
             <span className="text-xs font-bold text-blue-700">
               {(displayName || "?").charAt(0).toUpperCase()}
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{displayName || "—"}</p>
-            <p className="text-xs text-gray-500 font-mono">NIP. {displayNip || "—"}</p>
+            <p className="text-sm font-medium text-foreground truncate">{displayName || "—"}</p>
+            <p className="text-xs text-muted-foreground font-mono">NIP. {displayNip || "—"}</p>
           </div>
         </div>
 
         <div className="space-y-3">
-          <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+          <p className="text-xs font-medium text-secondary-foreground flex items-center gap-1.5">
             <KeyRound className="w-3.5 h-3.5 text-blue-500" />
             Buat PIN TTE
           </p>
@@ -268,12 +273,12 @@ function SetupWizard({
             show={showPin}
           />
           {pinError && (
-            <p className="text-xs text-red-600 flex items-center gap-1.5">
+            <p role="alert" className="text-xs text-red-600 flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {pinError}
             </p>
           )}
-          <p className="text-[11px] text-gray-400 flex items-center gap-1">
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
             <Lock className="w-3 h-3" />
             PIN digunakan setiap kali menandatangani dokumen. Jangan bagikan ke siapapun.
           </p>
@@ -284,7 +289,7 @@ function SetupWizard({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 text-xs gap-1 text-gray-500"
+            className="h-8 text-xs gap-1 text-muted-foreground"
             onClick={() => setStep("choose-method")}
             disabled={isPending}
           >
@@ -320,18 +325,18 @@ function SetupWizard({
         </div>
 
         <div className="space-y-3">
-          <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
-            <FileKey2 className="w-3.5 h-3.5 text-gray-500" />
+          <p className="text-xs font-medium text-secondary-foreground flex items-center gap-1.5">
+            <FileKey2 className="w-3.5 h-3.5 text-muted-foreground" />
             File Sertifikat
           </p>
           <FormField label="File P12 / PFX">
             <label
-              className={`flex items-center gap-3 w-full rounded-lg border-2 border-dashed px-3 py-3 cursor-pointer transition-colors ${
-                file ? "border-blue-200 bg-blue-50/50" : "border-gray-200 hover:border-blue-200 hover:bg-gray-50/60"
+              className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed px-3 py-3 transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
+                file ? "border-primary bg-primary-subtle/50" : "border-border-strong hover:border-primary hover:bg-surface-subtle/60"
               } ${isPending ? "opacity-50 pointer-events-none" : ""}`}
             >
-              <Upload className={`w-4 h-4 shrink-0 ${file ? "text-blue-500" : "text-gray-400"}`} />
-              <span className={`text-xs truncate ${file ? "text-blue-700 font-medium" : "text-gray-500"}`}>
+              <Upload className={`w-4 h-4 shrink-0 ${file ? "text-blue-500" : "text-muted-foreground"}`} />
+              <span className={`text-xs truncate ${file ? "text-blue-700 font-medium" : "text-muted-foreground"}`}>
                 {file ? file.name : "Klik untuk pilih file .p12 atau .pfx"}
               </span>
               <input
@@ -357,8 +362,8 @@ function SetupWizard({
           </FormField>
         </div>
 
-        <div className="space-y-3 pt-1 border-t border-gray-100">
-          <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5 pt-1">
+        <div className="space-y-3 pt-1 border-t border-border">
+          <p className="text-xs font-medium text-secondary-foreground flex items-center gap-1.5 pt-1">
             <KeyRound className="w-3.5 h-3.5 text-blue-500" />
             Buat PIN TTE
           </p>
@@ -381,7 +386,7 @@ function SetupWizard({
             show={showPin}
           />
           {pinError && (
-            <p className="text-xs text-red-600 flex items-center gap-1.5">
+            <p role="alert" className="text-xs text-red-600 flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {pinError}
             </p>
@@ -393,7 +398,7 @@ function SetupWizard({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 text-xs gap-1 text-gray-500"
+            className="h-8 text-xs gap-1 text-muted-foreground"
             onClick={() => setStep("choose-method")}
             disabled={isPending}
           >
@@ -464,7 +469,7 @@ function GantiSertifikatDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <FileKey2 className="w-4 h-4 text-gray-600" />
+            <FileKey2 className="w-4 h-4 text-secondary-foreground" />
             {hasP12 ? "Ganti Sertifikat TTE" : "Atur Sertifikat TTE"}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -475,14 +480,14 @@ function GantiSertifikatDialog({
         </DialogHeader>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+        <div className="flex gap-1 p-1 bg-surface-muted rounded-lg">
           {(["generate", "upload"] as const).map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => setActiveTab(t)}
               className={`flex-1 py-1.5 text-xs font-medium rounded-md flex items-center justify-center gap-1.5 transition-all ${
-                activeTab === t ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                activeTab === t ? "bg-surface shadow-surface text-foreground" : "text-muted-foreground hover:text-secondary-foreground"
               }`}
             >
               {t === "generate" ? <Sparkles className="w-3 h-3" /> : <Upload className="w-3 h-3" />}
@@ -508,9 +513,9 @@ function GantiSertifikatDialog({
               <Input type="password" value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Masukkan PIN" className="h-9 text-sm" required disabled={isPending} autoComplete="off" />
             </FormField>
             <FormField label="File P12">
-              <label className={`flex items-center gap-2 w-full rounded-lg border-2 border-dashed px-3 py-2.5 cursor-pointer transition-colors ${file ? "border-blue-200 bg-blue-50/50" : "border-gray-200 hover:border-blue-200"} ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
-                <Upload className={`w-3.5 h-3.5 shrink-0 ${file ? "text-blue-500" : "text-gray-400"}`} />
-                <span className={`text-xs truncate ${file ? "text-blue-700 font-medium" : "text-gray-500"}`}>
+              <label className={`flex w-full cursor-pointer items-center gap-2 rounded-control border-2 border-dashed px-3 py-2.5 transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${file ? "border-primary bg-primary-subtle/50" : "border-border-strong hover:border-primary"} ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+                <Upload className={`w-3.5 h-3.5 shrink-0 ${file ? "text-blue-500" : "text-muted-foreground"}`} />
+                <span className={`text-xs truncate ${file ? "text-blue-700 font-medium" : "text-muted-foreground"}`}>
                   {file ? file.name : "Pilih file .p12"}
                 </span>
                 <input type="file" accept=".p12,.pfx" className="sr-only" onChange={(e) => setFile(e.target.files?.[0] ?? null)} disabled={isPending} />
@@ -568,7 +573,7 @@ function TteActiveState({
             Diperbarui {formatDateIdLong(profile.updatedAt)}
           </p>
         </div>
-        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+        <span className={`inline-flex min-h-6 shrink-0 items-center rounded-md px-2 py-0.5 text-xs font-semibold ${
           hasP12 ? "bg-green-200/70 text-green-800" : "bg-amber-200/70 text-amber-800"
         }`}>
           {hasP12 ? "Siap" : "Perlu Tindakan"}
@@ -592,15 +597,15 @@ function TteActiveState({
       </div>
 
       {/* Identitas singkat */}
-      <div className="flex items-center gap-2.5 px-3.5 py-3 rounded-lg bg-gray-50 border border-gray-100">
-        <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-bold text-gray-600">
+      <div className="flex items-center gap-2.5 px-3.5 py-3 rounded-lg bg-surface-subtle border border-border">
+        <div className="w-7 h-7 rounded-full bg-border flex items-center justify-center shrink-0">
+          <span className="text-[11px] font-bold text-secondary-foreground">
             {(profile.user?.nama ?? displayName).charAt(0).toUpperCase()}
           </span>
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-gray-900 truncate">{profile.user?.nama ?? displayName}</p>
-          <p className="text-[11px] text-gray-500 font-mono">NIP. {profile.user?.nip ?? displayNip}</p>
+          <p className="text-xs font-medium text-foreground truncate">{profile.user?.nama ?? displayName}</p>
+          <p className="text-[11px] text-muted-foreground font-mono">NIP. {profile.user?.nip ?? displayNip}</p>
         </div>
       </div>
 
@@ -641,13 +646,13 @@ function CredentialRow({
   status: "ok" | "warn";
 }) {
   return (
-    <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg border border-gray-100 bg-white">
-      <div className="text-gray-400">{icon}</div>
-      <span className="text-xs text-gray-600 flex-1">{label}</span>
-      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+    <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg border border-border bg-surface">
+      <div className="text-muted-foreground">{icon}</div>
+      <span className="text-xs text-secondary-foreground flex-1">{label}</span>
+      <span className={`inline-flex min-h-6 items-center rounded-md px-2 py-0.5 text-xs font-semibold ${
         status === "ok"
-          ? "bg-green-100 text-green-700"
-          : "bg-amber-100 text-amber-700"
+          ? "bg-green-100 text-green-800"
+          : "bg-amber-100 text-amber-900"
       }`}>
         {value}
       </span>
@@ -668,14 +673,14 @@ export function TteSetupSection({ profile, isLoading, displayName, displayNip }:
   const isReady = Boolean(profile);
 
   return (
-    <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <section className="bg-surface rounded-xl border border-border overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-100">
+      <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">Tanda Tangan Elektronik</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <h2 className="text-sm font-semibold text-foreground">Tanda Tangan Elektronik</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {profile?.hasP12
                 ? "Akun TTE aktif dan siap digunakan untuk menandatangani dokumen."
                 : profile
@@ -691,7 +696,7 @@ export function TteSetupSection({ profile, isLoading, displayName, displayNip }:
         {isLoading ? (
           <div className="flex items-center justify-center gap-2 py-8">
             <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-gray-400">Memuat...</span>
+            <span className="text-xs text-muted-foreground">Memuat...</span>
           </div>
         ) : isReady && profile ? (
           <TteActiveState

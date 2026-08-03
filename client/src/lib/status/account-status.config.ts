@@ -8,7 +8,7 @@ export const ACCOUNT_STATUS_LABELS: Record<string, string> = {
 
 export const ACCOUNT_STATUS_BADGE_COLORS: Record<string, StatusBadgeColors> = {
   AKTIF: { color: 'text-green-700', bgColor: 'bg-green-100' },
-  NONAKTIF: { color: 'text-gray-700', bgColor: 'bg-gray-100' },
+  NONAKTIF: { color: 'text-secondary-foreground', bgColor: 'bg-surface-muted' },
 }
 
 export function getAccountStatusLabel(status: string): string {

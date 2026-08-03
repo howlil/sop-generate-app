@@ -1,4 +1,3 @@
-import { Layers } from 'lucide-react'
 import { getPengajuanStatusColors } from '@/lib/status/pengajuan-status.config'
 import { DomainStatusBadge } from './domain-status-badge'
 
@@ -22,7 +21,6 @@ export function PengajuanStatusBadge({
       colors={getPengajuanStatusColors(status)}
       className={className}
       showDomain={showDomain}
-      icon={<Layers className="h-2.5 w-2.5 shrink-0 opacity-70" aria-hidden />}
     />
   )
 }

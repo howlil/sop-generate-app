@@ -27,8 +27,8 @@ export function BeritaAcaraKoordinatorPage() {
         {error && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 py-12 text-center">
             <AlertCircle className="mb-3 h-12 w-12 text-red-600" />
-            <h3 className="mb-1 text-sm text-gray-900">Gagal Memuat Data</h3>
-            <p className="mb-4 max-w-md text-xs text-gray-500">
+            <h3 className="mb-1 text-sm text-foreground">Gagal Memuat Data</h3>
+            <p className="mb-4 max-w-md text-xs text-muted-foreground">
               Terjadi kesalahan saat mengambil data berita acara. Periksa koneksi Anda dan coba lagi.
             </p>
             <Button variant="outline" onClick={() => window.location.reload()}>
@@ -91,7 +91,7 @@ export function BeritaAcaraKoordinatorPage() {
               {
                 id: 'evaluator',
                 header: 'Evaluator',
-                className: 'max-w-[280px] text-gray-700',
+                className: 'max-w-[280px] text-secondary-foreground',
                 render: (pengajuan) => pengajuan.timEvaluasi ?? '-',
               },
             ]}
@@ -107,7 +107,6 @@ export function BeritaAcaraKoordinatorPage() {
                         to: ROUTES.PENYUSUN.DETAIL_BERITA_ACARA,
                         params: { id: pengajuan.id },
                       }),
-                    variant: 'outline',
                   },
                 ]}
               />

@@ -1,6 +1,6 @@
 # Kebutuhan Non-Fungsional (Non-Functional Requirements)
 
-Dokumen ini merangkum kebutuhan non-fungsional Sistem Informasi Pengelolaan SOP Biro Organisasi Sumatera Barat. Kebutuhan disusun berdasarkan arsitektur sistem yang menggunakan client React/Vite/TanStack/Tailwind, server NestJS/Prisma/MariaDB, modul Tanda Tangan Elektronik (TTE), pengelolaan PDF, evaluasi SOP, arsip publik, dan pembatasan akses berbasis peran.
+Dokumen ini merangkum kebutuhan non-fungsional SOPFlow. Kebutuhan disusun berdasarkan arsitektur sistem yang menggunakan client React/Vite/TanStack/Tailwind, server NestJS/Prisma/MariaDB, modul Tanda Tangan Elektronik (TTE), pengelolaan PDF, evaluasi SOP, arsip publik, dan pembatasan akses berbasis peran.
 
 Setiap deskripsi dibuat dalam bentuk yang dapat diukur. Bagian "Bentuk ukur" pada setiap baris menunjukkan rekomendasi cara pengujian atau indikator yang dapat dipakai untuk membuktikan bahwa kebutuhan tersebut terpenuhi.
 

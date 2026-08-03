@@ -160,26 +160,26 @@ export function DetailEvaluasiOPDFormPanel({
         {activeTabResolved === "sop" && (
           <>
             {!sopForm.effectiveSopId ? (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Pilih SOP di daftar kiri untuk mengisi form evaluasi.
               </p>
             ) : sopForm.readOnly ? (
               <InfoCard variant="neutral" title="Penilaian ditutup">
-                <div className="space-y-1.5 text-xs text-gray-700">
+                <div className="space-y-1.5 text-xs text-secondary-foreground">
                   <p>
-                    <span className="text-gray-500">Status: </span>
+                    <span className="text-muted-foreground">Status: </span>
                     <span className="font-medium">
                       {labelHasilRiwayat(sopForm.nilaiTersimpan?.hasil)}
                     </span>
                   </p>
                   {sopForm.nilaiTersimpan?.catatan ? (
                     <p className="leading-snug whitespace-pre-wrap">
-                      <span className="text-gray-500">Catatan: </span>
+                      <span className="text-muted-foreground">Catatan: </span>
                       {sopForm.nilaiTersimpan.catatan}
                     </p>
                   ) : null}
                 </div>
-                <p className="text-[11px] text-gray-500 mt-2">
+                <p className="text-[11px] text-muted-foreground mt-2">
                   Pengajuan sudah keluar dari tahap penilaian — tidak dapat
                   diubah.
                 </p>
@@ -201,22 +201,22 @@ export function DetailEvaluasiOPDFormPanel({
                 ) : null}
                 <div className="space-y-3">
                   {sopForm.tahapPenilaian === "tinjauan_ulang" ? (
-                    <p className="text-xs font-medium text-gray-800">
+                    <p className="text-xs font-medium text-foreground">
                       Penilaian ulang
                     </p>
                   ) : null}
                   
                   {isLockedSopForm ? (
                     <div className="space-y-3">
-                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
+                      <div className="p-3 bg-surface-subtle border border-border rounded-lg space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-gray-700">Hasil Penilaian</span>
-                          <span className="text-xs font-semibold text-gray-900">{labelHasilRiwayat(sopForm.statusEvaluasi)}</span>
+                          <span className="text-xs font-medium text-secondary-foreground">Hasil Penilaian</span>
+                          <span className="text-xs font-semibold text-foreground">{labelHasilRiwayat(sopForm.statusEvaluasi)}</span>
                         </div>
                         {sopForm.statusEvaluasi === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && (
                           <div className="space-y-1">
-                            <span className="text-xs text-gray-500">Catatan:</span>
-                            <p className="text-xs text-gray-800 whitespace-pre-wrap">{sopForm.komentarEvaluasi || "-"}</p>
+                            <span className="text-xs text-muted-foreground">Catatan:</span>
+                            <p className="text-xs text-foreground whitespace-pre-wrap">{sopForm.komentarEvaluasi || "-"}</p>
                           </div>
                         )}
                       </div>
@@ -274,7 +274,7 @@ export function DetailEvaluasiOPDFormPanel({
         {activeTabResolved === "aktivitas" && (
           <>
             {!sopForm.effectiveSopId ? (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Pilih SOP di daftar kiri untuk melihat aktivitas penilaian.
               </p>
             ) : (
@@ -289,15 +289,15 @@ export function DetailEvaluasiOPDFormPanel({
         {activeTabResolved === "opd" && penilaianOpdDiizinkan && (
           <>
             {!opdForm.opd ? (
-              <p className="text-xs text-gray-500">OPD tidak tersedia.</p>
+              <p className="text-xs text-muted-foreground">OPD tidak tersedia.</p>
             ) : (
               <>
                 {opdForm.readOnly ? (
                   <InfoCard variant="neutral" title="Skor evaluasi OPD">
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-secondary-foreground">
                       {opdForm.nilaiOpdTersimpan != null ? (
                         <>
-                          <span className="text-gray-500">Skor: </span>
+                          <span className="text-muted-foreground">Skor: </span>
                           <span className="font-semibold text-blue-700">
                             {opdForm.nilaiOpdTersimpan}/5
                           </span>
@@ -306,7 +306,7 @@ export function DetailEvaluasiOPDFormPanel({
                         "Tidak ada skor OPD untuk pengajuan ini."
                       )}
                     </p>
-                    <p className="mt-2 text-[10px] leading-relaxed text-gray-600">
+                    <p className="mt-2 text-[10px] leading-relaxed text-secondary-foreground">
                       1 = Sangat rendah · 2 = Rendah · 3 = Sedang · 4 = Tinggi · 5 = Sangat tinggi
                     </p>
                   </InfoCard>
@@ -317,7 +317,7 @@ export function DetailEvaluasiOPDFormPanel({
                   />
                 )}
 
-                <div className="border-t border-gray-100 pt-3">
+                <div className="border-t border-border pt-3">
                   <RiwayatCardList
                     title="Riwayat evaluasi OPD"
                     emptyMessage="Belum ada riwayat evaluasi OPD."
@@ -325,11 +325,11 @@ export function DetailEvaluasiOPDFormPanel({
                     renderItem={(r) => (
                       <>
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
-                          <span className="font-medium text-gray-700">
+                          <span className="font-medium text-secondary-foreground">
                             {formatDateId(r.tanggal)}
                           </span>
-                          <span className="text-gray-500">—</span>
-                          <span className="text-gray-600">
+                          <span className="text-muted-foreground">—</span>
+                          <span className="text-secondary-foreground">
                             {r.evaluator}
                           </span>
                           {r.nilaiOPD != null && (
@@ -340,7 +340,7 @@ export function DetailEvaluasiOPDFormPanel({
                         </div>
                         {r.catatan && (
                           <p
-                            className="text-gray-600 mt-1 leading-snug truncate"
+                            className="text-secondary-foreground mt-1 leading-snug truncate"
                             title={r.catatan}
                           >
                             {r.catatan}

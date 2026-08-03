@@ -45,6 +45,9 @@ export type EvaluasiWorkspacePengajuanAktifRepo = {
   readonly pengajuanEvaluasiId: string;
   readonly status: StatusPengajuanEvaluasi;
   readonly jenis: JenisPengajuanEvaluasi;
+  readonly version: number;
+  readonly alasanPenolakan: string | null;
+  readonly tanggalDitolak: Date | null;
   readonly nilaiEvaluasi: EvaluasiWorkspaceNilaiRepo[];
 };
 
@@ -73,6 +76,9 @@ export type EvaluasiWorkspacePengajuanBundleRepo = {
   readonly opdId: string;
   readonly status: StatusPengajuanEvaluasi;
   readonly jenis: JenisPengajuanEvaluasi;
+  readonly version: number;
+  readonly alasanPenolakan: string | null;
+  readonly tanggalDitolak: Date | null;
   readonly nilaiEvaluasi: readonly EvaluasiWorkspaceNilaiRepo[];
   readonly daftarRows: readonly EvaluasiWorkspaceDaftarRowRepo[];
 };
@@ -151,6 +157,9 @@ export class EvaluasiWorkspaceRepository {
         opdId: true,
         status: true,
         jenis: true,
+        version: true,
+        alasanPenolakan: true,
+        tanggalDitolak: true,
         nilaiEvaluasi: {
           select: {
             detailSopId: true,
@@ -203,6 +212,9 @@ export class EvaluasiWorkspaceRepository {
       opdId: row.opdId,
       status: row.status,
       jenis: row.jenis,
+      version: row.version,
+      alasanPenolakan: row.alasanPenolakan,
+      tanggalDitolak: row.tanggalDitolak,
       nilaiEvaluasi,
       daftarRows,
     };
@@ -221,6 +233,9 @@ export class EvaluasiWorkspaceRepository {
         pengajuanEvaluasiId: true,
         status: true,
         jenis: true,
+        version: true,
+        alasanPenolakan: true,
+        tanggalDitolak: true,
         nilaiEvaluasi: {
           select: {
             detailSopId: true,
@@ -243,6 +258,9 @@ export class EvaluasiWorkspaceRepository {
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
       status: row.status,
       jenis: row.jenis,
+      version: row.version,
+      alasanPenolakan: row.alasanPenolakan,
+      tanggalDitolak: row.tanggalDitolak,
       nilaiEvaluasi: row.nilaiEvaluasi.map((n) => ({
         detailSopId: n.detailSopId,
         hasil: n.hasil === null || n.hasil === undefined ? null : String(n.hasil),

@@ -54,10 +54,10 @@ export function LawBasisDialog({
       }
       renderItem={(item) => (
         <div className="min-w-0 flex-1 space-y-0.5">
-          <p className="text-xs font-medium text-gray-900 leading-snug">
+          <p className="text-xs font-medium text-foreground leading-snug">
             {item.namaPeraturan} No. {item.nomor}/{item.tahun}
           </p>
-          <p className="text-[11px] text-gray-600 leading-snug line-clamp-2">
+          <p className="text-[11px] text-secondary-foreground leading-snug line-clamp-2">
             {item.tentang}
           </p>
         </div>

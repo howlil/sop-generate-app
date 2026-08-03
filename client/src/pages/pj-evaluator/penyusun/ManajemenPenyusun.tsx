@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { RowActions } from "@/components/data/row-actions";
@@ -209,9 +210,7 @@ export function ManajemenPenyusun() {
       }
     >
       {isLoading ? (
-        <div className="py-8 text-center text-gray-500 text-sm">
-          Memuat data penyusun...
-        </div>
+        <LoadingState message="Memuat data penyusun…" />
       ) : (
         <>
           <ExpandableGroupedTable
@@ -229,7 +228,7 @@ export function ManajemenPenyusun() {
                     <Table.Th>Email</Table.Th>
                     <Table.Th>No. HP</Table.Th>
                     <Table.Th>Status</Table.Th>
-                    <Table.Th align="center">Aksi</Table.Th>
+                    <Table.ActionTh>Aksi</Table.ActionTh>
                   </Table.HeadRow>
                 </thead>
                 <tbody>
@@ -250,18 +249,18 @@ export function ManajemenPenyusun() {
                           <PersonMonoCell value={p.nip} />
                         </Table.Td>
                         <Table.Td>
-                          <PersonTextCell value={p.jabatan} className="text-sm" />
+                          <PersonTextCell value={p.jabatan} />
                         </Table.Td>
                         <Table.Td>
-                          <PersonTextCell value={p.email} className="text-sm" />
+                          <PersonTextCell value={p.email} />
                         </Table.Td>
                         <Table.Td>
-                          <PersonTextCell value={p.nohp} className="text-sm" />
+                          <PersonTextCell value={p.nohp} />
                         </Table.Td>
                         <Table.Td>
                           <PersonStatusCell status={p.status} />
                         </Table.Td>
-                        <Table.Td>
+                        <Table.ActionTd>
                           <RowActions
                             wrap
                             actions={[
@@ -283,7 +282,7 @@ export function ManajemenPenyusun() {
                               },
                             ]}
                           />
-                        </Table.Td>
+                        </Table.ActionTd>
                       </Table.BodyRow>
                     );
                   })}
@@ -293,7 +292,7 @@ export function ManajemenPenyusun() {
           />
 
           {barisFlat.length === 0 && (
-            <div className="py-8 text-center text-gray-500 text-sm">
+            <div className="py-8 text-center text-muted-foreground text-sm">
               {searchQuery.trim()
                 ? "Tidak ada penyusun yang cocok dengan pencarian."
                 : "Belum ada data penyusun. Klik Tambah Penyusun untuk menambah."}

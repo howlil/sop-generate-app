@@ -9,6 +9,9 @@ export class UmpanBalikEvaluasiDetailDto {
   readonly detailSopId!: string;
 
   @ApiProperty()
+  readonly pengajuanStatus!: string;
+
+  @ApiProperty()
   readonly hasil!: string;
 
   @ApiProperty()

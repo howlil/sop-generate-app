@@ -52,7 +52,7 @@ export function PengajuanSOPPage() {
           {
             id: "jenis",
             header: "Jenis",
-            className: "text-gray-700",
+            className: "text-secondary-foreground",
             render: (item) => item.jenis,
           },
           {
@@ -69,7 +69,7 @@ export function PengajuanSOPPage() {
           {
             id: "jumlah-sop",
             header: "Jumlah SOP",
-            className: "text-gray-700",
+            className: "text-secondary-foreground",
             render: (item) => `${item.sopList?.length ?? 0} SOP`,
           },
           {

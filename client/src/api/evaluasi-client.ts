@@ -17,6 +17,7 @@ import type {
   PengajuanEvaluasiShell,
   PengajuanSopWorkbenchResponse,
   SelesaiEvaluasiDto,
+  TolakPengajuanEvaluasiDto,
   UmpanBalikEvaluasiDetail,
 } from '@/types/dto/evaluasi.dto'
 
@@ -148,6 +149,14 @@ export const evaluasiApi = {
     unwrapEvaluasiEnvelope(
       apiClient.patch<ApiSuccessResponse<PengajuanEvaluasi>>(
         `/evaluasi/${pengajuanEvaluasiId}/selesai`,
+        payload,
+      ),
+    ),
+
+  tolak: (pengajuanEvaluasiId: string, payload: TolakPengajuanEvaluasiDto) =>
+    unwrapEvaluasiEnvelope(
+      apiClient.patch<ApiSuccessResponse<PengajuanEvaluasi>>(
+        `/evaluasi/${pengajuanEvaluasiId}/tolak`,
         payload,
       ),
     ),

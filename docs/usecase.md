@@ -1,6 +1,6 @@
-# Use Case Sistem Informasi Pengelolaan SOP
+# Use Case SOPFlow
 
-Dokumen ini mengacu pada **diagram use case UML** (*Sistem Informasi Pengelolaan SOP pada Biro Organisasi Sumbar*): **21 oval (UC-01–UC-21)** dan **6 aktor**. Detail alur per oval ada di [`usecase-scenario/`](usecase-scenario/README.md).
+Dokumen ini mengacu pada **diagram use case UML SOPFlow**: **21 oval (UC-01–UC-21)** dan **6 aktor**. Detail alur per oval ada di [`usecase-scenario/`](usecase-scenario/README.md).
 
 ### Lima use case inti (core)
 

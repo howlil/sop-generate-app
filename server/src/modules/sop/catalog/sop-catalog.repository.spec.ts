@@ -1,4 +1,10 @@
-import { BagianSOP, HasilEvaluasi, StatusSOP, StatusTindakLanjut } from '../../../generated/prisma';
+import {
+  BagianSOP,
+  HasilEvaluasi,
+  StatusPengajuanEvaluasi,
+  StatusSOP,
+  StatusTindakLanjut,
+} from '../../../generated/prisma';
 import type { PrismaService } from '../../../common/prisma/prisma.service';
 import { SopCatalogRepository } from './sop-catalog.repository';
 
@@ -24,6 +30,9 @@ function makeStatusTx(): {
       if (table === 'nilaiEvaluasi' && op === 'findFirst') {
         return activeNilai;
       }
+      if (table === 'pengajuanEvaluasi' && op === 'updateMany') {
+        return { count: 1 };
+      }
       return { count: 0 };
     });
   const tx = {
@@ -34,6 +43,9 @@ function makeStatusTx(): {
     },
     logNilaiEvaluasi: {
       create: record('logNilaiEvaluasi', 'create'),
+    },
+    pengajuanEvaluasi: {
+      updateMany: record('pengajuanEvaluasi', 'updateMany'),
     },
     logEditSOP: {
       findFirst: record('logEditSOP', 'findFirst'),
@@ -110,6 +122,7 @@ describe('Pengujian logging status pada SopCatalogRepository', () => {
       hasil: HasilEvaluasi.PERLU_PERBAIKAN,
       catatan: 'Perbaiki keluaran',
       statusTindakLanjut: StatusTindakLanjut.TERBUKA,
+      pengajuanEvaluasi: { status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI },
     });
 
     await repo.transitionDetailSopRevisiToSedangDievaluasi({

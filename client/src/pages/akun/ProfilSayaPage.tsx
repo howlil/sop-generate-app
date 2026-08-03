@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -16,11 +16,11 @@ import { useState as useSt } from "react";
 function ProfileRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <div className="mt-0.5 text-gray-300 shrink-0">{icon}</div>
+    <div className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
+      <div className="mt-0.5 text-muted-foreground shrink-0">{icon}</div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] text-gray-400 leading-none mb-0.5">{label}</p>
-        <p className="text-xs font-medium text-gray-800 break-words">{value}</p>
+        <p className="text-[11px] text-muted-foreground leading-none mb-0.5">{label}</p>
+        <p className="text-xs font-medium text-foreground break-words">{value}</p>
       </div>
     </div>
   );
@@ -33,12 +33,14 @@ function PasswordInput({
   onChange,
   autoComplete,
   disabled,
+  describedBy,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   autoComplete?: string;
   disabled?: boolean;
+  describedBy?: string;
 }) {
   const [show, setShow] = useSt(false);
   return (
@@ -51,14 +53,20 @@ function PasswordInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
+          aria-describedby={describedBy}
         />
         <button
           type="button"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute right-0 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
           onClick={() => setShow(!show)}
-          tabIndex={-1}
+          aria-label={show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+          aria-pressed={show}
         >
-          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {show ? (
+            <EyeOff className="w-4 h-4" aria-hidden />
+          ) : (
+            <Eye className="w-4 h-4" aria-hidden />
+          )}
         </button>
       </div>
     </FormField>
@@ -78,6 +86,7 @@ export function ProfilSayaPage() {
   const [kataSandiKonfirmasi, setKataSandiKonfirmasi] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const passwordFeedbackId = useId();
 
   const displayName = getRoleDisplayName() || user?.nama || "—";
   const displayNip = getRoleNip() || user?.nip || "—";
@@ -111,33 +120,28 @@ export function ProfilSayaPage() {
     }
   };
 
-  const pageDescription = tteEnabled
-    ? "Kelola informasi akun, kata sandi, dan penandatanganan elektronik."
-    : "Kelola informasi akun dan kata sandi.";
-
   return (
     <div className="space-y-6">
       <SetPageHeader
         breadcrumb={[{ label: "Profil Saya" }]}
         title="Profil Saya"
-        description={pageDescription}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-6 items-start">
 
         {/* ── Kolom kiri: Info akun (Sidebar) ── */}
         <div className="space-y-4 lg:sticky lg:top-6">
-          <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <section className="bg-surface rounded-xl border border-border overflow-hidden">
             {/* Avatar + nama */}
-            <div className="px-5 pt-6 pb-5 flex items-center gap-4 border-b border-gray-100">
+            <div className="px-5 pt-6 pb-5 flex items-center gap-4 border-b border-border">
               <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
                 <span className="text-lg font-bold text-blue-600">
                   {displayName.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{peranLabel}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{peranLabel}</p>
               </div>
             </div>
 
@@ -156,12 +160,12 @@ export function ProfilSayaPage() {
         <div className="space-y-6">
 
           {/* Ubah kata sandi */}
-          <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2.5">
-              <Lock className="w-4 h-4 text-gray-500 shrink-0" />
+          <section className="bg-surface rounded-xl border border-border overflow-hidden">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+              <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
               <div>
-                <h2 className="text-sm font-semibold text-gray-900">Kata Sandi</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Perbarui kata sandi login akun Anda.</p>
+                <h2 className="text-sm font-semibold text-foreground">Kata Sandi</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Perbarui kata sandi login akun Anda.</p>
               </div>
             </div>
             <form onSubmit={handleChangePassword} className="px-5 py-5 space-y-3">
@@ -171,6 +175,7 @@ export function ProfilSayaPage() {
                 onChange={setKataSandiLama}
                 autoComplete="current-password"
                 disabled={isChangingPassword}
+                describedBy={passwordError || passwordSuccess ? passwordFeedbackId : undefined}
               />
               <PasswordInput
                 label="Kata sandi baru"
@@ -178,6 +183,7 @@ export function ProfilSayaPage() {
                 onChange={setKataSandiBaru}
                 autoComplete="new-password"
                 disabled={isChangingPassword}
+                describedBy={passwordError || passwordSuccess ? passwordFeedbackId : undefined}
               />
               <PasswordInput
                 label="Konfirmasi kata sandi baru"
@@ -185,14 +191,15 @@ export function ProfilSayaPage() {
                 onChange={setKataSandiKonfirmasi}
                 autoComplete="new-password"
                 disabled={isChangingPassword}
+                describedBy={passwordError || passwordSuccess ? passwordFeedbackId : undefined}
               />
               {passwordError && (
-                <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                <p id={passwordFeedbackId} role="alert" className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
                   {passwordError}
                 </p>
               )}
               {passwordSuccess && (
-                <p className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+                <p id={passwordFeedbackId} role="status" className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
                   Kata sandi berhasil diperbarui.
                 </p>
               )}

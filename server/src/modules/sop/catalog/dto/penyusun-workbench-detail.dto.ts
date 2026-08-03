@@ -39,7 +39,7 @@ export class PenyusunWorkbenchDetailDto {
   @ApiPropertyOptional({
     format: 'uuid',
     nullable: true,
-    description: 'DetailSOP sumber saat versi ini dibuat dari SOP BERLAKU',
+    description: 'DetailSOP terminal yang menjadi sumber saat versi ini dibuat',
   })
   readonly revisiDariDetailSopId?: string | null;
 

@@ -7,7 +7,7 @@ export type StatusHasilEvaluasi = "SESUAI" | "PERLU_PERBAIKAN";
 export type StatusTindakLanjut = "TERBUKA" | "SELESAI";
 
 /** Turunan API saat belum ada hasil di DB. */
-export type HasilEvaluasiDisplay = StatusHasilEvaluasi | "BELUM_DINILAI";
+export type HasilEvaluasiDisplay = StatusHasilEvaluasi | "DITOLAK" | "BELUM_DINILAI";
 export const STATUS_HASIL_EVALUASI = {
   SESUAI: "SESUAI",
   PERLU_PERBAIKAN: "PERLU_PERBAIKAN",
@@ -26,6 +26,7 @@ export interface PengajuanEvaluasiSubmitError {
 
 export type StatusPengajuanEvaluasi =
   | "SEDANG_DIEVALUASI"
+  | "DITOLAK"
   | "SELESAI_DIEVALUASI"
   | "DITANDATANGANI_PJ_EVALUATOR"
   | "DITANDATANGANI_PJ_PENYUSUN"
@@ -92,6 +93,10 @@ export interface PengajuanEvaluasi {
   tteSignaturePayload?: unknown;
   nilaiEvaluasi?: NilaiEvaluasi[];
   tanggalDiselesaikan?: string;
+  alasanPenolakan?: string;
+  tanggalDitolak?: string;
+  ditolakOlehId?: string;
+  ditolakOleh?: { id: string; nama: string };
   sopList?: Array<{
     id: string;
     sopDetailId: string;
@@ -185,6 +190,10 @@ export interface PengajuanEvaluasiShell {
   opd?: PengajuanEvaluasiShellOpd;
   timEvaluasi?: string;
   tanggalDiselesaikan?: string;
+  alasanPenolakan?: string;
+  tanggalDitolak?: string;
+  ditolakOlehId?: string;
+  ditolakOleh?: { id: string; nama: string };
   sopItems: PengajuanSopItemShell[];
   nilaiEvaluasi: NilaiEvaluasi[];
   timelineNilai: PengajuanTimelineNilaiEntry[];
@@ -233,6 +242,7 @@ export interface BeritaAcaraEvaluasiView {
 /** GET `/evaluasi/umpan-balik/detail/:detailSopId` */
 export interface UmpanBalikEvaluasiDetail {
   pengajuanEvaluasiId: string;
+  pengajuanStatus: StatusPengajuanEvaluasi;
   detailSopId: string;
   hasil: string;
   hasilLabel: string;
@@ -250,7 +260,7 @@ export interface NilaiEvaluasi {
   id: string;
   pengajuanEvaluasiId: string;
   sopDetailId: string;
-  hasil?: StatusHasilEvaluasi;
+  hasil?: HasilEvaluasiDisplay;
   catatan?: string;
   statusTindakLanjut?: StatusTindakLanjut;
   statusTindakLanjutLabel?: string;
@@ -289,7 +299,7 @@ export interface PengajuanEvaluasiListSopItem {
   judul: string;
   nomorSOP: string;
   status: string;
-  hasil?: StatusHasilEvaluasi;
+  hasil?: HasilEvaluasiDisplay;
 }
 
 export interface CreatePengajuanEvaluasiDto {
@@ -302,6 +312,11 @@ export interface SelesaiEvaluasiDto {
   nomorBA: string;
   /** Skor evaluasi tingkat OPD (1-5). Wajib untuk EVALUASI_REQUEST_EVALUATOR, jangan kirim untuk EVALUASI_REQUEST_OPD. */
   nilaiOPD?: number;
+}
+
+export interface TolakPengajuanEvaluasiDto {
+  alasan: string;
+  version: number;
 }
 
 export interface IsiNilaiEvaluasiDto {
@@ -399,6 +414,9 @@ export interface EvaluasiWorkspacePengajuanAktif {
   status: string;
   statusLabel: string;
   jenis: JenisPengajuanEvaluasi;
+  version: number;
+  alasanPenolakan: string | null;
+  tanggalDitolak: string | null;
   nilaiPerDetail: EvaluasiWorkspaceNilaiPerDetail[];
 }
 

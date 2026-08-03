@@ -1,5 +1,10 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { HasilEvaluasi, PeranPengguna, StatusTindakLanjut } from '../../../generated/prisma';
+import {
+  HasilEvaluasi,
+  PeranPengguna,
+  StatusPengajuanEvaluasi,
+  StatusTindakLanjut,
+} from '../../../generated/prisma';
 import type { JwtAccessPayload } from '../../../common';
 import { EvaluasiNilaiService } from '../nilai/evaluasi-nilai.service';
 import { PengajuanEvaluasiRepository } from '../pengajuan/pengajuan-evaluasi.repository';
@@ -102,6 +107,7 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
         version: 1,
         dinilaiOleh: null,
         ditindaklanjutiOleh: null,
+        pengajuanEvaluasi: { status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI },
       });
 
       const actual = await service.getUmpanBalikForDetail(penyusunUser, 'detail-1');
@@ -122,6 +128,7 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
         version: 2,
         dinilaiOleh: { penggunaId: 'ev-1', nama: 'Si Evaluator' },
         ditindaklanjutiOleh: { penggunaId: 'penyusun-1', nama: 'Si Penyusun' },
+        pengajuanEvaluasi: { status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI },
       });
 
       const actual = await service.getUmpanBalikForDetail(penyusunUser, 'detail-1');
@@ -134,6 +141,32 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
       expect(actual?.version).toBe(2);
       expect(actual?.dinilaiOleh).toEqual({ id: 'ev-1', nama: 'Si Evaluator' });
       expect(actual?.ditindaklanjutiOleh).toEqual({ id: 'penyusun-1', nama: 'Si Penyusun' });
+    });
+
+    it('seharusnya menampilkan penolakan final tanpa tindak lanjut versi lama', async () => {
+      nilaiServiceMock.findUmpanBalikForDetail.mockResolvedValue({
+        pengajuanEvaluasiId: 'pj-ditolak',
+        detailSopId: 'detail-1',
+        hasil: HasilEvaluasi.DITOLAK,
+        catatan: 'Substansi tidak sesuai ruang lingkup.',
+        statusTindakLanjut: null,
+        ditindaklanjutiPada: null,
+        version: 3,
+        dinilaiOleh: { penggunaId: 'ev-1', nama: 'Si Evaluator' },
+        ditindaklanjutiOleh: null,
+        pengajuanEvaluasi: { status: StatusPengajuanEvaluasi.DITOLAK },
+      });
+
+      const actual = await service.getUmpanBalikForDetail(penyusunUser, 'detail-1');
+
+      expect(actual).toEqual(
+        expect.objectContaining({
+          pengajuanStatus: StatusPengajuanEvaluasi.DITOLAK,
+          hasil: HasilEvaluasi.DITOLAK,
+          hasilLabel: 'Ditolak',
+          statusTindakLanjut: null,
+        }),
+      );
     });
 
     it('seharusnya meneruskan error jika service di bawahnya gagal (Worst Case)', async () => {

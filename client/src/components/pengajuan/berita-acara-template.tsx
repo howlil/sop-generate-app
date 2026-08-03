@@ -53,8 +53,8 @@ export function BeritaAcaraTemplate({
     tanggalVerifikasi ?? new Date().toISOString().slice(0, 10),
   );
   const wrapperClass = forPrint
-    ? "mx-auto box-border flex min-h-[297mm] w-[210mm] max-w-[210mm] flex-col bg-white text-black font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm]"
-    : "mx-auto box-border flex min-h-[297mm] w-full max-w-[210mm] flex-col bg-white text-gray-900 font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm] rounded-lg border border-gray-300 shadow-sm";
+    ? "mx-auto box-border flex min-h-[297mm] w-[210mm] max-w-[210mm] flex-col bg-surface text-black font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm]"
+    : "mx-auto box-border flex min-h-[297mm] w-full max-w-[210mm] flex-col bg-surface text-foreground font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm] rounded-lg border border-border shadow-surface";
   const blockGap = forPrint ? "mb-4" : "mb-6";
   const dateGap = forPrint ? "mb-6" : "mb-12";
 
@@ -74,8 +74,8 @@ export function BeritaAcaraTemplate({
             <p className="text-sm font-bold uppercase leading-tight mt-0.5">
               {BERITA_ACARA_KOP.lembaga}
             </p>
-            <p className="text-[10pt] mt-1 text-gray-700">{BERITA_ACARA_KOP.alamat}</p>
-            <p className="text-[10pt] text-gray-600">{BERITA_ACARA_KOP.website}</p>
+            <p className="text-[10pt] mt-1 text-secondary-foreground">{BERITA_ACARA_KOP.alamat}</p>
+            <p className="text-[10pt] text-secondary-foreground">{BERITA_ACARA_KOP.website}</p>
           </div>
         </div>
       </header>

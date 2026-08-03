@@ -23,6 +23,15 @@ export class PengajuanEvaluasiSelesaiResponseDto {
   @ApiPropertyOptional({ format: 'uuid' })
   readonly diselesaikanOlehId?: string;
 
+  @ApiPropertyOptional()
+  readonly alasanPenolakan?: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  readonly ditolakOlehId?: string;
+
+  @ApiPropertyOptional()
+  readonly tanggalDitolak?: string;
+
   @ApiProperty()
   readonly version!: number;
 

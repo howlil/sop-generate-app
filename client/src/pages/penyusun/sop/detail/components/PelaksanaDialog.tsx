@@ -35,7 +35,7 @@ export function PelaksanaDialog({
       getSearchText={(item) => `${item.name} ${item.id}`}
       renderItem={(item) => (
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-gray-900 leading-snug">{item.name}</p>
+          <p className="text-xs font-medium text-foreground leading-snug">{item.name}</p>
         </div>
       )}
       emptyMessage="Belum ada data pelaksana. Kelola di menu Manajemen Pelaksana SOP."

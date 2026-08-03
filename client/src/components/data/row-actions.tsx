@@ -31,7 +31,7 @@ const ALIGN_CLASS = {
 
 export function RowActions({
   actions,
-  align = 'center',
+  align = 'start',
   wrap = false,
   className,
 }: RowActionsProps) {

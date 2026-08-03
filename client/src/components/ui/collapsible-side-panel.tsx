@@ -38,9 +38,10 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
     return (
       <div
         ref={ref}
+        data-state={collapsed ? 'collapsed' : 'expanded'}
         className={cn(
-          'flex flex-col flex-shrink-0 bg-white transition-[width] duration-200 overflow-hidden',
-          isRight ? 'border-l border-gray-200' : 'border-r border-gray-200',
+          'flex flex-shrink-0 flex-col overflow-hidden bg-surface transition-[width] duration-200 motion-reduce:transition-none',
+          isRight ? 'border-l border-border' : 'border-r border-border',
           collapsed ? widthCollapsed : widthExpanded,
           className
         )}
@@ -63,18 +64,20 @@ export interface CollapsedStripButtonProps
 }
 
 export const CollapsedStripButton = React.forwardRef<HTMLButtonElement, CollapsedStripButtonProps>(
-  ({ icon, label, tooltip, title: htmlTitle, className, ...props }, ref) => (
+  ({ icon, label, tooltip, title: htmlTitle, className, 'aria-label': ariaLabel, ...props }, ref) => (
     <Button
       ref={ref}
       variant="ghost"
       size="sm"
       className={cn('h-full w-full flex flex-col items-center justify-center gap-1 rounded-none border-0 py-4 min-h-0', className)}
       title={tooltip ?? htmlTitle ?? label ?? 'Buka panel'}
+      aria-label={ariaLabel ?? label ?? tooltip ?? htmlTitle ?? 'Buka panel'}
+      aria-expanded={false}
       {...props}
     >
       {icon}
       {label && (
-        <span className="text-[10px] text-gray-500 leading-tight max-w-full truncate">
+        <span className="text-[10px] text-muted-foreground leading-tight max-w-full truncate">
           {label}
         </span>
       )}
@@ -100,13 +103,16 @@ export function CollapsibleSidePanelHeader({
   const ChevronIcon = isRight ? ChevronRight : ChevronLeft
 
   return (
-    <div className={cn('flex items-center gap-2 flex-shrink-0 p-2 justify-between border-b border-gray-200', className)}>
+    <div className={cn('flex items-center gap-2 flex-shrink-0 p-2 justify-between border-b border-border', className)}>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         className="h-7 w-7 p-0 shrink-0"
         onClick={onCollapse}
-        title="Sembunyikan panel"
+        aria-label={isRight ? 'Sembunyikan panel kanan' : 'Sembunyikan panel kiri'}
+        aria-expanded="true"
+        title={isRight ? 'Sembunyikan panel kanan' : 'Sembunyikan panel kiri'}
       >
         <ChevronIcon className="w-4 h-4" />
       </Button>
@@ -125,8 +131,8 @@ export interface SimplePanelHeaderProps {
 export function SimplePanelHeader({ title, subtitle }: SimplePanelHeaderProps) {
   return (
     <div className="min-w-0">
-      <h3 className="text-xs font-semibold text-gray-700 truncate">{title}</h3>
-      {subtitle != null && <span className="text-[10px] text-gray-500">{subtitle}</span>}
+      <h3 className="truncate text-xs font-semibold text-secondary-foreground" title={title}>{title}</h3>
+      {subtitle != null && <span className="text-[10px] text-muted-foreground">{subtitle}</span>}
     </div>
   )
 }
@@ -142,24 +148,60 @@ export interface PanelTabStripProps {
   tabs: PanelTab[]
   activeTab: string
   onTabChange: (tabId: string) => void
+  ariaLabel?: string
 }
 
-export function PanelTabStrip({ tabs, activeTab, onTabChange }: PanelTabStripProps) {
+export function PanelTabStrip({
+  tabs,
+  activeTab,
+  onTabChange,
+  ariaLabel = 'Bagian panel',
+}: PanelTabStripProps) {
+  const baseId = React.useId()
+  const tabRefs = React.useRef<Array<HTMLButtonElement | null>>([])
+
+  const moveSelection = (event: React.KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
+    if (tabs.length === 0) return
+
+    let nextIndex: number | undefined
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
+    if (event.key === 'Home') nextIndex = 0
+    if (event.key === 'End') nextIndex = tabs.length - 1
+    if (nextIndex === undefined) return
+
+    event.preventDefault()
+    onTabChange(tabs[nextIndex].id)
+    tabRefs.current[nextIndex]?.focus()
+  }
+
   return (
-    <div className="flex flex-1 min-w-0 rounded-md bg-gray-100 p-0.5 gap-0.5">
-      {tabs.map((tab) => {
+    <div
+      className="flex min-w-0 flex-1 gap-0.5 rounded-md bg-surface-muted p-0.5"
+      role="tablist"
+      aria-label={ariaLabel}
+    >
+      {tabs.map((tab, index) => {
         const isActive = activeTab === tab.id
         return (
           <button
             key={tab.id}
+            ref={(node) => {
+              tabRefs.current[index] = node
+            }}
+            id={`${baseId}-tab-${index}`}
             type="button"
             title={tab.label}
+            role="tab"
+            aria-selected={isActive}
+            tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
+            onKeyDown={(event) => moveSelection(event, index)}
             className={cn(
-              'flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs font-medium transition-colors',
+              'flex min-h-8 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
               isActive
-                ? 'flex-none shrink-0 bg-white text-gray-900 shadow-sm'
-                : 'flex-1 min-w-0 text-gray-600 hover:text-gray-900'
+                ? 'flex-none shrink-0 bg-surface text-foreground shadow-surface'
+                : 'flex-1 min-w-0 text-secondary-foreground hover:text-foreground'
             )}
           >
             {tab.icon && (
@@ -185,7 +227,7 @@ export interface CollapsibleSidePanelContentProps {
 
 export function CollapsibleSidePanelContent({ className, children }: CollapsibleSidePanelContentProps) {
   return (
-    <div className={cn('flex-1 min-h-0 overflow-auto scrollbar-hide', className)}>
+    <div className={cn('min-h-0 flex-1 overflow-auto overscroll-contain scrollbar-hide', className)}>
       {children}
     </div>
   )

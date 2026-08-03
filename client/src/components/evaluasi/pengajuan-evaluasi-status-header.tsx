@@ -22,6 +22,7 @@ const BANNER_CLASS = {
   info: 'border-blue-200 bg-blue-50 text-blue-900',
   success: 'border-emerald-200 bg-emerald-50 text-emerald-900',
   warning: 'border-amber-200 bg-amber-50 text-amber-900',
+  danger: 'border-red-200 bg-red-50 text-red-900',
 } as const
 
 export function PengajuanEvaluasiStatusHeader({
@@ -43,7 +44,7 @@ export function PengajuanEvaluasiStatusHeader({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 shrink-0 gap-1 px-2 text-xs text-gray-600"
+          className="h-7 shrink-0 gap-1 px-2 text-xs text-secondary-foreground"
           aria-expanded={expanded}
           aria-controls={panelId}
           onClick={() => setExpanded((prev) => !prev)}
@@ -62,7 +63,7 @@ export function PengajuanEvaluasiStatusHeader({
         </Button>
       </div>
       {expanded ? (
-        <div id={panelId} className="space-y-3 border-t border-slate-100 pt-3">
+        <div id={panelId} className="space-y-3 border-t border-border pt-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <EvaluasiWorkflowStepper status={status} className="flex-1 min-w-[200px]" />
             {showLegend ? <EvaluasiStatusLegend /> : null}

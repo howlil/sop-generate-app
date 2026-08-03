@@ -37,7 +37,7 @@ export function PersonNameCell({
         )}
       </div>
       <div className="min-w-0">
-        <p className="font-medium text-gray-900 truncate">{name ?? '-'}</p>
+        <p className="font-medium text-foreground truncate">{name ?? '-'}</p>
         {children}
       </div>
     </div>
@@ -45,7 +45,7 @@ export function PersonNameCell({
 }
 
 export function PersonMonoCell({ value }: { value?: string | null }) {
-  return <span className="text-gray-600 font-mono text-xs">{value ?? '-'}</span>
+  return <span className="font-mono text-secondary-foreground">{value ?? '-'}</span>
 }
 
 export function PersonTextCell({
@@ -55,7 +55,7 @@ export function PersonTextCell({
   value?: string | null
   className?: string
 }) {
-  return <span className={cn('text-gray-600 text-xs', className)}>{value ?? '-'}</span>
+  return <span className={cn('text-secondary-foreground', className)}>{value ?? '-'}</span>
 }
 
 export function PersonStatusCell({
@@ -68,7 +68,7 @@ export function PersonStatusCell({
   return (
     <div className="flex flex-col gap-0.5">
       <AccountStatusBadge status={status} />
-      {subtext ? <span className="text-[10px] text-gray-500">{subtext}</span> : null}
+      {subtext ? <span className="text-[10px] text-muted-foreground">{subtext}</span> : null}
     </div>
   )
 }

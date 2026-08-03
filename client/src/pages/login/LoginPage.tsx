@@ -1,12 +1,14 @@
 import { useAuth } from "@/api/auth";
 import { LoginForm } from "@/pages/login/components/LoginForm";
 import { LoginHero } from "@/pages/login/components/LoginHero";
+import logoSvg from "@/assets/logo.svg";
+import { APP_DISPLAY_NAME } from "@/config/env";
 
 export function LoginPage() {
   const { login, isLoggingIn } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-surface flex">
       {/* Left Panel - Futuristic Hero */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700">
         {/* Subtle Grid */}
@@ -29,8 +31,14 @@ export function LoginPage() {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white">
+      <div className="flex w-full items-center justify-center bg-surface lg:w-1/2">
         <div className="w-full max-w-md p-8">
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <img src={logoSvg} alt={APP_DISPLAY_NAME} className="h-11 w-11" />
+            <p className="text-sm font-semibold leading-tight text-foreground">
+              {APP_DISPLAY_NAME}
+            </p>
+          </div>
           <LoginForm isSubmitting={isLoggingIn} onSubmitLogin={login} />
         </div>
       </div>

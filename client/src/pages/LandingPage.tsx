@@ -1,11 +1,12 @@
 /**
- * Beranda publik — Sistem Informasi Pengelolaan SOP AP (Biro Organisasi Sekda Sumbar).
+ * Beranda publik SOPFlow (Biro Organisasi Sekda Sumbar).
  */
 import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ROUTES } from '@/utils/constants'
 import logoSvg from '@/assets/logo.svg'
 import heroBg from '@/assets/Kantor_Gubernur_Sumbar_belakang.jpg'
+import { APP_DISPLAY_NAME } from '@/config/env'
 import {
   FileText,
   CheckCircle,
@@ -110,18 +111,18 @@ const faqs = [
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-border bg-surface">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex min-h-12 w-full items-center justify-between px-4 py-4 text-left transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 sm:px-5"
+        className="flex min-h-12 w-full items-center justify-between px-4 py-4 text-left transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:px-5"
         aria-expanded={open}
       >
-        <span className="text-sm font-medium text-gray-900 pr-4">{question}</span>
-        <ChevronDown className={cn('w-4 h-4 text-gray-500 shrink-0 transition-transform duration-200', open && 'rotate-180')} />
+        <span className="text-sm font-medium text-foreground pr-4">{question}</span>
+        <ChevronDown className={cn('w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200', open && 'rotate-180')} />
       </button>
       <div className={cn('overflow-hidden transition-all duration-200', open ? 'max-h-48' : 'max-h-0')}>
-        <p className="px-4 pb-4 text-sm leading-relaxed text-gray-600 sm:px-5">{answer}</p>
+        <p className="px-4 pb-4 text-sm leading-relaxed text-secondary-foreground sm:px-5">{answer}</p>
       </div>
     </div>
   )
@@ -158,17 +159,17 @@ function RoleTabs() {
     <div className="relative">
       {/* Tab bar */}
       <div className="mb-6 overflow-x-auto pb-2 sm:mb-8 sm:overflow-visible sm:pb-0">
-        <div className="mx-auto flex w-max min-w-full gap-1 rounded-2xl bg-gray-100 p-1.5 sm:w-fit sm:min-w-0">
+        <div className="mx-auto flex w-max min-w-full gap-1 rounded-2xl bg-surface-muted p-1.5 sm:w-fit sm:min-w-0">
           {tabs.map((tab, i) => (
             <button
               key={tab.label}
               type="button"
               onClick={() => handleTabClick(i)}
               className={cn(
-                'flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:flex-none sm:px-5',
+                'flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:flex-none sm:px-5',
                 active === i
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-surface text-foreground shadow-surface'
+                  : 'text-muted-foreground hover:text-secondary-foreground'
               )}
             >
               <tab.icon className="w-4 h-4" />
@@ -196,7 +197,7 @@ function RoleTabs() {
             >
               <div className={cn(
                 'flex h-full flex-col rounded-2xl border p-4 transition-all duration-500 sm:rounded-3xl sm:p-8',
-                isActive ? cn('bg-white', t.border, 'shadow-xl', t.glow) : 'bg-gray-50 border-gray-100'
+                isActive ? cn('bg-surface', t.border, 'shadow-xl', t.glow) : 'bg-surface-subtle border-border'
               )}>
                 {/* Top accent line */}
                 <div className={cn('h-1 rounded-full mb-6', t.accent)} style={{ width: '48px' }} />
@@ -207,8 +208,8 @@ function RoleTabs() {
                     {(() => { const Icon = tabs[i].icon; return <Icon className="w-6 h-6 text-white" /> })()}
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-xl font-medium text-gray-900 mb-1">{tabs[i].label}</h4>
-                    <p className="text-sm text-gray-500 leading-relaxed">{roleBenefits[i].description}</p>
+                    <h4 className="text-xl font-medium text-foreground mb-1">{tabs[i].label}</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{roleBenefits[i].description}</p>
                   </div>
                 </div>
 
@@ -241,10 +242,10 @@ function RolePreview({ roleIndex }: { roleIndex: number }) {
     return (
       <div className="space-y-1.5">
         {['Pelayanan · Draft', 'Evaluasi · Review', 'Tanda Tangan · Final'].map((item, i) => (
-          <div key={i} className="flex items-center justify-between bg-white rounded-lg border px-3 py-2">
+          <div key={i} className="flex items-center justify-between bg-surface rounded-lg border px-3 py-2">
             <div className="flex items-center gap-2 min-w-0">
               <FileText className={cn('w-3.5 h-3.5 shrink-0', i === 0 ? 'text-blue-500' : i === 1 ? 'text-amber-500' : 'text-green-500')} />
-              <span className="text-[11px] text-gray-600 truncate">SOP {item.split(' · ')[0]}</span>
+              <span className="text-[11px] text-secondary-foreground truncate">SOP {item.split(' · ')[0]}</span>
             </div>
             <span className={cn('text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0',
               i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
@@ -265,13 +266,13 @@ function RolePreview({ roleIndex }: { roleIndex: number }) {
             </div>
           ))}
         </div>
-        <div className="bg-white rounded-lg border p-3 space-y-2">
+        <div className="bg-surface rounded-lg border p-3 space-y-2">
           {[{ name: 'Kelengkapan', pct: 92 }, { name: 'Kesesuaian', pct: 78 }].map((r) => (
             <div key={r.name}>
-              <div className="flex justify-between text-[10px] text-gray-500 mb-1">
+              <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
                 <span>{r.name}</span><span className="font-medium">{r.pct}%</span>
               </div>
-              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden">
                 <div className={cn('h-full rounded-full', r.pct >= 90 ? 'bg-green-500' : 'bg-amber-500')} style={{ width: `${r.pct}%` }} />
               </div>
             </div>
@@ -283,21 +284,21 @@ function RolePreview({ roleIndex }: { roleIndex: number }) {
   if (roleIndex === 2) {
     return (
       <div className="space-y-3">
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-surface rounded-lg border p-4">
           <div className="flex items-end gap-1.5 h-14 mb-2">
             {[40, 55, 45, 70, 55, 80, 65, 90].map((h, i) => (
               <div key={i} className="flex-1 rounded-t bg-green-500" style={{ height: `${h}%`, opacity: 0.4 + (h / 100) * 0.6 }} />
             ))}
           </div>
-          <div className="flex justify-between text-[8px] text-gray-400">
+          <div className="flex justify-between text-[8px] text-muted-foreground">
             <span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {[{ l: 'Total', v: '24', c: 'text-gray-900' }, { l: 'Selesai', v: '18', c: 'text-green-600' }, { l: 'Revisi', v: '6', c: 'text-amber-600' }].map((s) => (
-            <div key={s.l} className="bg-white rounded-lg border p-2 text-center">
+          {[{ l: 'Total', v: '24', c: 'text-foreground' }, { l: 'Selesai', v: '18', c: 'text-green-600' }, { l: 'Revisi', v: '6', c: 'text-amber-600' }].map((s) => (
+            <div key={s.l} className="bg-surface rounded-lg border p-2 text-center">
               <div className={cn('text-lg font-medium', s.c)}>{s.v}</div>
-              <div className="text-[8px] text-gray-400">{s.l}</div>
+              <div className="text-[8px] text-muted-foreground">{s.l}</div>
             </div>
           ))}
         </div>
@@ -307,12 +308,12 @@ function RolePreview({ roleIndex }: { roleIndex: number }) {
   return (
     <div className="space-y-1.5">
       {['Manajemen Risiko', 'Pengadaan Barang', 'Kepegawaian'].map((name, i) => (
-        <div key={name} className="flex items-center justify-between bg-white rounded-lg border px-3 py-2">
+        <div key={name} className="flex items-center justify-between bg-surface rounded-lg border px-3 py-2">
           <div className="flex items-center gap-2 min-w-0">
             <div className={cn('w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[8px] font-medium',
               i === 0 ? 'bg-red-100 text-red-600' : i === 1 ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'
             )}>{['KR', 'PB', 'KP'][i]}</div>
-            <span className="text-[11px] text-gray-600 truncate">{name}</span>
+            <span className="text-[11px] text-secondary-foreground truncate">{name}</span>
           </div>
           <div className={cn('w-2 h-2 rounded-full shrink-0', i === 0 ? 'bg-red-500' : i === 1 ? 'bg-amber-500' : 'bg-green-500')} />
         </div>
@@ -337,33 +338,33 @@ export function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white text-gray-900">
+    <div className="min-h-screen overflow-x-hidden bg-surface text-foreground">
       {/* ===== HEADER ===== */}
       <header className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         scrolled
-          ? 'border-b border-gray-200 bg-white/90 backdrop-blur-md shadow-sm'
+          ? 'border-b border-border bg-surface/90 backdrop-blur-md shadow-surface'
           : 'bg-transparent border-0'
       )}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <img src={logoSvg} alt="Logo Pemerintah Provinsi Sumatera Barat" className="h-9 w-9 shrink-0" />
+            <img src={logoSvg} alt={APP_DISPLAY_NAME} className="h-9 w-9 shrink-0" />
             <div>
-              <h1 className={cn('text-sm font-semibold leading-tight transition-colors', scrolled ? 'text-gray-900' : 'text-white')}>Sistem Informasi SOP</h1>
-              <p className={cn('hidden text-[11px] leading-tight transition-colors min-[390px]:block', scrolled ? 'text-gray-500' : 'text-blue-200')}>Biro Organisasi · Sumatera Barat</p>
+              <h1 className={cn('text-sm font-semibold leading-tight transition-colors', scrolled ? 'text-foreground' : 'text-white')}>{APP_DISPLAY_NAME}</h1>
             </div>
           </div>
-          <Link to={ROUTES.AUTH.LOGIN}>
-            <button className={cn(
+          <Link
+            to={ROUTES.AUTH.LOGIN}
+            className={cn(
               'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 sm:px-5 sm:text-sm',
               scrolled
-                ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                : 'border border-white/40 bg-white text-blue-700 shadow-sm hover:bg-blue-50'
-            )}>
-              <span className="hidden sm:inline">Masuk ke Sistem</span>
-              <span className="sm:hidden">Masuk</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+                ? 'bg-blue-600 text-white shadow-surface hover:bg-blue-700'
+                : 'border border-white/40 bg-surface text-blue-700 shadow-surface hover:bg-blue-50'
+            )}
+          >
+            <span className="hidden sm:inline">Masuk ke Sistem</span>
+            <span className="sm:hidden">Masuk</span>
+            <ArrowRight className="w-3.5 h-3.5" aria-hidden />
           </Link>
         </div>
       </header>
@@ -376,7 +377,7 @@ export function LandingPage() {
         {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
 
-        <div className="relative mx-auto flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-white/30 bg-white/10 px-3 py-2 text-center backdrop-blur-sm transition-colors hover:border-white/50 sm:rounded-full sm:px-4">
+        <div className="relative mx-auto flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-white/30 bg-surface/10 px-3 py-2 text-center backdrop-blur-sm transition-colors hover:border-white/50 sm:rounded-full sm:px-4">
           <Clock className="w-4 h-4 text-white" />
           <span className="font-medium text-white">Biro Organisasi · Sekda Provinsi Sumatera Barat</span>
           <span className="hidden text-white/60 sm:inline">—</span>
@@ -399,34 +400,30 @@ export function LandingPage() {
 
         <div className="relative mx-auto mt-8 flex w-full max-w-3xl flex-col items-stretch gap-3 sm:mt-9">
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <Link to={ROUTES.ARSIP.PREFIX} className="w-full">
-              <button
-                type="button"
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/35 bg-white/10 px-5 py-3 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-              >
-                <Archive className="h-4 w-4" aria-hidden />
-                Lihat Arsip SOP
-              </button>
+            <Link
+              to={ROUTES.ARSIP.PREFIX}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/35 bg-surface/10 px-5 py-3 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-surface/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            >
+              <Archive className="h-4 w-4" aria-hidden />
+              Lihat Arsip SOP
             </Link>
-            <Link to={ROUTES.VALIDASI.PDF} className="w-full">
-              <button
-                type="button"
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/35 bg-white/10 px-5 py-3 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-              >
-                <Shield className="h-4 w-4" aria-hidden />
-                Validasi PDF
-              </button>
+            <Link
+              to={ROUTES.VALIDASI.PDF}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/35 bg-surface/10 px-5 py-3 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-surface/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            >
+              <Shield className="h-4 w-4" aria-hidden />
+              Validasi PDF
             </Link>
           </div>
         </div>
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section id="cara-kerja" className="scroll-mt-16 bg-gray-50 py-14 sm:py-16 md:py-20">
+      <section id="cara-kerja" className="scroll-mt-16 bg-surface-subtle py-14 sm:py-16 md:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-9 space-y-3 text-center sm:mb-12">
-            <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Cara Kerja</h3>
-            <p className="text-gray-600 max-w-xl mx-auto text-sm">
+            <h3 className="text-2xl md:text-3xl font-medium text-foreground">Cara Kerja</h3>
+            <p className="text-secondary-foreground max-w-xl mx-auto text-sm">
               Alur yang dipakai saat ini: OPD menyusun, Biro mengevaluasi, PJ Evaluator Organisasi memverifikasi, Kepala OPD mengesahkan.
             </p>
           </div>
@@ -441,34 +438,34 @@ export function LandingPage() {
                   </div>
                   <div className="flex-1">
                     <span className="text-xs font-mono font-semibold text-blue-600 bg-blue-100 px-2.5 py-0.5 rounded-full">Langkah 01</span>
-                    <h4 className="text-lg font-medium text-gray-900 mt-2 mb-1">{workflowSteps[0].title}</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed max-w-md">{workflowSteps[0].description}</p>
+                    <h4 className="text-lg font-medium text-foreground mt-2 mb-1">{workflowSteps[0].title}</h4>
+                    <p className="text-sm text-secondary-foreground leading-relaxed max-w-md">{workflowSteps[0].description}</p>
                   </div>
                 </div>
                 {/* High-level mock UI */}
-                <div className="relative mt-6 bg-white rounded-xl border overflow-hidden">
-                  <div className="flex items-center gap-1.5 px-3 py-2 border-b bg-gray-50">
-                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-gray-200" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-gray-100" />
-                    <span className="text-[10px] text-gray-400 ml-2">Swimlane Editor</span>
+                <div className="relative mt-6 bg-surface rounded-xl border overflow-hidden">
+                  <div className="flex items-center gap-1.5 px-3 py-2 border-b bg-surface-subtle">
+                    <div className="w-2.5 h-2.5 rounded-full bg-surface-strong" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-border" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-surface-muted" />
+                    <span className="text-[10px] text-muted-foreground ml-2">Swimlane Editor</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 p-3 sm:gap-3 sm:p-4">
                     <div className="space-y-2">
-                      <div className="h-2 bg-gray-100 rounded w-16" />
-                      <div className="h-16 bg-gray-50 rounded border" />
-                      <div className="h-2 bg-gray-100 rounded w-12" />
+                      <div className="h-2 bg-surface-muted rounded w-16" />
+                      <div className="h-16 bg-surface-subtle rounded border" />
+                      <div className="h-2 bg-surface-muted rounded w-12" />
                     </div>
                     <div className="space-y-2">
-                      <div className="h-2 bg-gray-100 rounded w-14" />
-                      <div className="h-12 bg-gray-50 rounded border" />
-                      <div className="h-8 bg-gray-100/50 rounded" />
-                      <div className="h-2 bg-gray-100 rounded w-10" />
+                      <div className="h-2 bg-surface-muted rounded w-14" />
+                      <div className="h-12 bg-surface-subtle rounded border" />
+                      <div className="h-8 bg-surface-muted/50 rounded" />
+                      <div className="h-2 bg-surface-muted rounded w-10" />
                     </div>
                     <div className="space-y-2">
-                      <div className="h-2 bg-gray-100 rounded w-16" />
-                      <div className="h-14 bg-gray-50 rounded border" />
-                      <div className="h-2 bg-gray-100 rounded w-12" />
+                      <div className="h-2 bg-surface-muted rounded w-16" />
+                      <div className="h-14 bg-surface-subtle rounded border" />
+                      <div className="h-2 bg-surface-muted rounded w-12" />
                     </div>
                   </div>
                 </div>
@@ -485,26 +482,26 @@ export function LandingPage() {
                     </div>
                     <div>
                       <span className="text-xs font-mono font-semibold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">Langkah 02</span>
-                      <h4 className="text-lg font-medium text-gray-900 mt-1">{workflowSteps[1].title}</h4>
+                      <h4 className="text-lg font-medium text-foreground mt-1">{workflowSteps[1].title}</h4>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{workflowSteps[1].description}</p>
+                  <p className="text-sm text-secondary-foreground leading-relaxed">{workflowSteps[1].description}</p>
                 </div>
                 {/* High-level mock UI */}
                 <div className="mt-6 space-y-2">
-                  <div className="flex items-center gap-2 bg-white rounded-lg border p-3">
+                  <div className="flex items-center gap-2 bg-surface rounded-lg border p-3">
                     <div className="w-2 h-2 rounded-full bg-green-400" />
-                    <div className="h-1.5 bg-gray-200 rounded flex-1" />
+                    <div className="h-1.5 bg-border rounded flex-1" />
                     <div className="h-4 w-8 bg-green-100 rounded text-[9px] text-green-700 flex items-center justify-center font-medium">Pass</div>
                   </div>
-                  <div className="flex items-center gap-2 bg-white rounded-lg border p-3">
+                  <div className="flex items-center gap-2 bg-surface rounded-lg border p-3">
                     <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    <div className="h-1.5 bg-gray-200 rounded flex-1" />
+                    <div className="h-1.5 bg-border rounded flex-1" />
                     <div className="h-4 w-10 bg-amber-100 rounded text-[9px] text-amber-700 flex items-center justify-center font-medium">Review</div>
                   </div>
-                  <div className="flex items-center gap-2 bg-white rounded-lg border p-3">
+                  <div className="flex items-center gap-2 bg-surface rounded-lg border p-3">
                     <div className="w-2 h-2 rounded-full bg-green-400" />
-                    <div className="h-1.5 bg-gray-200 rounded flex-1" />
+                    <div className="h-1.5 bg-border rounded flex-1" />
                     <div className="h-4 w-8 bg-green-100 rounded text-[9px] text-green-700 flex items-center justify-center font-medium">Pass</div>
                   </div>
                 </div>
@@ -520,17 +517,17 @@ export function LandingPage() {
                   </div>
                   <div>
                     <span className="text-xs font-mono font-semibold text-green-700 bg-green-100 px-2.5 py-0.5 rounded-full">Langkah 03</span>
-                    <h4 className="text-lg font-medium text-gray-900 mt-2 mb-1">{workflowSteps[2].title}</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">{workflowSteps[2].description}</p>
+                    <h4 className="text-lg font-medium text-foreground mt-2 mb-1">{workflowSteps[2].title}</h4>
+                    <p className="text-sm text-secondary-foreground leading-relaxed">{workflowSteps[2].description}</p>
                   </div>
                 </div>
                 {/* High-level mock UI */}
                 <div className="mt-5 space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-white rounded-lg border p-2.5">
+                  <div className="flex items-center gap-2 text-xs text-secondary-foreground bg-surface rounded-lg border p-2.5">
                     <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                     <span>Format SOP sesuai standar</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-white rounded-lg border p-2.5">
+                  <div className="flex items-center gap-2 text-xs text-secondary-foreground bg-surface rounded-lg border p-2.5">
                     <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                     <span>Evaluasi telah lengkap</span>
                   </div>
@@ -547,8 +544,8 @@ export function LandingPage() {
                   </div>
                   <div className="flex-1">
                     <span className="text-xs font-mono font-semibold text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">Langkah 04</span>
-                    <h4 className="text-lg font-medium text-gray-900 mt-2 mb-1">{workflowSteps[3].title}</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed max-w-md">{workflowSteps[3].description}</p>
+                    <h4 className="text-lg font-medium text-foreground mt-2 mb-1">{workflowSteps[3].title}</h4>
+                    <p className="text-sm text-secondary-foreground leading-relaxed max-w-md">{workflowSteps[3].description}</p>
                   </div>
                 </div>
                 {/* High-level mock UI */}
@@ -576,8 +573,8 @@ export function LandingPage() {
       <section className="py-14 sm:py-16 md:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-9 space-y-3 text-center sm:mb-12">
-            <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Tampilan menurut peran pengguna</h3>
-            <p className="text-gray-600 max-w-xl mx-auto text-sm">
+            <h3 className="text-2xl md:text-3xl font-medium text-foreground">Tampilan menurut peran pengguna</h3>
+            <p className="text-secondary-foreground max-w-xl mx-auto text-sm">
               Menu dan halaman mengikuti tugas masing-masing aktor dalam pengelolaan SOP AP.
             </p>
           </div>
@@ -587,11 +584,11 @@ export function LandingPage() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section className="bg-gray-50 py-14 sm:py-16 md:py-20">
+      <section className="bg-surface-subtle py-14 sm:py-16 md:py-20">
         <div className="mx-auto max-w-2xl px-4 sm:px-6">
           <div className="text-center space-y-3 mb-10">
-            <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Pertanyaan Umum</h3>
-            <p className="text-gray-600 text-sm">Ringkasan singkat sebelum masuk ke sistem.</p>
+            <h3 className="text-2xl md:text-3xl font-medium text-foreground">Pertanyaan Umum</h3>
+            <p className="text-secondary-foreground text-sm">Ringkasan singkat sebelum masuk ke sistem.</p>
           </div>
           <div className="space-y-3">
             {faqs.map((faq) => (
@@ -613,36 +610,32 @@ export function LandingPage() {
             Jika sudah punya akun, masuk lewat tombol di header; arsip SOP dan validasi PDF tetap bisa diakses tanpa login.
           </p>
           <div className="mx-auto grid max-w-md grid-cols-1 gap-3 sm:max-w-none sm:flex sm:flex-wrap sm:items-center sm:justify-center">
-            <Link to={ROUTES.ARSIP.PREFIX} className="w-full sm:w-auto">
-              <button
-                type="button"
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/40 px-6 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"
-              >
-                <Archive className="h-4 w-4" aria-hidden />
-                Lihat Arsip SOP
-              </button>
+            <Link
+              to={ROUTES.ARSIP.PREFIX}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/40 px-6 text-sm font-medium text-white transition hover:bg-surface/10 sm:w-auto"
+            >
+              <Archive className="h-4 w-4" aria-hidden />
+              Lihat Arsip SOP
             </Link>
-            <Link to={ROUTES.VALIDASI.PDF} className="w-full sm:w-auto">
-              <button
-                type="button"
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/40 px-6 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"
-              >
-                <Shield className="h-4 w-4" aria-hidden />
-                Validasi PDF
-              </button>
+            <Link
+              to={ROUTES.VALIDASI.PDF}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/40 px-6 text-sm font-medium text-white transition hover:bg-surface/10 sm:w-auto"
+            >
+              <Shield className="h-4 w-4" aria-hidden />
+              Validasi PDF
             </Link>
           </div>
         </div>
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="border-t border-gray-200 bg-white relative z-10">
+      <footer className="border-t border-border bg-surface relative z-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-center sm:flex-row sm:px-6 sm:text-left lg:px-8">
           <div className="flex flex-col items-center gap-3 min-[400px]:flex-row sm:items-center">
             <img src={logoSvg} alt="Logo" className="w-8 h-8" />
-            <span className="text-sm text-gray-600">Sistem Informasi Pengelolaan SOP AP · Biro Organisasi Sekda Sumbar</span>
+            <span className="text-sm text-secondary-foreground">{APP_DISPLAY_NAME}</span>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Hak cipta dilindungi.
           </p>
         </div>

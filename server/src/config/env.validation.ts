@@ -43,6 +43,23 @@ const envSchema = z
       z.string().url().optional(),
     ),
 
+    WHATSAPP_ENABLED: envBoolean(false),
+    WAHA_BASE_URL: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+      z.string().url().optional(),
+    ),
+    WAHA_API_KEY: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+      z.string().min(16).optional(),
+    ),
+    WAHA_SESSION: z.string().trim().min(1).max(64).default('sop-staging'),
+    WHATSAPP_ALLOWED_RECIPIENTS: z.string().default(''),
+    WHATSAPP_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
+    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1_440),
+    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
+    WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
+    WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
+
     PDF_SIGNING_ENABLED: envBoolean(false),
     PDF_SIGNING_P12_BASE64: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
@@ -54,6 +71,30 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
+    if (data.WHATSAPP_ENABLED) {
+      if (data.WAHA_BASE_URL === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'WAHA_BASE_URL wajib jika WHATSAPP_ENABLED=true',
+          path: ['WAHA_BASE_URL'],
+        });
+      }
+      if (data.WAHA_API_KEY === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'WAHA_API_KEY wajib jika WHATSAPP_ENABLED=true (minimal 16 karakter)',
+          path: ['WAHA_API_KEY'],
+        });
+      }
+      if (data.WHATSAPP_ALLOWED_RECIPIENTS.trim().length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'WHATSAPP_ALLOWED_RECIPIENTS wajib pada staging agar pesan tidak terkirim ke nomor di luar pengujian',
+          path: ['WHATSAPP_ALLOWED_RECIPIENTS'],
+        });
+      }
+    }
     if (data.PDF_SIGNING_ENABLED && data.PDF_SIGNING_P12_BASE64 === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

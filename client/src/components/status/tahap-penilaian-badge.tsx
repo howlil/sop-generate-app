@@ -12,7 +12,7 @@ export function TahapPenilaianBadge({ tahap, className }: TahapPenilaianBadgePro
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium leading-tight',
+        'inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium leading-4',
         copy.badgeClassName,
         className,
       )}

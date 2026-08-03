@@ -30,6 +30,10 @@ export function mapEvaluasiShellToPengajuan(
     opd: shell.opd,
     timEvaluasi: shell.timEvaluasi,
     tanggalDiselesaikan: shell.tanggalDiselesaikan,
+    alasanPenolakan: shell.alasanPenolakan,
+    tanggalDitolak: shell.tanggalDitolak,
+    ditolakOlehId: shell.ditolakOlehId,
+    ditolakOleh: shell.ditolakOleh,
     nilaiEvaluasi: shell.nilaiEvaluasi,
     sopList: shell.sopItems.map((item) => ({
       id: buildNilaiEvaluasiClientId(shell.id, item.detailSopId),

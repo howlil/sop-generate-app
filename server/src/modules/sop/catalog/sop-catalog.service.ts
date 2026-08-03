@@ -12,6 +12,7 @@ import { extractDbInvariantMessage } from '../../../common/prisma/prisma-db-inva
 import {
   assertDetailSopEditable,
   hasRevisiInFlight,
+  TERMINAL_DETAIL_STATUSES,
 } from '../../../common/status/sop-editable.util';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import type { CreateSopDto } from './dto/create-sop.dto';
@@ -413,7 +414,7 @@ export class SopCatalogService {
     }
   }
 
-  async buatVersiBaruDariBerlaku(
+  async buatVersiBaruDariSumber(
     user: JwtAccessPayload,
     detailOrSopId: string,
     logsLimitRaw?: number,
@@ -430,27 +431,22 @@ export class SopCatalogService {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
     await this.assertOpdAccessForWorkbench(user, source.sopOpdId);
-    if (source.status !== StatusSOP.BERLAKU) {
-      const berlakuRow = await this.sopCatalogRepository.findRiwayatVersiBySopId(source.sopId);
-      const berlaku = berlakuRow.find((r) => r.status === StatusSOP.BERLAKU);
-      if (berlaku === undefined) {
-        throw new ConflictException('SOP ini belum memiliki versi BERLAKU');
-      }
+    try {
       const cloned = assertSopCatalogRepoOk(
-        await this.sopCatalogRepository.cloneDetailSopFromBerlaku({
-          sourceDetailSopId: berlaku.detailSopId,
+        await this.sopCatalogRepository.cloneDetailSopFromSource({
+          sourceDetailSopId: source.detailSopId,
           penggunaId: user.sub,
         }),
       );
       return this.getPenyusunWorkbench(user, cloned.detailSopId, logsLimitRaw);
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        throw new ConflictException(
+          'Versi baru lain telah dibuat secara bersamaan. Muat ulang riwayat versi.',
+        );
+      }
+      throw err;
     }
-    const cloned = assertSopCatalogRepoOk(
-      await this.sopCatalogRepository.cloneDetailSopFromBerlaku({
-        sourceDetailSopId: source.detailSopId,
-        penggunaId: user.sub,
-      }),
-    );
-    return this.getPenyusunWorkbench(user, cloned.detailSopId, logsLimitRaw);
   }
 
   async getRiwayatVersi(user: JwtAccessPayload, sopId: string): Promise<SopRiwayatVersiRowDto[]> {
@@ -463,6 +459,7 @@ export class SopCatalogService {
     }
     await this.assertOpdAccessForWorkbench(user, firstDetail.sopOpdId);
     const rows = await this.sopCatalogRepository.findRiwayatVersiBySopId(resolvedSopId);
+    const hasActiveRevision = hasRevisiInFlight(rows.map((r) => r.status));
     return rows.map((r) => {
       const statusDisplay = displayStatusSop(r.status);
       return {
@@ -475,6 +472,7 @@ export class SopCatalogService {
         revisiDariVersi: r.revisiDariVersi,
         updatedAt: r.updatedAt.toISOString(),
         canHapusDraft: r.canHapusDraft,
+        canBuatVersiBaru: !hasActiveRevision && TERMINAL_DETAIL_STATUSES.has(r.status),
       };
     });
   }

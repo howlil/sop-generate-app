@@ -13,10 +13,10 @@ export function SearchInput({ className, inputClassName, ...props }: SearchInput
 
   return (
     <div className={cn('relative flex-1 max-w-md', className)}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="text"
-        className={cn('pl-9 pr-3 text-sm', inputClassName)}
+        className={cn('pl-9 pr-3 text-ui-body', inputClassName)}
         aria-label={ariaLabel}
         {...props}
       />

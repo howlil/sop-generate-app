@@ -26,7 +26,7 @@ export interface SOPListCardProps {
 }
 
 const ITEM_CLASS =
-  'w-full justify-start text-left h-auto rounded-lg border px-2 py-1.5 text-xs transition-colors flex flex-col items-stretch border-gray-100 hover:bg-gray-50 text-gray-700'
+  'w-full justify-start text-left h-auto rounded-lg border px-2 py-1.5 text-xs transition-colors flex flex-col items-stretch border-border hover:bg-surface-subtle text-secondary-foreground'
 const SELECTED_ITEM_CLASS =
   'border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100'
 
@@ -82,7 +82,7 @@ export function SOPListCard({
 }: SOPListCardProps) {
   if (items.length === 0) {
     return (
-      <div className={cn('p-2 text-xs text-gray-500', className)}>
+      <div className={cn('p-2 text-xs text-muted-foreground', className)}>
         Tidak ada SOP
       </div>
     )

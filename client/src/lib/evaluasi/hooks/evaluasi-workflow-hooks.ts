@@ -68,7 +68,11 @@ function updateWorkspaceEvaluasiCache(
     return workspace;
   }
 
-  const hasil = savedNilai.hasil ?? variables.status;
+  const hasil =
+    savedNilai.hasil === STATUS_HASIL_EVALUASI.SESUAI ||
+    savedNilai.hasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN
+      ? savedNilai.hasil
+      : variables.status;
   const catatan = savedNilai.catatan ?? variables.komentar;
   const hasilLabel = getHasilEvaluasiLabel(hasil);
 
@@ -186,8 +190,14 @@ export function useEvaluasiDraft(
     );
   }, [pengajuan, sopDetailId]);
 
+  const existingHasilEditable =
+    existingNilai?.hasil === STATUS_HASIL_EVALUASI.SESUAI ||
+    existingNilai?.hasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN
+      ? existingNilai.hasil
+      : null;
+
   const [statusEvaluasi, setStatusEvaluasiState] =
-    useState<StatusHasilEvaluasi | null>(existingNilai?.hasil ?? null);
+    useState<StatusHasilEvaluasi | null>(existingHasilEditable);
   const [komentarEvaluasi, setKomentarEvaluasiState] = useState<string>(
     existingNilai?.catatan ?? "",
   );
@@ -205,7 +215,7 @@ export function useEvaluasiDraft(
   useEffect(() => {
     const nextServerDraft = {
       sopDetailId,
-      status: isTinjauanUlang ? null : (existingNilai?.hasil ?? null),
+      status: isTinjauanUlang ? null : existingHasilEditable,
       komentar: isTinjauanUlang ? "" : (existingNilai?.catatan ?? ""),
     };
     const previousServerDraft = serverDraftRef.current;
@@ -240,7 +250,7 @@ export function useEvaluasiDraft(
       setKomentarEvaluasiState(nextServerDraft.komentar);
     }
   }, [
-    existingNilai?.hasil,
+    existingHasilEditable,
     existingNilai?.catatan,
     sopDetailId,
     isTinjauanUlang,

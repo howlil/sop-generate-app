@@ -13,7 +13,9 @@ export interface BuatVersiBaruDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   judulSop: string
-  versiSaatIni: number
+  versiSumber: number
+  statusSumber: string
+  versiBaru: number
   isPending?: boolean
   onConfirm: () => void | Promise<void>
 }
@@ -22,7 +24,9 @@ export function BuatVersiBaruDialog({
   open,
   onOpenChange,
   judulSop,
-  versiSaatIni,
+  versiSumber,
+  statusSumber,
+  versiBaru,
   isPending = false,
   onConfirm,
 }: BuatVersiBaruDialogProps) {
@@ -35,12 +39,12 @@ export function BuatVersiBaruDialog({
             Buat versi baru
           </DialogTitle>
           <DialogDescription>
-            Versi {versiSaatIni} yang berlaku akan tetap resmi. Sistem menyalin isi dokumen ke
-            versi {versiSaatIni + 1} (status DRAFT) untuk diedit dan diajukan evaluasi ulang.
+            Isi versi {versiSumber} ({statusSumber}) akan disalin menjadi versi {versiBaru} (status
+            DRAFT). Status, tanggal, dokumen resmi, dan riwayat semua versi lama tidak berubah.
           </DialogDescription>
         </DialogHeader>
-        <p className="text-sm text-gray-700">
-          SOP: <span className="font-medium text-gray-900">{judulSop}</span>
+        <p className="text-sm text-secondary-foreground">
+          SOP: <span className="font-medium text-foreground">{judulSop}</span>
         </p>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>

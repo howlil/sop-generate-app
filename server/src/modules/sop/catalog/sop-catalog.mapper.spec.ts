@@ -159,4 +159,28 @@ describe('Pengujian SopCatalogMapper', () => {
     });
     expect(actual.canHapusSopDraft).toBe(true);
   });
+
+  it('seharusnya mengizinkan versi baru dari SOP yang versi pertamanya ditolak', () => {
+    const t = new Date('2026-08-02T10:00:00.000Z');
+    const actual = mapDaftarRow({
+      sopId: 'sop-ditolak',
+      opdId: 'opd-1',
+      judul: 'SOP Ditolak',
+      detail: {
+        detailSopId: 'det-v1',
+        nomorSOP: 'REJECT-001',
+        status: StatusSOP.DITOLAK_EVALUATOR,
+        versi: 1,
+        updatedAt: t,
+        pembuatNama: 'Budi',
+        editorNama: 'Budi',
+        peraturanId: null,
+      },
+      versiBerlaku: null,
+      allStatuses: [StatusSOP.DITOLAK_EVALUATOR],
+    });
+
+    expect(actual.canBuatVersiBaru).toBe(true);
+    expect(actual.canCabutSop).toBe(false);
+  });
 });

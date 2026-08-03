@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/utils/cn'
+import { useFormFieldContext } from '@/components/ui/form-field'
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   /** Error message to display and link via aria-describedby */
@@ -7,26 +8,48 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, errorMessage, ...props }, ref) => {
+  ({
+    className,
+    type,
+    errorMessage,
+    'aria-describedby': ariaDescribedBy,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-label': ariaLabel,
+    'aria-required': ariaRequired,
+    ...props
+  }, ref) => {
+    const field = useFormFieldContext()
     const generatedId = React.useId()
     const errorId = errorMessage ? `input-error-${generatedId}` : undefined
+    const describedBy = [ariaDescribedBy, errorId].filter(Boolean).join(' ') || undefined
+    const labelledBy = ariaLabel == null ? (ariaLabelledBy ?? field?.labelId) : ariaLabelledBy
 
     return (
-      <input
-        type={type}
-        className={cn(
-          'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
-          'placeholder:text-gray-500',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-          'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50',
-          errorMessage && 'ring-2 ring-red-500 border-red-500',
-          className
-        )}
-        ref={ref}
-        aria-invalid={!!errorMessage}
-        aria-describedby={errorId}
-        {...props}
-      />
+      <>
+        <input
+          type={type}
+          className={cn(
+            'flex h-10 w-full rounded-control border border-border-strong bg-surface px-3 py-2 text-sm text-foreground',
+            'placeholder:text-muted-foreground',
+            'focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary',
+            'disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-50',
+            errorMessage && 'border-danger ring-2 ring-danger',
+            className
+          )}
+          ref={ref}
+          aria-invalid={!!errorMessage}
+          aria-describedby={describedBy}
+          aria-label={ariaLabel}
+          aria-labelledby={labelledBy}
+          aria-required={(ariaRequired ?? field?.required) || undefined}
+          {...props}
+        />
+        {errorMessage ? (
+          <p id={errorId} role="alert" className="mt-1.5 text-xs text-red-600">
+            {errorMessage}
+          </p>
+        ) : null}
+      </>
     )
   }
 )

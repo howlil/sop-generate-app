@@ -115,11 +115,11 @@ describe('areSopDiagramRootsReady', () => {
 describe('suppressBrowserPrintChrome', () => {
   it('mengosongkan judul dokumen lalu mengembalikan setelah restore', () => {
     const previousTitle = document.title
-    document.title = 'Sistem Informasi SOP'
+    document.title = 'SOPFlow'
     const restore = suppressBrowserPrintChrome()
     expect(document.title).toBe('\u00a0')
     restore()
-    expect(document.title).toBe('Sistem Informasi SOP')
+    expect(document.title).toBe('SOPFlow')
     document.title = previousTitle
   })
 })

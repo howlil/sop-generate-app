@@ -106,13 +106,13 @@ export function EvaluasiPengajuanGroupedList({
               <Table.Th>Status pengajuan</Table.Th>
               <Table.Th>Tanggal</Table.Th>
               <Table.Th>Progres</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
+              <Table.ActionTh>Aksi</Table.ActionTh>
             </Table.HeadRow>
           </thead>
           <tbody>
             {group.rows.map((row) => (
               <Table.BodyRow key={row.pengajuanEvaluasiId}>
-                <Table.Td className="text-gray-700">
+                <Table.Td className="text-secondary-foreground">
                   {labelJenis(row.jenis)}
                 </Table.Td>
                 <Table.Td>
@@ -122,22 +122,22 @@ export function EvaluasiPengajuanGroupedList({
                     showDomain={false}
                   />
                 </Table.Td>
-                <Table.Td className="text-gray-600 whitespace-nowrap">
+                <Table.Td className="text-secondary-foreground whitespace-nowrap">
                   {row.createdAt
                     ? formatDateId(row.createdAt)
                     : row.tanggalEvaluasi
                       ? formatDateId(row.tanggalEvaluasi)
                       : '-'}
                 </Table.Td>
-                <Table.Td className="text-gray-700">
+                <Table.Td className="text-secondary-foreground">
                   <span className="tabular-nums">
                     {row.jumlahSudahDinilai} / {row.jumlahSop}
                   </span>{' '}
-                  <span className="text-gray-500">SOP dinilai</span>
+                  <span className="text-muted-foreground">SOP dinilai</span>
                 </Table.Td>
-                <Table.Td className="text-center">
+                <Table.ActionTd>
                   {renderAction(row)}
-                </Table.Td>
+                </Table.ActionTd>
               </Table.BodyRow>
             ))}
           </tbody>

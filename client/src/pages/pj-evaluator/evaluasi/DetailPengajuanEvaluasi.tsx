@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { CheckCircle, FileText, History, Loader2 } from "lucide-react";
+import { CheckCircle, FileText, History } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
@@ -141,10 +142,7 @@ export function DetailPengajuanEvaluasi() {
 
   if (loading && pengajuan === null) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 min-h-[320px] text-gray-600 text-sm">
-        <Loader2 className="h-9 w-9 animate-spin text-gray-400" aria-hidden />
-        <p>Memuat pengajuan evaluasi…</p>
-      </div>
+      <LoadingState className="min-h-[320px]" message="Memuat pengajuan evaluasi…" />
     );
   }
 
@@ -178,7 +176,7 @@ export function DetailPengajuanEvaluasi() {
         header={
           <div className="space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-gray-900">
+              <h2 className="text-sm font-semibold text-foreground">
                 Informasi OPD & Evaluasi
               </h2>
               <div className="flex flex-wrap items-center gap-2">
@@ -243,7 +241,7 @@ export function DetailPengajuanEvaluasi() {
                 <CollapsibleSidePanelHeader
                   side="left"
                   onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
                 >
                   <SimplePanelHeader title="Daftar SOP" />
                 </CollapsibleSidePanelHeader>
@@ -284,7 +282,7 @@ export function DetailPengajuanEvaluasi() {
                 <CollapsibleSidePanelHeader
                   side="right"
                   onCollapse={() => setRightPanelCollapsed(true)}
-                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
                 >
                   <SimplePanelHeader title="Riwayat evaluasi" />
                 </CollapsibleSidePanelHeader>

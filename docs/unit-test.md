@@ -1,6 +1,6 @@
 # 5.1.4 Implementasi Pengujian Unit (Unit Testing)
 
-Pengujian unit dilakukan untuk memastikan bahwa unit-unit logika utama pada Sistem Informasi Pengelolaan Standar Operasional Prosedur Administrasi Pemerintahan (SOP AP) berjalan sesuai kebutuhan fungsional. Pengujian ini berfokus pada pemeriksaan fungsi, service, policy, validator, guard, dan utilitas yang membentuk alur utama sistem, mulai dari autentikasi, penyusunan SOP, pengajuan evaluasi, evaluasi dan revisi SOP, tanda tangan elektronik internal, pengesahan SOP, hingga arsip publik.
+Pengujian unit dilakukan untuk memastikan bahwa unit-unit logika utama pada SOPFlow berjalan sesuai kebutuhan fungsional. Pengujian ini berfokus pada pemeriksaan fungsi, service, policy, validator, guard, dan utilitas yang membentuk alur utama sistem, mulai dari autentikasi, penyusunan SOP, pengajuan evaluasi, evaluasi dan revisi SOP, tanda tangan elektronik internal, pengesahan SOP, hingga arsip publik.
 
 Pada backend, pengujian unit dilakukan menggunakan Jest pada kode NestJS berbasis TypeScript. File pengujian berada pada folder `server/src` dengan pola nama `*.spec.ts`. Pada frontend, pengujian unit dilakukan menggunakan Vitest pada kode ReactJS, terutama untuk fungsi domain, permission, validasi prosedur, diagram SOP, dan tampilan status workflow. Pengujian unit berbeda dengan integration testing dan end-to-end testing karena pengujian ini tidak menjalankan seluruh sistem melalui browser atau database nyata secara penuh, melainkan menguji unit kode secara terisolasi dengan dependency yang dimock.
 

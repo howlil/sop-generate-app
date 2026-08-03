@@ -57,7 +57,7 @@ export function DecisionStepDialog({
         </DialogHeader>
         {decisionStepIndex !== null && (
           <div className="space-y-3">
-            <p className="text-xs text-gray-700">
+            <p className="text-xs text-secondary-foreground">
               Decision pada tahap <strong>{decisionStepIndex + 1}</strong> –{' '}
               <span className="italic">{prosedurRows[decisionStepIndex]?.kegiatan || 'Tanpa judul'}</span>
             </p>

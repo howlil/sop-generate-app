@@ -111,19 +111,19 @@ export function BukaPengajuanEvaluasiDialog({
       <div className="space-y-1.5">
         <Label required>SOP menunggu pengajuan evaluasi</Label>
         {workspaceBusy ? (
-          <p className="text-xs text-gray-500">Memuat daftar SOP...</p>
+          <p className="text-xs text-muted-foreground">Memuat daftar SOP...</p>
         ) : sopMenungguPengajuanEvaluasi.length === 0 ? (
-          <p className="text-xs text-gray-500">Belum ada SOP menunggu pengajuan evaluasi.</p>
+          <p className="text-xs text-muted-foreground">Belum ada SOP menunggu pengajuan evaluasi.</p>
         ) : (
-          <ul className="max-h-56 overflow-y-auto rounded-md border border-gray-200 divide-y divide-gray-100">
+          <ul className="max-h-56 overflow-y-auto rounded-md border border-border divide-y divide-border">
             {sopMenungguPengajuanEvaluasi.map((row) => {
               const checked = selectedDetailIds.has(row.detailSopId);
               return (
                 <li key={row.detailSopId}>
-                  <label className="flex items-start gap-2 px-3 py-2 text-xs cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-start gap-2 px-3 py-2 text-xs cursor-pointer hover:bg-surface-subtle">
                     <input
                       type="checkbox"
-                      className="mt-0.5 rounded border-gray-300"
+                      className="mt-0.5 rounded border-border-strong text-primary focus:ring-primary"
                       checked={checked}
                       onChange={(e) => {
                         setSelectedDetailIds((prev) =>
@@ -132,10 +132,10 @@ export function BukaPengajuanEvaluasiDialog({
                       }}
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="font-medium text-gray-900 block truncate">
+                      <span className="font-medium text-foreground block truncate">
                         {row.judul}
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-muted-foreground">
                         {row.nomorSOP} · {row.statusDetailLabel}
                       </span>
                     </span>
@@ -147,7 +147,7 @@ export function BukaPengajuanEvaluasiDialog({
         )}
       </div>
       <fieldset className="space-y-2 border-0 p-0 m-0">
-        <legend className="text-xs font-medium text-gray-700 mb-1.5">
+        <legend className="text-xs font-medium text-secondary-foreground mb-1.5">
           Jenis pengajuan
         </legend>
         <div className="flex flex-wrap gap-2">
@@ -159,7 +159,7 @@ export function BukaPengajuanEvaluasiDialog({
                 "rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
                 jenis === option.value
                   ? "border-blue-600 bg-blue-50 text-blue-950"
-                  : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50",
+                  : "border-border-strong bg-surface text-foreground hover:bg-surface-subtle",
               )}
               onClick={() => setJenis(option.value)}
             >

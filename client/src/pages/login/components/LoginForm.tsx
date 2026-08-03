@@ -11,6 +11,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { APP_DISPLAY_NAME } from "@/config/env";
 import { Link } from "@tanstack/react-router";
 import type { LoginRequestDto } from "@/types/dto/auth.dto";
 
@@ -27,31 +28,27 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
   const [passwordError, setPasswordError] = useState("");
 
   const validateForm = () => {
-    setEmailError("");
-    setPasswordError("");
+    let nextEmailError = "";
+    let nextPasswordError = "";
 
     if (!email) {
-      setEmailError("Email wajib diisi");
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setEmailError("Format email tidak valid");
-      return false;
+      nextEmailError = "Email wajib diisi";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        nextEmailError = "Format email tidak valid";
+      }
     }
 
     if (!password) {
-      setPasswordError("Kata sandi wajib diisi");
-      return false;
+      nextPasswordError = "Kata sandi wajib diisi";
+    } else if (password.length < 8) {
+      nextPasswordError = "Kata sandi minimal 8 karakter";
     }
 
-    if (password.length < 8) {
-      setPasswordError("Kata sandi minimal 8 karakter");
-      return false;
-    }
-
-    return true;
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+    return nextEmailError === "" && nextPasswordError === "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,17 +85,17 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
         <Button
           asChild
           variant="ghost"
-          className="mb-6 -ml-4 text-slate-500 hover:text-slate-900"
+          className="mb-6 -ml-4 text-muted-foreground hover:text-foreground"
         >
           <Link to="/">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali ke Beranda
           </Link>
         </Button>
-        <h1 className="text-xl font-semibold text-slate-900 mb-1">
+        <h1 className="text-xl font-semibold text-foreground mb-1">
           Selamat Datang
         </h1>
-        <p className="text-sm text-slate-500">Masuk ke Sistem Informasi SOP</p>
+        <p className="text-sm text-muted-foreground">Masuk ke {APP_DISPLAY_NAME}</p>
       </div>
 
       {/* Form */}
@@ -110,7 +107,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           </Label>
           <div className="relative">
             <Mail
-              className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              className="absolute left-3 top-5 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
               aria-hidden
             />
             <Input
@@ -134,7 +131,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           </Label>
           <div className="relative">
             <Lock
-              className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              className="absolute left-3 top-5 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
               aria-hidden
             />
             <Input
@@ -151,7 +148,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded"
+              className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded text-muted-foreground transition-colors hover:text-secondary-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isSubmitting}
               aria-label={
                 showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
@@ -187,6 +184,9 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           )}
         </Button>
       </form>
+      <p className="mt-6 text-center text-xs leading-5 text-muted-foreground">
+        Kesulitan masuk? Hubungi administrator instansi Anda.
+      </p>
     </div>
   );
 }

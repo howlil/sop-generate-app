@@ -20,6 +20,7 @@ export const STATUS_PENGAJUAN_SIAP_TTD_PJ_EVALUATOR = [
 
 /** Riwayat final (arsip selesai total). */
 export const STATUS_RIWAYAT_FINAL_EVALUASI = [
+  "DITOLAK",
   "SELESAI",
 ] as const satisfies readonly PengajuanEvaluasi["status"][];
 
@@ -135,6 +136,9 @@ export interface UsePengajuanEvaluasiAktifReturn {
     status: string;
     statusLabel: string;
     jenis: JenisPengajuanEvaluasi;
+    version: number;
+    alasanPenolakan: string | null;
+    tanggalDitolak: string | null;
     nilaiEvaluasi: NilaiEvaluasi[];
   } | null;
   /** Loading state */
@@ -181,13 +185,18 @@ export function usePengajuanEvaluasiAktif(
         status: p.status,
         statusLabel: p.statusLabel,
         jenis: p.jenis,
+        version: p.version,
+        alasanPenolakan: p.alasanPenolakan,
+        tanggalDitolak: p.tanggalDitolak,
         nilaiEvaluasi: p.nilaiPerDetail.map(
           (n): NilaiEvaluasi => ({
             id: `ws-${n.detailSopId}`,
             pengajuanEvaluasiId: p.id,
             sopDetailId: n.detailSopId,
             hasil:
-              n.hasil === "SESUAI" || n.hasil === "PERLU_PERBAIKAN"
+              n.hasil === "SESUAI" ||
+              n.hasil === "PERLU_PERBAIKAN" ||
+              n.hasil === "DITOLAK"
                 ? n.hasil
                 : undefined,
             catatan: n.catatan ?? undefined,
@@ -210,6 +219,9 @@ export function usePengajuanEvaluasiAktif(
       status: picked.status,
       statusLabel: picked.statusLabel ?? picked.status,
       jenis: picked.jenis,
+      version: picked.version,
+      alasanPenolakan: picked.alasanPenolakan ?? null,
+      tanggalDitolak: picked.tanggalDitolak ?? null,
       nilaiEvaluasi: picked.nilaiEvaluasi ?? [],
     };
   }, [fromWorkspace, workspacePengajuanAktif, pengajuanList]);
@@ -230,6 +242,9 @@ export function usePengajuanEvaluasiAktif(
           status: activePengajuan.status,
           statusLabel: activePengajuan.statusLabel,
           jenis: activePengajuan.jenis ?? "EVALUASI_REQUEST_EVALUATOR",
+          version: activePengajuan.version,
+          alasanPenolakan: activePengajuan.alasanPenolakan,
+          tanggalDitolak: activePengajuan.tanggalDitolak,
           nilaiEvaluasi: activePengajuan.nilaiEvaluasi ?? [],
         }
       : null,

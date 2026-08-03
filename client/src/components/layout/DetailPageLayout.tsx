@@ -32,14 +32,14 @@ function DetailWorkspace({
     <div
       className={cn(
         // Workspace shell: subtle depth + calmer background (main content tetap putih).
-        'flex flex-1 flex-col min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 shadow-sm',
+        'flex min-h-0 flex-1 flex-col overflow-hidden rounded-surface border border-border bg-surface shadow-surface',
         className
       )}
     >
       {header != null && (
         <div
           data-print-hide
-          className="flex-shrink-0 border-b border-slate-200/80 bg-white/70 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur supports-[backdrop-filter]:bg-white/60"
+          className="flex-shrink-0 border-b border-border bg-surface px-4 py-3 sm:px-5"
         >
           {header}
         </div>
@@ -48,12 +48,12 @@ function DetailWorkspace({
         {leftPanel != null && (
           <div
             data-print-hide
-            className="border-b border-slate-200/80 bg-slate-50/60 lg:border-b-0 lg:border-r lg:max-w-[min(300px,30vw)] shrink-0 max-h-[min(46vh,340px)] lg:max-h-none overflow-auto"
+            className="max-h-[min(46vh,340px)] shrink-0 overflow-auto border-b border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(300px,30vw)] lg:border-b-0 lg:border-r"
           >
             {leftPanel}
           </div>
         )}
-        <div className="flex min-h-[40vh] min-w-0 flex-1 flex-col overflow-hidden bg-white px-2 py-2 sm:px-3 sm:py-3 lg:border-r lg:border-slate-200/80">
+        <div className="flex min-h-[40vh] min-w-0 flex-1 flex-col overflow-hidden bg-surface p-3 sm:p-4 lg:border-r lg:border-border">
           <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
             {main}
           </div>
@@ -61,7 +61,7 @@ function DetailWorkspace({
         {rightPanel != null && (
           <div
             data-print-hide
-            className="border-t border-slate-200/80 bg-slate-50/60 lg:border-t-0 lg:border-l lg:max-w-[min(340px,28vw)] shrink-0 max-h-[min(52vh,440px)] lg:max-h-none overflow-auto"
+            className="max-h-[min(52vh,440px)] shrink-0 overflow-auto border-t border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(340px,28vw)] lg:border-l lg:border-t-0"
           >
             {rightPanel}
           </div>
@@ -130,7 +130,6 @@ export interface DetailPageLayoutProps {
 export function DetailPageLayout({
   breadcrumb,
   title,
-  description,
   backTo,
   backSize = 'icon',
   actions,
@@ -144,12 +143,11 @@ export function DetailPageLayout({
 }: DetailPageLayoutProps) {
   const mainContent = main ?? children
   return (
-    <div suppressHydrationWarning className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-2 sm:gap-3'}>
+    <div suppressHydrationWarning className={className ?? 'flex h-[calc(100vh-5rem)] min-h-0 flex-col gap-3 sm:gap-4'}>
       <div suppressHydrationWarning data-print-hide>
       <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}
-        description={description}
         leading={
           backSize === 'icon' ? (
             <BackButton size="icon" to={backTo} />

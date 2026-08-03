@@ -8,6 +8,8 @@ export function mapStatusSopUntukPengajuan(statusPengajuan: StatusPengajuanEvalu
   switch (statusPengajuan) {
     case StatusPengajuanEvaluasi.SEDANG_DIEVALUASI:
       return StatusSOP.SEDANG_DIEVALUASI;
+    case StatusPengajuanEvaluasi.DITOLAK:
+      return StatusSOP.DITOLAK_EVALUATOR;
     case StatusPengajuanEvaluasi.SELESAI_DIEVALUASI:
       return StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR;
     case StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR:

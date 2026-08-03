@@ -52,20 +52,20 @@ export function GrafikEvaluasiTahunPicker({
           className="h-8 min-w-[10.5rem] justify-start gap-2 px-3 text-xs font-normal"
           aria-label="Buka pemilih tahun"
         >
-          <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-          <span className="tabular-nums text-gray-900">{activeYear}</span>
-          <ChevronDown className="ml-auto h-3 w-3 shrink-0 text-gray-400" aria-hidden />
+          <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+          <span className="tabular-nums text-foreground">{activeYear}</span>
+          <ChevronDown className="ml-auto h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
         sideOffset={6}
-        className="max-h-64 w-auto min-w-[240px] overflow-y-auto border border-gray-200 bg-white p-0 shadow-md"
+        className="max-h-64 w-auto min-w-[240px] overflow-y-auto border border-border bg-surface p-0 shadow-md"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
-          <p className="text-xs font-semibold text-gray-900">Tahun</p>
-          <p className="text-[11px] text-gray-500">
+        <div className="sticky top-0 z-10 border-b border-border bg-surface px-3 py-2">
+          <p className="text-xs font-semibold text-foreground">Tahun</p>
+          <p className="text-[11px] text-muted-foreground">
             Pilih tahun ({tahunMin}–{tahunMax}).
           </p>
         </div>
@@ -77,10 +77,10 @@ export function GrafikEvaluasiTahunPicker({
               onClick={() => handlePick(y)}
               className={cn(
                 'rounded-md border px-1.5 py-2 text-xs tabular-nums transition-colors',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
                 y === activeYear
                   ? 'border-blue-500 bg-blue-50 font-semibold text-blue-800'
-                  : 'border-gray-100 text-gray-800 hover:bg-gray-50',
+                  : 'border-border-strong text-foreground hover:bg-surface-subtle',
               )}
             >
               {y}

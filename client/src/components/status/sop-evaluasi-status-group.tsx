@@ -54,7 +54,7 @@ export function SopEvaluasiStatusGroup({
         <HasilEvaluasiBadge hasil={hasilEvaluasi} label={hasilEvaluasiLabel} />
       ) : null}
       {statusTindakLanjutLabel && !showTahapDominan ? (
-        <span className="text-[10px] text-gray-600">{statusTindakLanjutLabel}</span>
+        <span className="text-[10px] text-secondary-foreground">{statusTindakLanjutLabel}</span>
       ) : null}
     </div>
   )

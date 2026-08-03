@@ -53,7 +53,7 @@ export function TTESignatureBlock({
   return (
     <div className={`inline-block text-center ${className}`}>
       {showRoleLabel && roleLabel ? (
-        <p className="text-xs font-medium text-gray-700 mb-1">{roleLabel}</p>
+        <p className="text-xs font-medium text-secondary-foreground mb-1">{roleLabel}</p>
       ) : null}
       {qrDataUrl && (
         <div className="mt-2 flex justify-center">
@@ -62,23 +62,23 @@ export function TTESignatureBlock({
             alt="QR Validasi Pengesahan"
             width={qrSize}
             height={qrSize}
-            className="border border-gray-200 rounded"
+            className="border border-border rounded"
           />
         </div>
       )}
       {placeNameBelowQr ? (
         <>
-          <p className="mt-2 text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
-          {showNip ? <p className="text-xs text-gray-600">NIP. {payload.nip}</p> : null}
-          {showCaption ? <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p> : null}
-          {showSignedDate ? <p className="text-xs text-gray-500">{signedDate}</p> : null}
+          <p className="mt-2 text-sm font-semibold text-foreground">{payload.namaLengkap}</p>
+          {showNip ? <p className="text-xs text-secondary-foreground">NIP. {payload.nip}</p> : null}
+          {showCaption ? <p className="text-xs text-muted-foreground mt-1">TTE simulasi (format selaras BSRE)</p> : null}
+          {showSignedDate ? <p className="text-xs text-muted-foreground">{signedDate}</p> : null}
         </>
       ) : (
         <>
-          <p className="mt-2 text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
-          {showNip ? <p className="text-xs text-gray-600">NIP. {payload.nip}</p> : null}
-          {showCaption ? <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p> : null}
-          {showSignedDate ? <p className="text-xs text-gray-500">{signedDate}</p> : null}
+          <p className="mt-2 text-sm font-semibold text-foreground">{payload.namaLengkap}</p>
+          {showNip ? <p className="text-xs text-secondary-foreground">NIP. {payload.nip}</p> : null}
+          {showCaption ? <p className="text-xs text-muted-foreground mt-1">TTE simulasi (format selaras BSRE)</p> : null}
+          {showSignedDate ? <p className="text-xs text-muted-foreground">{signedDate}</p> : null}
         </>
       )}
     </div>

@@ -19,8 +19,8 @@ function HomeRoutePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-          <div className="text-center text-sm text-gray-600">Memuat beranda…</div>
+        <div className="flex min-h-screen items-center justify-center bg-surface-subtle">
+          <div className="text-center text-sm text-secondary-foreground">Memuat beranda…</div>
         </div>
       }
     >

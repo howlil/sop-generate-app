@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import type { JwtAccessPayload } from '../../../common';
+import { toWibDateOnly } from '../../../common/date/wib-date.util';
 import {
   JenisDokumenTte,
   PeranPengguna,
@@ -163,6 +164,9 @@ export class TtePenandatangananService {
       refId: pengajuanEvaluasiId,
     });
     const signedAt = new Date();
+    // Satu objek tanggal dipakai bersama oleh artefak PDF dan update DetailSOP agar
+    // keduanya tidak mungkin berbeda ketika pengesahan terjadi dekat pergantian hari WIB.
+    const tanggalEfektif = toWibDateOnly(signedAt);
     if (
       this.sopOfficialPdfService === undefined ||
       this.sopPdfStorageService === undefined ||
@@ -225,10 +229,11 @@ export class TtePenandatangananService {
           detailSopId: item.detailSopId,
           versi: item.versi,
         });
-        const qrStampedPdf = await this.sopOfficialPdfService.stampSignatureQrCode({
+        const qrStampedPdf = await this.sopOfficialPdfService.stampPengesahanMetadata({
           detailSopId: item.detailSopId,
           pdfBuffer: unsignedPdf,
           qrPayload: this.buildSopPengesahanQrPayload(item.dokumenTteId, user.sub, req),
+          tanggalEfektif,
         });
         const signedPdf = await this.ttePdfSigningService.signOfficialSopPdfWithUserCertificate({
           userId: user.sub,
@@ -257,6 +262,7 @@ export class TtePenandatangananService {
           userOpdId: pengguna.opdId,
           peran: PeranPengguna.KEPALA_OPD,
           signedAt,
+          tanggalEfektif,
           artifacts,
         }),
       );

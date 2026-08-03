@@ -483,6 +483,57 @@ describeIntegration('SOP Versioning — siklus hidup versi SOP', () => {
       });
       expect(deleted).toBeNull();
     });
+
+    it('POST dari versi DIGANTIKAN membuat nomor berikutnya dan menyalin snapshot sumber', async () => {
+      const v2Response = await penyusunAgent
+        .post(`${API}/sop/${berlakuDetailSopId}/buat-versi-baru`)
+        .expect(201);
+      const v2DetailSopId: string = v2Response.body.data.detail.id;
+
+      await penyusunAgent
+        .patch(`${API}/sop/header/${v2DetailSopId}`)
+        .send({ namaLembaga: 'Konten khusus versi dua' })
+        .expect(200);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.detailSOP.update({
+          where: { detailSopId: berlakuDetailSopId },
+          data: { status: StatusSOP.DIGANTIKAN },
+        });
+        await tx.detailSOP.update({
+          where: { detailSopId: v2DetailSopId },
+          data: { status: StatusSOP.BERLAKU },
+        });
+      });
+
+      const v3Response = await penyusunAgent
+        .post(`${API}/sop/${berlakuDetailSopId}/buat-versi-baru`)
+        .expect(201);
+      const v3DetailSopId: string = v3Response.body.data.detail.id;
+      const v3 = await prisma.detailSOP.findUniqueOrThrow({
+        where: { detailSopId: v3DetailSopId },
+      });
+
+      expect(v3.versi).toBe(3);
+      expect(v3.status).toBe(StatusSOP.DRAFT);
+      expect(v3.revisiDariDetailSopId).toBe(berlakuDetailSopId);
+      expect(v3.namaLembaga).toBe('OPD Versioning A');
+
+      const sourceV1 = await prisma.detailSOP.findUniqueOrThrow({
+        where: { detailSopId: berlakuDetailSopId },
+      });
+      const activeV2 = await prisma.detailSOP.findUniqueOrThrow({
+        where: { detailSopId: v2DetailSopId },
+      });
+      expect(sourceV1.status).toBe(StatusSOP.DIGANTIKAN);
+      expect(activeV2.status).toBe(StatusSOP.BERLAKU);
+
+      const audit = await prisma.logEditSOP.findFirst({
+        where: { detailSopId: v3DetailSopId },
+        orderBy: { createdAt: 'desc' },
+      });
+      expect(audit?.keterangan).toBe('Versi 3 dibuat berdasarkan versi 1');
+    });
   });
 
   // ============================

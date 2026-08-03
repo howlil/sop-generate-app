@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { HasilEvaluasi } from '../../../../generated/prisma';
 
 /** Body PATCH `/evaluasi/:pengajuanEvaluasiId/nilai/:detailSopId`. */
 export class IsiNilaiEvaluasiDto {
-  @ApiProperty({ enum: HasilEvaluasi })
-  @IsEnum(HasilEvaluasi)
+  @ApiProperty({ enum: [HasilEvaluasi.SESUAI, HasilEvaluasi.PERLU_PERBAIKAN] })
+  @IsIn([HasilEvaluasi.SESUAI, HasilEvaluasi.PERLU_PERBAIKAN])
   readonly hasil!: HasilEvaluasi;
 
   @ApiPropertyOptional({ description: 'Wajib berisi teks jika hasil PERLU_PERBAIKAN' })

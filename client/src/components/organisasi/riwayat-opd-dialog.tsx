@@ -58,27 +58,27 @@ export function RiwayatOpdDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-sm">{title}</DialogTitle>
-          {subtitle ? <p className="text-xs text-gray-500">{subtitle}</p> : null}
+          {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
         </DialogHeader>
         <div
           className={cn(
-            'space-y-2 text-sm text-gray-600 max-h-[min(50vh,320px)] overflow-y-auto',
+            'space-y-2 text-sm text-secondary-foreground max-h-[min(50vh,320px)] overflow-y-auto',
             listClassName,
           )}
         >
-          {isLoading ? <p className="text-gray-500">{loadingMessage}</p> : null}
+          {isLoading ? <p className="text-muted-foreground">{loadingMessage}</p> : null}
           {isError ? <p className="text-red-600">{errorMessage}</p> : null}
           {!isLoading && !isError && rows?.length === 0 ? (
-            <p className="text-gray-500">{emptyMessage}</p>
+            <p className="text-muted-foreground">{emptyMessage}</p>
           ) : null}
           {hasRows
             ? rows.map((row) => (
                 <div
                   key={row.id}
-                  className="rounded-md border border-gray-100 bg-gray-50/80 px-3 py-2"
+                  className="rounded-md border border-border bg-surface-subtle/80 px-3 py-2"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-gray-900">{row.namaOpd}</p>
+                    <p className="font-medium text-foreground">{row.namaOpd}</p>
                     {row.isAktif ? (
                       <Badge variant="success" className="text-[10px]">
                         OPD saat ini
@@ -86,13 +86,13 @@ export function RiwayatOpdDialog({
                     ) : null}
                   </div>
                   {row.primaryDate ? (
-                    <p className="text-[11px] text-gray-500 mt-1">
+                    <p className="text-[11px] text-muted-foreground mt-1">
                       {row.primaryDateLabel ? `${row.primaryDateLabel}: ` : ''}
                       {row.primaryDate}
                     </p>
                   ) : null}
                   {row.secondaryDate ? (
-                    <p className="text-[11px] text-gray-500">
+                    <p className="text-[11px] text-muted-foreground">
                       {row.secondaryDateLabel ? `${row.secondaryDateLabel}: ` : ''}
                       {row.secondaryDate}
                     </p>

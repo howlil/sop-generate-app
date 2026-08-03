@@ -11,7 +11,7 @@ import type { UmpanBalikEvaluasiDetail } from '@/types/dto/evaluasi.dto'
 import { RiwayatStatusPanel } from '@/pages/penyusun/sop/components/RiwayatStatusPanel'
 import { RiwayatVersiPanel } from '@/pages/penyusun/sop/components/RiwayatVersiPanel'
 import { DetailSOPMetadataPanel } from './DetailSopMetadataPanel'
-import type { PenyusunWorkbenchLogEdit } from '@/types/dto/sop.dto'
+import type { PenyusunWorkbenchLogEdit, SopRiwayatVersiRow } from '@/types/dto/sop.dto'
 
 export interface DetailSOPPenyusunSidePanelProps {
   collapsed: boolean;
@@ -26,6 +26,9 @@ export interface DetailSOPPenyusunSidePanelProps {
   isReadOnly?: boolean;
   detailSopId: string;
   sopId?: string;
+  onBuatVersiBaru?: (source: SopRiwayatVersiRow) => void;
+  isBuatVersiBaruPending?: boolean;
+  buatVersiBaruBlockingReason?: string | null;
 }
 
 export function DetailSOPPenyusunSidePanel({
@@ -40,6 +43,9 @@ export function DetailSOPPenyusunSidePanel({
   isReadOnly = false,
   detailSopId,
   sopId,
+  onBuatVersiBaru,
+  isBuatVersiBaruPending = false,
+  buatVersiBaruBlockingReason = null,
 }: DetailSOPPenyusunSidePanelProps) {
   const tabs = [
     { id: 'edit', label: editTabLabel, icon: <PenLine className="w-3.5 h-3.5" /> },
@@ -87,6 +93,9 @@ export function DetailSOPPenyusunSidePanel({
                 sopId={sopId}
                 activeDetailSopId={detailSopId}
                 isReadOnly={isReadOnly}
+                onBuatVersiBaru={onBuatVersiBaru}
+                isBuatVersiBaruPending={isBuatVersiBaruPending}
+                buatVersiBaruBlockingReason={buatVersiBaruBlockingReason}
               />
             ) : null}
             {rightPanelTab === 'aktivitas' && (

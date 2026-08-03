@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InfoCard } from "@/components/ui/info-card";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { ApiError } from "@/lib/api/api-client";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
 import { scheduleSopDocumentPrint } from "@/lib/print/pengajuan-print";
 import { ROLE_LABELS, ROUTES } from "@/utils/constants";
@@ -89,21 +88,21 @@ export function ValidasiPengesahanPage() {
     unduhLoading || sopQuery.isLoading || sopQuery.isError || !sopPreviewProps;
 
   useDocumentTitle(
-    query.isSuccess ? "Verifikasi pengesahan — Sistem Informasi SOP" : "Verifikasi pengesahan",
+    "Verifikasi pengesahan",
   );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100/80 px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="flex items-start gap-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+          <div className="rounded-lg border border-border bg-surface p-2 shadow-surface">
             <Shield className="h-8 w-8 text-emerald-700" aria-hidden />
           </div>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
               Verifikasi pengesahan
             </h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-secondary-foreground">
               Halaman publik untuk memastikan jejak tanda tangan elektronik (simulasi) sesuai data di
               server. Untuk PDF bertanda tangan PKCS#7, gunakan{" "}
               <Link to={ROUTES.VALIDASI.PDF} className="text-emerald-800 underline underline-offset-2">
@@ -115,8 +114,8 @@ export function ValidasiPengesahanPage() {
         </div>
 
         {query.isLoading ? (
-          <Card className="border-slate-200 shadow-sm">
-            <CardContent className="flex items-center justify-center gap-2 py-12 text-slate-600">
+          <Card className="border-border shadow-surface">
+            <CardContent className="flex items-center justify-center gap-2 py-12 text-secondary-foreground">
               <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
               <span>Memuat data pengesahan…</span>
             </CardContent>
@@ -129,12 +128,11 @@ export function ValidasiPengesahanPage() {
             title="Data tidak ditemukan atau gagal dimuat"
             icon={<AlertCircle className="h-4 w-4" />}
           >
-            <p className="text-slate-800">
-              {query.error instanceof ApiError
-                ? query.error.message
-                : "Terjadi kesalahan saat menghubungi server."}
+            <p className="text-foreground">
+              Data pengesahan tidak dapat diverifikasi. Tautan mungkin tidak valid,
+              sudah tidak berlaku, atau layanan sedang tidak tersedia.
             </p>
-            <p className="mt-2 text-slate-600">
+            <p className="mt-2 text-secondary-foreground">
               Pastikan tautan atau QR memuat pasangan ID dokumen TTE dan ID penandatangan yang valid.
             </p>
           </InfoCard>
@@ -143,62 +141,62 @@ export function ValidasiPengesahanPage() {
         {query.isSuccess ? (
           <>
             <InfoCard variant="success" title="Pengesahan terverifikasi" icon={<CheckCircle2 />}>
-              <p className="text-slate-800">
+              <p className="text-foreground">
                 Data di bawah ini bersumber dari server aplikasi. Hash dokumen dapat dipakai untuk
                 transparansi verifikasi teknis.
               </p>
             </InfoCard>
 
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="border-b border-slate-100 pb-3">
-                <h2 className="text-base font-semibold text-slate-900">Penandatangan</h2>
+            <Card className="border-border shadow-surface">
+              <CardHeader className="border-b border-border pb-3">
+                <h2 className="text-base font-semibold text-foreground">Penandatangan</h2>
               </CardHeader>
               <CardContent className="space-y-2 pt-4 text-sm">
                 <div className="grid gap-1 sm:grid-cols-[8rem_1fr] sm:gap-x-3">
-                  <span className="text-slate-500">Nama</span>
-                  <span className="font-medium text-slate-900">{query.data.penandatangan.nama}</span>
-                  <span className="text-slate-500">NIP</span>
-                  <span className="text-slate-900">{query.data.penandatangan.nip}</span>
-                  <span className="text-slate-500">Jabatan</span>
-                  <span className="text-slate-900">
+                  <span className="text-muted-foreground">Nama</span>
+                  <span className="font-medium text-foreground">{query.data.penandatangan.nama}</span>
+                  <span className="text-muted-foreground">NIP</span>
+                  <span className="text-foreground">{query.data.penandatangan.nip}</span>
+                  <span className="text-muted-foreground">Jabatan</span>
+                  <span className="text-foreground">
                     {query.data.penandatangan.jabatan.trim() !== ""
                       ? query.data.penandatangan.jabatan
                       : "—"}
                   </span>
-                  <span className="text-slate-500">Peran</span>
-                  <span className="text-slate-900">{labelPeran(query.data.peran)}</span>
-                  <span className="text-slate-500">Waktu pengesahan</span>
-                  <span className="text-slate-900">
+                  <span className="text-muted-foreground">Peran</span>
+                  <span className="text-foreground">{labelPeran(query.data.peran)}</span>
+                  <span className="text-muted-foreground">Waktu pengesahan</span>
+                  <span className="text-foreground">
                     {formatDateIdLong(query.data.ditandatanganiPada)}
                   </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="border-b border-slate-100 pb-3">
-                <h2 className="text-base font-semibold text-slate-900">Dokumen</h2>
+            <Card className="border-border shadow-surface">
+              <CardHeader className="border-b border-border pb-3">
+                <h2 className="text-base font-semibold text-foreground">Dokumen</h2>
               </CardHeader>
               <CardContent className="space-y-2 pt-4 text-sm">
                 <div className="grid gap-1 sm:grid-cols-[8rem_1fr] sm:gap-x-3">
-                  <span className="text-slate-500">Nomor</span>
-                  <span className="font-medium text-slate-900">{query.data.dokumen.nomorDokumen}</span>
-                  <span className="text-slate-500">Judul</span>
-                  <span className="text-slate-900">{query.data.dokumen.judulDokumen}</span>
-                  <span className="text-slate-500">Jenis</span>
-                  <span className="text-slate-900">{query.data.dokumen.jenisDokumen}</span>
-                  <span className="text-slate-500">ID dokumen TTE</span>
-                  <span className="font-mono text-xs text-slate-800">{query.data.dokumen.dokumenTteId}</span>
-                  <span className="text-slate-500">Hash dokumen</span>
+                  <span className="text-muted-foreground">Nomor</span>
+                  <span className="font-medium text-foreground">{query.data.dokumen.nomorDokumen}</span>
+                  <span className="text-muted-foreground">Judul</span>
+                  <span className="text-foreground">{query.data.dokumen.judulDokumen}</span>
+                  <span className="text-muted-foreground">Jenis</span>
+                  <span className="text-foreground">{query.data.dokumen.jenisDokumen}</span>
+                  <span className="text-muted-foreground">ID dokumen TTE</span>
+                  <span className="font-mono text-xs text-foreground">{query.data.dokumen.dokumenTteId}</span>
+                  <span className="text-muted-foreground">Hash dokumen</span>
                   <span
-                    className="break-all font-mono text-xs text-slate-800"
+                    className="break-all font-mono text-xs text-foreground"
                     title={query.data.dokumen.hashDokumen}
                   >
                     {truncateHash(query.data.dokumen.hashDokumen)}
                   </span>
                 </div>
                 {isSopDocument ? (
-                  <div className="space-y-2 border-t border-slate-100 pt-4">
+                  <div className="space-y-2 border-t border-border pt-4">
                     {sopQuery.isError ? (
                       <p className="text-sm text-amber-800">
                         Dokumen SOP tidak dapat dimuat. Pastikan SOP masih berstatus Berlaku.
@@ -217,7 +215,7 @@ export function ValidasiPengesahanPage() {
                       )}
                       Unduh SOP
                     </Button>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       Membuka dialog cetak browser — pilih &quot;Simpan sebagai PDF&quot; untuk mengunduh.
                     </p>
                   </div>
@@ -226,7 +224,7 @@ export function ValidasiPengesahanPage() {
             </Card>
 
             {query.data.qrVerificationUrl ? (
-              <p className="text-center text-xs text-slate-500">
+              <p className="text-center text-xs text-muted-foreground">
                 Verifikasi dokumen terkait:{" "}
                 <a
                   href={query.data.qrVerificationUrl}

@@ -8,6 +8,12 @@ describe('Pengujian mapStatusSopUntukPengajuan', () => {
     );
   });
 
+  it('seharusnya memetakan DITOLAK menjadi DITOLAK_EVALUATOR', () => {
+    expect(mapStatusSopUntukPengajuan(StatusPengajuanEvaluasi.DITOLAK)).toBe(
+      StatusSOP.DITOLAK_EVALUATOR,
+    );
+  });
+
   it('seharusnya memetakan SELESAI_DIEVALUASI menjadi MENUNGGU_TTD_PJ_EVALUATOR', () => {
     expect(mapStatusSopUntukPengajuan(StatusPengajuanEvaluasi.SELESAI_DIEVALUASI)).toBe(
       StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,

@@ -23,6 +23,7 @@ import type { NilaiEvaluasiPatchResponseDto } from './dto/nilai-evaluasi-patch-r
 import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
 import type { PengajuanEvaluasiSelesaiResponseDto } from './dto/pengajuan-evaluasi-selesai-response.dto';
 import { SelesaiEvaluasiDto } from './dto/selesai-evaluasi.dto';
+import { TolakPengajuanEvaluasiDto } from './dto/tolak-pengajuan-evaluasi.dto';
 import { assertBolehKirimUlangSetelahRevisi } from './evaluasi-revisi.policy';
 import { EvaluasiNilaiRepository } from './evaluasi-nilai.repository';
 import { PengajuanEvaluasiRepository } from '../pengajuan/pengajuan-evaluasi.repository';
@@ -53,6 +54,11 @@ export class EvaluasiNilaiService {
     const evaluatorId = user.sub;
     const expectedVersion = dto.version ?? 0;
     const hasil = dto.hasil;
+    if (hasil === HasilEvaluasi.DITOLAK) {
+      throw new BadRequestException(
+        'Hasil DITOLAK hanya dapat ditetapkan melalui aksi penolakan pengajuan',
+      );
+    }
     const catatanNorm = dto.catatan === undefined ? null : dto.catatan.trim();
     if (hasil === HasilEvaluasi.PERLU_PERBAIKAN && (catatanNorm === null || catatanNorm === '')) {
       throw new BadRequestException('Catatan wajib diisi jika hasil Perlu Perbaikan');
@@ -425,6 +431,135 @@ export class EvaluasiNilaiService {
     return EvaluasiNilaiService.keResponseSelesaiDto(yangDiupdate);
   }
 
+  /** Menolak final seluruh pengajuan dan mengunci setiap versi SOP di dalamnya. */
+  async tolak(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+    dto: TolakPengajuanEvaluasiDto,
+  ): Promise<PengajuanEvaluasiSelesaiResponseDto> {
+    this.assertHanyaEvaluator(user);
+    const alasan = dto.alasan.trim();
+    if (alasan === '') {
+      throw new BadRequestException('Alasan penolakan wajib diisi');
+    }
+
+    const hasilAkhir = await this.evaluasiNilaiRepository.runTransaction(
+      async (tx: Prisma.TransactionClient): Promise<PengajuanEvaluasi | null> => {
+        const pengajuan = await tx.pengajuanEvaluasi.findUnique({
+          where: { pengajuanEvaluasiId },
+          include: {
+            nilaiEvaluasi: {
+              include: { detailSop: { select: { status: true } } },
+            },
+          },
+        });
+        if (pengajuan === null) {
+          throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
+        }
+        if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
+          throw new ConflictException('Hanya pengajuan yang sedang dievaluasi yang dapat ditolak');
+        }
+        if (pengajuan.version !== dto.version) {
+          throw new ConflictException(
+            'Konflik versi: pengajuan sudah berubah, muat ulang lalu coba lagi',
+          );
+        }
+        if (pengajuan.nilaiEvaluasi.length === 0) {
+          throw new BadRequestException('Pengajuan tidak memiliki dokumen untuk ditolak');
+        }
+
+        const statusYangDapatDitolak = new Set<StatusSOP>([
+          StatusSOP.DIAJUKAN_EVALUASI,
+          StatusSOP.SEDANG_DIEVALUASI,
+          StatusSOP.REVISI_DARI_EVALUATOR,
+        ]);
+        const statusTidakValid = pengajuan.nilaiEvaluasi.find(
+          (nilai) => !statusYangDapatDitolak.has(nilai.detailSop.status),
+        );
+        if (statusTidakValid !== undefined) {
+          throw new ConflictException(
+            'Status salah satu SOP sudah berubah. Muat ulang pengajuan lalu coba lagi',
+          );
+        }
+
+        const ditolakPada = new Date();
+        const updated = await tx.pengajuanEvaluasi.updateMany({
+          where: {
+            pengajuanEvaluasiId,
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            version: dto.version,
+          },
+          data: {
+            status: StatusPengajuanEvaluasi.DITOLAK,
+            alasanPenolakan: alasan,
+            ditolakOlehId: user.sub,
+            tanggalDitolak: ditolakPada,
+            version: { increment: 1 },
+          },
+        });
+        if (updated.count !== 1) {
+          throw new ConflictException('Pengajuan sudah berubah, muat ulang lalu coba lagi');
+        }
+
+        for (const [index, nilai] of pengajuan.nilaiEvaluasi.entries()) {
+          const logPada = new Date(ditolakPada.getTime() + index);
+          await tx.logNilaiEvaluasi.create({
+            data: {
+              pengajuanEvaluasiId,
+              detailSopId: nilai.detailSopId,
+              penggunaId: user.sub,
+              createdAt: logPada,
+              hasilSebelum: nilai.hasil,
+              hasilSesudah: HasilEvaluasi.DITOLAK,
+              catatanSebelum: nilai.catatan ?? null,
+              catatanSesudah: alasan,
+              statusTindakLanjutSebelum: nilai.statusTindakLanjut ?? null,
+              statusTindakLanjutSesudah: null,
+            },
+          });
+          const nilaiDitolak = await tx.nilaiEvaluasi.updateMany({
+            where: {
+              pengajuanEvaluasiId,
+              detailSopId: nilai.detailSopId,
+              version: nilai.version,
+            },
+            data: {
+              hasil: HasilEvaluasi.DITOLAK,
+              catatan: alasan,
+              statusTindakLanjut: null,
+              ditindaklanjutiPada: null,
+              ditindaklanjutiOlehId: null,
+              dinilaiOlehId: user.sub,
+              version: { increment: 1 },
+            },
+          });
+          if (nilaiDitolak.count !== 1) {
+            throw new ConflictException(
+              'Salah satu nilai SOP sudah berubah, muat ulang lalu coba lagi',
+            );
+          }
+        }
+
+        const detailDitolak = await tx.detailSOP.updateMany({
+          where: {
+            detailSopId: {
+              in: pengajuan.nilaiEvaluasi.map((nilai) => nilai.detailSopId),
+            },
+            status: { in: [...statusYangDapatDitolak] },
+          },
+          data: { status: StatusSOP.DITOLAK_EVALUATOR },
+        });
+        if (detailDitolak.count !== pengajuan.nilaiEvaluasi.length) {
+          throw new ConflictException(
+            'Status salah satu SOP sudah berubah. Muat ulang pengajuan lalu coba lagi',
+          );
+        }
+        return tx.pengajuanEvaluasi.findUnique({ where: { pengajuanEvaluasiId } });
+      },
+    );
+    return EvaluasiNilaiService.keResponseSelesaiDto(hasilAkhir);
+  }
+
   private static keResponseNilaiDto(row: NilaiEvaluasi): NilaiEvaluasiPatchResponseDto {
     const tindakDisplay = displayStatusTindakLanjut(row.statusTindakLanjut);
     return {
@@ -457,6 +592,9 @@ export class EvaluasiNilaiService {
       tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),
       tanggalDiselesaikan: row.tanggalDiselesaikan?.toISOString(),
       diselesaikanOlehId: row.diselesaikanOlehId ?? undefined,
+      alasanPenolakan: row.alasanPenolakan ?? undefined,
+      ditolakOlehId: row.ditolakOlehId ?? undefined,
+      tanggalDitolak: row.tanggalDitolak?.toISOString(),
       version: row.version,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),

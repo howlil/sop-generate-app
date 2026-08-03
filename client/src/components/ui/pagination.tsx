@@ -42,7 +42,7 @@ export function Pagination({
     if (!showSinglePageSummary) return null
 
     return (
-      <p className={cn('text-center text-sm text-slate-500', className)} aria-live="polite">
+      <p className={cn('text-center text-sm text-muted-foreground', className)} aria-live="polite">
         {totalItems}
         {labelText}
       </p>
@@ -55,48 +55,59 @@ export function Pagination({
   const pageNumbers = getPageNumbers(safePage, totalPages)
 
   return (
-    <div
+    <nav
+      aria-label={`Navigasi halaman${labelText}`}
       className={cn(
-        'border-t border-gray-200 px-4 py-2 flex items-center justify-between flex-wrap gap-2',
+        'flex flex-col items-stretch justify-between gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center',
         className
       )}
     >
-      <p className="text-xs text-gray-600">
+      <p className="text-center text-sm text-secondary-foreground sm:text-left" aria-live="polite" aria-atomic="true">
         {start}–{end} dari {totalItems}
         {labelText}
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
         <Button
+          type="button"
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0"
+          className="h-10 w-10 p-0 sm:h-8 sm:w-8"
           disabled={!canPrev}
           onClick={() => onPageChange(safePage - 1)}
           aria-label="Sebelumnya"
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        {pageNumbers.map((p, i) =>
-          p === '…' ? (
-            <span key={`ellipsis-${i}`} className="px-2 text-xs text-gray-400">
-              …
-            </span>
-          ) : (
-            <Button
-              key={p}
-              variant={p === safePage ? 'default' : 'outline'}
-              size="sm"
-              className={cn('h-8 min-w-[2rem] px-2 text-xs', p === safePage && 'bg-blue-500 hover:bg-blue-600')}
-              onClick={() => onPageChange(p)}
-            >
-              {p}
-            </Button>
-          )
-        )}
+        <span className="min-w-0 flex-1 text-center text-sm font-medium text-foreground sm:hidden" aria-current="page">
+          Halaman {safePage} dari {totalPages}
+        </span>
+        <div className="hidden items-center gap-1 sm:flex">
+          {pageNumbers.map((p, i) =>
+            p === '…' ? (
+              <span key={`ellipsis-${i}`} className="px-2 text-sm text-muted-foreground" aria-hidden>
+                …
+              </span>
+            ) : (
+              <Button
+                type="button"
+                key={p}
+                variant={p === safePage ? 'default' : 'outline'}
+                size="sm"
+                className={cn('h-10 min-w-10 px-2 text-sm sm:h-8 sm:min-w-8', p === safePage && 'bg-primary hover:bg-primary-hover')}
+                onClick={() => onPageChange(p)}
+                aria-label={`Halaman ${p}`}
+                aria-current={p === safePage ? 'page' : undefined}
+              >
+                {p}
+              </Button>
+            )
+          )}
+        </div>
         <Button
+          type="button"
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0"
+          className="h-10 w-10 p-0 sm:h-8 sm:w-8"
           disabled={!canNext}
           onClick={() => onPageChange(safePage + 1)}
           aria-label="Selanjutnya"
@@ -104,7 +115,7 @@ export function Pagination({
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
-    </div>
+    </nav>
   )
 }
 

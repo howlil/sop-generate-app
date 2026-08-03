@@ -169,9 +169,7 @@ export function useBuatVersiBaru() {
     onSuccess: (data, detailSopId) => {
       queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.sopRiwayatVersi(data.detail.sopId) });
-      if (data.detail.id !== detailSopId) {
-        queryClient.setQueryData(queryKeys.penyusunWorkbench(detailSopId), data);
-      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.penyusunWorkbench(detailSopId) });
     },
   });
 }

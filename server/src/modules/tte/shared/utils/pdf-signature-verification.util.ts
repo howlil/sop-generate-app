@@ -205,7 +205,7 @@ function verifyEmbeddedSignature(
   const signatureValue = `sha256:${createHash('sha256').update(field.pkcs7Buffer).digest('hex')}`;
   const valid = digestMatch && chainTrusted && certificatePeriodValid;
   const reason = valid
-    ? 'Tanda tangan valid dalam CA internal Sistem Informasi SOP.'
+    ? 'Tanda tangan valid dalam CA internal SOPFlow.'
     : buildFailureReason({ digestMatch, chainTrusted, certificatePeriodValid });
   return {
     index,

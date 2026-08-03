@@ -314,7 +314,26 @@ exports.Prisma.PengajuanEvaluasiScalarFieldEnum = {
   tanggalTTDBaPjPenyusun: 'tanggalTTDBaPjPenyusun',
   diselesaikanOlehId: 'diselesaikanOlehId',
   tanggalDiselesaikan: 'tanggalDiselesaikan',
+  alasanPenolakan: 'alasanPenolakan',
+  ditolakOlehId: 'ditolakOlehId',
+  tanggalDitolak: 'tanggalDitolak',
   version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PengingatWhatsAppScalarFieldEnum = {
+  pengingatWhatsAppId: 'pengingatWhatsAppId',
+  pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+  penggunaId: 'penggunaId',
+  jenis: 'jenis',
+  nomorTujuan: 'nomorTujuan',
+  nextSendAt: 'nextSendAt',
+  lastSentAt: 'lastSentAt',
+  consecutiveFailures: 'consecutiveFailures',
+  lastErrorKind: 'lastErrorKind',
+  lockedUntil: 'lockedUntil',
+  lockToken: 'lockToken',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -568,7 +587,18 @@ exports.Prisma.PengajuanEvaluasiOrderByRelevanceFieldEnum = {
   nomorBA: 'nomorBA',
   diverifikasiOlehUserId: 'diverifikasiOlehUserId',
   ditandatanganiOlehPjPenyusunUserId: 'ditandatanganiOlehPjPenyusunUserId',
-  diselesaikanOlehId: 'diselesaikanOlehId'
+  diselesaikanOlehId: 'diselesaikanOlehId',
+  alasanPenolakan: 'alasanPenolakan',
+  ditolakOlehId: 'ditolakOlehId'
+};
+
+exports.Prisma.PengingatWhatsAppOrderByRelevanceFieldEnum = {
+  pengingatWhatsAppId: 'pengingatWhatsAppId',
+  pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+  penggunaId: 'penggunaId',
+  nomorTujuan: 'nomorTujuan',
+  lastErrorKind: 'lastErrorKind',
+  lockToken: 'lockToken'
 };
 
 exports.Prisma.NilaiEvaluasiOrderByRelevanceFieldEnum = {
@@ -647,6 +677,7 @@ exports.StatusSOP = exports.$Enums.StatusSOP = {
   DIAJUKAN_EVALUASI: 'DIAJUKAN_EVALUASI',
   SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
   REVISI_DARI_EVALUATOR: 'REVISI_DARI_EVALUATOR',
+  DITOLAK_EVALUATOR: 'DITOLAK_EVALUATOR',
   MENUNGGU_TTD_PJ_EVALUATOR: 'MENUNGGU_TTD_PJ_EVALUATOR',
   DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: 'DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI',
   BERLAKU: 'BERLAKU',
@@ -684,15 +715,24 @@ exports.JenisPengajuanEvaluasi = exports.$Enums.JenisPengajuanEvaluasi = {
 
 exports.StatusPengajuanEvaluasi = exports.$Enums.StatusPengajuanEvaluasi = {
   SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
+  DITOLAK: 'DITOLAK',
   SELESAI_DIEVALUASI: 'SELESAI_DIEVALUASI',
   DITANDATANGANI_PJ_EVALUATOR: 'DITANDATANGANI_PJ_EVALUATOR',
   DITANDATANGANI_PJ_PENYUSUN: 'DITANDATANGANI_PJ_PENYUSUN',
   SELESAI: 'SELESAI'
 };
 
+exports.JenisPengingatWhatsApp = exports.$Enums.JenisPengingatWhatsApp = {
+  EVALUASI_SOP: 'EVALUASI_SOP',
+  TTD_BA_PJ_EVALUATOR: 'TTD_BA_PJ_EVALUATOR',
+  TTD_BA_PJ_PENYUSUN: 'TTD_BA_PJ_PENYUSUN',
+  TTD_SOP_KEPALA_OPD: 'TTD_SOP_KEPALA_OPD'
+};
+
 exports.HasilEvaluasi = exports.$Enums.HasilEvaluasi = {
   SESUAI: 'SESUAI',
-  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN'
+  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN',
+  DITOLAK: 'DITOLAK'
 };
 
 exports.StatusTindakLanjut = exports.$Enums.StatusTindakLanjut = {
@@ -743,6 +783,7 @@ exports.Prisma.ModelName = {
   LogEditSOP: 'LogEditSOP',
   LogEditSopDomainField: 'LogEditSopDomainField',
   PengajuanEvaluasi: 'PengajuanEvaluasi',
+  PengingatWhatsApp: 'PengingatWhatsApp',
   NilaiEvaluasi: 'NilaiEvaluasi',
   LogNilaiEvaluasi: 'LogNilaiEvaluasi',
   DokumenTte: 'DokumenTte',

@@ -92,7 +92,7 @@ export function ArsipBrowseWorkspace({
   const showOpdPicker = !isGlobalMode && !opdId
   return (
     <div
-      className="hidden h-[calc(100dvh-14rem)] min-h-[min(420px,55vh)] max-h-[calc(100dvh-10rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:flex"
+      className="hidden h-[calc(100dvh-14rem)] min-h-[min(420px,55vh)] max-h-[calc(100dvh-10rem)] overflow-hidden rounded-xl border border-border bg-surface shadow-surface lg:flex"
       aria-label="Penelusuran arsip SOP"
     >
       <CollapsibleSidePanel
@@ -105,7 +105,7 @@ export function ArsipBrowseWorkspace({
         {navCollapsed ? (
           <CollapsedStripButton
             label="Navigasi"
-            icon={<PanelLeft className="h-4 w-4 text-slate-500" />}
+            icon={<PanelLeft className="h-4 w-4 text-muted-foreground" />}
             onClick={() => setNavCollapsed(false)}
           />
         ) : (
@@ -113,7 +113,7 @@ export function ArsipBrowseWorkspace({
             <CollapsibleSidePanelHeader
               side="left"
               onCollapse={() => setNavCollapsed(true)}
-              className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+              className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
             >
               <SimplePanelHeader
                 title={isGlobalMode ? 'Hasil pencarian' : 'Navigasi'}
@@ -175,7 +175,10 @@ export function ArsipBrowseWorkspace({
           </>
         )}
       </CollapsibleSidePanel>
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+      <section
+        className="flex min-h-0 min-w-0 flex-1 flex-col bg-surface"
+        aria-label="Pratinjau dokumen SOP"
+      >
         {detailSopId ? (
           <ArsipSopPreviewPane
             detailSopId={detailSopId}
@@ -190,7 +193,7 @@ export function ArsipBrowseWorkspace({
         ) : (
           <PreviewEmptyState showSopList={showSopList} hasManySops={(sopPagination?.totalItems ?? 0) > 10} />
         )}
-      </main>
+      </section>
     </div>
   )
 }
@@ -203,11 +206,11 @@ function SelectedOpdStrip({
   onChangeOpd: () => void
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-2 py-2 sm:px-3">
+    <div className="flex shrink-0 items-center gap-2 border-b border-border bg-surface-subtle/80 px-2 py-2 sm:px-3">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
         <Building2 className="h-4 w-4" aria-hidden />
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900">{opdName}</span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{opdName}</span>
       <Button
         type="button"
         variant="ghost"
@@ -230,8 +233,8 @@ function PreviewEmptyState({
 }) {
   return (
     <section className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <p className="text-base font-medium text-slate-800">Pratinjau dokumen</p>
-      <p className="mt-2 max-w-md text-sm text-slate-500">
+      <p className="text-base font-medium text-foreground">Pratinjau dokumen</p>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
         {showSopList
           ? hasManySops
             ? 'Pilih SOP di daftar kiri, atau gunakan filter di atas daftar.'
@@ -244,7 +247,7 @@ function PreviewEmptyState({
 
 function SopListPickOpdHint() {
   return (
-    <p className="p-4 text-center text-sm text-slate-500">
+    <p className="p-4 text-center text-sm text-muted-foreground">
       Pilih OPD di atas untuk menampilkan daftar SOP.
     </p>
   )

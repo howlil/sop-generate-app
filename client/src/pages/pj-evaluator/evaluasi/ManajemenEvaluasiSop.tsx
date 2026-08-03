@@ -75,7 +75,6 @@ export function ManajemenEvaluasiSop() {
                 to: ROUTES.PJ_EVALUATOR.DETAIL_EVALUASI,
                 params: { id: row.pengajuanEvaluasiId },
                 title: 'Detail evaluasi',
-                variant: 'outline',
               },
             ]}
           />

@@ -51,7 +51,6 @@ export interface ListPageLayoutProps {
 export function ListPageLayout({
   breadcrumb,
   title,
-  description,
   leading,
   actions,
   toolbar,
@@ -59,11 +58,10 @@ export function ListPageLayout({
   className,
 }: ListPageLayoutProps) {
   return (
-    <div className={className ?? 'space-y-3'}>
+    <div className={className ?? 'space-y-4 sm:space-y-section'}>
       <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}
-        description={description}
         leading={leading}
         actions={actions}
       />

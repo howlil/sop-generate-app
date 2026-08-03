@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Edit, History, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
+import { EmptyState } from '@/components/ui/empty-state'
+import { LoadingTableRow } from '@/components/ui/loading-state'
 import { RowActions } from '@/components/data/row-actions'
 import {
   PersonMonoCell,
@@ -181,7 +183,8 @@ export function KepalaOPDTab({
       </div>
       <Table.Paginated data={kepalaRows} label="kepala" className="w-full">
         {(pageData) => (
-          <Table.Table>
+          <Table.Root>
+            <Table.Table>
             <thead>
               <Table.HeadRow>
                 <Table.Th>Nama</Table.Th>
@@ -190,18 +193,20 @@ export function KepalaOPDTab({
                 <Table.Th>OPD</Table.Th>
                 <Table.Th>Jabatan</Table.Th>
                 <Table.Th align="center">Status</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
+                <Table.ActionTh>Aksi</Table.ActionTh>
               </Table.HeadRow>
             </thead>
             <tbody>
-              {isLoading && (
-                <Table.BodyRow>
-                  <Table.Td colSpan={7} className="text-center text-xs text-gray-500 py-6">
-                    Memuat data…
-                  </Table.Td>
-                </Table.BodyRow>
-              )}
-              {!isLoading &&
+              {isLoading ? (
+                <LoadingTableRow colSpan={7} message="Memuat data Kepala OPD…" />
+              ) : pageData.length === 0 ? (
+                <EmptyState
+                  asTableRow
+                  colSpan={7}
+                  title="Belum ada Kepala OPD"
+                  description="Gunakan tombol Tambah Kepala OPD untuk membuat akun baru."
+                />
+              ) : (
                 pageData.map((k) => (
                   <Table.BodyRow key={k.id}>
                     <Table.Td>
@@ -211,16 +216,16 @@ export function KepalaOPDTab({
                       <PersonMonoCell value={k.nip} />
                     </Table.Td>
                     <Table.Td>
-                      <PersonTextCell value={k.email} className="text-sm" />
+                    <PersonTextCell value={k.email} />
                     </Table.Td>
                     <Table.Td>{k.namaOpd}</Table.Td>
                     <Table.Td className="max-w-[140px] truncate">
-                      <PersonTextCell value={k.jabatan} className="text-sm text-gray-700" />
+                    <PersonTextCell value={k.jabatan} />
                     </Table.Td>
                     <Table.Td className="text-center">
                       <PersonStatusCell status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                     </Table.Td>
-                    <Table.Td>
+                    <Table.ActionTd>
                       <RowActions
                         wrap
                         actions={[
@@ -248,19 +253,15 @@ export function KepalaOPDTab({
                           },
                         ]}
                       />
-                    </Table.Td>
+                    </Table.ActionTd>
                   </Table.BodyRow>
-                ))}
+                ))
+              )}
             </tbody>
-          </Table.Table>
+            </Table.Table>
+          </Table.Root>
         )}
       </Table.Paginated>
-      {!isLoading && kepalaRows.length === 0 && (
-        <div className="p-6 text-center text-gray-500 text-xs">
-          Belum ada Kepala OPD. Gunakan tombol &quot;Tambah Kepala OPD&quot; untuk membuat akun baru.
-        </div>
-      )}
-
       <KepalaOpdManageDialog
         open={manageDialogOpen}
         onOpenChange={handleManageOpenChange}

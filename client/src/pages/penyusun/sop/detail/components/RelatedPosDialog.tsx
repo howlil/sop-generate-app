@@ -54,7 +54,7 @@ export function RelatedPosDialog({
       getId={(item) => item.id}
       getSearchText={(item) => item.label}
       renderItem={(item) => (
-        <p className="text-xs font-medium text-gray-900 leading-snug">{item.label}</p>
+        <p className="text-xs font-medium text-foreground leading-snug">{item.label}</p>
       )}
       emptyMessage="Belum ada SOP lain pada OPD ini."
       emptySearchMessage="Tidak ada SOP yang cocok dengan pencarian."

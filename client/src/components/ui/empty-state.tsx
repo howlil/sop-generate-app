@@ -27,19 +27,19 @@ export function EmptyState({
   const content = (
     <div
       className={cn(
-        'flex flex-col items-center justify-center text-center p-6',
+        'flex flex-col items-center justify-center p-6 text-center',
         !asTableRow && 'min-h-[120px]',
         className
       )}
     >
       {icon && (
-        <div className="mb-2 text-gray-400 [&_svg]:w-8 [&_svg]:h-8">
+        <div className="mb-3 text-muted-foreground [&_svg]:h-8 [&_svg]:w-8">
           {icon}
         </div>
       )}
-      <p className="text-sm text-gray-600">{title}</p>
+      <p className="text-sm font-medium text-foreground">{title}</p>
       {description && (
-        <p className="text-xs text-gray-400 mt-1 max-w-sm">{description}</p>
+        <p className="mt-1 max-w-sm text-sm leading-5 text-muted-foreground">{description}</p>
       )}
       {action && <div className="mt-3">{action}</div>}
     </div>

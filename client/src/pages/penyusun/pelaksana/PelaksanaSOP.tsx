@@ -147,11 +147,12 @@ export function PelaksanaSOP() {
     >
       <Table.Paginated data={filteredList} label="pelaksana">
         {(pageData) => (
-          <Table.Table>
+          <Table.Root>
+            <Table.Table>
             <thead>
               <Table.HeadRow>
                 <Table.Th>Nama Pelaksana</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
+                <Table.ActionTh>Aksi</Table.ActionTh>
               </Table.HeadRow>
             </thead>
             <tbody>
@@ -171,12 +172,12 @@ export function PelaksanaSOP() {
                         <div className="w-7 h-7 bg-amber-100 rounded-md flex items-center justify-center">
                           <UserCog className="w-3.5 h-3.5 text-amber-600" />
                         </div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-foreground">
                           {p.namaPelaksana}
                         </p>
                       </div>
                     </Table.Td>
-                    <Table.Td className="text-center">
+                    <Table.ActionTd>
                       <RowActions
                         actions={[
                           { icon: Edit, title: "Edit", onClick: () => openEdit(p) },
@@ -188,12 +189,13 @@ export function PelaksanaSOP() {
                           },
                         ]}
                       />
-                    </Table.Td>
+                    </Table.ActionTd>
                   </Table.BodyRow>
                 ))
               )}
             </tbody>
-          </Table.Table>
+            </Table.Table>
+          </Table.Root>
         )}
       </Table.Paginated>
 

@@ -13,8 +13,12 @@ import {
   useRiwayatVersi,
 } from '@/api/sop'
 import { BuatVersiBaruDialog } from '@/pages/penyusun/sop/components/BuatVersiBaruDialog'
-import { getBuatVersiBaruBlockingReason } from '@/lib/sop/sop-version-domain'
-import type { StatusSOP } from '@/types/dto/sop.dto'
+import {
+  getBuatVersiDariRiwayatBlockingReason,
+  getNextSopVersion,
+  isTerminalVersionStatus,
+} from '@/lib/sop/sop-version-domain'
+import type { SopRiwayatVersiRow } from '@/types/dto/sop.dto'
 import type { SopHeaderAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-header-autosave'
 import type { SopProsedurAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-prosedur-autosave'
 import { DetailSOPPenyusunHeader } from './components/DetailSopPenyusunHeader'
@@ -104,30 +108,13 @@ export function DetailSOPPenyusun() {
   const sopHeaderId = metadata.sopId
   const { data: riwayatVersi = [] } = useRiwayatVersi(sopHeaderId)
   const { mutateAsync: buatVersiBaru, isPending: isBuatVersiBaruPending } = useBuatVersiBaru()
-  const [isBuatVersiDialogOpen, setIsBuatVersiDialogOpen] = useState(false)
-  const terminalStatuses: StatusSOP[] = ['BERLAKU', 'DIGANTIKAN', 'DICABUT']
-  const hasRevisiInFlight = riwayatVersi.some(
-    (row) => !terminalStatuses.includes(row.status as StatusSOP),
-  )
-  const canBuatVersiBaru =
-    currentSopStatus === 'BERLAKU' && !hasRevisiInFlight
-  const buatVersiBaruBlockingReason = canBuatVersiBaru
-    ? null
-    : getBuatVersiBaruBlockingReason({
-        id: sopHeaderId ?? '',
-        opdId: '',
-        detailSopId: id,
-        judul: metadata.nama ?? '',
-        nomorSop: metadata.nomorSOP ?? null,
-        pembuat: null,
-        terakhirDiedit: { nama: null, waktu: null },
-        status: currentSopStatus,
-        statusLabel: currentSopStatusLabel,
-        peraturanId: null,
-        terakhirDiperbarui: null,
-        versiBerlaku: { detailSopId: id, versi: metadata.version ?? 1, nomorSop: metadata.nomorSOP ?? '', status: 'BERLAKU', statusLabel: 'Berlaku' },
-        canBuatVersiBaru: false,
-      })
+  const [buatVersiSource, setBuatVersiSource] = useState<SopRiwayatVersiRow | null>(null)
+  const currentVersionSource = riwayatVersi.find((row) => row.detailSopId === id)
+  const nextVersion = getNextSopVersion(riwayatVersi)
+  const buatVersiBaruBlockingReason = getBuatVersiDariRiwayatBlockingReason(currentVersionSource)
+  const canBuatVersiBaru = buatVersiBaruBlockingReason === null
+  const terminalSource = riwayatVersi.find((row) => isTerminalVersionStatus(row.status))
+  const historyBuatVersiBlockingReason = getBuatVersiDariRiwayatBlockingReason(terminalSource)
 
   /* Toast error autosave sekali per error reference (hindari spam saat re-render). */
   const lastHeaderErrorRef = useRef<Error | null>(null)
@@ -265,7 +252,9 @@ export function DetailSOPPenyusun() {
             buatVersiBaruBlockingReason={
               currentSopStatus === 'BERLAKU' ? buatVersiBaruBlockingReason : null
             }
-            onBuatVersiBaru={() => setIsBuatVersiDialogOpen(true)}
+            onBuatVersiBaru={() => {
+              if (currentVersionSource) setBuatVersiSource(currentVersionSource)
+            }}
             isBuatVersiBaruPending={isBuatVersiBaruPending}
           />
         }
@@ -290,18 +279,26 @@ export function DetailSOPPenyusun() {
             isReadOnly={isReadOnly}
             detailSopId={id}
             sopId={sopHeaderId}
+            onBuatVersiBaru={setBuatVersiSource}
+            isBuatVersiBaruPending={isBuatVersiBaruPending}
+            buatVersiBaruBlockingReason={historyBuatVersiBlockingReason}
           />
         }
       />
       <BuatVersiBaruDialog
-        open={isBuatVersiDialogOpen}
-        onOpenChange={setIsBuatVersiDialogOpen}
+        open={buatVersiSource !== null}
+        onOpenChange={(open) => {
+          if (!open) setBuatVersiSource(null)
+        }}
         judulSop={metadata.nama ?? metadata.judul ?? 'SOP'}
-        versiSaatIni={metadata.version ?? 1}
+        versiSumber={buatVersiSource?.versi ?? 0}
+        statusSumber={buatVersiSource?.statusLabel ?? ''}
+        versiBaru={nextVersion}
         isPending={isBuatVersiBaruPending}
         onConfirm={async () => {
-          const workbench = await buatVersiBaru(id)
-          setIsBuatVersiDialogOpen(false)
+          if (buatVersiSource === null) return
+          const workbench = await buatVersiBaru(buatVersiSource.detailSopId)
+          setBuatVersiSource(null)
           void navigate({
             to: ROUTES.PENYUSUN.DETAIL_SOP,
             params: { id: workbench.detail.id },

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -59,6 +60,7 @@ export function PinDialog({
   const [pinConfirm, setPinConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const errorId = useId()
 
   useEffect(() => {
     if (open) {
@@ -119,7 +121,11 @@ export function PinDialog({
         <DialogHeader>
           <DialogTitle className="text-sm">{title}</DialogTitle>
         </DialogHeader>
-        {description ? <p className="text-xs text-gray-600 -mt-2">{description}</p> : null}
+        {description ? (
+          <DialogDescription className="-mt-2 text-xs text-secondary-foreground">
+            {description}
+          </DialogDescription>
+        ) : null}
         {userSummary}
 
         <form onSubmit={handleSubmit} className="space-y-3 mt-2">
@@ -134,6 +140,7 @@ export function PinDialog({
                 onChange={(e) => setCurrentPin(e.target.value)}
                 placeholder="PIN saat ini"
                 maxLength={maxLength}
+                aria-describedby={error ? errorId : undefined}
               />
             </FormField>
           ) : null}
@@ -151,6 +158,7 @@ export function PinDialog({
               }}
               placeholder={pinPlaceholder}
               maxLength={maxLength}
+              aria-describedby={error ? errorId : undefined}
             />
           </FormField>
 
@@ -165,11 +173,16 @@ export function PinDialog({
                 onChange={(e) => setPinConfirm(e.target.value)}
                 placeholder="Ulangi PIN"
                 maxLength={maxLength}
+                aria-describedby={error ? errorId : undefined}
               />
             </FormField>
           ) : null}
 
-          {error ? <p className="text-xs text-red-600">{error}</p> : null}
+          {error ? (
+            <p id={errorId} role="alert" className="text-xs text-red-600">
+              {error}
+            </p>
+          ) : null}
 
           <DialogFooter className="gap-2 pt-2">
             <Button

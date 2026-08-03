@@ -22,6 +22,9 @@ function pengajuan(
     status: 'SEDANG_DIEVALUASI',
     statusLabel: 'Sedang dievaluasi',
     jenis: 'EVALUASI_REQUEST_EVALUATOR',
+    version: 0,
+    alasanPenolakan: null,
+    tanggalDitolak: null,
     nilaiPerDetail,
   }
 }
@@ -32,6 +35,7 @@ describe('evaluasi-domain', () => {
     expect(hasHasilEvaluasiTersimpan(null)).toBe(false)
     expect(hasHasilEvaluasiTersimpan('SESUAI')).toBe(true)
     expect(hasHasilEvaluasiTersimpan('PERLU_PERBAIKAN')).toBe(true)
+    expect(hasHasilEvaluasiTersimpan('DITOLAK')).toBe(true)
   })
 
   it('should_block_submit_based_on_server_saved_detail_results', () => {
@@ -93,6 +97,7 @@ function umpanBalik(
 ): UmpanBalikEvaluasiDetail {
   return {
     pengajuanEvaluasiId: 'pengajuan-1',
+    pengajuanStatus: 'SEDANG_DIEVALUASI',
     detailSopId: 'detail-1',
     hasil: 'PERLU_PERBAIKAN',
     hasilLabel: 'Perlu perbaikan',
@@ -144,6 +149,17 @@ describe('deriveTahapPenilaianSop', () => {
     ).toBe('belum_dinilai')
   })
 
+  it('should_return_ditolak_as_terminal_stage', () => {
+    expect(
+      deriveTahapPenilaianSop({
+        hasil: 'DITOLAK',
+        statusTindakLanjut: null,
+        statusDetail: 'DITOLAK_EVALUATOR',
+      }),
+    ).toBe('ditolak')
+    expect(getTahapPenilaianCopy('ditolak').bannerDescription).toContain('versi baru')
+  })
+
   it('should_expose_copy_for_tinjauan_ulang', () => {
     const copy = getTahapPenilaianCopy('tinjauan_ulang')
     expect(copy.badgeLabel).toBe('Siap tinjau ulang')
@@ -182,5 +198,16 @@ describe('kirim ulang setelah revisi', () => {
   it('should_block_when_umpan_balik_missing', () => {
     expect(canKirimUlangSetelahRevisi(null)).toBe(false)
     expect(getKirimUlangBlockingReason(undefined)).toContain('Tidak ada umpan balik')
+  })
+
+  it('should_block_resubmit_for_rejected_version', () => {
+    const input: UmpanBalikEvaluasiDetail = {
+      ...umpanBalik(null),
+      pengajuanStatus: 'DITOLAK',
+      hasil: 'DITOLAK',
+      hasilLabel: 'Ditolak',
+    }
+    expect(canKirimUlangSetelahRevisi(input)).toBe(false)
+    expect(getKirimUlangBlockingReason(input)).toContain('Buat versi baru')
   })
 })

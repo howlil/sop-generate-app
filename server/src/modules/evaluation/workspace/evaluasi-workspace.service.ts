@@ -155,6 +155,9 @@ function mapWorkspacePengajuanAktif(repo: {
   pengajuanEvaluasiId: string;
   status: import('../../../generated/prisma').StatusPengajuanEvaluasi;
   jenis: import('../../../generated/prisma').JenisPengajuanEvaluasi;
+  version: number;
+  alasanPenolakan: string | null;
+  tanggalDitolak: Date | null;
   nilaiEvaluasi: ReadonlyArray<{
     detailSopId: string;
     hasil: string | null;
@@ -172,6 +175,9 @@ function mapWorkspacePengajuanAktif(repo: {
     status: statusDisplay.value,
     statusLabel: statusDisplay.label,
     jenis: String(repo.jenis),
+    version: repo.version,
+    alasanPenolakan: repo.alasanPenolakan,
+    tanggalDitolak: repo.tanggalDitolak?.toISOString() ?? null,
     nilaiPerDetail: repo.nilaiEvaluasi.map((n) => mapWorkspaceNilaiPerDetail(n)),
   };
 }

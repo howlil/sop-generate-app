@@ -30,6 +30,7 @@ import {
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
 import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
 import { AlertCircle, CheckCircle, FileText, Loader2 } from 'lucide-react'
+import { LoadingState } from '@/components/ui/loading-state'
 import { ROUTES } from '@/utils/constants'
 import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCetakArsipButtons'
 import { usePengajuanCetakArsip } from '@/components/pengajuan/hooks/use-pengajuan-cetak-arsip'
@@ -143,10 +144,7 @@ export function DetailBeritaAcaraPage() {
 
   if (isLoading && pengajuan === null) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 min-h-[320px] text-gray-600 text-sm">
-        <Loader2 className="h-9 w-9 animate-spin text-gray-400" aria-hidden />
-        <p>Memuat detail Berita Acara...</p>
-      </div>
+      <LoadingState className="min-h-[320px]" message="Memuat detail Berita Acara…" />
     )
   }
 
@@ -181,7 +179,7 @@ export function DetailBeritaAcaraPage() {
         header={
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-sm font-semibold text-gray-900">Informasi Evaluasi</h2>
+              <h2 className="text-sm font-semibold text-foreground">Informasi Evaluasi</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <PengajuanCetakArsipButtons
                   printScope="pj-penyusun-kepala-opd"
@@ -262,7 +260,7 @@ export function DetailBeritaAcaraPage() {
                 <CollapsibleSidePanelHeader
                   side="left"
                   onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
                 >
                   <SimplePanelHeader title="Daftar SOP" />
                 </CollapsibleSidePanelHeader>

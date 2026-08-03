@@ -62,11 +62,12 @@ export function OPDTab({
                 Tambah OPD
               </Button>
             </div>
-            <Table.Table>
+            <Table.Root>
+              <Table.Table>
               <thead>
                 <Table.HeadRow>
                   <Table.Th className="w-full">Nama OPD</Table.Th>
-                  <Table.Th className="w-0 whitespace-nowrap text-right">Aksi</Table.Th>
+                  <Table.ActionTh>Aksi</Table.ActionTh>
                 </Table.HeadRow>
               </thead>
               <tbody>
@@ -77,12 +78,11 @@ export function OPDTab({
                         <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
                           <Building2 className="w-3.5 h-3.5 text-blue-600" />
                         </div>
-                        <p className="font-medium text-gray-900">{opd.name}</p>
+                        <p className="font-medium text-foreground">{opd.name}</p>
                       </div>
                     </Table.Td>
-                    <Table.Td className="text-right whitespace-nowrap">
+                    <Table.ActionTd>
                       <RowActions
-                        align="end"
                         actions={[
                           {
                             icon: Edit,
@@ -100,11 +100,12 @@ export function OPDTab({
                           },
                         ]}
                       />
-                    </Table.Td>
+                    </Table.ActionTd>
                   </Table.BodyRow>
                 ))}
               </tbody>
-            </Table.Table>
+              </Table.Table>
+            </Table.Root>
           </>
         )}
       </Table.Paginated>

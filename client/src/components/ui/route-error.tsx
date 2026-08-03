@@ -13,12 +13,12 @@ export function RouteErrorPage({ error, reset }: RouteErrorPageProps) {
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-b from-gray-50 to-white px-4 py-12">
-      <div className="w-full max-w-lg rounded-2xl border border-red-100 bg-white p-6 shadow-sm">
+      <div className="w-full max-w-lg rounded-2xl border border-red-100 bg-surface p-6 shadow-surface">
         <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-red-50">
           <AlertTriangle className="h-6 w-6 text-red-600" />
         </div>
-        <h1 className="text-lg font-semibold text-gray-900">Terjadi kesalahan</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <h1 className="text-xl font-semibold leading-7 text-foreground">Terjadi kesalahan</h1>
+        <p className="mt-2 text-sm text-secondary-foreground">
           Aplikasi gagal memproses halaman ini. Silakan muat ulang atau kembali ke beranda.
         </p>
         <p className="mt-3 rounded-md border border-red-100 bg-red-50 p-3 text-xs text-red-700">{message}</p>

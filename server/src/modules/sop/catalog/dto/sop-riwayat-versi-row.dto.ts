@@ -27,4 +27,9 @@ export class SopRiwayatVersiRowDto {
 
   @ApiProperty({ description: 'Boleh dihapus (DRAFT revisi tanpa nilai evaluasi)' })
   readonly canHapusDraft!: boolean;
+
+  @ApiProperty({
+    description: 'Versi ini dapat dijadikan sumber versi baru pada kondisi SOP saat ini',
+  })
+  readonly canBuatVersiBaru!: boolean;
 }

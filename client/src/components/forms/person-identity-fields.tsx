@@ -32,7 +32,7 @@ export interface PersonIdentityFieldsProps<T extends PersonIdentityValue> {
 }
 
 const inputFieldClass =
-  'h-9 border-gray-200 text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-blue-500'
+  'h-10 border-border-strong text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary'
 
 const STATUS_OPTIONS = [
   { value: 'AKTIF', label: 'Aktif' },

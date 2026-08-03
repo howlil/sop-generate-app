@@ -43,44 +43,45 @@ export function PeraturanTableTab({
     <>
       <Table.Paginated data={filteredPeraturan} label="peraturan">
         {(pageData) => (
-          <Table.Table>
+          <Table.Root>
+            <Table.Table>
             <thead>
               <Table.HeadRow>
                 <Table.Th>Peraturan</Table.Th>
                 <Table.Th>Nomor</Table.Th>
                 <Table.Th>Tentang</Table.Th>
                 <Table.Th>Terakhir diedit</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
+                <Table.ActionTh>Aksi</Table.ActionTh>
               </Table.HeadRow>
             </thead>
             <tbody>
               {pageData.map((peraturan) => (
                 <Table.BodyRow key={peraturan.id}>
-                  <Table.Td className="text-gray-900">
+                  <Table.Td className="text-foreground">
                     {peraturan.namaPeraturan}
                   </Table.Td>
-                  <Table.Td className="text-gray-900">
+                  <Table.Td className="text-foreground">
                     No. {peraturan.nomor}/{peraturan.tahun}
                   </Table.Td>
-                  <Table.Td className="text-gray-900">{peraturan.tentang}</Table.Td>
-                  <Table.Td className="text-gray-700">
+                  <Table.Td className="text-foreground">{peraturan.tentang}</Table.Td>
+                  <Table.Td className="text-secondary-foreground">
                     {peraturan.lastEditedBy ? (
                       <div
                         className="min-w-0 max-w-[18rem] space-y-0.5"
                         title={`${peraturan.lastEditedBy.nama} (${peraturan.lastEditedBy.opd.nama})`}
                       >
-                        <div className="truncate font-medium text-gray-900">
+                        <div className="truncate font-medium text-foreground">
                           {peraturan.lastEditedBy.nama}
                         </div>
-                        <div className="truncate text-xs text-gray-500">
+                        <div className="truncate text-xs text-muted-foreground">
                           {peraturan.lastEditedBy.opd.nama}
                         </div>
                       </div>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </Table.Td>
-                  <Table.Td className="text-center">
+                  <Table.ActionTd>
                     <RowActions
                       actions={[
                         {
@@ -106,15 +107,16 @@ export function PeraturanTableTab({
                         },
                       ]}
                     />
-                  </Table.Td>
+                  </Table.ActionTd>
                 </Table.BodyRow>
               ))}
             </tbody>
-          </Table.Table>
+            </Table.Table>
+          </Table.Root>
         )}
       </Table.Paginated>
       {filteredPeraturan.length === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white">
+        <div className="rounded-lg border border-border bg-surface">
           <EmptyState
             icon={<FileText />}
             title="Tidak ada peraturan ditemukan"

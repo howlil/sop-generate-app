@@ -13,19 +13,19 @@ export interface InfoCardProps {
 }
 
 const VARIANT_MAP: Record<string, string> = {
-  neutral: 'bg-gray-50 border-gray-200',
-  success: 'bg-green-50 border-green-200',
-  warning: 'bg-amber-50 border-amber-200',
-  info: 'bg-blue-50 border-blue-200',
+  neutral: 'border-border bg-surface-subtle text-secondary-foreground',
+  success: 'border-green-300 bg-success-subtle text-success-foreground',
+  warning: 'border-amber-400 bg-warning-subtle text-warning-foreground',
+  info: 'border-blue-300 bg-info-subtle text-info-foreground',
 }
 
 /**
  * A small info/note card used for contextual information, warnings, and callouts.
- * Replaces the ~15 instances of `<div className="p-3 bg-gray-50 rounded-lg border border-gray-200">`.
+ * Replaces the ~15 instances of `<div className="p-3 bg-surface-subtle rounded-lg border border-border">`.
  */
 export function InfoCard({ children, variant = 'neutral', title, icon, className }: InfoCardProps) {
   return (
-    <div className={cn('p-3 rounded-lg border text-xs', VARIANT_MAP[variant], className)}>
+    <div className={cn('rounded-surface border p-card text-sm leading-5', VARIANT_MAP[variant], className)}>
       {(title || icon) && (
         <div className="flex items-center gap-1.5 mb-1.5 font-medium">
           {icon && <span className="shrink-0 [&_svg]:w-4 [&_svg]:h-4">{icon}</span>}

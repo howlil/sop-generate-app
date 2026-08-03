@@ -1,57 +1,74 @@
 import { Link } from '@tanstack/react-router'
-import { Trash2 } from 'lucide-react'
+import { GitBranchPlus, History, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SopStatusBadge } from '@/components/status/sop-status-badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { LoadingState } from '@/components/ui/loading-state'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useHapusVersiDraft, useRiwayatVersi } from '@/api/sop'
 import { ROUTES } from '@/utils/constants'
-import type { StatusSOP } from '@/types/dto/sop.dto'
+import type { SopRiwayatVersiRow, StatusSOP } from '@/types/dto/sop.dto'
 import { useState } from 'react'
 import { formatDateIdLong } from '@/utils/format-date'
+import { isTerminalVersionStatus } from '@/lib/sop/sop-version-domain'
 
 export interface RiwayatVersiPanelProps {
   sopId: string
   activeDetailSopId?: string
   isReadOnly?: boolean
+  onBuatVersiBaru?: (source: SopRiwayatVersiRow) => void
+  isBuatVersiBaruPending?: boolean
+  buatVersiBaruBlockingReason?: string | null
 }
 
 export function RiwayatVersiPanel({
   sopId,
   activeDetailSopId,
   isReadOnly = false,
+  onBuatVersiBaru,
+  isBuatVersiBaruPending = false,
+  buatVersiBaruBlockingReason = null,
 }: RiwayatVersiPanelProps) {
   const { data: rows = [], isLoading } = useRiwayatVersi(sopId)
   const { mutateAsync: hapusDraft, isPending: isDeleting } = useHapusVersiDraft(sopId)
   const [hapusTarget, setHapusTarget] = useState<string | null>(null)
 
   if (isLoading) {
-    return <p className="p-3 text-xs text-gray-500">Memuat riwayat versi…</p>
+    return <LoadingState compact message="Memuat riwayat versi…" />
   }
 
   if (rows.length === 0) {
-    return <p className="p-3 text-xs text-gray-500">Belum ada versi untuk SOP ini.</p>
+    return (
+      <EmptyState
+        icon={<History />}
+        title="Belum ada riwayat versi"
+        description="Versi dokumen akan muncul di sini setelah dibuat."
+        className="min-h-0 py-8"
+      />
+    )
   }
 
   return (
     <div className="p-3 space-y-2">
-      <p className="text-xs font-medium text-gray-700">Riwayat versi dokumen</p>
+      <p className="text-xs font-medium text-secondary-foreground">Riwayat versi dokumen</p>
       <ul className="space-y-2">
         {rows.map((row) => {
           const isActive = row.detailSopId === activeDetailSopId
           return (
             <li
               key={row.detailSopId}
-              className={`rounded-md border p-2 text-xs ${isActive ? 'border-blue-300 bg-blue-50' : 'border-gray-200'}`}
+              data-testid={`sop-version-row-${row.versi}`}
+              className={`rounded-control border p-2 text-xs ${isActive ? 'border-primary bg-primary-subtle' : 'border-border bg-surface'}`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="font-mono font-medium text-gray-900">
+                  <p className="font-medium text-foreground">
                     v{row.versi} · {row.nomorSOP}
                   </p>
                   {row.revisiDariVersi != null ? (
-                    <p className="text-gray-500 mt-0.5">Revisi dari v{row.revisiDariVersi}</p>
+                    <p className="text-muted-foreground mt-0.5">Revisi dari v{row.revisiDariVersi}</p>
                   ) : null}
-                  <p className="text-gray-400 mt-0.5">{formatDateIdLong(row.updatedAt)}</p>
+                  <p className="text-muted-foreground mt-0.5">{formatDateIdLong(row.updatedAt)}</p>
                 </div>
                 <SopStatusBadge
                   status={row.status as StatusSOP}
@@ -69,12 +86,29 @@ export function RiwayatVersiPanel({
                     {isActive ? 'Sedang dibuka' : 'Buka'}
                   </Link>
                 </Button>
+                {onBuatVersiBaru && isTerminalVersionStatus(row.status) ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 border-success/30 text-success-foreground hover:bg-success-subtle"
+                    onClick={() => onBuatVersiBaru(row)}
+                    disabled={isBuatVersiBaruPending || !row.canBuatVersiBaru}
+                    aria-label={`Buat versi baru dari versi ${row.versi}`}
+                    title={
+                      row.canBuatVersiBaru ? undefined : (buatVersiBaruBlockingReason ?? undefined)
+                    }
+                  >
+                    <GitBranchPlus className="w-3 h-3 mr-1" aria-hidden />
+                    Buat dari versi ini
+                  </Button>
+                ) : null}
                 {!isReadOnly && row.canHapusDraft ? (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs text-red-700 border-red-200"
+                    className="h-7 border-danger/30 text-danger hover:bg-danger-subtle"
                     onClick={() => setHapusTarget(row.detailSopId)}
                     disabled={isDeleting}
                   >

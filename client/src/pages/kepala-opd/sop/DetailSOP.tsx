@@ -97,7 +97,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
 
   const workspaceHeaderToolbar = (
     <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-secondary-foreground">
         <SopStatusBadge
           status={sopStatus}
           label={sopStatusLabel}

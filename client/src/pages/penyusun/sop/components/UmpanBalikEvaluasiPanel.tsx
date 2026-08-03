@@ -1,5 +1,7 @@
-import { Check } from 'lucide-react'
+import { Check, MessageSquare } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { LoadingState } from '@/components/ui/loading-state'
+import { EmptyState } from '@/components/ui/empty-state'
 import { HasilEvaluasiBadge } from '@/components/status/hasil-evaluasi-badge'
 import {
   getStatusTindakLanjutBadgeClass,
@@ -31,18 +33,23 @@ export function UmpanBalikEvaluasiPanel({
   isLoading = false,
 }: UmpanBalikEvaluasiPanelProps) {
   if (isLoading) {
-    return <p className="p-3 text-xs text-gray-500">Memuat komentar evaluasi…</p>
+    return <LoadingState compact message="Memuat komentar evaluasi…" />
   }
 
   if (!umpanBalik) {
     return (
-      <p className="p-3 text-xs text-gray-500">
-        Belum ada komentar evaluasi (catatan evaluator) untuk dokumen ini.
-      </p>
+      <EmptyState
+        icon={<MessageSquare />}
+        title="Belum ada komentar evaluasi"
+        description="Catatan evaluator untuk dokumen ini akan ditampilkan di sini."
+        className="min-h-0 py-8"
+      />
     )
   }
 
   const umpanBalikData = umpanBalik
+  const isDitolak =
+    umpanBalikData.pengajuanStatus === 'DITOLAK' || umpanBalikData.hasil === 'DITOLAK'
   const isTerbuka = umpanBalikData.statusTindakLanjut === 'TERBUKA'
   const isSelesai = umpanBalikData.statusTindakLanjut === 'SELESAI'
   const tindakLanjutLabel = getStatusTindakLanjutLabel(
@@ -52,11 +59,14 @@ export function UmpanBalikEvaluasiPanel({
 
   return (
     <div className="p-3 space-y-3">
-      <p className="text-[10px] text-gray-500 leading-snug">
-        Komentar evaluator disimpan pada nilai evaluasi. Kirim ulang evaluasi setelah perbaikan
-        tersimpan.
+      <p className="text-[10px] text-muted-foreground leading-snug">
+        {isDitolak
+          ? 'Versi ini ditolak final dan tidak dapat diajukan ulang. Gunakan alasan evaluator sebagai acuan untuk membuat versi baru.'
+          : 'Komentar evaluator disimpan pada nilai evaluasi. Kirim ulang evaluasi setelah perbaikan tersimpan.'}
       </p>
-      <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-xs space-y-2">
+      <div
+        className={`space-y-2 rounded-control border p-3 text-xs ${isDitolak ? 'border-danger/30 bg-danger-subtle' : 'border-warning/30 bg-warning-subtle'}`}
+      >
         <div className="flex flex-wrap items-center gap-2">
           <HasilEvaluasiBadge hasil={umpanBalikData.hasil} label={umpanBalikData.hasilLabel} />
           {tindakLanjutLabel && (isTerbuka || isSelesai) ? (
@@ -69,16 +79,16 @@ export function UmpanBalikEvaluasiPanel({
           ) : null}
         </div>
         {umpanBalikData.dinilaiOleh ? (
-          <p className="text-gray-600">
+          <p className="text-secondary-foreground">
             Evaluator:{' '}
-            <span className="font-medium text-gray-900">{umpanBalikData.dinilaiOleh.nama}</span>
+            <span className="font-medium text-foreground">{umpanBalikData.dinilaiOleh.nama}</span>
           </p>
         ) : null}
-        <p className="text-gray-900 whitespace-pre-wrap break-words">
+        <p className="text-foreground whitespace-pre-wrap break-words">
           {umpanBalikData.catatan ?? '—'}
         </p>
         {umpanBalikData.ditindaklanjutiPada && umpanBalikData.ditindaklanjutiOleh ? (
-          <p className="text-[10px] text-gray-500">
+          <p className="text-[10px] text-muted-foreground">
             Ditandai selesai oleh {umpanBalikData.ditindaklanjutiOleh.nama} pada{' '}
             {formatDate(umpanBalikData.ditindaklanjutiPada)}
           </p>

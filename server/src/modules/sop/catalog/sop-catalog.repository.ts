@@ -841,11 +841,8 @@ export class SopCatalogRepository {
     }));
   }
 
-  /**
-   * Clone DetailSOP BERLAKU menjadi versi baru (DRAFT).
-   * @throws NotFoundException | ConflictException
-   */
-  async cloneDetailSopFromBerlaku(params: {
+  /** Clone snapshot versi terminal yang dipilih menjadi versi baru berstatus DRAFT. */
+  async cloneDetailSopFromSource(params: {
     sourceDetailSopId: string;
     penggunaId: string;
   }): Promise<SopCatalogRepoResult<{ detailSopId: string; versi: number }>> {
@@ -866,10 +863,10 @@ export class SopCatalogRepository {
     if (source === null) {
       return sopCatalogRepoFail('NOT_FOUND', 'DetailSOP sumber tidak ditemukan');
     }
-    if (source.status !== StatusSOP.BERLAKU) {
+    if (!TERMINAL_DETAIL_STATUSES.has(source.status)) {
       return sopCatalogRepoFail(
         'CONFLICT',
-        'Hanya DetailSOP berstatus BERLAKU yang dapat dibuat versi barunya',
+        'Hanya versi terminal (DITOLAK_EVALUATOR, BERLAKU, DIGANTIKAN, atau DICABUT) yang dapat dijadikan sumber versi baru',
       );
     }
     const siblings = await this.prisma.detailSOP.findMany({
@@ -1081,6 +1078,20 @@ export class SopCatalogRepository {
           }
         }
       }
+      await tx.logEditSOP.create({
+        data: {
+          detailSopId: newDetailId,
+          penggunaId: params.penggunaId,
+          createdAt: now,
+          bagian: BagianSOP.STATUS,
+          keterangan: `Versi ${versiBaru} dibuat berdasarkan versi ${source.versi}`,
+          sesiChangeCount: 1,
+          closedAt: now,
+          domainFields: {
+            create: [{ domainField: 'create' }, { domainField: 'revisiDariDetailSopId' }],
+          },
+        },
+      });
       return { detailSopId: newDetailId, versi: versiBaru };
     });
     return sopCatalogRepoOk(cloned);
@@ -1104,7 +1115,7 @@ export class SopCatalogRepository {
     if (row.revisiDariDetailSopId === null) {
       return sopCatalogRepoFail(
         'CONFLICT',
-        'Hanya versi revisi dari SOP berlaku yang dapat dihapus lewat endpoint ini',
+        'Hanya versi revisi yang dibuat dari versi sebelumnya yang dapat dihapus lewat endpoint ini',
       );
     }
     if (row._count.nilaiEvaluasi > 0) {

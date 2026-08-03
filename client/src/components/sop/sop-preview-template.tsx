@@ -317,8 +317,8 @@ export function SOPPreviewTemplate({
                     aria-label="Kontrol diagram SOP"
                     className={
                       hasDiagramToolbar
-                        ? 'inline-flex w-fit max-w-full flex-col items-center gap-2 rounded-xl border border-gray-200/90 bg-slate-50/95 px-2 py-1.5 shadow-sm ring-1 ring-gray-950/[0.04] sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-2 sm:gap-y-1.5 sm:px-2.5 sm:py-1.5'
-                        : 'inline-flex w-fit max-w-full flex-col items-stretch rounded-xl border border-gray-200/90 bg-white px-2 py-2 shadow-sm ring-1 ring-gray-950/[0.04]'
+                        ? 'inline-flex w-fit max-w-full flex-col items-center gap-2 rounded-xl border border-border/90 bg-surface-subtle/95 px-2 py-1.5 shadow-surface ring-1 ring-gray-950/[0.04] sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-2 sm:gap-y-1.5 sm:px-2.5 sm:py-1.5'
+                        : 'inline-flex w-fit max-w-full flex-col items-stretch rounded-xl border border-border/90 bg-surface px-2 py-2 shadow-surface ring-1 ring-gray-950/[0.04]'
                     }
                   >
                     {hasDiagramToolbar ? (
@@ -327,7 +327,7 @@ export function SOPPreviewTemplate({
                           {effectiveOptions.toolbar}
                         </div>
                         <div
-                          className="hidden h-8 w-px shrink-0 bg-gray-300/90 sm:mx-0.5 sm:block"
+                          className="hidden h-8 w-px shrink-0 bg-surface-strong/90 sm:mx-0.5 sm:block"
                           aria-hidden
                         />
                       </>
@@ -343,16 +343,16 @@ export function SOPPreviewTemplate({
                           : "w-auto min-w-[13.5rem]"
                       }
                     >
-                      <TabsList className="grid h-9 w-auto min-w-[13.5rem] grid-cols-2 gap-0.5 rounded-lg bg-white/60 p-0.5 ring-1 ring-gray-200/60 sm:h-9">
+                      <TabsList className="grid h-9 w-auto min-w-[13.5rem] grid-cols-2 gap-0.5 rounded-lg bg-surface/60 p-0.5 ring-1 ring-border/60 sm:h-9">
                         <TabsTrigger
                           value="flowchart"
-                          className="h-8 rounded-md text-xs font-medium text-gray-600 transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-gray-200/80 data-[state=inactive]:hover:bg-white/60 data-[state=inactive]:hover:text-gray-800"
+                          className="h-8 rounded-md text-xs font-medium text-secondary-foreground transition-all data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-surface data-[state=active]:ring-1 data-[state=active]:ring-border/80 data-[state=inactive]:hover:bg-surface/60 data-[state=inactive]:hover:text-foreground"
                         >
                           Flowchart
                         </TabsTrigger>
                         <TabsTrigger
                           value="bpmn"
-                          className="h-8 rounded-md text-xs font-medium text-gray-600 transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-gray-200/80 data-[state=inactive]:hover:bg-white/60 data-[state=inactive]:hover:text-gray-800"
+                          className="h-8 rounded-md text-xs font-medium text-secondary-foreground transition-all data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-surface data-[state=active]:ring-1 data-[state=active]:ring-border/80 data-[state=inactive]:hover:bg-surface/60 data-[state=inactive]:hover:text-foreground"
                         >
                           BPMN
                         </TabsTrigger>
@@ -366,7 +366,7 @@ export function SOPPreviewTemplate({
                 <div className="sop-diagram-print-host min-w-0 w-full overflow-x-auto px-4 lg:px-0 print:overflow-visible print:px-0">
                   {showDiagramPlaceholder ? (
                     <div
-                      className="flex min-h-[240px] items-center justify-center text-sm text-gray-500 print:hidden"
+                      className="flex min-h-[240px] items-center justify-center text-sm text-muted-foreground print:hidden"
                       role="status"
                       aria-live="polite"
                     >

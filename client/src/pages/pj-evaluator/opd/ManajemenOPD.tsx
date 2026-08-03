@@ -110,7 +110,7 @@ export function ManajemenOPD() {
       }
     >
       <Tabs value={activeTab} onValueChange={(v: string) => setActiveTab(v as 'opd' | 'kepala')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-9 bg-white border border-gray-200 w-full">
+        <TabsList className="grid w-full grid-cols-2 h-9 bg-surface border border-border w-full">
           <TabsTrigger value="opd" className="text-xs gap-1.5">
             <Building2 className="w-3.5 h-3.5" />
             Manajemen OPD

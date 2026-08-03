@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/utils/cn'
 
 const cornerRemoveButtonClassName =
-  'absolute right-1 top-1 z-10 h-5 w-5 rounded-full border border-gray-200 bg-white p-0 text-gray-500 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-600'
+  'absolute right-1 top-1 z-10 h-5 w-5 rounded-full border border-border bg-surface p-0 text-muted-foreground shadow-surface hover:border-red-200 hover:bg-red-50 hover:text-red-600'
 
 interface FieldWithCornerRemoveButtonProps {
   children: ReactNode

@@ -21,9 +21,9 @@ export function RiwayatCardList<T>({
 }: RiwayatCardListProps<T>) {
   return (
     <div className={className}>
-      <h4 className="text-xs font-semibold text-gray-700 mb-2">{title}</h4>
+      <h4 className="text-xs font-semibold text-secondary-foreground mb-2">{title}</h4>
       {items.length === 0 ? (
-        <p className="text-[11px] text-gray-500">{emptyMessage}</p>
+        <p className="text-[11px] text-muted-foreground">{emptyMessage}</p>
       ) : (
         <div className="space-y-2">
           {items.map((item, i) => (

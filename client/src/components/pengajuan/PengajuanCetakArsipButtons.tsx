@@ -85,7 +85,7 @@ export function PengajuanCetakArsipButtons({
             title={baDisabledTitle}
             onClick={() => handleSelect('ba')}
           >
-            <Download className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+            <Download className="mr-2 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
             Unduh BA (PDF)
           </DropdownMenuItem>
           {showSopItems ? (
@@ -94,7 +94,7 @@ export function PengajuanCetakArsipButtons({
               title={sopItemTitle}
               onClick={() => handleSelect('sop')}
             >
-              <Printer className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+              <Printer className="mr-2 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
               Cetak SOP
             </DropdownMenuItem>
           ) : null}

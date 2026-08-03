@@ -19,10 +19,10 @@ export function EvaluasiKeputusanSebelumnyaCard({
 }: EvaluasiKeputusanSebelumnyaCardProps) {
   const [open, setOpen] = useState(true)
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50/80 text-xs">
+    <div className="rounded-lg border border-border bg-surface-subtle/80 text-xs">
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left font-medium text-gray-700"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left font-medium text-secondary-foreground"
         onClick={() => setOpen((v) => !v)}
       >
         <span>Keputusan sebelumnya</span>
@@ -31,18 +31,18 @@ export function EvaluasiKeputusanSebelumnyaCard({
         />
       </button>
       {open ? (
-        <div className="px-3 pb-3 pt-0 space-y-1 text-gray-600 border-t border-gray-100">
+        <div className="px-3 pb-3 pt-0 space-y-1 text-secondary-foreground border-t border-border">
           <p>
-            <span className="text-gray-500">Status: </span>
-            <span className="font-medium text-gray-800">{labelHasil(hasil)}</span>
+            <span className="text-muted-foreground">Status: </span>
+            <span className="font-medium text-foreground">{labelHasil(hasil)}</span>
           </p>
           {catatan?.trim() ? (
             <p className="leading-snug whitespace-pre-wrap">
-              <span className="text-gray-500">Catatan: </span>
+              <span className="text-muted-foreground">Catatan: </span>
               {catatan}
             </p>
           ) : null}
-          <p className="text-[11px] text-gray-500 pt-1">
+          <p className="text-[11px] text-muted-foreground pt-1">
             Ini bukan penilaian aktif — pilih hasil baru di bawah setelah meninjau dokumen
             terbaru.
           </p>

@@ -41,10 +41,12 @@ model Pengguna {
   nilaiEvaluasiDiisi              NilaiEvaluasi[]      @relation("NilaiDiisiOleh")
   nilaiEvaluasiDitindaklanjuti    NilaiEvaluasi[]      @relation("NilaiDitindaklanjutiOleh")
   pengajuanEvaluasiDiselesaikan   PengajuanEvaluasi[]  @relation("PengajuanDiselesaikanOleh")
+  pengajuanEvaluasiDitolak        PengajuanEvaluasi[]  @relation("PengajuanDitolakOleh")
   pengajuanEvaluasiDitandatangani PengajuanEvaluasi[]  @relation("PengajuanDitandatanganiOlehPjPenyusun")
   pengajuanEvaluasiDiverifikasi   PengajuanEvaluasi[]  @relation("PengajuanDiverifikasiOleh")
   peraturanTerakhirDiedit         Peraturan[]          @relation("PeraturanTerakhirDiedit")
   opd                             OPD                  @relation(fields: [opdId], references: [opdId], onDelete: Restrict)
+  pengingatWhatsApp               PengingatWhatsApp[]
   riwayatOpd                      RiwayatOpdPengguna[]
   tandaTangan                     RiwayatTandaTangan[]
 
@@ -140,7 +142,7 @@ model DetailSOP {
   namaLembaga                    String                           @db.VarChar(2000)
   dibuatOlehId                   String?                          @db.Char(36)
   terakhirDieditOlehId           String?                          @db.Char(36)
-  /// Versi sumber saat dibuat dari SOP BERLAKU (revisi resmi).
+  /// Versi sumber snapshot saat membuat revisi baru (BERLAKU, DIGANTIKAN, atau DICABUT).
   revisiDariDetailSopId          String?                          @db.Char(36)
   createdAt                      DateTime                         @default(now())
   updatedAt                      DateTime                         @updatedAt
@@ -360,6 +362,10 @@ model PengajuanEvaluasi {
   /// Syarat: semua NilaiEvaluasi dalam pengajuan ini sudah terisi hasil.
   diselesaikanOlehId                 String?                 @db.Char(36)
   tanggalDiselesaikan                DateTime?
+  /// Alasan resmi evaluator saat menolak pengajuan. Wajib ketika status DITOLAK.
+  alasanPenolakan                    String?                 @db.Text
+  ditolakOlehId                      String?                 @db.Char(36)
+  tanggalDitolak                     DateTime?
   /// Versi untuk optimistic locking — increment di setiap update status.
   /// Service: UPDATE ... SET status = ?, version = version + 1 WHERE id = ? AND version = ?
   version                            Int                     @default(0)
@@ -368,15 +374,43 @@ model PengajuanEvaluasi {
   logNilaiEvaluasi                   LogNilaiEvaluasi[]
   nilaiEvaluasi                      NilaiEvaluasi[]
   diselesaikanOleh                   Pengguna?               @relation("PengajuanDiselesaikanOleh", fields: [diselesaikanOlehId], references: [penggunaId])
+  ditolakOleh                        Pengguna?               @relation("PengajuanDitolakOleh", fields: [ditolakOlehId], references: [penggunaId], onDelete: Restrict)
   ditandatanganiOlehPjPenyusunUser   Pengguna?               @relation("PengajuanDitandatanganiOlehPjPenyusun", fields: [ditandatanganiOlehPjPenyusunUserId], references: [penggunaId], onDelete: Restrict)
   diverifikasiOlehUser               Pengguna?               @relation("PengajuanDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [penggunaId], onDelete: Restrict)
   dokumenTte                         DokumenTte[]
   opd                                OPD                     @relation(fields: [opdId], references: [opdId])
+  pengingatWhatsApp                  PengingatWhatsApp[]
 
   @@index([opdId, status, createdAt])
   @@index([opdId, status, updatedAt], map: "PengajuanEvaluasi_opdId_status_updatedAt_idx")
   @@index([opdId, status, tanggalDiselesaikan, updatedAt], map: "PengajuanEvaluasi_opd_status_selesai_idx")
   @@index([status, createdAt], map: "PengajuanEvaluasi_status_createdAt_idx")
+  @@index([ditolakOlehId], map: "PengajuanEvaluasi_ditolakOlehId_idx")
+}
+
+/// State reminder WhatsApp yang masih aktif. Baris dihapus saat status pengajuan berubah;
+/// tabel ini bukan riwayat pengiriman dan tidak diekspos melalui API.
+model PengingatWhatsApp {
+  pengingatWhatsAppId String                 @id @default(uuid()) @db.Char(36)
+  pengajuanEvaluasiId String                 @db.Char(36)
+  penggunaId          String                 @db.Char(36)
+  jenis               JenisPengingatWhatsApp
+  nomorTujuan         String                 @db.VarChar(20)
+  nextSendAt          DateTime               @db.DateTime(3)
+  lastSentAt          DateTime?              @db.DateTime(3)
+  consecutiveFailures Int                    @default(0)
+  lastErrorKind       String?                @db.VarChar(64)
+  lockedUntil         DateTime?              @db.DateTime(3)
+  lockToken           String?                @db.Char(36)
+  createdAt           DateTime               @default(now()) @db.DateTime(3)
+  updatedAt           DateTime               @updatedAt @db.DateTime(3)
+  pengajuanEvaluasi   PengajuanEvaluasi      @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Cascade)
+  pengguna            Pengguna               @relation(fields: [penggunaId], references: [penggunaId], onDelete: Cascade)
+
+  @@unique([pengajuanEvaluasiId, penggunaId, jenis], map: "PengingatWhatsApp_pengajuan_pengguna_jenis_key")
+  @@index([nextSendAt, lockedUntil], map: "PengingatWhatsApp_due_lock_idx")
+  @@index([pengajuanEvaluasiId], map: "PengingatWhatsApp_pengajuan_idx")
+  @@index([penggunaId], map: "PengingatWhatsApp_pengguna_idx")
 }
 
 /// Hasil penilaian per DetailSOP dalam satu pengajuan evaluasi.
@@ -500,6 +534,7 @@ enum StatusSOP {
   DIAJUKAN_EVALUASI
   SEDANG_DIEVALUASI
   REVISI_DARI_EVALUATOR
+  DITOLAK_EVALUATOR
   MENUNGGU_TTD_PJ_EVALUATOR
   DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI
   BERLAKU
@@ -529,6 +564,7 @@ enum JenisPengajuanEvaluasi {
 
 enum StatusPengajuanEvaluasi {
   SEDANG_DIEVALUASI
+  DITOLAK
   SELESAI_DIEVALUASI
   DITANDATANGANI_PJ_EVALUATOR
   DITANDATANGANI_PJ_PENYUSUN
@@ -538,11 +574,19 @@ enum StatusPengajuanEvaluasi {
 enum HasilEvaluasi {
   SESUAI
   PERLU_PERBAIKAN
+  DITOLAK
 }
 
 enum JenisDokumenTte {
   BERITA_ACARA_EVALUASI
   SOP_BERLAKU
+}
+
+enum JenisPengingatWhatsApp {
+  EVALUASI_SOP
+  TTD_BA_PJ_EVALUATOR
+  TTD_BA_PJ_PENYUSUN
+  TTD_SOP_KEPALA_OPD
 }
 
 /// Status penyelesaian umpan balik evaluasi pada `NilaiEvaluasi.statusTindakLanjut`.

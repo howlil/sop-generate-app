@@ -72,10 +72,10 @@ function UserSummary({
   email?: string
 }) {
   return (
-    <div className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-xs space-y-0.5">
-      <p className="font-medium text-gray-900">{displayNama || '-'}</p>
-      <p className="text-gray-600">NIP. {displayNip || '-'}</p>
-      {email ? <p className="text-gray-500">{email}</p> : null}
+    <div className="rounded-md border border-border bg-surface-subtle px-3 py-2 text-xs space-y-0.5">
+      <p className="font-medium text-foreground">{displayNama || '-'}</p>
+      <p className="text-secondary-foreground">NIP. {displayNip || '-'}</p>
+      {email ? <p className="text-muted-foreground">{email}</p> : null}
     </div>
   )
 }

@@ -19,6 +19,7 @@ export interface KegiatanCellProps {
 export function KegiatanCell({ value, onChange }: KegiatanCellProps) {
   return (
     <Textarea
+      aria-label="Kegiatan"
       className="text-xs min-h-[40px] px-1.5 py-1"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -68,6 +69,7 @@ export interface TypeCellProps {
     type: ProsedurRow['type'],
     terminatorRole?: TerminatorRole,
   ) => void
+  normalizePosition?: boolean
 }
 
 export function TypeCell({
@@ -76,6 +78,7 @@ export function TypeCell({
   totalRows,
   stepOrderById,
   onTypeChange,
+  normalizePosition = true,
 }: TypeCellProps) {
   const onTypeChangeRef = useRef(onTypeChange)
   onTypeChangeRef.current = onTypeChange
@@ -96,6 +99,7 @@ export function TypeCell({
   )
 
   useEffect(() => {
+    if (!normalizePosition) return
     // Normalisasi otomatis agar data selalu sesuai aturan posisi baris.
     if (isFirstRow(index)) {
       if (row.type !== 'terminator' || row.terminatorRole !== 'start') {
@@ -113,7 +117,7 @@ export function TypeCell({
     if (row.type === 'terminator') {
       onTypeChangeRef.current('task')
     }
-  }, [row.type, row.terminatorRole, index, totalRows])
+  }, [row.type, row.terminatorRole, index, totalRows, normalizePosition])
 
   const displayValue =
     isFirstRow(index)
@@ -137,7 +141,8 @@ export function TypeCell({
   return (
     <div className="space-y-1">
       <select
-        className="w-full h-8 rounded-md border border-gray-200 px-0.5 text-xs"
+        aria-label="Tipe langkah"
+        className="h-9 w-full rounded-control border border-border-strong px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
         value={displayValue}
         onChange={(e) => handleChange(e.target.value)}
       >
@@ -148,7 +153,7 @@ export function TypeCell({
         ))}
       </select>
       {isDecision && (
-        <p className="text-[10px] text-gray-500">
+        <p className="text-[10px] text-muted-foreground">
           {!hasDecisionTarget
             ? 'Belum diatur cabang Ya/Tidak.'
             : [
@@ -180,7 +185,8 @@ export function ImplementerCell({ row, implementers, onImplementerChange }: Impl
 
   return (
     <select
-      className="w-full h-8 rounded-md border border-gray-200 px-0.5 text-xs"
+      aria-label="Pelaksana"
+      className="h-9 w-full rounded-control border border-border-strong px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
       value={selectedId}
       onChange={(e) => onImplementerChange(e.target.value)}
     >
@@ -203,6 +209,7 @@ export interface MutuKelengkapanCellProps {
 export function MutuKelengkapanCell({ value, onChange }: MutuKelengkapanCellProps) {
   return (
     <Textarea
+      aria-label="Kelengkapan"
       className="text-xs min-h-[36px] px-1.5 py-1"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -235,19 +242,20 @@ export function MutuWaktuCell({ value, onChange }: MutuWaktuCellProps) {
             : 'm'
 
   return (
-    <div className="flex min-w-0 items-stretch rounded-md border border-gray-200 bg-white">
+    <div className="flex min-w-0 items-stretch rounded-md border border-border-strong bg-surface">
       <Input
+        aria-label="Jumlah waktu"
         type="number"
         min={0}
         inputMode="numeric"
         placeholder="0"
-        className="h-8 min-h-8 w-[3.25rem] min-w-[3.25rem] shrink-0 rounded-none rounded-l-md border-0 border-r border-gray-200 px-1.5 py-1 text-center text-xs tabular-nums focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="h-9 min-h-9 w-[3.5rem] min-w-[3.5rem] shrink-0 rounded-none rounded-l-control border-0 border-r border-border px-1.5 py-1 text-center text-sm tabular-nums focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-primary"
         value={amount}
         onChange={(e) => onChange(e.target.value, unit)}
       />
       <select
         aria-label="Satuan waktu"
-        className="h-8 min-h-8 min-w-[5rem] flex-1 rounded-none rounded-r-md border-0 bg-gray-50/80 py-0 pl-1.5 pr-7 text-xs outline-none focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="h-9 min-h-9 min-w-[5rem] flex-1 rounded-none rounded-r-control border-0 bg-surface-subtle/80 py-0 pl-1.5 pr-7 text-sm outline-none focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-primary"
         value={unit}
         onChange={(e) => onChange(amount, e.target.value)}
       >
@@ -271,6 +279,7 @@ export interface OutputCellProps {
 export function OutputCell({ value, onChange }: OutputCellProps) {
   return (
     <Textarea
+      aria-label="Output"
       className="text-xs min-h-[36px] px-1.5 py-1"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -288,6 +297,7 @@ export interface KeteranganCellProps {
 export function KeteranganCell({ value, onChange }: KeteranganCellProps) {
   return (
     <Textarea
+      aria-label="Keterangan"
       className="text-xs min-h-[36px] px-1.5 py-1"
       value={value}
       onChange={(e) => onChange(e.target.value)}

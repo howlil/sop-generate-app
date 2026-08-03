@@ -48,6 +48,7 @@ export class EvaluasiUmpanBalikService {
     return {
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
       detailSopId: row.detailSopId,
+      pengajuanStatus: String(row.pengajuanEvaluasi.status),
       hasil: hasilDisplay.value,
       hasilLabel: hasilDisplay.label,
       catatan: row.catatan,

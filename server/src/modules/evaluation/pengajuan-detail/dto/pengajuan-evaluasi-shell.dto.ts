@@ -198,6 +198,18 @@ export class PengajuanEvaluasiShellDto {
   @ApiPropertyOptional()
   readonly tanggalDiselesaikan?: string;
 
+  @ApiPropertyOptional()
+  readonly alasanPenolakan?: string;
+
+  @ApiPropertyOptional()
+  readonly tanggalDitolak?: string;
+
+  @ApiPropertyOptional({ format: 'uuid' })
+  readonly ditolakOlehId?: string;
+
+  @ApiPropertyOptional({ type: () => Object })
+  readonly ditolakOleh?: { id: string; nama: string };
+
   @ApiProperty({ type: () => [PengajuanSopItemShellDto] })
   readonly sopItems!: PengajuanSopItemShellDto[];
 

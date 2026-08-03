@@ -15,7 +15,7 @@ export interface InfoFieldProps {
 
 /**
  * A label:value display pair used in detail pages, info cards, and grid layouts.
- * Replaces the ~30 instances of ad-hoc `<span class="text-gray-500">Label:</span> <span>Value</span>` patterns.
+ * Replaces the ~30 instances of ad-hoc `<span class="text-muted-foreground">Label:</span> <span>Value</span>` patterns.
  */
 export function InfoField({
   label,
@@ -29,15 +29,15 @@ export function InfoField({
       <div className={cn("min-w-0", className)}>
         <div className="flex items-center gap-1">
           {icon && (
-            <span className="text-gray-400 shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5">
+            <span className="text-muted-foreground shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5">
               {icon}
             </span>
           )}
-          <span className="text-[11px] text-gray-500 leading-none">
+          <span className="text-[11px] text-muted-foreground leading-none">
             {label}
           </span>
         </div>
-        <div className="text-xs font-medium text-gray-900 mt-0.5 truncate">
+        <div className="text-xs font-medium text-foreground mt-0.5 truncate">
           {children}
         </div>
       </div>
@@ -47,12 +47,12 @@ export function InfoField({
   return (
     <div className={cn("flex items-center gap-1.5 min-w-0 text-xs", className)}>
       {icon && (
-        <span className="text-gray-400 shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5">
+        <span className="text-muted-foreground shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5">
           {icon}
         </span>
       )}
-      <span className="text-gray-500 shrink-0">{label}</span>
-      <span className="font-medium text-gray-900 truncate">{children}</span>
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <span className="font-medium text-foreground truncate">{children}</span>
     </div>
   );
 }

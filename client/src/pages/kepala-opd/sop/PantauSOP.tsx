@@ -85,7 +85,7 @@ export function PantauSOP() {
                     <Table.Th>Nomor SOP</Table.Th>
                     <Table.Th>Terakhir diperbarui</Table.Th>
                     <Table.Th>Status</Table.Th>
-                    <Table.Th>Aksi</Table.Th>
+                    <Table.ActionTh>Aksi</Table.ActionTh>
                   </Table.HeadRow>
                 </thead>
                 <tbody>
@@ -118,7 +118,7 @@ export function PantauSOP() {
                               label={sop.statusLabel}
                             />
                           </Table.Td>
-                          <Table.Td>
+                          <Table.ActionTd>
                             <RowActions
                               align="start"
                               actions={[
@@ -142,7 +142,7 @@ export function PantauSOP() {
                                   : []),
                               ]}
                             />
-                          </Table.Td>
+                          </Table.ActionTd>
                         </Table.BodyRow>
                       );
                     })

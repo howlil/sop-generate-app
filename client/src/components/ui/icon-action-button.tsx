@@ -30,25 +30,40 @@ export function IconActionButton({
   variant = 'ghost',
   className,
 }: IconActionButtonProps) {
-  const btn = (
+  const buttonClassName = cn(
+    destructive && 'text-red-600 hover:bg-red-50 hover:text-red-700',
+    className,
+  )
+
+  if (to && !disabled) {
+    return (
+      <Button
+        asChild
+        variant={variant}
+        size="icon-sm"
+        className={buttonClassName}
+        title={title}
+        aria-label={title}
+      >
+        <Link to={to} params={params} search={search} state={state}>
+          <Icon className="w-3.5 h-3.5" aria-hidden />
+        </Link>
+      </Button>
+    )
+  }
+
+  return (
     <Button
       type="button"
       variant={variant}
       size="icon-sm"
-      className={cn(
-        destructive && 'text-red-600 hover:bg-red-50 hover:text-red-700',
-        className
-      )}
+      className={buttonClassName}
       title={title}
+      aria-label={title}
       onClick={onClick}
       disabled={disabled}
     >
-      <Icon className="w-3.5 h-3.5" />
+      <Icon className="w-3.5 h-3.5" aria-hidden />
     </Button>
   )
-
-  if (to) {
-    return <Link to={to} params={params} search={search} state={state}>{btn}</Link>
-  }
-  return btn
 }

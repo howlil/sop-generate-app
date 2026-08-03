@@ -11,7 +11,7 @@ export function generatePersonalP12(params: {
   const signingKeys = forge.pki.rsa.generateKeyPair({ bits: 2048, workers: 2 });
 
   const caAttrs = [
-    { name: 'commonName', value: 'Sistem Informasi SOP Root CA' },
+    { name: 'commonName', value: 'SOPFlow Root CA' },
     { name: 'organizationName', value: 'Biro Organisasi' },
     { name: 'organizationalUnitName', value: 'Certificate Authority' },
     { name: 'countryName', value: 'ID' },

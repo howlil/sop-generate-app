@@ -111,7 +111,6 @@ export function DaftarSOPEvaluasi() {
                 to: ROUTES.EVALUATOR.DETAIL_EVALUASI_PENGAJUAN,
                 params: { id: row.pengajuanEvaluasiId },
                 title: 'Buka penilaian',
-                variant: 'outline',
               },
             ]}
           />

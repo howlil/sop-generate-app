@@ -22,6 +22,7 @@ export function getEvaluasiWorkflowActiveStep(
 ): number {
   switch (status) {
     case 'SEDANG_DIEVALUASI':
+    case 'DITOLAK':
       return 1
     case 'SELESAI_DIEVALUASI':
       return 2

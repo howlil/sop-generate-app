@@ -102,7 +102,7 @@ type PdfSigningConfig = {
 };
 
 const PDF_VERIFICATION_DISCLAIMER =
-  'Verifikasi ini memakai CA internal Sistem Informasi SOP. Untuk TTE tersertifikasi nasional, gunakan portal resmi Komdigi atau BSrE.';
+  'Verifikasi ini memakai CA internal SOPFlow. Untuk TTE tersertifikasi nasional, gunakan portal resmi Komdigi atau BSrE.';
 
 @Injectable()
 export class TtePdfSigningService {

@@ -105,9 +105,9 @@ export function RiwayatStatusPanel({ entries }: RiwayatStatusPanelProps) {
     <div className="space-y-4">
       {groups.map((group) => (
         <div key={group.key}>
-          <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-2">{group.label}</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">{group.label}</p>
           <div className="relative pl-4">
-            <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-200" />
+            <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
             <ul className="space-y-3">
               {group.items.map((entry, i) => {
                 const aktorNama = entry.user?.nama ?? entry.userId ?? 'Tidak diketahui'
@@ -119,36 +119,36 @@ export function RiwayatStatusPanel({ entries }: RiwayatStatusPanelProps) {
                   <li key={entry.id} className="relative flex gap-3">
                     <span
                       className={`absolute -left-[13px] top-1.5 w-3 h-3 rounded-full border-2 border-white ${
-                        i === 0 ? 'bg-blue-500' : 'bg-gray-300'
+                        i === 0 ? 'bg-blue-500' : 'bg-surface-strong'
                       }`}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 gap-y-0.5">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] px-1.5 py-0 h-4 ${BAGIAN_BADGE_CLASS[entry.bagian]}`}
+                          className={`min-h-6 px-2 py-0.5 text-xs ${BAGIAN_BADGE_CLASS[entry.bagian]}`}
                         >
                           {BAGIAN_LABEL[entry.bagian]}
                         </Badge>
-                        <span className="text-[10px] text-gray-500">
+                        <span className="text-[10px] text-muted-foreground">
                           {formatTime(entry.createdAt)}
                         </span>
                         {isOngoing && (
-                          <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1">
+                          <span className="inline-flex min-h-6 items-center rounded-md border border-amber-500 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
                             berlangsung
                           </span>
                         )}
                         {!isOngoing && count > 1 && (
-                          <span className="text-[10px] text-gray-400">{count} perubahan</span>
+                          <span className="text-[10px] text-muted-foreground">{count} perubahan</span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-700 mt-0.5">
+                      <p className="text-xs text-secondary-foreground mt-0.5">
                         {aktorNama}
                         {aktorRole.length > 0 && (
-                          <span className="text-gray-400"> ({aktorRole})</span>
+                          <span className="text-muted-foreground"> ({aktorRole})</span>
                         )}
                       </p>
-                      <p className="text-[11px] text-gray-600 mt-1">{summary}</p>
+                      <p className="text-[11px] text-secondary-foreground mt-1">{summary}</p>
                     </div>
                   </li>
                 )

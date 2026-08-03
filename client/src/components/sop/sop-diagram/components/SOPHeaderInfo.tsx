@@ -94,7 +94,7 @@ export function SOPHeaderInfo({
     <div className="flex justify-center">
       <div className="px-4 lg:px-0 print:px-0 overflow-x-auto">
         <div className="print-page print-break-after-page w-full max-w-[calc(297mm-3cm)] min-w-0 box-border pb-2 print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)] print:my-0 print:mx-auto print:pb-0 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
-          <table className="w-full border-collapse border-2 border-black text-sm bg-white table-fixed">
+          <table className="w-full border-collapse border-2 border-black text-sm bg-surface table-fixed">
             <colgroup>
               <col style={{ width: '45%' }} />
               <col style={{ width: '26%' }} />
@@ -106,7 +106,7 @@ export function SOPHeaderInfo({
               <tr>
                 <th
                   rowSpan={7}
-                  className="border-2 py-0.5 px-2 border-black align-top bg-white min-w-0 break-words"
+                  className="border-2 py-0.5 px-2 border-black align-top bg-surface min-w-0 break-words"
                 >
                   <img
                     className="mx-auto h-36 my-4"
@@ -126,7 +126,7 @@ export function SOPHeaderInfo({
                     </div>
                   ) : (
                     <div className="break-words min-w-0">
-                      <p className="m-0 font-semibold text-sm leading-tight break-words text-gray-600">
+                      <p className="m-0 font-semibold text-sm leading-tight break-words text-secondary-foreground">
                         —
                       </p>
                     </div>
