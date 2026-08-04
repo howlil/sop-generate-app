@@ -5,16 +5,17 @@ name: sop-arsip
 # domain dan HTTPS dikelola oleh reverse proxy Easypanel.
 services:
   db:
-    image: mariadb:11.4
+    image: sop-arsip-db:${APP_VERSION:-local}
+    build:
+      context: ./server/docker/mariadb
+      dockerfile: Dockerfile
     restart: unless-stopped
-    command:
-      - --lower_case_table_names=1
-    env_file:
-      - .env
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_ROOT_HOST: localhost
       MARIADB_DATABASE: ${DB_NAME}
       MARIADB_USER: ${DB_USER}
+      MARIADB_USER_HOST: "%"
       MARIADB_PASSWORD: ${DB_PASSWORD}
       TZ: Asia/Jakarta
     volumes:
@@ -23,7 +24,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "mariadb-admin ping -h 127.0.0.1 -uroot -p$${MARIADB_ROOT_PASSWORD} --silent"
+          "test -f /run/mariadb-app-user-ready && healthcheck.sh --connect --innodb_initialized"
         ]
       interval: 10s
       timeout: 5s
@@ -41,22 +42,50 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      waha:
-        condition: service_started
-    env_file:
-      - .env
     environment:
       NODE_ENV: production
+      PORT: 3000
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:-}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
       DATABASE_HOST: db
       DATABASE_PORT: 3306
-      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       DATABASE_USER: ${DB_USER}
       DATABASE_PASSWORD: ${DB_PASSWORD}
       DATABASE_NAME: ${DB_NAME}
-      DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+      RUN_DB_SEED_ON_START: ${RUN_DB_SEED_ON_START:-false}
       SOP_PDF_STORAGE_DIR: ${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
-      WAHA_BASE_URL: ${WAHA_BASE_URL:-http://waha:3000}
-    command: ["sh", "-c", "node scripts/sync-db-user.cjs && pnpm prisma migrate deploy && pnpm prisma db seed && pnpm start:prod"]
+      PDF_SIGNING_ENABLED: ${PDF_SIGNING_ENABLED:-false}
+      PDF_SIGNING_P12_BASE64: ${PDF_SIGNING_P12_BASE64:-}
+      PDF_SIGNING_P12_PASSPHRASE: ${PDF_SIGNING_P12_PASSPHRASE:-}
+      PDF_SIGNING_REASON: ${PDF_SIGNING_REASON:-Pengesahan dokumen SOP}
+      PDF_SIGNING_LOCATION: ${PDF_SIGNING_LOCATION:-Indonesia}
+      PDF_SIGNING_CONTACT: ${PDF_SIGNING_CONTACT:-}
+      WHATSAPP_ENABLED: ${WHATSAPP_ENABLED:-false}
+      WAHA_BASE_URL: ${WAHA_BASE_URL:-https://waha.howlil.my.id}
+      WAHA_API_KEY: ${WAHA_API_KEY:-}
+      WAHA_SESSION: ${WAHA_SESSION:-sop-staging}
+      WHATSAPP_ALLOWED_RECIPIENTS: ${WHATSAPP_ALLOWED_RECIPIENTS:-}
+      WHATSAPP_RECONCILE_INTERVAL_SECONDS: ${WHATSAPP_RECONCILE_INTERVAL_SECONDS:-10}
+      WHATSAPP_REMINDER_INTERVAL_MINUTES: ${WHATSAPP_REMINDER_INTERVAL_MINUTES:-1440}
+      WHATSAPP_REQUEST_TIMEOUT_MS: ${WHATSAPP_REQUEST_TIMEOUT_MS:-10000}
+      WHATSAPP_MAX_CONCURRENCY: ${WHATSAPP_MAX_CONCURRENCY:-3}
+      WHATSAPP_LOCK_LEASE_SECONDS: ${WHATSAPP_LOCK_LEASE_SECONDS:-60}
+    command:
+      - sh
+      - -c
+      - |
+        set -eu
+        export DATABASE_URL="$(node scripts/build-database-url.cjs)"
+        pnpm prisma migrate deploy
+        if [ "$${RUN_DB_SEED_ON_START:-false}" = "true" ]; then
+          pnpm prisma db seed
+        fi
+        exec pnpm start:prod
     volumes:
       - sop-pdf-prod-data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
     # Tidak publish ke host. API diakses via frontend (/api/ -> backend:3000).
@@ -72,28 +101,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 30s
-    networks:
-      - sop-network
-
-  waha:
-    image: ${WAHA_IMAGE:-devlikeapro/waha:latest-2026.4.3}
-    restart: unless-stopped
-    environment:
-      WAHA_API_KEY: ${WAHA_API_KEY}
-      WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME:-admin}
-      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
-      WHATSAPP_SWAGGER_USERNAME: ${WAHA_DASHBOARD_USERNAME:-admin}
-      WHATSAPP_SWAGGER_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
-      WHATSAPP_API_HOSTNAME: 0.0.0.0
-      WHATSAPP_API_PORT: 3000
-      WAHA_PUBLIC_URL: ${WAHA_PUBLIC_URL:-}
-      TZ: Asia/Jakarta
-    volumes:
-      - waha-session-prod-data:/app/.sessions
-    # Easypanel boleh diarahkan ke service ini port internal 3000 untuk dashboard/QR.
-    # Backend tetap memakai URL internal http://waha:3000.
-    expose:
-      - "3000"
     networks:
       - sop-network
 
@@ -128,5 +135,3 @@ volumes:
     name: sop-arsip-db-prod-data
   sop-pdf-prod-data:
     name: sop-arsip-pdf-prod-data
-  waha-session-prod-data:
-    name: sop-arsip-waha-session-prod-data

@@ -1,6 +1,6 @@
 # Reminder WhatsApp dengan WAHA
 
-Fitur ini mengirim notifikasi otomatis berdasarkan status pengajuan melalui WAHA yang berjalan di compose production pada Easypanel. Tidak ada broadcast manual, tombol kirim pesan uji, tautan ke aplikasi, atau halaman riwayat pesan.
+Fitur ini mengirim notifikasi otomatis berdasarkan status pengajuan melalui instance WAHA eksternal di `https://waha.howlil.my.id`. WAHA memiliki deployment, session, dashboard, dan penyimpanan sendiri; aplikasi SOP hanya menjadi HTTP client. Tidak ada broadcast manual, tombol kirim pesan uji, tautan ke aplikasi, atau halaman riwayat pesan.
 
 ## Aturan penerima
 
@@ -19,7 +19,7 @@ Jika penerima tunggal tidak ada atau berjumlah lebih dari satu, sistem tidak men
 - Pengiriman teks: `POST /api/sendText` dengan JSON `chatId`, `text`, dan `session`.
 - Header `X-Api-Key` berisi `WAHA_API_KEY`.
 - Nomor tujuan dikirim sebagai `628...@c.us`.
-- Backend memakai URL internal `http://waha:3000` ketika WAHA berada di compose production yang sama.
+- Backend mengakses `WAHA_BASE_URL` melalui HTTPS. Compose aplikasi tidak membuat, me-restart, atau menunggu service WAHA.
 
 ## Penyimpanan dan keamanan
 
@@ -27,34 +27,28 @@ Tabel `PengingatWhatsApp` adalah state antrean aktif, bukan riwayat pesan. Satu 
 
 Nomor pengguna berasal dari kolom `Pengguna.nohp`. API menerima format `08...` atau `628...`, lalu selalu menyimpannya sebagai `628...`. Constraint database menolak format lain. Migrasi menormalisasi data lama sebelum constraint dipasang.
 
-API key WAHA hanya boleh disimpan pada environment backend. Jangan meletakkannya di frontend, source control, log, atau dokumentasi. `WHATSAPP_ALLOWED_RECIPIENTS` bersifat opsional: kosong berarti seluruh nomor valid yang sesuai role/status di database; isi daftar nomor hanya ketika staging perlu dibatasi.
+API key WAHA hanya boleh disimpan pada environment backend. Jangan meletakkannya di frontend, source control, database, log, atau dokumentasi. Frontend tetap berkomunikasi hanya dengan API aplikasi dan tidak memiliki koneksi langsung ke WAHA. `WHATSAPP_ALLOWED_RECIPIENTS` bersifat opsional: kosong berarti seluruh nomor valid yang sesuai role/status di database; isi daftar nomor hanya ketika staging perlu dibatasi.
 
 ## Konfigurasi
 
-1. Pastikan service `waha` di Easypanel sudah berjalan. Arahkan domain WAHA ke service `waha` port internal `3000` untuk membuka dashboard dan pairing QR.
-2. Salin `.env.example` menjadi `.env` dan isi konfigurasi WAHA:
+1. Buka dashboard WAHA hosted di `https://waha.howlil.my.id`, lalu pastikan session yang akan dipakai sudah tersedia dan berstatus `WORKING`.
+2. Isi environment backend/Compose aplikasi dengan kredensial milik WAHA hosted:
 
    ```dotenv
    WHATSAPP_ENABLED=false
-   WAHA_BASE_URL=http://waha:3000
-   WAHA_IMAGE=devlikeapro/waha:latest-2026.4.3
+   WAHA_BASE_URL=https://waha.howlil.my.id
    WAHA_API_KEY=ISI_API_KEY_WAHA
    WAHA_SESSION=sop-staging
-   WAHA_DASHBOARD_USERNAME=admin
-   WAHA_DASHBOARD_PASSWORD=ISI_PASSWORD_DASHBOARD_WAHA
-   WAHA_PUBLIC_URL=https://URL-WAHA-EASYPANEL
    # Kosong: gunakan seluruh nomor valid dari database.
    WHATSAPP_ALLOWED_RECIPIENTS=
    ```
 
-3. Deploy stack dan pastikan konfigurasi lain valid:
+3. Jalankan **Deploy** pada service Compose aplikasi dan tunggu service `db`, `backend`, serta `frontend` healthy. Ketersediaan WAHA tidak memengaruhi health atau startup aplikasi.
 
-   ```powershell
-   docker compose -f docker-compose.prod.yml up -d --build
-   ```
+4. Pastikan nilai `WAHA_SESSION` persis sama dengan nama session hosted, termasuk huruf besar/kecil.
+5. Setelah API key dan session tervalidasi, ubah `WHATSAPP_ENABLED=true` dan deploy ulang backend.
 
-4. Buka dashboard WAHA, buat atau aktifkan session sesuai `WAHA_SESSION`, lalu scan QR sampai session `WORKING`.
-5. Setelah session WAHA `WORKING`, ubah `WHATSAPP_ENABLED=true` dan deploy ulang backend/stack.
+Jika WAHA tidak dapat dihubungi, API key salah, atau session belum `WORKING`, alur pengajuan tetap berjalan. State antrean tetap berada di database aplikasi dan worker menjadwalkan retry; aplikasi tidak mencoba mengelola lifecycle WAHA.
 
 ## Uji ke WhatsApp asli
 
@@ -68,17 +62,7 @@ Pastikan pengguna terkait memiliki `nohp` valid di database. Untuk demonstrasi c
 6. Nonaktifkan salah satu evaluator atau ubah nomornya, lalu pastikan evaluator tersebut tidak menerima pengiriman berikutnya. Jika filter staging dipakai, penghapusan nomor dari allowlist juga harus menghentikan pengiriman.
 7. Putuskan session WAHA sementara. Alur bisnis harus tetap berhasil dan reminder dijadwalkan ulang. Setelah session kembali `WORKING`, pengiriman dilanjutkan.
 
-Periksa log backend; nomor tujuan otomatis disamarkan dan token tidak dicatat:
-
-```powershell
-docker compose -f docker-compose.prod.yml logs -f backend
-```
-
-Untuk log WAHA:
-
-```powershell
-docker compose -f docker-compose.prod.yml logs -f waha
-```
+Periksa log container `backend` dari halaman Compose aplikasi serta log WAHA dari platform hosting WAHA yang terpisah. Nomor tujuan pada log backend otomatis disamarkan dan API key tidak dicatat.
 
 Setelah demonstrasi selesai, set `WHATSAPP_ENABLED=false` dan buat ulang backend.
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DEFAULT_WAHA_BASE_URL, normalizeWahaBaseUrl } from '../../../../config/waha.config';
 import {
   WhatsappProviderError,
   type WhatsappProvider,
@@ -16,7 +17,7 @@ export class WahaProvider implements WhatsappProvider {
   private readonly timeoutMs: number;
 
   constructor(config: ConfigService) {
-    this.baseUrl = config.get<string>('WAHA_BASE_URL', 'http://waha:3000').replace(/\/+$/, '');
+    this.baseUrl = normalizeWahaBaseUrl(config.get<string>('WAHA_BASE_URL', DEFAULT_WAHA_BASE_URL));
     this.apiKey = config.get<string>('WAHA_API_KEY', '');
     this.session = config.get<string>('WAHA_SESSION', 'sop-staging');
     this.timeoutMs = config.get<number>('WHATSAPP_REQUEST_TIMEOUT_MS', 10_000);

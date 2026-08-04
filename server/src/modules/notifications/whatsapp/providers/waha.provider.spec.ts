@@ -25,6 +25,17 @@ describe('WahaProvider', () => {
     await expect(new WahaProvider(config()).assertReady()).resolves.toBeUndefined();
   });
 
+  it('memakai domain WAHA hosted sebagai default', async () => {
+    const fetchMock = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ status: 'WORKING' }), { status: 200 }));
+    await new WahaProvider(config({ WAHA_BASE_URL: undefined })).assertReady();
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://waha.howlil.my.id/api/sessions/sop-staging',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('menolak session yang belum siap', async () => {
     jest
       .spyOn(globalThis, 'fetch')

@@ -15,7 +15,7 @@ describe('WhatsApp environment validation', () => {
   it('membolehkan WhatsApp nonaktif tanpa kredensial WAHA', () => {
     expect(validateEnv(baseEnv)).toMatchObject({
       WHATSAPP_ENABLED: false,
-      WAHA_BASE_URL: 'http://waha:3000',
+      WAHA_BASE_URL: 'https://waha.howlil.my.id',
       WAHA_SESSION: 'sop-staging',
     });
   });
@@ -38,6 +38,37 @@ describe('WhatsApp environment validation', () => {
       WHATSAPP_ENABLED: true,
       WAHA_BASE_URL: 'https://tugas-waha.example.test',
     });
+  });
+
+  it('menormalkan trailing slash URL WAHA eksternal', () => {
+    expect(
+      validateEnv({
+        ...baseEnv,
+        WAHA_BASE_URL: 'https://waha.howlil.my.id///',
+      }),
+    ).toMatchObject({ WAHA_BASE_URL: 'https://waha.howlil.my.id' });
+  });
+
+  it('menolak HTTP untuk WAHA aktif di production', () => {
+    expect(() =>
+      validateEnv({
+        ...baseEnv,
+        NODE_ENV: 'production',
+        JWT_REFRESH_SECRET: 'abcdefghijklmnopqrstuvwxyz123456',
+        WHATSAPP_ENABLED: 'true',
+        WAHA_BASE_URL: 'http://waha.example.test',
+        WAHA_API_KEY: 'secret-api-key-123',
+      }),
+    ).toThrow(/HTTPS/);
+  });
+
+  it('menolak kredensial di URL WAHA', () => {
+    expect(() =>
+      validateEnv({
+        ...baseEnv,
+        WAHA_BASE_URL: 'https://admin:secret@waha.example.test',
+      }),
+    ).toThrow(/username atau password/);
   });
 
   it('membolehkan allowlist kosong agar penerima diambil dari database', () => {

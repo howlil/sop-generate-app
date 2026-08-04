@@ -18,12 +18,6 @@ import {
 
 const DEFAULT_PORT = 3000;
 const CORS_MAX_AGE_SECONDS = 3600;
-const DEFAULT_PRODUCTION_CORS_ORIGINS = [
-  'https://sopflow.siunand.my.id',
-  'http://sopflow.siunand.my.id',
-  'http://10.44.8.17',
-  'https://10.44.8.17',
-];
 
 function normalizeCorsOrigin(origin: string | undefined): string {
   const value = origin?.trim();
@@ -47,13 +41,7 @@ function buildCorsOptions(configService: ConfigService): CorsOptions {
     allowedOriginsRaw === '*' ||
     allowedOriginsRaw.toLowerCase() === 'all';
   const allowedOrigins = new Set(
-    [
-      ...DEFAULT_PRODUCTION_CORS_ORIGINS,
-      ...allowedOriginsRaw.split(','),
-      publicAppOrigin,
-    ]
-      .map(normalizeCorsOrigin)
-      .filter(Boolean),
+    [...allowedOriginsRaw.split(','), publicAppOrigin].map(normalizeCorsOrigin).filter(Boolean),
   );
   return {
     origin: allowAllOrigins

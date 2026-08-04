@@ -89,4 +89,10 @@ export default [
       ],
     },
   },
+  {
+    files: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
 ]

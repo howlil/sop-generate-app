@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DEFAULT_WAHA_BASE_URL, normalizeWahaBaseUrl } from './waha.config';
 
 const envBoolean = (defaultValue: boolean) =>
   z.preprocess((val) => {
@@ -46,7 +47,7 @@ const envSchema = z
     WHATSAPP_ENABLED: envBoolean(false),
     WAHA_BASE_URL: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().url().default('http://waha:3000'),
+      z.string().url().default(DEFAULT_WAHA_BASE_URL).transform(normalizeWahaBaseUrl),
     ),
     WAHA_API_KEY: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
@@ -74,12 +75,27 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
+    const wahaUrl = new URL(data.WAHA_BASE_URL);
+    if (wahaUrl.username !== '' || wahaUrl.password !== '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'WAHA_BASE_URL tidak boleh memuat username atau password',
+        path: ['WAHA_BASE_URL'],
+      });
+    }
     if (data.WHATSAPP_ENABLED) {
       if (data.WAHA_API_KEY === undefined) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'WAHA_API_KEY wajib jika WHATSAPP_ENABLED=true',
           path: ['WAHA_API_KEY'],
+        });
+      }
+      if (data.NODE_ENV === 'production' && wahaUrl.protocol !== 'https:') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'WAHA_BASE_URL wajib memakai HTTPS pada production',
+          path: ['WAHA_BASE_URL'],
         });
       }
     }

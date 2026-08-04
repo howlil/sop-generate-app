@@ -10,28 +10,23 @@ Compose production memakai `expose`:
 
 - `frontend` expose port internal `80`.
 - `backend` expose port internal `3000`.
-- `waha` expose port internal `3000`.
 - `db` hanya berada di network internal compose.
 
 Domain aplikasi diarahkan di Easypanel ke service `frontend` port `80`. Browser tetap memakai satu origin; request `/api/` diproxy oleh Nginx frontend ke `backend:3000`.
 
-## Service WAHA
+## WAHA Hosted Eksternal
 
-WAHA berjalan langsung di compose production sebagai service `waha`. Backend berkomunikasi melalui network internal compose memakai `http://waha:3000`, sehingga tidak bergantung pada domain publik WAHA.
+WAHA tidak menjadi bagian dari compose aplikasi. Instance, session, dashboard, update image, dan storage WAHA dikelola terpisah di `https://waha.howlil.my.id`. Backend mengakses API WAHA melalui HTTPS; frontend/browser tidak pernah menerima base URL atau API key WAHA.
 
-Tambahkan domain Easypanel terpisah ke service `waha` port internal `3000` hanya untuk dashboard, Swagger, dan pairing QR. Jangan arahkan domain aplikasi utama ke service `waha`.
+Backend tidak memiliki `depends_on` ke WAHA. Gangguan jaringan atau downtime WAHA tidak menggagalkan startup, healthcheck, atau transaksi workflow aplikasi. Reminder yang belum terkirim tetap berada pada tabel antrean aktif `PengingatWhatsApp` dan dicoba kembali oleh worker.
 
 Environment backend:
 
 ```env
 WHATSAPP_ENABLED=false
-WAHA_BASE_URL=http://waha:3000
-WAHA_IMAGE=devlikeapro/waha:latest-2026.4.3
+WAHA_BASE_URL=https://waha.howlil.my.id
 WAHA_API_KEY=ISI_API_KEY_WAHA
 WAHA_SESSION=sop-staging
-WAHA_DASHBOARD_USERNAME=admin
-WAHA_DASHBOARD_PASSWORD=ISI_PASSWORD_DASHBOARD_WAHA
-WAHA_PUBLIC_URL=https://URL-WAHA-EASYPANEL
 WHATSAPP_ALLOWED_RECIPIENTS=
 ```
 
@@ -43,22 +38,21 @@ Compose production memakai named volume stabil:
 
 - `sop-arsip-db-prod-data` untuk MariaDB.
 - `sop-arsip-pdf-prod-data` untuk PDF SOP arsip.
-- `sop-arsip-waha-session-prod-data` untuk session WAHA.
 
-Jangan menjalankan `docker compose down -v` atau menghapus named volume kecuali memang ingin reset data production.
+Session dan data WAHA bukan bagian dari volume aplikasi. Jangan menjalankan `docker compose down -v` atau menghapus named volume aplikasi kecuali memang ingin reset data production/PDF.
 
 ## Sinkronisasi User Database
 
 MariaDB hanya membaca `MARIADB_USER` dan `MARIADB_PASSWORD` saat volume database pertama kali dibuat. Jika `DB_PASSWORD` diganti di Easypanel setelah volume `sop-arsip-db-prod-data` sudah ada, password user lama di database tidak otomatis berubah dan Prisma akan gagal dengan `P1000 Authentication failed`.
 
-Compose production menjalankan `node scripts/sync-db-user.cjs` di backend sebelum Prisma migrate untuk mencegah kondisi itu. Saat deploy, script ini:
+Image MariaDB production memakai entrypoint tambahan yang menyinkronkan user aplikasi dari dalam container database sebelum service dinyatakan healthy. Koneksi memakai socket lokal, sehingga tidak membutuhkan akun `root` yang dapat login melalui network. Saat deploy, proses ini:
 
-- menunggu MariaDB healthy;
-- login sebagai root memakai `DB_ROOT_PASSWORD`;
+- menunggu proses MariaDB siap melalui socket lokal;
+- login sebagai root di dalam container memakai `DB_ROOT_PASSWORD`;
 - memastikan database `DB_NAME` ada;
 - membuat atau mengubah password user `DB_USER`;
 - memberi grant ke database `DB_NAME`;
-- baru setelah itu backend menjalankan migrasi Prisma.
+- membuat marker readiness, lalu backend menjalankan migrasi Prisma.
 
 Jika script sync gagal, cek lebih dulu `DB_ROOT_PASSWORD`. Nilai root harus sama dengan root password yang dipakai ketika volume MariaDB production pertama kali dibuat. Mengubah `DB_ROOT_PASSWORD` di env tidak otomatis mengubah root password yang sudah tersimpan di volume lama.
 
@@ -81,18 +75,17 @@ PUBLIC_APP_ORIGIN=
 ALLOWED_ORIGINS=
 SOP_PDF_STORAGE_DIR=/app/storage/sop-pdf
 WHATSAPP_ENABLED=false
-WAHA_BASE_URL=http://waha:3000
-WAHA_IMAGE=devlikeapro/waha:latest-2026.4.3
+WAHA_BASE_URL=https://waha.howlil.my.id
 WAHA_API_KEY=...
 WAHA_SESSION=sop-staging
-WAHA_DASHBOARD_USERNAME=admin
-WAHA_DASHBOARD_PASSWORD=...
-WAHA_PUBLIC_URL=https://URL-WAHA-EASYPANEL
 WHATSAPP_ALLOWED_RECIPIENTS=
+RUN_DB_SEED_ON_START=false
 PDF_SIGNING_ENABLED=true
 PDF_SIGNING_P12_PASSPHRASE=...
 PDF_SIGNING_P12_BASE64=...
 ```
+
+Compose tidak memakai `env_file` untuk memasukkan seluruh environment ke semua container. Setiap service hanya menerima variabel yang dibutuhkan: root database tidak tersedia di backend, JWT/PDF/WAHA tidak tersedia di database, dan konfigurasi WAHA hanya tersedia di backend.
 
 ## Alur Deploy
 
@@ -100,7 +93,9 @@ PDF_SIGNING_P12_BASE64=...
 2. Easypanel mengambil repository GitHub.
 3. Easypanel menjalankan compose dari `docker-compose.prod.yml`.
 4. Easypanel mengarahkan domain aplikasi ke service `frontend` port `80`.
-5. Easypanel mengarahkan domain WAHA ke service `waha` port `3000` untuk pairing QR.
-6. Backend menyinkronkan user database, menjalankan migrasi Prisma, seed, lalu `pnpm start:prod`.
+5. Database menyinkronkan user aplikasi secara lokal dan menjadi healthy.
+6. Backend menjalankan migrasi Prisma lalu `pnpm start:prod` tanpa menunggu WAHA.
+7. Backend menghubungi `https://waha.howlil.my.id` hanya ketika worker reminder aktif dan mempunyai pekerjaan jatuh tempo.
+8. Seed hanya dijalankan jika `RUN_DB_SEED_ON_START=true`; gunakan ini untuk instalasi demo awal, bukan pada setiap restart production.
 
 GitHub Actions tetap berguna sebagai quality gate, tetapi bukan mekanisme deploy production.
