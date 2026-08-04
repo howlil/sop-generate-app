@@ -88,7 +88,7 @@ Compose tidak memakai `env_file` untuk memasukkan seluruh environment ke semua c
 2. Easypanel mengambil repository GitHub.
 3. Easypanel menjalankan compose dari `docker-compose.prod.yml`.
 4. Easypanel mengarahkan domain aplikasi ke service `frontend` port `80`.
-5. MariaDB menjadi healthy dengan kredensial user aplikasi yang tersimpan pada volume production.
+5. MariaDB menjadi healthy setelah koneksi internal siap dan InnoDB selesai diinisialisasi.
 6. Backend menjalankan migrasi Prisma lalu `pnpm start:prod` tanpa menunggu WAHA.
 7. Backend menghubungi `https://waha.howlil.my.id` hanya ketika worker reminder aktif dan mempunyai pekerjaan jatuh tempo.
 8. Seed hanya dijalankan jika `RUN_DB_SEED_ON_START=true`; gunakan ini untuk instalasi demo awal, bukan pada setiap restart production.

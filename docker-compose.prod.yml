@@ -18,11 +18,7 @@ services:
     volumes:
       - db-prod-data:/var/lib/mysql
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "mariadb --protocol=tcp -h 127.0.0.1 -u$${MARIADB_USER} -p$${MARIADB_PASSWORD} $${MARIADB_DATABASE} -e 'SELECT 1' >/dev/null 2>&1",
-        ]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 30
