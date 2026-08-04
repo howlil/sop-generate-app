@@ -7,6 +7,40 @@ services:
   db:
     image: mariadb:11.4
     restart: unless-stopped
+    entrypoint:
+      - bash
+      - -euc
+      - |
+        for identifier in "$${MARIADB_DATABASE}" "$${MARIADB_USER}"; do
+          case "$${identifier}" in
+            ""|*[!A-Za-z0-9_]*)
+              echo "DB_NAME dan DB_USER hanya boleh berisi huruf, angka, dan underscore." >&2
+              exit 1
+              ;;
+          esac
+        done
+
+        case "$${MARIADB_PASSWORD}" in
+          ""|*"'"*|*\\*)
+            echo "DB_PASSWORD wajib diisi dan tidak boleh mengandung petik tunggal atau backslash." >&2
+            exit 1
+            ;;
+        esac
+
+        if [ -d /var/lib/mysql/mysql ]; then
+          cat > /tmp/ensure-app-user.sql <<SQL
+        CREATE DATABASE IF NOT EXISTS \`$${MARIADB_DATABASE}\`;
+        CREATE USER IF NOT EXISTS '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
+        ALTER USER '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
+        GRANT ALL PRIVILEGES ON \`$${MARIADB_DATABASE}\`.* TO '$${MARIADB_USER}'@'%';
+        SQL
+          chown mysql:mysql /tmp/ensure-app-user.sql
+          chmod 600 /tmp/ensure-app-user.sql
+          set -- "$${@}" --init-file=/tmp/ensure-app-user.sql
+        fi
+
+        exec docker-entrypoint.sh mariadbd "$${@}"
+      - --
     command:
       - --lower_case_table_names=1
     environment:
@@ -26,29 +60,6 @@ services:
     networks:
       - sop-network
 
-  db-prepare:
-    image: mariadb:11.4
-    restart: "no"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${DB_NAME}
-      MARIADB_USER: ${DB_USER}
-      MARIADB_PASSWORD: ${DB_PASSWORD}
-    command:
-      - sh
-      - -ec
-      - |
-        MYSQL_PWD="$${MARIADB_ROOT_PASSWORD}" mariadb --protocol=tcp -h db -uroot <<SQL
-        CREATE USER IF NOT EXISTS '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
-        ALTER USER '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
-        GRANT ALL PRIVILEGES ON \`$${MARIADB_DATABASE}\`.* TO '$${MARIADB_USER}'@'%';
-        SQL
-    networks:
-      - sop-network
-
   backend:
     image: sop-arsip-backend:${APP_VERSION:-local}
     build:
@@ -56,8 +67,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      db-prepare:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3000
