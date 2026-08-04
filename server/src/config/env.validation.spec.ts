@@ -10,12 +10,27 @@ const baseEnv = {
   DATABASE_NAME: 'test',
 };
 
-describe('WhatsApp environment validation', () => {
+describe('Environment validation', () => {
   it('tidak mewajibkan DATABASE_URL ketika DATABASE_* tersedia', () => {
     expect(validateEnv(baseEnv)).toMatchObject({
       DATABASE_HOST: 'localhost',
       DATABASE_USER: 'test',
       DATABASE_NAME: 'test',
+    });
+  });
+
+  it('menormalkan spasi dari environment Easypanel', () => {
+    expect(
+      validateEnv({
+        ...baseEnv,
+        PUBLIC_APP_ORIGIN: 'https://sop.example.test     ',
+        ALLOWED_ORIGINS: 'https://sop.example.test     ',
+        SOP_PDF_STORAGE_DIR: '/app/storage/sop-pdf     ',
+      }),
+    ).toMatchObject({
+      PUBLIC_APP_ORIGIN: 'https://sop.example.test',
+      ALLOWED_ORIGINS: 'https://sop.example.test',
+      SOP_PDF_STORAGE_DIR: '/app/storage/sop-pdf',
     });
   });
 

@@ -19,11 +19,18 @@ const envBoolean = (defaultValue: boolean) =>
     return val;
   }, z.boolean().default(defaultValue));
 
+const trimmedEnvironmentString = (val: unknown) => (typeof val === 'string' ? val.trim() : val);
+
+const optionalUrl = z.preprocess((val) => {
+  const normalized = trimmedEnvironmentString(val);
+  return normalized === '' ? undefined : normalized;
+}, z.string().url().optional());
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-    ALLOWED_ORIGINS: z.string().optional(),
+    ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().optional()),
     SWAGGER_ENABLED: envBoolean(true),
     JWT_SECRET: z.string().min(32),
     JWT_REFRESH_SECRET: z.string().min(32).optional(),
@@ -41,16 +48,17 @@ const envSchema = z
     // Runtime aplikasi memakai konfigurasi DATABASE_* individual.
     DATABASE_URL: z.string().url().optional(),
     /** Override origin frontend (mis. https://app.domain.go.id). Kosong = deteksi dari header request. */
-    PUBLIC_APP_ORIGIN: z.preprocess(
-      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().url().optional(),
+    PUBLIC_APP_ORIGIN: optionalUrl,
+    SOP_PDF_STORAGE_DIR: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().min(1).default('/app/storage/sop-pdf'),
     ),
 
     WHATSAPP_ENABLED: envBoolean(false),
-    WAHA_BASE_URL: z.preprocess(
-      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().url().default(DEFAULT_WAHA_BASE_URL).transform(normalizeWahaBaseUrl),
-    ),
+    WAHA_BASE_URL: z.preprocess((val) => {
+      const normalized = trimmedEnvironmentString(val);
+      return normalized === '' ? undefined : normalized;
+    }, z.string().url().default(DEFAULT_WAHA_BASE_URL).transform(normalizeWahaBaseUrl)),
     WAHA_API_KEY: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().min(16).optional(),
