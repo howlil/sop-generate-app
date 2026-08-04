@@ -14,12 +14,13 @@ import {
   type WhatsappProvider,
 } from './providers/whatsapp-provider.interface';
 
-function config(): ConfigService {
+function config(overrides: Record<string, unknown> = {}): ConfigService {
   const values: Record<string, unknown> = {
     WHATSAPP_MAX_CONCURRENCY: 2,
     WHATSAPP_LOCK_LEASE_SECONDS: 60,
     WHATSAPP_REMINDER_INTERVAL_MINUTES: 1,
     WHATSAPP_ALLOWED_RECIPIENTS: '6281111111111',
+    ...overrides,
   };
   return {
     get: jest.fn((key: string, fallback: unknown) => values[key] ?? fallback),
@@ -108,6 +109,37 @@ describe('WhatsappReminderWorkerService', () => {
     expect(markArgs[3].getTime() - markArgs[2].getTime()).toBe(60_000);
   });
 
+  it('tetap mengirim nomor valid dari database ketika allowlist kosong', async () => {
+    const reminder = claimed();
+    const repository = {
+      findDueCandidateIds: jest.fn().mockResolvedValue(['r-1']),
+      tryClaim: jest.fn().mockResolvedValue(true),
+      findClaimed: jest
+        .fn()
+        .mockImplementation((_id: string, lockToken: string) =>
+          Promise.resolve({ ...reminder, lockToken }),
+        ),
+      markSuccess: jest.fn().mockResolvedValue(true),
+      markFailure: jest.fn().mockResolvedValue(true),
+      deleteClaimed: jest.fn().mockResolvedValue(true),
+    } as unknown as WhatsappReminderRepository;
+    const provider: WhatsappProvider = {
+      assertReady: jest.fn().mockResolvedValue(undefined),
+      sendText: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new WhatsappReminderWorkerService(
+      repository,
+      new WhatsappMessageFactory(),
+      config({ WHATSAPP_ALLOWED_RECIPIENTS: '' }),
+      provider,
+    );
+
+    await service.processDue(now);
+    expect(provider.sendText).toHaveBeenCalledWith(
+      expect.objectContaining({ nomorTujuan: '6281111111111' }),
+    );
+  });
+
   it('menghapus reminder jika status berubah tepat sebelum pengiriman', async () => {
     const stale = claimed({
       pengajuanEvaluasi: {
@@ -186,7 +218,7 @@ describe('WhatsappReminderWorkerService', () => {
     expect(provider.sendText).not.toHaveBeenCalled();
   });
 
-  it('tidak mengecek WAHA jika tidak ada reminder jatuh tempo', async () => {
+  it('tidak mengecek provider jika tidak ada reminder jatuh tempo', async () => {
     const { service, repository, provider } = build(claimed());
     (repository.findDueCandidateIds as jest.Mock).mockResolvedValue([]);
     await expect(service.processDue(now)).resolves.toEqual({ candidates: 0, processed: 0 });

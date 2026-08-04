@@ -38,6 +38,15 @@ describe('WhatsappRecipientResolverService', () => {
     expect(actual.map((row) => row.penggunaId)).toEqual(['eval-1', 'eval-2']);
   });
 
+  it('menggunakan seluruh nomor valid dari database ketika allowlist kosong', () => {
+    const service = new WhatsappRecipientResolverService(configWithAllowlist(''));
+    const actual = service.resolve(basePengajuan, [
+      recipient('eval-1', PeranPengguna.EVALUATOR, '6281111111111'),
+      recipient('eval-2', PeranPengguna.EVALUATOR, '6282222222222'),
+    ]);
+    expect(actual.map((row) => row.penggunaId)).toEqual(['eval-1', 'eval-2']);
+  });
+
   it('melakukan deduplikasi nomor evaluator yang sama', () => {
     const service = new WhatsappRecipientResolverService(configWithAllowlist(allowlist));
     const actual = service.resolve(basePengajuan, [
@@ -96,7 +105,7 @@ describe('WhatsappRecipientResolverService', () => {
     expect(actual.map((row) => row.penggunaId)).toEqual(['kepala']);
   });
 
-  it('melewati nomor invalid dan nomor di luar allowlist', () => {
+  it('melewati nomor invalid dan nomor di luar allowlist ketika filter dikonfigurasi', () => {
     const service = new WhatsappRecipientResolverService(configWithAllowlist('6281111111111'));
     const actual = service.resolve(basePengajuan, [
       recipient('valid', PeranPengguna.EVALUATOR, '081111111111'),

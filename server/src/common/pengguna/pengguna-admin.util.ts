@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { BCRYPT_SALT_ROUNDS, DEFAULT_PENGGUNA_PASSWORD } from '../auth/password.constants';
 import { Prisma } from '../../generated/prisma';
+export { requireIndonesianMobileNumber } from './indonesian-mobile-number.util';
 
 export type StatusAktifDto = 'AKTIF' | 'NONAKTIF';
 
@@ -12,7 +13,7 @@ export function rethrowPrismaUniqueViolation(err: unknown): void {
 }
 
 export function assertAtLeastOneUpdateField(
-  fields: ReadonlyArray<unknown | undefined>,
+  fields: ReadonlyArray<unknown>,
   message = 'Minimal satu field harus diisi untuk pembaruan',
 ): void {
   if (!fields.some((f) => f !== undefined)) {

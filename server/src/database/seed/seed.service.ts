@@ -125,7 +125,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011000',
     jabatan: 'Koordinator Evaluasi SOP',
     pangkat: 'Pembina',
-    nohp: '081234567890',
+    nohp: '6281234567890',
     opdKey: SEED_OPD_PJ_EVALUATOR,
   },
   {
@@ -135,7 +135,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011001',
     jabatan: 'Evaluator Madya',
     pangkat: 'Pembina',
-    nohp: '081234567891',
+    nohp: '6281234567891',
     opdKey: SEED_OPD_PJ_EVALUATOR,
   },
   {
@@ -145,7 +145,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011002',
     jabatan: 'Evaluator Muda',
     pangkat: 'Penata Tk. I',
-    nohp: '081234567892',
+    nohp: '6281234567892',
     opdKey: SEED_OPD_PJ_EVALUATOR,
   },
   // ── Dinas Kesehatan ───────────────────────────────────────────────────
@@ -156,7 +156,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011003',
     jabatan: 'Koordinator Penyusunan SOP Dinkes',
     pangkat: 'Pembina',
-    nohp: '081234567893',
+    nohp: '6281234567893',
     opdKey: SEED_OPD_DINKES,
   },
   {
@@ -166,7 +166,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011004',
     jabatan: 'Analis SOP Dinkes',
     pangkat: 'Penata',
-    nohp: '081234567894',
+    nohp: '6281234567894',
     opdKey: SEED_OPD_DINKES,
   },
   {
@@ -176,7 +176,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011005',
     jabatan: 'Kepala OPD Dinkes',
     pangkat: 'Pembina Utama Muda',
-    nohp: '081234567895',
+    nohp: '6281234567895',
     opdKey: SEED_OPD_DINKES,
   },
   // ── Dinas Komunikasi dan Informatika ──────────────────────────────────
@@ -187,7 +187,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011006',
     jabatan: 'Koordinator Penyusunan SOP Diskominfo',
     pangkat: 'Pembina',
-    nohp: '081234567896',
+    nohp: '6281234567896',
     opdKey: SEED_OPD_DISKOMINFO,
   },
   {
@@ -197,7 +197,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011007',
     jabatan: 'Analis SOP Diskominfo',
     pangkat: 'Penata',
-    nohp: '081234567897',
+    nohp: '6281234567897',
     opdKey: SEED_OPD_DISKOMINFO,
   },
   {
@@ -207,7 +207,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011008',
     jabatan: 'Kepala OPD Diskominfo',
     pangkat: 'Pembina Utama Muda',
-    nohp: '081234567898',
+    nohp: '6281234567898',
     opdKey: SEED_OPD_DISKOMINFO,
   },
   // ── Dinas Pendidikan ──────────────────────────────────────────────────
@@ -218,7 +218,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011009',
     jabatan: 'Koordinator Penyusunan SOP Disdik',
     pangkat: 'Pembina',
-    nohp: '081234567899',
+    nohp: '6281234567899',
     opdKey: SEED_OPD_DISDIK,
   },
   {
@@ -228,7 +228,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011010',
     jabatan: 'Analis SOP Disdik',
     pangkat: 'Penata',
-    nohp: '081234567800',
+    nohp: '6281234567800',
     opdKey: SEED_OPD_DISDIK,
   },
   {
@@ -238,7 +238,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nip: '198501012009011011',
     jabatan: 'Kepala Dinas Pendidikan Provinsi',
     pangkat: 'Pembina Utama Muda',
-    nohp: '081234567801',
+    nohp: '6281234567801',
     opdKey: SEED_OPD_DISDIK,
   },
 ];

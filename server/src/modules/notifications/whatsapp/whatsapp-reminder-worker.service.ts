@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { PeranPengguna } from '../../../generated/prisma';
 import { WhatsappMessageFactory } from './whatsapp-message.factory';
 import {
+  isWhatsappRecipientAllowed,
   maskWhatsappNumber,
   normalizeIndonesianWhatsappNumber,
   parseWhatsappRecipientAllowlist,
@@ -155,7 +156,10 @@ export class WhatsappReminderWorkerService {
       }
     }
     const normalized = normalizeIndonesianWhatsappNumber(reminder.pengguna.nohp);
-    return normalized === reminder.nomorTujuan && this.allowlist.has(reminder.nomorTujuan);
+    return (
+      normalized === reminder.nomorTujuan &&
+      isWhatsappRecipientAllowed(this.allowlist, reminder.nomorTujuan)
+    );
   }
 
   private normalizeError(error: unknown): WhatsappProviderError {

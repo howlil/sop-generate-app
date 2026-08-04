@@ -25,7 +25,7 @@ describe('Pengujian PenyusunService', () => {
             jabatan: 'J',
             pangkat: 'P',
             email: 'a@b.c',
-            nohp: '0',
+            nohp: '6281234567890',
             peran: PeranPengguna.PENYUSUN,
             deletedAt: null,
           } as Pengguna,
@@ -103,7 +103,7 @@ describe('Pengujian PenyusunService', () => {
       nama: 'U',
       pangkat: 'IV/a',
       jabatan: 'J',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: null,
     } as Pengguna);
     penyusunRepoMock.findOtherPjPenyusunAktif.mockResolvedValueOnce({
@@ -126,7 +126,7 @@ describe('Pengujian PenyusunService', () => {
       nama: 'PJ',
       pangkat: 'IV/a',
       jabatan: 'J',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: new Date(),
     } as Pengguna);
     penyusunRepoMock.findOtherPjPenyusunAktif.mockResolvedValueOnce({
@@ -147,7 +147,7 @@ describe('Pengujian PenyusunService', () => {
       nama: 'M',
       pangkat: 'IV/a',
       jabatan: 'J',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: null,
     } as Pengguna);
     penyusunRepoMock.findOpdById.mockResolvedValueOnce({ opdId: 'opd-tujuan', nama: 'Tujuan' });
@@ -169,7 +169,7 @@ describe('Pengujian PenyusunService', () => {
       nama: 'N',
       pangkat: 'IV/a',
       jabatan: 'J',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: null,
     } as Pengguna;
     penyusunRepoMock.createWithRiwayatOpd.mockResolvedValueOnce(createdUser);
@@ -181,7 +181,7 @@ describe('Pengujian PenyusunService', () => {
       pangkat: 'IV/a',
       jabatan: 'J',
       email: 'n@x.id',
-      nohp: '0',
+      nohp: '6281234567890',
     });
     expect(actual.id).toBe('new-u');
     expect(penyusunRepoMock.createWithRiwayatOpd).toHaveBeenCalledWith(
@@ -199,7 +199,7 @@ describe('Pengujian PenyusunService', () => {
       nama: 'MV',
       pangkat: 'IV/a',
       jabatan: 'J',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: null,
     } as Pengguna);
     penyusunRepoMock.findOpdById.mockResolvedValueOnce({ opdId: 'opd-tujuan', nama: 'Tujuan' });
@@ -212,7 +212,7 @@ describe('Pengujian PenyusunService', () => {
       email: 'mv@x.id',
       pangkat: 'IV/a',
       jabatan: 'J',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: null,
     } as Pengguna);
     await service.pindah('u-move', 'opd-tujuan');
@@ -239,7 +239,7 @@ describe('Pengujian PenyusunService', () => {
         pangkat: ' P ',
         jabatan: ' J ',
         email: ' E@X.ID ',
-        nohp: ' 0 ',
+        nohp: ' 081234567890 ',
       });
       expect(penyusunRepoMock.createWithRiwayatOpd).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -248,7 +248,7 @@ describe('Pengujian PenyusunService', () => {
           nip: '1',
           pangkat: 'P',
           jabatan: 'J',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       );
     });
@@ -264,7 +264,7 @@ describe('Pengujian PenyusunService', () => {
           pangkat: 'P',
           jabatan: 'J',
           email: 'e@x.id',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
@@ -284,7 +284,7 @@ describe('Pengujian PenyusunService', () => {
           pangkat: 'P',
           jabatan: 'J',
           email: 'e@x.id',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
@@ -300,7 +300,7 @@ describe('Pengujian PenyusunService', () => {
           pangkat: 'P',
           jabatan: 'J',
           email: 'e@x.id',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       ).rejects.toThrow('DB Error');
     });

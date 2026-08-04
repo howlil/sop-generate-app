@@ -23,7 +23,7 @@ model Pengguna {
   nip                             String               @unique @db.VarChar(32)
   jabatan                         String               @db.VarChar(255)
   pangkat                         String               @db.VarChar(64)
-  nohp                            String               @db.VarChar(32)
+  nohp                            String               @db.VarChar(15)
   sesiTokenVersion                Int                  @default(0)
   refreshTokenHash                String?              @db.VarChar(60)
   refreshTokenExpiresAt           DateTime?

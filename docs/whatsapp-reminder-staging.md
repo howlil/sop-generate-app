@@ -1,6 +1,6 @@
-# Reminder WhatsApp staging dengan WAHA
+# Reminder WhatsApp dengan WAHA
 
-Fitur ini hanya mengirim notifikasi otomatis berdasarkan status pengajuan. Tidak ada broadcast manual, tombol kirim pesan uji, tautan ke aplikasi, atau halaman riwayat pesan.
+Fitur ini mengirim notifikasi otomatis berdasarkan status pengajuan melalui WAHA yang dihosting di server sendiri lewat Easypanel. Tidak ada broadcast manual, tombol kirim pesan uji, tautan ke aplikasi, atau halaman riwayat pesan.
 
 ## Aturan penerima
 
@@ -13,56 +13,67 @@ Fitur ini hanya mengirim notifikasi otomatis berdasarkan status pengajuan. Tidak
 
 Jika penerima tunggal tidak ada atau berjumlah lebih dari satu, sistem tidak mengirim dan mencatat kesalahan konfigurasi tanpa menggagalkan alur pengajuan. Pesan dikirim ulang setiap `WHATSAPP_REMINDER_INTERVAL_MINUTES` selama status belum berubah. Tidak ada batas maksimum pengiriman.
 
-## Penyimpanan minimal
+## Kontrak WAHA
 
-Tabel `PengingatWhatsApp` adalah state antrean aktif, bukan riwayat pesan. Satu baris unik mewakili pasangan pengajuan, penerima, dan jenis pengingat. Baris dihapus ketika status, peran, keaktifan, OPD, nomor telepon, atau allowlist tidak lagi sesuai. Kolom `lastSentAt`, `nextSendAt`, lock lease, dan jumlah kegagalan hanya dipakai untuk penjadwalan, retry, dan mencegah dua instance mengirim baris yang sama secara bersamaan.
+- Pemeriksaan kesiapan: `GET /api/sessions/{WAHA_SESSION}`; pengiriman hanya dilanjutkan jika `status=WORKING`.
+- Pengiriman teks: `POST /api/sendText` dengan JSON `chatId`, `text`, dan `session`.
+- Header `X-Api-Key` berisi `WAHA_API_KEY`.
+- Nomor tujuan dikirim sebagai `628...@c.us`.
+- Jika WAHA dan backend berada di service Easypanel berbeda, gunakan URL yang dapat dijangkau dari container backend, misalnya public URL WAHA Easypanel.
 
-## Menjalankan staging
+## Penyimpanan dan keamanan
 
-1. Salin `.env.example` menjadi `.env`, lalu gunakan secret acak yang kuat untuk `WAHA_API_KEY` dan `WAHA_DASHBOARD_PASSWORD`.
-2. Isi `WHATSAPP_ALLOWED_RECIPIENTS` hanya dengan nomor penguji yang benar-benar diizinkan menerima pesan. Formatnya kode negara tanpa `+`, misalnya `6281234567890`.
-3. Pertahankan `WHATSAPP_ENABLED=false` untuk proses pairing pertama.
-4. Jalankan:
+Tabel `PengingatWhatsApp` adalah state antrean aktif, bukan riwayat pesan. Satu baris unik mewakili pasangan pengajuan, penerima, dan jenis pengingat. Baris dihapus ketika status, peran, keaktifan, OPD, nomor telepon, atau filter staging tidak lagi sesuai. Kolom `lastSentAt`, `nextSendAt`, lock lease, dan jumlah kegagalan hanya dipakai untuk penjadwalan, retry, dan mencegah dua instance mengirim baris yang sama secara bersamaan.
 
-   ```powershell
-   docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml up -d --build
+Nomor pengguna berasal dari kolom `Pengguna.nohp`. API menerima format `08...` atau `628...`, lalu selalu menyimpannya sebagai `628...`. Constraint database menolak format lain. Migrasi menormalisasi data lama sebelum constraint dipasang.
+
+API key WAHA hanya boleh disimpan pada environment backend. Jangan meletakkannya di frontend, source control, log, atau dokumentasi. `WHATSAPP_ALLOWED_RECIPIENTS` bersifat opsional: kosong berarti seluruh nomor valid yang sesuai role/status di database; isi daftar nomor hanya ketika staging perlu dibatasi.
+
+## Konfigurasi
+
+1. Pastikan service WAHA di Easypanel sudah berjalan, session sudah dibuat, dan WhatsApp sudah dipairing sampai status session `WORKING`.
+2. Salin `.env.example` menjadi `.env` dan isi konfigurasi WAHA:
+
+   ```dotenv
+   WHATSAPP_ENABLED=false
+   WAHA_BASE_URL=https://URL-WAHA-EASYPANEL
+   WAHA_API_KEY=ISI_API_KEY_WAHA
+   WAHA_SESSION=sop-staging
+   # Kosong: gunakan seluruh nomor valid dari database.
+   WHATSAPP_ALLOWED_RECIPIENTS=
    ```
 
-5. Buka `http://127.0.0.1:3001/dashboard`, masuk dengan kredensial dashboard, sambungkan menggunakan API key, buat session bernama `sop-staging`, lalu scan QR dengan akun WhatsApp pengirim.
-6. Pastikan session berstatus `WORKING`.
-7. Ubah `WHATSAPP_ENABLED=true`, kemudian terapkan konfigurasi backend:
+3. Jalankan backend dan pastikan konfigurasi lain valid:
 
    ```powershell
-   docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml up -d --build backend
+   docker compose -f docker-compose.prod.yml up -d --build backend
    ```
 
-Dashboard sengaja hanya bind ke loopback host. Jangan memublikasikan port 3001 ke internet. Volume `waha-staging-session-data` mempertahankan sesi pairing saat container dibuat ulang.
+4. Setelah session WAHA `WORKING`, ubah `WHATSAPP_ENABLED=true` dan buat ulang backend.
 
 ## Uji ke WhatsApp asli
 
-Gunakan nomor uji yang berada di `WHATSAPP_ALLOWED_RECIPIENTS` sebagai `nohp` pengguna terkait. Untuk demonstrasi cepat, gunakan interval satu menit.
+Pastikan pengguna terkait memiliki `nohp` valid di database. Untuk demonstrasi cepat, gunakan interval satu menit. Jika tidak ingin menghubungi seluruh pengguna pada staging, isi `WHATSAPP_ALLOWED_RECIPIENTS` dengan nomor penguji saja.
 
 1. Ubah pengajuan ke salah satu status pada matriks penerima.
 2. Tunggu paling lama satu siklus rekonsiliasi ditambah waktu respons WAHA.
 3. Pastikan pesan diterima oleh nomor yang tepat dan tidak memuat tautan.
 4. Biarkan status tetap sama dan pastikan pesan berikutnya datang setelah interval reminder.
-5. Ubah status pengajuan. Pastikan jenis reminder lama berhenti; jika status baru juga actionable, reminder untuk penerima tahap baru akan dibuat.
-6. Nonaktifkan salah satu evaluator atau keluarkan nomornya dari allowlist, lalu pastikan evaluator tersebut tidak menerima pengiriman berikutnya.
-7. Matikan container WAHA sementara. Alur bisnis harus tetap berhasil dan reminder dijadwalkan ulang. Setelah WAHA kembali `WORKING`, pengiriman dilanjutkan.
+5. Ubah status pengajuan. Pastikan jenis reminder lama berhenti; jika status baru juga actionable, reminder penerima tahap baru dibuat.
+6. Nonaktifkan salah satu evaluator atau ubah nomornya, lalu pastikan evaluator tersebut tidak menerima pengiriman berikutnya. Jika filter staging dipakai, penghapusan nomor dari allowlist juga harus menghentikan pengiriman.
+7. Putuskan session WAHA sementara. Alur bisnis harus tetap berhasil dan reminder dijadwalkan ulang. Setelah session kembali `WORKING`, pengiriman dilanjutkan.
 
-Periksa log tanpa menampilkan nomor lengkap:
+Periksa log backend; nomor tujuan otomatis disamarkan dan token tidak dicatat:
 
 ```powershell
-docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml logs -f backend waha
+docker compose -f docker-compose.prod.yml logs -f backend
 ```
 
-Setelah demonstrasi selesai, set `WHATSAPP_ENABLED=false` dan buat ulang backend. WAHA memakai koneksi WhatsApp Web yang tidak resmi; gunakan hanya akun dan nomor yang memang disediakan untuk staging/skripsi serta hindari volume/frekuensi yang menyerupai spam.
-
-Kontrak adapter mengikuti dokumentasi resmi WAHA untuk [session dan status `WORKING`](https://waha.devlike.pro/docs/how-to/sessions/), [pengiriman teks](https://waha.devlike.pro/docs/how-to/send-messages/), serta [API key dan keamanan](https://waha.devlike.pro/docs/how-to/security/).
+Setelah demonstrasi selesai, set `WHATSAPP_ENABLED=false` dan buat ulang backend.
 
 ## Pengujian otomatis
 
-Matriks dan bukti pengujian lengkap tersedia di [E2E workflow reminder WhatsApp](./whatsapp-reminder-e2e.md).
+Matriks pengujian lengkap tersedia di [E2E workflow reminder WhatsApp](./whatsapp-reminder-e2e.md).
 
 ```powershell
 cd server
@@ -72,4 +83,4 @@ pnpm test:e2e:docker:whatsapp
 pnpm build
 ```
 
-Unit test mencakup normalisasi nomor, allowlist, semua evaluator, invariant penerima tunggal, deduplikasi nomor, pembuatan pesan tanpa tautan, rekonsiliasi idempoten, perubahan status tepat sebelum kirim, claim concurrent, pencegahan scheduler overlap, recovery siklus, timeout ambigu, rate limit, session tidak siap, respons rusak, dan kegagalan jaringan. Integration test memakai MariaDB Docker dan tidak mengirim ke WhatsApp asli.
+Unit test provider mencakup payload dan header WAHA, status session, timeout ambigu, rate limit, respons rusak, dan kegagalan jaringan. Integration test memakai MariaDB Docker serta HTTP stub lokal dan tidak mengirim ke WhatsApp asli.

@@ -46,7 +46,7 @@ describe('Pengujian EvaluatorService', () => {
     nip: '1',
     jabatan: 'J',
     pangkat: 'P',
-    nohp: '0',
+    nohp: '6281234567890',
     sesiTokenVersion: 0,
     refreshTokenHash: null,
     refreshTokenExpiresAt: null,
@@ -95,7 +95,7 @@ describe('Pengujian EvaluatorService', () => {
       nip: 'nip1',
       jabatan: 'Jab',
       pangkat: 'P',
-      nohp: '08',
+      nohp: '081234567890',
     });
     expect(bcrypt.hash).toHaveBeenCalledWith(DEFAULT_PENGGUNA_PASSWORD, BCRYPT_SALT_ROUNDS);
     expect(repository.createPengguna).toHaveBeenCalled();
@@ -129,7 +129,7 @@ describe('Pengujian EvaluatorService', () => {
         nip: 'nip1',
         jabatan: 'Jab',
         pangkat: 'P',
-        nohp: '08',
+        nohp: '081234567890',
       }),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);
     expect(repository.createPengguna).not.toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe('Pengujian EvaluatorService', () => {
       nip: 'nip1',
       jabatan: 'Jab',
       pangkat: 'P',
-      nohp: '08',
+      nohp: '081234567890',
     });
     expect(repository.createPengguna).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -167,7 +167,7 @@ describe('Pengujian EvaluatorService', () => {
       nip: ' nip1 ',
       jabatan: ' Jab ',
       pangkat: ' P ',
-      nohp: ' 08 ',
+      nohp: ' 081234567890 ',
     });
     expect(repository.createPengguna).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -176,7 +176,7 @@ describe('Pengujian EvaluatorService', () => {
         nip: 'nip1',
         jabatan: 'Jab',
         pangkat: 'P',
-        nohp: '08',
+        nohp: '6281234567890',
       }),
     );
   });
@@ -194,7 +194,7 @@ describe('Pengujian EvaluatorService', () => {
         nip: 'nip1',
         jabatan: 'Jab',
         pangkat: 'P',
-        nohp: '08',
+        nohp: '081234567890',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
   });
@@ -221,7 +221,7 @@ describe('Pengujian EvaluatorService', () => {
       nip: ' nip2 ',
       jabatan: ' Jab2 ',
       pangkat: ' P2 ',
-      nohp: ' 082 ',
+      nohp: ' 082234567890 ',
     });
 
     expect(repository.updateEvaluator).toHaveBeenCalledWith(
@@ -232,7 +232,7 @@ describe('Pengujian EvaluatorService', () => {
         nip: 'nip2',
         jabatan: 'Jab2',
         pangkat: 'P2',
-        nohp: '082',
+        nohp: '6282234567890',
       }),
     );
   });
@@ -310,7 +310,7 @@ describe('Pengujian EvaluatorService', () => {
         nip: 'x',
         jabatan: 'X',
         pangkat: 'X',
-        nohp: '0',
+        nohp: '6281234567890',
       }),
     ).rejects.toThrow('Database Down');
   });
@@ -322,8 +322,10 @@ describe('Pengujian EvaluatorService', () => {
   });
 
   it('seharusnya hanya memperbarui satu field pada pembaruan parsial (Edge Case)', async () => {
-    await service.updateAnggota('u-1', { nohp: '08123' });
-    expect(repository.updateEvaluator).toHaveBeenCalledWith('u-1', { nohp: '08123' });
+    await service.updateAnggota('u-1', { nohp: '081234567890' });
+    expect(repository.updateEvaluator).toHaveBeenCalledWith('u-1', {
+      nohp: '6281234567890',
+    });
   });
 
   it('seharusnya mengonversi response DTO dengan benar saat deletedAt terisi (Edge Case)', async () => {
@@ -339,7 +341,7 @@ describe('Pengujian EvaluatorService', () => {
       nip: 'n',
       jabatan: 'J',
       pangkat: 'P',
-      nohp: '0',
+      nohp: '6281234567890',
     });
 
     expect(res.status).toBe('NONAKTIF');

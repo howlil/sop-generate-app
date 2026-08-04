@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import {
+  isWhatsappRecipientAllowed,
   normalizeIndonesianWhatsappNumber,
   parseWhatsappRecipientAllowlist,
 } from './whatsapp-phone.util';
@@ -44,7 +45,7 @@ export class WhatsappRecipientResolverService {
         invalidCount += 1;
         continue;
       }
-      if (!this.allowlist.has(normalized)) {
+      if (!isWhatsappRecipientAllowed(this.allowlist, normalized)) {
         outsideAllowlistCount += 1;
         continue;
       }

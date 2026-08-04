@@ -38,7 +38,7 @@ describe('Pengujian KepalaOpdService', () => {
       nama: 'Kepala',
       pangkat: 'IV/a',
       jabatan: 'Kepala',
-      nohp: '0',
+      nohp: '6281234567890',
       kataSandi: 'x',
       sesiTokenVersion: 0,
       refreshTokenHash: null,
@@ -87,7 +87,7 @@ describe('Pengujian KepalaOpdService', () => {
       nama: 'Baru',
       pangkat: 'IV/a',
       jabatan: 'Kepala',
-      nohp: '0',
+      nohp: '6281234567890',
       deletedAt: null,
     } as Pengguna;
     kepalaRepoMock.createWithRiwayatOpd.mockResolvedValueOnce(created);
@@ -215,7 +215,7 @@ describe('Pengujian KepalaOpdService', () => {
         email: '  KaPiTal@x.Id  ',
         jabatan: ' Jabatan ',
         pangkat: ' Pangkat ',
-        nohp: ' 0812 ',
+        nohp: ' 081234567890 ',
       });
 
       expect(kepalaRepoMock.createWithRiwayatOpd).toHaveBeenCalledWith(
@@ -225,7 +225,7 @@ describe('Pengujian KepalaOpdService', () => {
           nip: '12345',
           jabatan: 'Jabatan',
           pangkat: 'Pangkat',
-          nohp: '0812',
+          nohp: '6281234567890',
         }),
       );
     });
@@ -245,7 +245,7 @@ describe('Pengujian KepalaOpdService', () => {
           email: 'e@e.c',
           jabatan: 'J',
           pangkat: 'P',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
@@ -261,7 +261,7 @@ describe('Pengujian KepalaOpdService', () => {
           email: 'e@e.c',
           jabatan: 'J',
           pangkat: 'P',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       ).rejects.toThrow('Unknown DB Error');
     });
@@ -279,7 +279,7 @@ describe('Pengujian KepalaOpdService', () => {
           email: 'e@e.c',
           jabatan: 'J',
           pangkat: 'P',
-          nohp: '0',
+          nohp: '6281234567890',
         }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
@@ -440,7 +440,7 @@ describe('Pengujian KepalaOpdService', () => {
         nama: '  Nama Baru  ',
         jabatan: '  Jabatan Baru  ',
         pangkat: '  IV/b  ',
-        nohp: '  08129999  ',
+        nohp: '  081299999999  ',
       });
 
       expect(kepalaRepoMock.persistUpdate).toHaveBeenCalledWith(
@@ -450,7 +450,7 @@ describe('Pengujian KepalaOpdService', () => {
             nama: 'Nama Baru',
             jabatan: 'Jabatan Baru',
             pangkat: 'IV/b',
-            nohp: '08129999',
+            nohp: '6281299999999',
           },
         }),
       );

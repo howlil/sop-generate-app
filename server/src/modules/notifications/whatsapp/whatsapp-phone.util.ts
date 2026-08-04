@@ -42,6 +42,14 @@ export function parseWhatsappRecipientAllowlist(raw: string): ReadonlySet<string
   return new Set(normalized);
 }
 
+/** Allowlist kosong berarti seluruh nomor valid dari database diizinkan. */
+export function isWhatsappRecipientAllowed(
+  allowlist: ReadonlySet<string>,
+  normalizedNumber: string,
+): boolean {
+  return allowlist.size === 0 || allowlist.has(normalizedNumber);
+}
+
 export function maskWhatsappNumber(value: string): string {
   if (value.length <= 7) {
     return '*'.repeat(value.length);

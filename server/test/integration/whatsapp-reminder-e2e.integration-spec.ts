@@ -28,8 +28,8 @@ const describeIntegration = isIntegrationEnabled() ? describe : describe.skip;
 const API = '/api/v1';
 const PASSWORD = 'Integration123!';
 const PIN_TTE = '123456';
-const API_KEY = 'waha-e2e-api-key-123456789';
-const SESSION = 'sop-e2e';
+const WAHA_API_KEY = 'waha-e2e-api-key-123';
+const WAHA_SESSION = 'sop-staging';
 const REMINDER_INTERVAL_MS = 2 * 60_000;
 
 type StubBehavior = Readonly<{
@@ -97,7 +97,7 @@ class WahaHttpStub {
 
   get sessionRequests(): StubRequest[] {
     return this.requests.filter(
-      (entry) => entry.method === 'GET' && entry.path === `/api/sessions/${SESSION}`,
+      (entry) => entry.method === 'GET' && entry.path === `/api/sessions/${WAHA_SESSION}`,
     );
   }
 
@@ -129,16 +129,19 @@ class WahaHttpStub {
       body,
     });
 
-    if (req.headers['x-api-key'] !== API_KEY) {
-      await this.respond(res, { status: 401, body: { message: 'Unauthorized' } });
+    const apiKey = Array.isArray(req.headers['x-api-key'])
+      ? req.headers['x-api-key'][0]
+      : req.headers['x-api-key'];
+    if (apiKey !== WAHA_API_KEY) {
+      await this.respond(res, { status: 401, body: { message: 'Invalid API key' } });
       return;
     }
-    if (req.method === 'GET' && path === `/api/sessions/${SESSION}`) {
+    if (req.method === 'GET' && path === `/api/sessions/${WAHA_SESSION}`) {
       await this.respond(
         res,
         this.sessionBehavior ?? {
           status: 200,
-          body: { name: SESSION, status: this.sessionStatus },
+          body: { name: WAHA_SESSION, status: this.sessionStatus },
         },
       );
       return;
@@ -202,8 +205,8 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
   const previousEnv = new Map<string, string | undefined>();
   const configuredEnv: Record<string, string> = {
     WHATSAPP_ENABLED: 'false',
-    WAHA_API_KEY: API_KEY,
-    WAHA_SESSION: SESSION,
+    WAHA_API_KEY,
+    WAHA_SESSION,
     WHATSAPP_ALLOWED_RECIPIENTS: [
       '6281111111111',
       '6282222222222',
@@ -387,9 +390,18 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     await worker.processDue(now);
   }
 
-  function sentPayloads(): Array<{ chatId: string; text: string; session: string }> {
+  function sentPayloads(): Array<{
+    chatId: string;
+    text: string;
+    session: string;
+  }> {
     return stub.sendRequests.map(
-      (entry) => entry.body as { chatId: string; text: string; session: string },
+      (entry) =>
+        entry.body as {
+          chatId: string;
+          text: string;
+          session: string;
+        },
     );
   }
 
@@ -461,11 +473,11 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     ).resolves.toMatchObject({ status: StatusPengajuanEvaluasi.SELESAI });
     expect(stub.sendRequests).toHaveLength(7);
     for (const payload of sentPayloads()) {
-      expect(payload.session).toBe(SESSION);
+      expect(payload.session).toBe(WAHA_SESSION);
       expect(payload.text).not.toMatch(/https?:\/\//i);
       expect(payload.text).toContain('SOPFlow');
     }
-    expect(stub.requests.every((entry) => entry.apiKey === API_KEY)).toBe(true);
+    expect(stub.requests.every((entry) => entry.apiKey === WAHA_API_KEY)).toBe(true);
   });
 
   it('membatalkan reminder yang sudah dibuat ketika pengajuan ditolak melalui API sebelum dikirim', async () => {
@@ -503,7 +515,10 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     const now = new Date();
     await reconciler.reconcile(now);
     stub.enqueueSend({ status: 500, body: { message: 'gagal untuk satu penerima' } });
-    stub.enqueueSend({ status: 201, body: { id: 'penerima-lain-berhasil' } });
+    stub.enqueueSend({
+      status: 200,
+      body: { status: true, id: ['penerima-lain-berhasil'] },
+    });
 
     await worker.processDue(now);
     expect(stub.sendRequests).toHaveLength(2);
@@ -525,11 +540,11 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     expect(recovered.lastSentAt).not.toBeNull();
   });
 
-  it('memakai satu readiness check untuk batch dan menjadwalkan ulang seluruh penerima saat session gagal', async () => {
+  it('memakai satu readiness check untuk batch dan menjadwalkan ulang seluruh penerima saat perangkat terputus', async () => {
     await seedWorkflow();
     const now = new Date();
     await reconciler.reconcile(now);
-    stub.sessionStatus = 'FAILED';
+    stub.sessionStatus = 'SCAN_QR';
 
     await worker.processDue(now);
     expect(stub.sessionRequests).toHaveLength(1);
@@ -591,7 +606,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     {
       name: 'session belum WORKING',
       target: 'session',
-      behavior: { status: 200, body: { name: SESSION, status: 'SCAN_QR_CODE' } },
+      behavior: { status: 200, body: { name: WAHA_SESSION, status: 'SCAN_QR' } },
       errorKind: 'SESSION_NOT_READY',
       retryMs: 5 * 60_000,
       expectedPostCount: 0,
@@ -599,7 +614,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     {
       name: 'API key ditolak',
       target: 'session',
-      behavior: { status: 401, body: { message: 'Unauthorized' } },
+      behavior: { status: 401, body: { message: 'Invalid API key' } },
       errorKind: 'UNAUTHORIZED',
       retryMs: 5 * 60_000,
       expectedPostCount: 0,
@@ -631,7 +646,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     {
       name: 'nomor ditolak WAHA',
       target: 'send',
-      behavior: { status: 400, body: { message: 'Bad chatId' } },
+      behavior: { status: 400, body: { message: 'chatId invalid' } },
       errorKind: 'BAD_RECIPIENT',
       retryMs: REMINDER_INTERVAL_MS,
       expectedPostCount: 1,
@@ -639,7 +654,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     {
       name: 'timeout POST ambigu',
       target: 'send',
-      behavior: { delayMs: 1_250, status: 201, body: { id: 'late' } },
+      behavior: { delayMs: 1_250, status: 200, body: { status: true, id: ['late'] } },
       errorKind: 'TIMEOUT',
       retryMs: REMINDER_INTERVAL_MS,
       expectedPostCount: 1,
@@ -679,7 +694,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     const now = new Date();
     await reconciler.reconcile(now);
     await prisma.pengingatWhatsApp.updateMany({ data: { consecutiveFailures: 999 } });
-    stub.sessionStatus = 'FAILED';
+    stub.sessionStatus = 'SCAN_QR';
     await worker.processDue(now);
     let reminder = await prisma.pengingatWhatsApp.findFirstOrThrow();
     expect(reminder.consecutiveFailures).toBe(1_000);

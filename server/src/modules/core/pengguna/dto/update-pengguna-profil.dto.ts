@@ -1,5 +1,18 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import {
+  INDONESIAN_MOBILE_CANONICAL_PATTERN,
+  normalizeIndonesianMobileNumber,
+} from '../../../../common/pengguna/indonesian-mobile-number.util';
 
 /** Field profil bersama pembaruan akun pengguna. */
 export class UpdatePenggunaProfilDto {
@@ -34,11 +47,16 @@ export class UpdatePenggunaProfilDto {
   @MaxLength(64)
   readonly pangkat?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    example: '081234567890',
+    description: 'Format 08... atau 628...; disimpan sebagai 628...',
+  })
+  @Transform(({ value }: { value: unknown }) => normalizeIndonesianMobileNumber(value) ?? value)
   @IsOptional()
   @IsString()
-  @MinLength(8)
-  @MaxLength(32)
+  @Matches(INDONESIAN_MOBILE_CANONICAL_PATTERN, {
+    message: 'nohp harus memakai format 08... atau 628... dan hanya berisi digit',
+  })
   readonly nohp?: string;
 
   @ApiPropertyOptional({ enum: ['AKTIF', 'NONAKTIF'] })

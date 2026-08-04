@@ -46,13 +46,16 @@ const envSchema = z
     WHATSAPP_ENABLED: envBoolean(false),
     WAHA_BASE_URL: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().url().optional(),
+      z.string().url().default('http://waha:3000'),
     ),
     WAHA_API_KEY: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().min(16).optional(),
     ),
-    WAHA_SESSION: z.string().trim().min(1).max(64).default('sop-staging'),
+    WAHA_SESSION: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+      z.string().min(1).default('sop-staging'),
+    ),
     WHATSAPP_ALLOWED_RECIPIENTS: z.string().default(''),
     WHATSAPP_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
     WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1_440),
@@ -72,26 +75,11 @@ const envSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.WHATSAPP_ENABLED) {
-      if (data.WAHA_BASE_URL === undefined) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'WAHA_BASE_URL wajib jika WHATSAPP_ENABLED=true',
-          path: ['WAHA_BASE_URL'],
-        });
-      }
       if (data.WAHA_API_KEY === undefined) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'WAHA_API_KEY wajib jika WHATSAPP_ENABLED=true (minimal 16 karakter)',
+          message: 'WAHA_API_KEY wajib jika WHATSAPP_ENABLED=true',
           path: ['WAHA_API_KEY'],
-        });
-      }
-      if (data.WHATSAPP_ALLOWED_RECIPIENTS.trim().length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            'WHATSAPP_ALLOWED_RECIPIENTS wajib pada staging agar pesan tidak terkirim ke nomor di luar pengujian',
-          path: ['WHATSAPP_ALLOWED_RECIPIENTS'],
         });
       }
     }

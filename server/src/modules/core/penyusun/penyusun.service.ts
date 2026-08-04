@@ -8,6 +8,7 @@ import {
   assertAtLeastOneUpdateField,
   assertEmailNipUniqueOnUpdate,
   hashDefaultPassword,
+  requireIndonesianMobileNumber,
   rethrowPrismaUniqueViolation,
   resolveDeletedAtFromStatus,
 } from '../../../common/pengguna/pengguna-admin.util';
@@ -62,7 +63,7 @@ export class PenyusunService {
         nip: dto.nip.trim(),
         pangkat: dto.pangkat.trim(),
         jabatan: dto.jabatan.trim(),
-        nohp: dto.nohp.trim(),
+        nohp: requireIndonesianMobileNumber(dto.nohp),
         kataSandi: hashed,
         peran: dto.peran as PeranPengguna,
         opdId: dto.opdId,
@@ -124,7 +125,7 @@ export class PenyusunService {
       if (nipNext !== undefined) data.nip = nipNext;
       if (dto.pangkat !== undefined) data.pangkat = dto.pangkat.trim();
       if (dto.jabatan !== undefined) data.jabatan = dto.jabatan.trim();
-      if (dto.nohp !== undefined) data.nohp = dto.nohp.trim();
+      if (dto.nohp !== undefined) data.nohp = requireIndonesianMobileNumber(dto.nohp);
       if (dto.peran !== undefined) data.peran = dto.peran as PeranPengguna;
       if (dto.status !== undefined) {
         data.deletedAt = nextDeletedAt;
