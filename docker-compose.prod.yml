@@ -41,6 +41,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      db-user-sync:
+        condition: service_completed_successfully
       waha:
         condition: service_started
     env_file:
@@ -71,6 +73,37 @@ services:
       timeout: 5s
       retries: 30
       start_period: 30s
+    networks:
+      - sop-network
+
+  db-user-sync:
+    image: mariadb:11.4
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    command:
+      - sh
+      - -c
+      - |
+        set -eu
+        case "$${DB_NAME}" in (*[!A-Za-z0-9_]*|"") echo "DB_NAME hanya boleh huruf, angka, dan underscore"; exit 1;; esac
+        case "$${DB_USER}" in (*[!A-Za-z0-9_]*|"") echo "DB_USER hanya boleh huruf, angka, dan underscore"; exit 1;; esac
+        db_password_sql=$$(printf "%s" "$${DB_PASSWORD}" | sed "s/'/''/g")
+        MYSQL_PWD="$${DB_ROOT_PASSWORD}" mariadb -h db -uroot --protocol=tcp <<SQL
+        CREATE DATABASE IF NOT EXISTS \`$${DB_NAME}\`;
+        CREATE USER IF NOT EXISTS '$${DB_USER}'@'%' IDENTIFIED BY '$${db_password_sql}';
+        ALTER USER '$${DB_USER}'@'%' IDENTIFIED BY '$${db_password_sql}';
+        GRANT ALL PRIVILEGES ON \`$${DB_NAME}\`.* TO '$${DB_USER}'@'%';
+        FLUSH PRIVILEGES;
+        SQL
     networks:
       - sop-network
 

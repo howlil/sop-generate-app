@@ -47,6 +47,21 @@ Compose production memakai named volume stabil:
 
 Jangan menjalankan `docker compose down -v` atau menghapus named volume kecuali memang ingin reset data production.
 
+## Sinkronisasi User Database
+
+MariaDB hanya membaca `MARIADB_USER` dan `MARIADB_PASSWORD` saat volume database pertama kali dibuat. Jika `DB_PASSWORD` diganti di Easypanel setelah volume `sop-arsip-db-prod-data` sudah ada, password user lama di database tidak otomatis berubah dan Prisma akan gagal dengan `P1000 Authentication failed`.
+
+Compose production menyediakan service sekali jalan `db-user-sync` untuk mencegah kondisi itu. Saat deploy, service ini:
+
+- menunggu MariaDB healthy;
+- login sebagai root memakai `DB_ROOT_PASSWORD`;
+- memastikan database `DB_NAME` ada;
+- membuat atau mengubah password user `DB_USER`;
+- memberi grant ke database `DB_NAME`;
+- baru setelah itu backend menjalankan migrasi Prisma.
+
+Jika `db-user-sync` gagal, cek lebih dulu `DB_ROOT_PASSWORD`. Nilai root harus sama dengan root password yang dipakai ketika volume MariaDB production pertama kali dibuat. Mengubah `DB_ROOT_PASSWORD` di env tidak otomatis mengubah root password yang sudah tersimpan di volume lama.
+
 ## Environment Easypanel
 
 Isi environment service compose di Easypanel mengikuti `.env.example`. Minimal production:
