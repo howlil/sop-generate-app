@@ -1,6 +1,6 @@
 # Reminder WhatsApp dengan WAHA
 
-Fitur ini mengirim notifikasi otomatis berdasarkan status pengajuan melalui WAHA yang dihosting di server sendiri lewat Easypanel. Tidak ada broadcast manual, tombol kirim pesan uji, tautan ke aplikasi, atau halaman riwayat pesan.
+Fitur ini mengirim notifikasi otomatis berdasarkan status pengajuan melalui WAHA yang berjalan di compose production pada Easypanel. Tidak ada broadcast manual, tombol kirim pesan uji, tautan ke aplikasi, atau halaman riwayat pesan.
 
 ## Aturan penerima
 
@@ -19,7 +19,7 @@ Jika penerima tunggal tidak ada atau berjumlah lebih dari satu, sistem tidak men
 - Pengiriman teks: `POST /api/sendText` dengan JSON `chatId`, `text`, dan `session`.
 - Header `X-Api-Key` berisi `WAHA_API_KEY`.
 - Nomor tujuan dikirim sebagai `628...@c.us`.
-- Jika WAHA dan backend berada di service Easypanel berbeda, gunakan URL yang dapat dijangkau dari container backend, misalnya public URL WAHA Easypanel.
+- Backend memakai URL internal `http://waha:3000` ketika WAHA berada di compose production yang sama.
 
 ## Penyimpanan dan keamanan
 
@@ -31,25 +31,30 @@ API key WAHA hanya boleh disimpan pada environment backend. Jangan meletakkannya
 
 ## Konfigurasi
 
-1. Pastikan service WAHA di Easypanel sudah berjalan, session sudah dibuat, dan WhatsApp sudah dipairing sampai status session `WORKING`.
+1. Pastikan service `waha` di Easypanel sudah berjalan. Arahkan domain WAHA ke service `waha` port internal `3000` untuk membuka dashboard dan pairing QR.
 2. Salin `.env.example` menjadi `.env` dan isi konfigurasi WAHA:
 
    ```dotenv
    WHATSAPP_ENABLED=false
-   WAHA_BASE_URL=https://URL-WAHA-EASYPANEL
+   WAHA_BASE_URL=http://waha:3000
+   WAHA_IMAGE=devlikeapro/waha:latest-2026.4.3
    WAHA_API_KEY=ISI_API_KEY_WAHA
    WAHA_SESSION=sop-staging
+   WAHA_DASHBOARD_USERNAME=admin
+   WAHA_DASHBOARD_PASSWORD=ISI_PASSWORD_DASHBOARD_WAHA
+   WAHA_PUBLIC_URL=https://URL-WAHA-EASYPANEL
    # Kosong: gunakan seluruh nomor valid dari database.
    WHATSAPP_ALLOWED_RECIPIENTS=
    ```
 
-3. Jalankan backend dan pastikan konfigurasi lain valid:
+3. Deploy stack dan pastikan konfigurasi lain valid:
 
    ```powershell
-   docker compose -f docker-compose.prod.yml up -d --build backend
+   docker compose -f docker-compose.prod.yml up -d --build
    ```
 
-4. Setelah session WAHA `WORKING`, ubah `WHATSAPP_ENABLED=true` dan buat ulang backend.
+4. Buka dashboard WAHA, buat atau aktifkan session sesuai `WAHA_SESSION`, lalu scan QR sampai session `WORKING`.
+5. Setelah session WAHA `WORKING`, ubah `WHATSAPP_ENABLED=true` dan deploy ulang backend/stack.
 
 ## Uji ke WhatsApp asli
 
@@ -67,6 +72,12 @@ Periksa log backend; nomor tujuan otomatis disamarkan dan token tidak dicatat:
 
 ```powershell
 docker compose -f docker-compose.prod.yml logs -f backend
+```
+
+Untuk log WAHA:
+
+```powershell
+docker compose -f docker-compose.prod.yml logs -f waha
 ```
 
 Setelah demonstrasi selesai, set `WHATSAPP_ENABLED=false` dan buat ulang backend.

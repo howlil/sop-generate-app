@@ -10,21 +10,28 @@ Compose production memakai `expose`:
 
 - `frontend` expose port internal `80`.
 - `backend` expose port internal `3000`.
+- `waha` expose port internal `3000`.
 - `db` hanya berada di network internal compose.
 
 Domain aplikasi diarahkan di Easypanel ke service `frontend` port `80`. Browser tetap memakai satu origin; request `/api/` diproxy oleh Nginx frontend ke `backend:3000`.
 
 ## Service WAHA
 
-WAHA dihosting sebagai service Easypanel terpisah. Backend tidak menjalankan container WAHA di compose aplikasi.
+WAHA berjalan langsung di compose production sebagai service `waha`. Backend berkomunikasi melalui network internal compose memakai `http://waha:3000`, sehingga tidak bergantung pada domain publik WAHA.
+
+Tambahkan domain Easypanel terpisah ke service `waha` port internal `3000` hanya untuk dashboard, Swagger, dan pairing QR. Jangan arahkan domain aplikasi utama ke service `waha`.
 
 Environment backend:
 
 ```env
 WHATSAPP_ENABLED=false
-WAHA_BASE_URL=https://URL-WAHA-EASYPANEL
+WAHA_BASE_URL=http://waha:3000
+WAHA_IMAGE=devlikeapro/waha:latest-2026.4.3
 WAHA_API_KEY=ISI_API_KEY_WAHA
 WAHA_SESSION=sop-staging
+WAHA_DASHBOARD_USERNAME=admin
+WAHA_DASHBOARD_PASSWORD=ISI_PASSWORD_DASHBOARD_WAHA
+WAHA_PUBLIC_URL=https://URL-WAHA-EASYPANEL
 WHATSAPP_ALLOWED_RECIPIENTS=
 ```
 
@@ -36,6 +43,7 @@ Compose production memakai named volume stabil:
 
 - `sop-arsip-db-prod-data` untuk MariaDB.
 - `sop-arsip-pdf-prod-data` untuk PDF SOP arsip.
+- `sop-arsip-waha-session-prod-data` untuk session WAHA.
 
 Jangan menjalankan `docker compose down -v` atau menghapus named volume kecuali memang ingin reset data production.
 
@@ -58,9 +66,13 @@ PUBLIC_APP_ORIGIN=
 ALLOWED_ORIGINS=
 SOP_PDF_STORAGE_DIR=/app/storage/sop-pdf
 WHATSAPP_ENABLED=false
-WAHA_BASE_URL=https://URL-WAHA-EASYPANEL
+WAHA_BASE_URL=http://waha:3000
+WAHA_IMAGE=devlikeapro/waha:latest-2026.4.3
 WAHA_API_KEY=...
 WAHA_SESSION=sop-staging
+WAHA_DASHBOARD_USERNAME=admin
+WAHA_DASHBOARD_PASSWORD=...
+WAHA_PUBLIC_URL=https://URL-WAHA-EASYPANEL
 WHATSAPP_ALLOWED_RECIPIENTS=
 PDF_SIGNING_ENABLED=true
 PDF_SIGNING_P12_PASSPHRASE=...
@@ -72,7 +84,8 @@ PDF_SIGNING_P12_BASE64=...
 1. Push kode ke branch yang dipakai Easypanel.
 2. Easypanel mengambil repository GitHub.
 3. Easypanel menjalankan compose dari `docker-compose.prod.yml`.
-4. Easypanel mengarahkan domain ke service `frontend` port `80`.
-5. Backend menjalankan migrasi Prisma, seed, lalu `pnpm start:prod`.
+4. Easypanel mengarahkan domain aplikasi ke service `frontend` port `80`.
+5. Easypanel mengarahkan domain WAHA ke service `waha` port `3000` untuk pairing QR.
+6. Backend menjalankan migrasi Prisma, seed, lalu `pnpm start:prod`.
 
 GitHub Actions tetap berguna sebagai quality gate, tetapi bukan mekanisme deploy production.

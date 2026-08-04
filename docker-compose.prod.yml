@@ -41,6 +41,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      waha:
+        condition: service_started
     env_file:
       - .env
     environment:
@@ -52,6 +54,7 @@ services:
       DATABASE_NAME: ${DB_NAME}
       DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
       SOP_PDF_STORAGE_DIR: ${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
+      WAHA_BASE_URL: ${WAHA_BASE_URL:-http://waha:3000}
     command: ["sh", "-c", "pnpm prisma migrate deploy && pnpm prisma db seed && pnpm start:prod"]
     volumes:
       - sop-pdf-prod-data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
@@ -68,6 +71,28 @@ services:
       timeout: 5s
       retries: 30
       start_period: 30s
+    networks:
+      - sop-network
+
+  waha:
+    image: ${WAHA_IMAGE:-devlikeapro/waha:latest-2026.4.3}
+    restart: unless-stopped
+    environment:
+      WAHA_API_KEY: ${WAHA_API_KEY}
+      WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME:-admin}
+      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
+      WHATSAPP_SWAGGER_USERNAME: ${WAHA_DASHBOARD_USERNAME:-admin}
+      WHATSAPP_SWAGGER_PASSWORD: ${WAHA_DASHBOARD_PASSWORD}
+      WHATSAPP_API_HOSTNAME: 0.0.0.0
+      WHATSAPP_API_PORT: 3000
+      WAHA_PUBLIC_URL: ${WAHA_PUBLIC_URL:-}
+      TZ: Asia/Jakarta
+    volumes:
+      - waha-session-prod-data:/app/.sessions
+    # Easypanel boleh diarahkan ke service ini port internal 3000 untuk dashboard/QR.
+    # Backend tetap memakai URL internal http://waha:3000.
+    expose:
+      - "3000"
     networks:
       - sop-network
 
@@ -102,3 +127,5 @@ volumes:
     name: sop-arsip-db-prod-data
   sop-pdf-prod-data:
     name: sop-arsip-pdf-prod-data
+  waha-session-prod-data:
+    name: sop-arsip-waha-session-prod-data
