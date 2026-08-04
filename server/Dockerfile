@@ -20,8 +20,9 @@ COPY . .
 RUN DATABASE_URL=mysql://prisma_generate:prisma_generate@127.0.0.1:3306/prisma_generate pnpm prisma generate
 RUN pnpm build && test -f dist/src/main.js
 
-# Expose port yang digunakan backend
-EXPOSE 3000
+# Port internal backend production. Akses publik tetap melalui frontend.
+ENV PORT=3001
+EXPOSE 3001
 
 # Jalankan server
 CMD ["pnpm", "start:prod"]

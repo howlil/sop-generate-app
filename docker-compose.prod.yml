@@ -71,7 +71,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3001
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:-}
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
@@ -114,14 +114,14 @@ services:
         exec pnpm start:prod
     volumes:
       - sop-pdf-prod-data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
-    # Tidak publish ke host. API diakses via frontend (/api/ -> backend:3000).
+    # Tidak publish ke host. API hanya diakses frontend melalui network Compose.
     expose:
-      - "3000"
+      - "3001"
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          'node -e "require(''http'').get(''http://127.0.0.1:3000/api/health'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
+          'node -e "require(''http'').get(''http://127.0.0.1:3001/api/health'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
         ]
       interval: 10s
       timeout: 5s
@@ -139,12 +139,12 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    # Easypanel mengarahkan domain ke port internal ini. Tidak bind 80:80 agar
-    # tidak bentrok dengan reverse proxy Easypanel di host.
+    # Domain Easypanel menuju port internal 3000. Tidak ada port host yang
+    # dipublish; Cloudflare Tunnel tetap masuk melalui gateway Easypanel port 80.
     expose:
-      - "80"
+      - "3000"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/"]
       interval: 10s
       timeout: 5s
       retries: 30

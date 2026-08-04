@@ -8,11 +8,11 @@ Jangan publish port host dari compose production. Easypanel sudah memiliki rever
 
 Compose production memakai `expose`:
 
-- `frontend` expose port internal `80`.
-- `backend` expose port internal `3000`.
+- `frontend` expose port internal `3000` sebagai satu-satunya tujuan domain Easypanel.
+- `backend` expose port internal `3001` hanya pada network Compose.
 - `db` hanya berada di network internal compose.
 
-Domain aplikasi diarahkan di Easypanel ke service `frontend` port `80`. Browser tetap memakai satu origin; request `/api/` diproxy oleh Nginx frontend ke `backend:3000`.
+Cloudflare Tunnel menuju gateway Easypanel pada host `localhost:80`. Domain aplikasi di Easypanel lalu diarahkan ke port internal frontend `3000`. Browser tetap memakai satu origin; request `/api/` diproxy oleh Nginx frontend ke `backend:3001`.
 
 ## WAHA Hosted Eksternal
 
@@ -85,7 +85,7 @@ Compose tidak memakai `env_file` untuk memasukkan seluruh environment ke semua c
 1. Push kode ke branch yang dipakai Easypanel.
 2. Easypanel mengambil repository GitHub.
 3. Easypanel menjalankan compose dari `docker-compose.prod.yml`.
-4. Easypanel mengarahkan domain aplikasi ke service `frontend` port `80`.
+4. Cloudflare masuk melalui gateway Easypanel port `80`, lalu Easypanel meneruskan domain ke frontend port internal `3000`.
 5. Pada volume lama, MariaDB menyelaraskan user aplikasi secara internal sebelum healthcheck dapat lulus. Pada volume baru, entrypoint resmi melakukan inisialisasi normal dari environment.
 6. Backend menunggu MariaDB healthy, menjalankan migrasi Prisma, lalu `pnpm start:prod` tanpa menunggu WAHA.
 7. Backend menghubungi `https://waha.howlil.my.id` hanya ketika worker reminder aktif dan mempunyai pekerjaan jatuh tempo.
