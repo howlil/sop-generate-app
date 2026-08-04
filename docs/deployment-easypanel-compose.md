@@ -45,11 +45,9 @@ Session dan data WAHA bukan bagian dari volume aplikasi. Jangan menjalankan `doc
 
 MariaDB hanya membaca `MARIADB_USER` dan `MARIADB_PASSWORD` saat volume database pertama kali dibuat. Jika `DB_PASSWORD` diganti di Easypanel setelah volume `sop-arsip-db-prod-data` sudah ada, password user lama di database tidak otomatis berubah dan Prisma akan gagal dengan `P1000 Authentication failed`.
 
-Production memakai image resmi `mariadb:11.4` langsung tanpa custom build atau script sinkronisasi setiap startup. Karena itu, pertahankan `DB_NAME`, `DB_USER`, `DB_PASSWORD`, dan `DB_ROOT_PASSWORD` yang sesuai dengan volume production yang sudah ada.
+Production tetap memakai image resmi `mariadb:11.4` tanpa custom build. Service one-shot `db-prepare` menyelaraskan user aplikasi dengan environment setelah MariaDB healthy, lalu berhenti. Root password hanya tersedia pada container database dan `db-prepare`, tidak pada backend.
 
-Jika rotasi password memang diperlukan, lakukan `ALTER USER` sebagai operasi maintenance terencana sebelum mengganti environment. Jangan menghapus volume untuk menyamakan password karena tindakan tersebut menghapus data production.
-
-Migrasi Prisma menyusun URL koneksi langsung dari `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`, `DATABASE_PASSWORD`, dan `DATABASE_NAME`. Tidak ada script atau container sinkronisasi tambahan saat startup.
+Jangan menghapus volume untuk menyamakan password karena tindakan tersebut menghapus data production. Migrasi Prisma tetap memakai user aplikasi melalui `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`, `DATABASE_PASSWORD`, dan `DATABASE_NAME`.
 
 ## Environment Easypanel
 
@@ -89,8 +87,9 @@ Compose tidak memakai `env_file` untuk memasukkan seluruh environment ke semua c
 3. Easypanel menjalankan compose dari `docker-compose.prod.yml`.
 4. Easypanel mengarahkan domain aplikasi ke service `frontend` port `80`.
 5. MariaDB menjadi healthy setelah koneksi internal siap dan InnoDB selesai diinisialisasi.
-6. Backend menjalankan migrasi Prisma lalu `pnpm start:prod` tanpa menunggu WAHA.
-7. Backend menghubungi `https://waha.howlil.my.id` hanya ketika worker reminder aktif dan mempunyai pekerjaan jatuh tempo.
-8. Seed hanya dijalankan jika `RUN_DB_SEED_ON_START=true`; gunakan ini untuk instalasi demo awal, bukan pada setiap restart production.
+6. `db-prepare` memastikan user aplikasi dan grant database sesuai environment, lalu exit sukses.
+7. Backend menjalankan migrasi Prisma lalu `pnpm start:prod` tanpa menunggu WAHA.
+8. Backend menghubungi `https://waha.howlil.my.id` hanya ketika worker reminder aktif dan mempunyai pekerjaan jatuh tempo.
+9. Seed hanya dijalankan jika `RUN_DB_SEED_ON_START=true`; gunakan ini untuk instalasi demo awal, bukan pada setiap restart production.
 
 GitHub Actions tetap berguna sebagai quality gate, tetapi bukan mekanisme deploy production.

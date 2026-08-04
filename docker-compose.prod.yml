@@ -26,6 +26,29 @@ services:
     networks:
       - sop-network
 
+  db-prepare:
+    image: mariadb:11.4
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    command:
+      - sh
+      - -ec
+      - |
+        MYSQL_PWD="$${MARIADB_ROOT_PASSWORD}" mariadb --protocol=tcp -h db -uroot <<SQL
+        CREATE USER IF NOT EXISTS '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
+        ALTER USER '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
+        GRANT ALL PRIVILEGES ON \`$${MARIADB_DATABASE}\`.* TO '$${MARIADB_USER}'@'%';
+        SQL
+    networks:
+      - sop-network
+
   backend:
     image: sop-arsip-backend:${APP_VERSION:-local}
     build:
@@ -33,8 +56,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      db-prepare:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -87,7 +110,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "node -e \"require('http').get('http://127.0.0.1:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""
+          'node -e "require(''http'').get(''http://127.0.0.1:3000/api/health'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
         ]
       interval: 10s
       timeout: 5s
