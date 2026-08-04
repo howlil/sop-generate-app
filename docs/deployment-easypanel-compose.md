@@ -41,20 +41,15 @@ Compose production memakai named volume stabil:
 
 Session dan data WAHA bukan bagian dari volume aplikasi. Jangan menjalankan `docker compose down -v` atau menghapus named volume aplikasi kecuali memang ingin reset data production/PDF.
 
-## Sinkronisasi User Database
+## Kredensial Database
 
 MariaDB hanya membaca `MARIADB_USER` dan `MARIADB_PASSWORD` saat volume database pertama kali dibuat. Jika `DB_PASSWORD` diganti di Easypanel setelah volume `sop-arsip-db-prod-data` sudah ada, password user lama di database tidak otomatis berubah dan Prisma akan gagal dengan `P1000 Authentication failed`.
 
-Image MariaDB production memakai entrypoint tambahan yang menyinkronkan user aplikasi dari dalam container database sebelum service dinyatakan healthy. Koneksi memakai socket lokal, sehingga tidak membutuhkan akun `root` yang dapat login melalui network. Saat deploy, proses ini:
+Production memakai image resmi `mariadb:11.4` langsung tanpa custom build atau script sinkronisasi setiap startup. Karena itu, pertahankan `DB_NAME`, `DB_USER`, `DB_PASSWORD`, dan `DB_ROOT_PASSWORD` yang sesuai dengan volume production yang sudah ada.
 
-- menunggu proses MariaDB siap melalui socket lokal;
-- login sebagai root di dalam container memakai `DB_ROOT_PASSWORD`;
-- memastikan database `DB_NAME` ada;
-- membuat atau mengubah password user `DB_USER`;
-- memberi grant ke database `DB_NAME`;
-- membuat marker readiness, lalu backend menjalankan migrasi Prisma.
+Jika rotasi password memang diperlukan, lakukan `ALTER USER` sebagai operasi maintenance terencana sebelum mengganti environment. Jangan menghapus volume untuk menyamakan password karena tindakan tersebut menghapus data production.
 
-Jika script sync gagal, cek lebih dulu `DB_ROOT_PASSWORD`. Nilai root harus sama dengan root password yang dipakai ketika volume MariaDB production pertama kali dibuat. Mengubah `DB_ROOT_PASSWORD` di env tidak otomatis mengubah root password yang sudah tersimpan di volume lama.
+Migrasi Prisma menyusun URL koneksi langsung dari `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`, `DATABASE_PASSWORD`, dan `DATABASE_NAME`. Tidak ada script atau container sinkronisasi tambahan saat startup.
 
 ## Environment Easypanel
 

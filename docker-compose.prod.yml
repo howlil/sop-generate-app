@@ -5,17 +5,14 @@ name: sop-arsip
 # domain dan HTTPS dikelola oleh reverse proxy Easypanel.
 services:
   db:
-    image: sop-arsip-db:${APP_VERSION:-local}
-    build:
-      context: ./server/docker/mariadb
-      dockerfile: Dockerfile
+    image: mariadb:11.4
     restart: unless-stopped
+    command:
+      - --lower_case_table_names=1
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_ROOT_HOST: localhost
       MARIADB_DATABASE: ${DB_NAME}
       MARIADB_USER: ${DB_USER}
-      MARIADB_USER_HOST: "%"
       MARIADB_PASSWORD: ${DB_PASSWORD}
       TZ: Asia/Jakarta
     volumes:
@@ -24,7 +21,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "test -f /run/mariadb-app-user-ready && healthcheck.sh --connect --innodb_initialized"
+          "mariadb-admin ping -h 127.0.0.1 -uroot -p$${MARIADB_ROOT_PASSWORD} --silent"
         ]
       interval: 10s
       timeout: 5s
@@ -80,7 +77,6 @@ services:
       - -c
       - |
         set -eu
-        export DATABASE_URL="$(node scripts/build-database-url.cjs)"
         pnpm prisma migrate deploy
         if [ "$${RUN_DB_SEED_ON_START:-false}" = "true" ]; then
           pnpm prisma db seed

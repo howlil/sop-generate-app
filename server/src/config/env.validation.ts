@@ -37,7 +37,9 @@ const envSchema = z
     DATABASE_USER: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.string().min(1),
-    DATABASE_URL: z.string().url(),
+    // Hanya dibutuhkan oleh tooling lokal yang memilih memberi URL langsung.
+    // Runtime aplikasi memakai konfigurasi DATABASE_* individual.
+    DATABASE_URL: z.string().url().optional(),
     /** Override origin frontend (mis. https://app.domain.go.id). Kosong = deteksi dari header request. */
     PUBLIC_APP_ORIGIN: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),

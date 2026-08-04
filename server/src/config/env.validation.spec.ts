@@ -8,10 +8,17 @@ const baseEnv = {
   DATABASE_USER: 'test',
   DATABASE_PASSWORD: 'test',
   DATABASE_NAME: 'test',
-  DATABASE_URL: 'mysql://test:test@localhost:3306/test',
 };
 
 describe('WhatsApp environment validation', () => {
+  it('tidak mewajibkan DATABASE_URL ketika DATABASE_* tersedia', () => {
+    expect(validateEnv(baseEnv)).toMatchObject({
+      DATABASE_HOST: 'localhost',
+      DATABASE_USER: 'test',
+      DATABASE_NAME: 'test',
+    });
+  });
+
   it('membolehkan WhatsApp nonaktif tanpa kredensial WAHA', () => {
     expect(validateEnv(baseEnv)).toMatchObject({
       WHATSAPP_ENABLED: false,
