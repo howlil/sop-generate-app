@@ -89,13 +89,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     command:
       - sh
-      - -c
-      - |
-        set -eu
-        case "$${DB_NAME}" in (*[!A-Za-z0-9_]*|"") echo "DB_NAME hanya boleh huruf, angka, dan underscore"; exit 1;; esac
-        case "$${DB_USER}" in (*[!A-Za-z0-9_]*|"") echo "DB_USER hanya boleh huruf, angka, dan underscore"; exit 1;; esac
-        db_password_sql=$$(printf "%s" "$${DB_PASSWORD}" | sed "s/'/''/g")
-        MYSQL_PWD="$${DB_ROOT_PASSWORD}" mariadb -h db -uroot --protocol=tcp -e "CREATE DATABASE IF NOT EXISTS \`$${DB_NAME}\`; CREATE USER IF NOT EXISTS '$${DB_USER}'@'%' IDENTIFIED BY '$${db_password_sql}'; ALTER USER '$${DB_USER}'@'%' IDENTIFIED BY '$${db_password_sql}'; GRANT ALL PRIVILEGES ON \`$${DB_NAME}\`.* TO '$${DB_USER}'@'%'; FLUSH PRIVILEGES;"
+      - -ec
+      - test -n "$${DB_NAME}" && test -n "$${DB_USER}" && printf "%s" "$${DB_NAME}" | grep -Eq "^[A-Za-z0-9_]+$$" && printf "%s" "$${DB_USER}" | grep -Eq "^[A-Za-z0-9_]+$$"; db_password_sql=$$(printf "%s" "$${DB_PASSWORD}" | sed "s/'/''/g"); MYSQL_PWD="$${DB_ROOT_PASSWORD}" mariadb -h db -uroot --protocol=tcp -e "CREATE DATABASE IF NOT EXISTS \`$${DB_NAME}\`; CREATE USER IF NOT EXISTS '$${DB_USER}'@'%' IDENTIFIED BY '$${db_password_sql}'; ALTER USER '$${DB_USER}'@'%' IDENTIFIED BY '$${db_password_sql}'; GRANT ALL PRIVILEGES ON \`$${DB_NAME}\`.* TO '$${DB_USER}'@'%'; FLUSH PRIVILEGES;"
     networks:
       - sop-network
 
