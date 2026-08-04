@@ -51,7 +51,7 @@ Jangan menjalankan `docker compose down -v` atau menghapus named volume kecuali 
 
 MariaDB hanya membaca `MARIADB_USER` dan `MARIADB_PASSWORD` saat volume database pertama kali dibuat. Jika `DB_PASSWORD` diganti di Easypanel setelah volume `sop-arsip-db-prod-data` sudah ada, password user lama di database tidak otomatis berubah dan Prisma akan gagal dengan `P1000 Authentication failed`.
 
-Compose production menyediakan service sekali jalan `db-user-sync` untuk mencegah kondisi itu. Saat deploy, service ini:
+Compose production menjalankan `node scripts/sync-db-user.cjs` di backend sebelum Prisma migrate untuk mencegah kondisi itu. Saat deploy, script ini:
 
 - menunggu MariaDB healthy;
 - login sebagai root memakai `DB_ROOT_PASSWORD`;
@@ -60,7 +60,7 @@ Compose production menyediakan service sekali jalan `db-user-sync` untuk mencega
 - memberi grant ke database `DB_NAME`;
 - baru setelah itu backend menjalankan migrasi Prisma.
 
-Jika `db-user-sync` gagal, cek lebih dulu `DB_ROOT_PASSWORD`. Nilai root harus sama dengan root password yang dipakai ketika volume MariaDB production pertama kali dibuat. Mengubah `DB_ROOT_PASSWORD` di env tidak otomatis mengubah root password yang sudah tersimpan di volume lama.
+Jika script sync gagal, cek lebih dulu `DB_ROOT_PASSWORD`. Nilai root harus sama dengan root password yang dipakai ketika volume MariaDB production pertama kali dibuat. Mengubah `DB_ROOT_PASSWORD` di env tidak otomatis mengubah root password yang sudah tersimpan di volume lama.
 
 ## Environment Easypanel
 
@@ -101,6 +101,6 @@ PDF_SIGNING_P12_BASE64=...
 3. Easypanel menjalankan compose dari `docker-compose.prod.yml`.
 4. Easypanel mengarahkan domain aplikasi ke service `frontend` port `80`.
 5. Easypanel mengarahkan domain WAHA ke service `waha` port `3000` untuk pairing QR.
-6. Backend menjalankan migrasi Prisma, seed, lalu `pnpm start:prod`.
+6. Backend menyinkronkan user database, menjalankan migrasi Prisma, seed, lalu `pnpm start:prod`.
 
 GitHub Actions tetap berguna sebagai quality gate, tetapi bukan mekanisme deploy production.
