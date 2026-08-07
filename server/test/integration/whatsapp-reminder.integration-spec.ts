@@ -23,13 +23,13 @@ describeIntegration('WhatsApp reminder integration test', () => {
   let reconciler: WhatsappReminderReconcilerService;
   let repository: WhatsappReminderRepository;
   let previousAllowlist: string | undefined;
-  let previousWahaApiKey: string | undefined;
+  let previousEvolutionApiKey: string | undefined;
 
   beforeAll(async () => {
     assertSafeIntegrationDatabase();
     previousAllowlist = process.env.WHATSAPP_ALLOWED_RECIPIENTS;
-    previousWahaApiKey = process.env.WAHA_API_KEY;
-    process.env.WAHA_API_KEY = 'integration-waha-api-key-123';
+    previousEvolutionApiKey = process.env.EVOLUTION_API_KEY;
+    process.env.EVOLUTION_API_KEY = 'integration-evolution-api-key-123';
     process.env.WHATSAPP_ALLOWED_RECIPIENTS = [
       '6281111111111',
       '6282222222222',
@@ -56,10 +56,10 @@ describeIntegration('WhatsApp reminder integration test', () => {
     } else {
       process.env.WHATSAPP_ALLOWED_RECIPIENTS = previousAllowlist;
     }
-    if (previousWahaApiKey === undefined) {
-      delete process.env.WAHA_API_KEY;
+    if (previousEvolutionApiKey === undefined) {
+      delete process.env.EVOLUTION_API_KEY;
     } else {
-      process.env.WAHA_API_KEY = previousWahaApiKey;
+      process.env.EVOLUTION_API_KEY = previousEvolutionApiKey;
     }
   });
 

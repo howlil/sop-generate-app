@@ -6,7 +6,7 @@ SOPFlow dirancang sebagai aplikasi web berbasis arsitektur client-server. Pada a
 
 Secara umum, sistem terdiri atas tiga komponen utama. Komponen pertama adalah frontend berbasis React yang dibangun menggunakan Vite, TanStack Router, TanStack Query, Zustand, dan Tailwind CSS. Komponen ini menangani navigasi, manajemen sesi pada sisi klien, pemanggilan API, serta penyajian fitur berdasarkan peran pengguna. Komponen kedua adalah backend berbasis NestJS yang menyediakan REST API dengan prefix `/api` dan versioning URI melalui `/api/v1`. Komponen ini memuat modul-modul domain seperti autentikasi, master data, SOP, evaluasi, tanda tangan elektronik, dan arsip publik. Komponen ketiga adalah basis data MySQL yang diakses backend menggunakan Prisma ORM.
 
-Pada lingkungan produksi, sistem dijalankan di Easypanel menggunakan Docker Compose dengan tiga layanan utama, yaitu `frontend`, `backend`, dan `db`. Cloudflare Tunnel masuk melalui gateway Easypanel pada host port 80, lalu Easypanel meneruskan domain ke port internal `frontend:3000`. Nginx pada container frontend meneruskan request `/api/` ke `backend:3001`, sedangkan request halaman aplikasi diteruskan ke server frontend pada port internal 4173. Backend tidak dipublikasikan langsung ke host dan hanya diekspos pada jaringan internal Docker. Basis data MySQL juga berada pada jaringan internal yang sama sehingga akses data hanya dilakukan melalui backend.
+Pada lingkungan produksi, sistem dijalankan langsung di server private menggunakan Docker Compose dengan tiga layanan utama, yaitu `frontend`, `backend`, dan `db`. Reverse proxy pada host atau tunnel HTTPS meneruskan domain publik ke port internal/published milik `frontend:3000`. Nginx pada container frontend meneruskan request `/api/` ke `backend:3001`, sedangkan request halaman aplikasi diteruskan ke server frontend pada port internal 4173. Backend tidak dipublikasikan langsung ke internet dan hanya diekspos pada jaringan internal Docker. Basis data MySQL juga berada pada jaringan internal yang sama sehingga akses data hanya dilakukan melalui backend.
 
 Struktur tersebut menunjukkan bahwa sistem menerapkan pola aplikasi web berlapis. Lapisan presentasi berada pada frontend, lapisan layanan aplikasi berada pada backend, dan lapisan persistensi berada pada MySQL. Pemisahan lapisan ini penting karena setiap perubahan pada tampilan tidak harus mengubah struktur penyimpanan data, sedangkan perubahan aturan bisnis dapat dikendalikan pada backend tanpa menduplikasi logika kritis pada client.
 
@@ -20,7 +20,7 @@ Pengguna
   -> MySQL
 ```
 
-Diagram berikut menggambarkan arsitektur lengkap sistem pada lingkungan produksi. Diagram ini menempatkan frontend sebagai pintu masuk utama, backend sebagai lapisan layanan aplikasi, dan MySQL sebagai lapisan penyimpanan data. Pada konfigurasi production, Cloudflare hanya mengakses gateway Easypanel port 80 dan Easypanel meneruskan request ke frontend port internal 3000. Backend dan basis data berada pada jaringan internal Docker sehingga tidak diakses langsung oleh pengguna.
+Diagram berikut menggambarkan arsitektur lengkap sistem pada lingkungan produksi. Diagram ini menempatkan frontend sebagai pintu masuk utama, backend sebagai lapisan layanan aplikasi, dan MySQL sebagai lapisan penyimpanan data. Pada konfigurasi production, reverse proxy host atau tunnel HTTPS hanya meneruskan request ke frontend port 3000. Backend dan basis data berada pada jaringan internal Docker sehingga tidak diakses langsung oleh pengguna.
 
 ```plantuml
 @startuml
@@ -60,10 +60,9 @@ node "Browser Pengguna" as Browser {
 }
 
 cloud "Internet" as Internet
-cloud "Cloudflare Tunnel" as Cloudflare
 
 node "Host / VPS Produksi" as VPS {
-  component "Easypanel Gateway\nlocalhost:80" as EasypanelGateway
+  component "Reverse Proxy Host\nHTTPS/Tunnel" as HostProxy
 
   frame "Docker Compose (sop-arsip)" as Compose {
     
@@ -89,9 +88,8 @@ node "Host / VPS Produksi" as VPS {
 
 Visitor --> Browser : Akses layanan
 Browser --> Internet : HTTP Request
-Internet --> Cloudflare : HTTPS
-Cloudflare --> EasypanelGateway : Tunnel ke localhost:80
-EasypanelGateway --> Nginx : frontend:3000
+Internet --> HostProxy : HTTPS
+HostProxy --> Nginx : frontend:3000
 
 Nginx --> SSR : Route halaman aplikasi (/)
 Nginx --> Assets : Static assets (/assets/)

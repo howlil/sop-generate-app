@@ -1,0 +1,145 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to private VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in ENV_PRODUCTION VPS_HOST VPS_USER VPS_PASSWORD VPS_SUDO_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Repository secret $name belum diisi"
+              missing=1
+            fi
+          done
+          exit "$missing"
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+          VPS_SUDO_PASSWORD: ${{ secrets.VPS_SUDO_PASSWORD }}
+
+      - name: Prepare release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.env' \
+            --exclude='client/node_modules' \
+            --exclude='server/node_modules' \
+            --exclude='.pnpm-store' \
+            --exclude='client/dist' \
+            --exclude='server/dist' \
+            -czf "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.tar.gz" .
+          printf '%s\n' "$ENV_PRODUCTION" > "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.env"
+          printf '%s' "$VPS_SUDO_PASSWORD" > "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.sudo"
+          chmod 600 "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.env" "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.sudo"
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+          VPS_SUDO_PASSWORD: ${{ secrets.VPS_SUDO_PASSWORD }}
+
+      - name: Install SSH password helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Trust VPS host key
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+
+      - name: Upload release to VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshpass -p "$VPS_PASSWORD" scp \
+            "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.tar.gz" \
+            "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.env" \
+            "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.sudo" \
+            "$VPS_USER@$VPS_HOST:/tmp/"
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+
+      - name: Deploy on VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshpass -p "$VPS_PASSWORD" ssh "$VPS_USER@$VPS_HOST" \
+            "DEPLOY_SHA='$GITHUB_SHA' bash -s" <<'REMOTE'
+          set -Eeuo pipefail
+
+          APP_DIR="${APP_DIR:-$HOME/sopflow}"
+          RELEASE_DIR="$APP_DIR/releases/$DEPLOY_SHA"
+          SHARED_DIR="$APP_DIR/shared"
+          ARCHIVE="/tmp/sopflow-$DEPLOY_SHA.tar.gz"
+          ENV_FILE="/tmp/sopflow-$DEPLOY_SHA.env"
+          SUDO_FILE="/tmp/sopflow-$DEPLOY_SHA.sudo"
+
+          cleanup() {
+            rm -f "$ARCHIVE" "$ENV_FILE" "$SUDO_FILE"
+          }
+          trap cleanup EXIT
+
+          mkdir -p "$RELEASE_DIR" "$SHARED_DIR"
+          tar -xzf "$ARCHIVE" -C "$RELEASE_DIR"
+          mv "$ENV_FILE" "$SHARED_DIR/.env"
+          chmod 600 "$SHARED_DIR/.env"
+          ln -sfn "$SHARED_DIR/.env" "$RELEASE_DIR/.env"
+          ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
+
+          SUDO_PASSWORD="$(cat "$SUDO_FILE")"
+
+          docker_compose() {
+            if docker compose version >/dev/null 2>&1; then
+              docker compose "$@"
+            else
+              printf '%s\n' "$SUDO_PASSWORD" | sudo -S docker compose "$@"
+            fi
+          }
+
+          cd "$APP_DIR/current"
+          docker_compose --env-file .env config -q
+          docker_compose --env-file .env build
+          docker_compose --env-file .env up -d --remove-orphans
+          docker_compose --env-file .env ps
+
+          find "$APP_DIR/releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' \
+            | sort -rn \
+            | awk 'NR > 5 {print $2}' \
+            | xargs -r rm -rf
+          REMOTE
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}

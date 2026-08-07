@@ -1,7 +1,7 @@
 const INDONESIAN_MOBILE_MIN_DIGITS = 10;
 const E164_MAX_DIGITS = 15;
 
-/** Normalisasi nomor seluler Indonesia menjadi E.164 tanpa tanda `+`, sesuai chatId WAHA. */
+/** Normalisasi nomor seluler Indonesia menjadi E.164 tanpa tanda `+`, sesuai Evolution API. */
 export function normalizeIndonesianWhatsappNumber(value: string | null | undefined): string | null {
   if (value === null || value === undefined) {
     return null;

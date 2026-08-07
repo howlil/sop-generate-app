@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DEFAULT_WAHA_BASE_URL, normalizeWahaBaseUrl } from '../../../../config/waha.config';
+import {
+  DEFAULT_EVOLUTION_API_BASE_URL,
+  normalizeEvolutionApiBaseUrl,
+} from '../../../../config/evolution-api.config';
 import {
   WhatsappProviderError,
   type WhatsappProvider,
@@ -10,43 +13,50 @@ import {
 const MAX_ERROR_BODY_LENGTH = 500;
 
 @Injectable()
-export class WahaProvider implements WhatsappProvider {
+export class EvolutionApiProvider implements WhatsappProvider {
   private readonly baseUrl: string;
   private readonly apiKey: string;
-  private readonly session: string;
+  private readonly instanceName: string;
   private readonly timeoutMs: number;
 
   constructor(config: ConfigService) {
-    this.baseUrl = normalizeWahaBaseUrl(config.get<string>('WAHA_BASE_URL', DEFAULT_WAHA_BASE_URL));
-    this.apiKey = config.get<string>('WAHA_API_KEY', '');
-    this.session = config.get<string>('WAHA_SESSION', 'sop-staging');
+    this.baseUrl = normalizeEvolutionApiBaseUrl(
+      config.get<string>('EVOLUTION_API_BASE_URL', DEFAULT_EVOLUTION_API_BASE_URL),
+    );
+    this.apiKey = config.get<string>('EVOLUTION_API_KEY', '');
+    this.instanceName = config.get<string>('EVOLUTION_API_INSTANCE', 'sop-production');
     this.timeoutMs = config.get<number>('WHATSAPP_REQUEST_TIMEOUT_MS', 10_000);
   }
 
   async assertReady(): Promise<void> {
-    const response = await this.request(`/api/sessions/${encodeURIComponent(this.session)}`, {
-      method: 'GET',
-    });
+    const response = await this.request(
+      `/instance/connectionState/${encodeURIComponent(this.instanceName)}`,
+      {
+        method: 'GET',
+      },
+    );
     const payload = await this.safeJson(response);
-    const status = this.readString(payload, 'status');
-    if (status !== 'WORKING') {
+    const state = this.readConnectionState(payload);
+    if (state !== 'open') {
       throw new WhatsappProviderError(
         'SESSION_NOT_READY',
-        `Session WAHA ${this.session} belum siap (status=${status ?? 'UNKNOWN'})`,
+        `Instance Evolution API ${this.instanceName} belum siap (state=${state ?? 'UNKNOWN'})`,
       );
     }
   }
 
   async sendText(input: Readonly<{ nomorTujuan: string; text: string }>): Promise<void> {
-    const response = await this.request('/api/sendText', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chatId: `${input.nomorTujuan}@c.us`,
-        text: input.text,
-        session: this.session,
-      }),
-    });
+    const response = await this.request(
+      `/message/sendText/${encodeURIComponent(this.instanceName)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          number: input.nomorTujuan,
+          text: input.text,
+        }),
+      },
+    );
     await this.safeJson(response);
   }
 
@@ -58,7 +68,7 @@ export class WahaProvider implements WhatsappProvider {
         ...init,
         headers: {
           Accept: 'application/json',
-          'X-Api-Key': this.apiKey,
+          apikey: this.apiKey,
           ...init.headers,
         },
         signal: controller.signal,
@@ -74,14 +84,14 @@ export class WahaProvider implements WhatsappProvider {
       if (controller.signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
         throw new WhatsappProviderError(
           'TIMEOUT',
-          `Request WAHA melewati timeout ${this.timeoutMs} ms`,
+          `Request Evolution API melewati timeout ${this.timeoutMs} ms`,
           undefined,
           init.method === 'POST',
         );
       }
       throw new WhatsappProviderError(
         'UNAVAILABLE',
-        error instanceof Error ? error.message : 'WAHA tidak dapat dihubungi',
+        error instanceof Error ? error.message : 'Evolution API tidak dapat dihubungi',
         undefined,
         init.method === 'POST',
       );
@@ -97,7 +107,7 @@ export class WahaProvider implements WhatsappProvider {
         ? 'BAD_RECIPIENT'
         : response.status === 401 || response.status === 403
           ? 'UNAUTHORIZED'
-          : response.status === 404
+          : response.status === 404 || response.status === 503
             ? 'SESSION_NOT_READY'
             : response.status === 429
               ? 'RATE_LIMITED'
@@ -111,7 +121,7 @@ export class WahaProvider implements WhatsappProvider {
         : undefined;
     return new WhatsappProviderError(
       kind,
-      `WAHA merespons HTTP ${response.status}${body.length > 0 ? `: ${body}` : ''}`,
+      `Evolution API merespons HTTP ${response.status}${body.length > 0 ? `: ${body}` : ''}`,
       retryAfterMs,
     );
   }
@@ -124,15 +134,24 @@ export class WahaProvider implements WhatsappProvider {
     try {
       return JSON.parse(text) as unknown;
     } catch {
-      throw new WhatsappProviderError('INVALID_RESPONSE', 'Respons WAHA bukan JSON yang valid');
+      throw new WhatsappProviderError(
+        'INVALID_RESPONSE',
+        'Respons Evolution API bukan JSON yang valid',
+      );
     }
   }
 
-  private readString(payload: unknown, key: string): string | null {
+  private readConnectionState(payload: unknown): string | null {
     if (typeof payload !== 'object' || payload === null) {
       return null;
     }
-    const value = (payload as Record<string, unknown>)[key];
-    return typeof value === 'string' ? value : null;
+    const root = payload as Record<string, unknown>;
+    const instance = root.instance;
+    if (typeof instance === 'object' && instance !== null) {
+      const state = (instance as Record<string, unknown>).state;
+      return typeof state === 'string' ? state : null;
+    }
+    const state = root.state;
+    return typeof state === 'string' ? state : null;
   }
 }

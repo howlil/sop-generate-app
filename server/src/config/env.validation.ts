@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { DEFAULT_WAHA_BASE_URL, normalizeWahaBaseUrl } from './waha.config';
+import {
+  DEFAULT_EVOLUTION_API_BASE_URL,
+  normalizeEvolutionApiBaseUrl,
+} from './evolution-api.config';
 
 const envBoolean = (defaultValue: boolean) =>
   z.preprocess((val) => {
@@ -55,17 +58,17 @@ const envSchema = z
     ),
 
     WHATSAPP_ENABLED: envBoolean(false),
-    WAHA_BASE_URL: z.preprocess((val) => {
+    EVOLUTION_API_BASE_URL: z.preprocess((val) => {
       const normalized = trimmedEnvironmentString(val);
       return normalized === '' ? undefined : normalized;
-    }, z.string().url().default(DEFAULT_WAHA_BASE_URL).transform(normalizeWahaBaseUrl)),
-    WAHA_API_KEY: z.preprocess(
+    }, z.string().url().default(DEFAULT_EVOLUTION_API_BASE_URL).transform(normalizeEvolutionApiBaseUrl)),
+    EVOLUTION_API_KEY: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().min(16).optional(),
     ),
-    WAHA_SESSION: z.preprocess(
+    EVOLUTION_API_INSTANCE: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().min(1).default('sop-staging'),
+      z.string().min(1).default('sop-production'),
     ),
     WHATSAPP_ALLOWED_RECIPIENTS: z.string().default(''),
     WHATSAPP_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
@@ -85,27 +88,27 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
-    const wahaUrl = new URL(data.WAHA_BASE_URL);
-    if (wahaUrl.username !== '' || wahaUrl.password !== '') {
+    const evolutionApiUrl = new URL(data.EVOLUTION_API_BASE_URL);
+    if (evolutionApiUrl.username !== '' || evolutionApiUrl.password !== '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'WAHA_BASE_URL tidak boleh memuat username atau password',
-        path: ['WAHA_BASE_URL'],
+        message: 'EVOLUTION_API_BASE_URL tidak boleh memuat username atau password',
+        path: ['EVOLUTION_API_BASE_URL'],
       });
     }
     if (data.WHATSAPP_ENABLED) {
-      if (data.WAHA_API_KEY === undefined) {
+      if (data.EVOLUTION_API_KEY === undefined) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'WAHA_API_KEY wajib jika WHATSAPP_ENABLED=true',
-          path: ['WAHA_API_KEY'],
+          message: 'EVOLUTION_API_KEY wajib jika WHATSAPP_ENABLED=true',
+          path: ['EVOLUTION_API_KEY'],
         });
       }
-      if (data.NODE_ENV === 'production' && wahaUrl.protocol !== 'https:') {
+      if (data.NODE_ENV === 'production' && evolutionApiUrl.protocol !== 'https:') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'WAHA_BASE_URL wajib memakai HTTPS pada production',
-          path: ['WAHA_BASE_URL'],
+          message: 'EVOLUTION_API_BASE_URL wajib memakai HTTPS pada production',
+          path: ['EVOLUTION_API_BASE_URL'],
         });
       }
     }

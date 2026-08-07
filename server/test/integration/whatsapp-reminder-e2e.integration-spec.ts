@@ -28,8 +28,8 @@ const describeIntegration = isIntegrationEnabled() ? describe : describe.skip;
 const API = '/api/v1';
 const PASSWORD = 'Integration123!';
 const PIN_TTE = '123456';
-const WAHA_API_KEY = 'waha-e2e-api-key-123';
-const WAHA_SESSION = 'sop-staging';
+const EVOLUTION_API_KEY = 'evolution-e2e-api-key-123';
+const EVOLUTION_API_INSTANCE = 'sop-staging';
 const REMINDER_INTERVAL_MS = 2 * 60_000;
 
 type StubBehavior = Readonly<{
@@ -48,12 +48,12 @@ type StubRequest = Readonly<{
   body: unknown;
 }>;
 
-class WahaHttpStub {
+class EvolutionApiHttpStub {
   private server: Server | undefined;
   private sendBehaviors: StubBehavior[] = [];
-  private sessionBehavior: StubBehavior | undefined;
+  private connectionStateBehavior: StubBehavior | undefined;
   readonly requests: StubRequest[] = [];
-  sessionStatus = 'WORKING';
+  connectionState = 'open';
 
   async start(): Promise<string> {
     this.server = createServer((req, res) => {
@@ -77,12 +77,12 @@ class WahaHttpStub {
   reset(): void {
     this.requests.length = 0;
     this.sendBehaviors = [];
-    this.sessionBehavior = undefined;
-    this.sessionStatus = 'WORKING';
+    this.connectionStateBehavior = undefined;
+    this.connectionState = 'open';
   }
 
-  setSessionBehavior(behavior: StubBehavior): void {
-    this.sessionBehavior = behavior;
+  setConnectionStateBehavior(behavior: StubBehavior): void {
+    this.connectionStateBehavior = behavior;
   }
 
   enqueueSend(behavior: StubBehavior): void {
@@ -91,13 +91,16 @@ class WahaHttpStub {
 
   get sendRequests(): StubRequest[] {
     return this.requests.filter(
-      (entry) => entry.method === 'POST' && entry.path === '/api/sendText',
+      (entry) =>
+        entry.method === 'POST' && entry.path === `/message/sendText/${EVOLUTION_API_INSTANCE}`,
     );
   }
 
-  get sessionRequests(): StubRequest[] {
+  get connectionStateRequests(): StubRequest[] {
     return this.requests.filter(
-      (entry) => entry.method === 'GET' && entry.path === `/api/sessions/${WAHA_SESSION}`,
+      (entry) =>
+        entry.method === 'GET' &&
+        entry.path === `/instance/connectionState/${EVOLUTION_API_INSTANCE}`,
     );
   }
 
@@ -123,35 +126,36 @@ class WahaHttpStub {
     this.requests.push({
       method: req.method ?? 'UNKNOWN',
       path,
-      apiKey: Array.isArray(req.headers['x-api-key'])
-        ? req.headers['x-api-key'][0]
-        : req.headers['x-api-key'],
+      apiKey: Array.isArray(req.headers.apikey) ? req.headers.apikey[0] : req.headers.apikey,
       body,
     });
 
-    const apiKey = Array.isArray(req.headers['x-api-key'])
-      ? req.headers['x-api-key'][0]
-      : req.headers['x-api-key'];
-    if (apiKey !== WAHA_API_KEY) {
+    const apiKey = Array.isArray(req.headers.apikey) ? req.headers.apikey[0] : req.headers.apikey;
+    if (apiKey !== EVOLUTION_API_KEY) {
       await this.respond(res, { status: 401, body: { message: 'Invalid API key' } });
       return;
     }
-    if (req.method === 'GET' && path === `/api/sessions/${WAHA_SESSION}`) {
+    if (req.method === 'GET' && path === `/instance/connectionState/${EVOLUTION_API_INSTANCE}`) {
       await this.respond(
         res,
-        this.sessionBehavior ?? {
+        this.connectionStateBehavior ?? {
           status: 200,
-          body: { name: WAHA_SESSION, status: this.sessionStatus },
+          body: {
+            instance: {
+              instanceName: EVOLUTION_API_INSTANCE,
+              state: this.connectionState,
+            },
+          },
         },
       );
       return;
     }
-    if (req.method === 'POST' && path === '/api/sendText') {
+    if (req.method === 'POST' && path === `/message/sendText/${EVOLUTION_API_INSTANCE}`) {
       await this.respond(
         res,
         this.sendBehaviors.shift() ?? {
           status: 201,
-          body: { id: 'stub-message-id' },
+          body: { key: { id: 'stub-message-id' } },
         },
       );
       return;
@@ -195,18 +199,18 @@ type SeededWorkflow = Readonly<{
   kepalaOpdId?: string;
 }>;
 
-describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', () => {
+describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP Evolution API stub', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let reconciler: WhatsappReminderReconcilerService;
   let worker: WhatsappReminderWorkerService;
-  let stub: WahaHttpStub;
+  let stub: EvolutionApiHttpStub;
   let passwordHash: string;
   const previousEnv = new Map<string, string | undefined>();
   const configuredEnv: Record<string, string> = {
     WHATSAPP_ENABLED: 'false',
-    WAHA_API_KEY,
-    WAHA_SESSION,
+    EVOLUTION_API_KEY,
+    EVOLUTION_API_INSTANCE,
     WHATSAPP_ALLOWED_RECIPIENTS: [
       '6281111111111',
       '6282222222222',
@@ -223,8 +227,8 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
 
   beforeAll(async () => {
     assertSafeIntegrationDatabase();
-    stub = new WahaHttpStub();
-    configuredEnv.WAHA_BASE_URL = await stub.start();
+    stub = new EvolutionApiHttpStub();
+    configuredEnv.EVOLUTION_API_BASE_URL = await stub.start();
     for (const [key, value] of Object.entries(configuredEnv)) {
       previousEnv.set(key, process.env[key]);
       process.env[key] = value;
@@ -391,16 +395,14 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
   }
 
   function sentPayloads(): Array<{
-    chatId: string;
+    number: string;
     text: string;
-    session: string;
   }> {
     return stub.sendRequests.map(
       (entry) =>
         entry.body as {
-          chatId: string;
+          number: string;
           text: string;
-          session: string;
         },
     );
   }
@@ -419,10 +421,10 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     await reconcileAndSend(new Date());
     expect(
       sentPayloads()
-        .map((payload) => payload.chatId)
+        .map((payload) => payload.number)
         .sort(),
-    ).toEqual(['6281111111111@c.us', '6282222222222@c.us']);
-    expect(stub.sessionRequests).toHaveLength(1);
+    ).toEqual(['6281111111111', '6282222222222']);
+    expect(stub.connectionStateRequests).toHaveLength(1);
 
     const reminders = await prisma.pengingatWhatsApp.findMany();
     const firstDueAt = Math.min(...reminders.map((row) => row.nextSendAt.getTime()));
@@ -437,21 +439,21 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
       .send({ nomorBA: 'BA-WA-E2E-001' })
       .expect(200);
     await reconcileAndSend(new Date());
-    expect(sentPayloads().at(-1)?.chatId).toBe('6283333333333@c.us');
+    expect(sentPayloads().at(-1)?.number).toBe('6283333333333');
 
     await pjEvaluator
       .post(`${API}/tte/tanda-tangani/ba/${state.pengajuanId}`)
       .send({ pin: PIN_TTE, nomorDokumen: 'BA-WA-E2E-001', judulDokumen: 'BA WA E2E' })
       .expect(201);
     await reconcileAndSend(new Date());
-    expect(sentPayloads().at(-1)?.chatId).toBe('6284444444444@c.us');
+    expect(sentPayloads().at(-1)?.number).toBe('6284444444444');
 
     await pjPenyusun
       .post(`${API}/tte/tanda-tangani/ba/${state.pengajuanId}`)
       .send({ pin: PIN_TTE, nomorDokumen: 'BA-WA-E2E-001', judulDokumen: 'BA WA E2E' })
       .expect(201);
     await reconcileAndSend(new Date());
-    expect(sentPayloads().at(-1)?.chatId).toBe('6285555555555@c.us');
+    expect(sentPayloads().at(-1)?.number).toBe('6285555555555');
 
     const pdfBase64 = (await createMinimalPdfBuffer('SOP WhatsApp E2E')).toString('base64');
     await kepala
@@ -473,11 +475,10 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     ).resolves.toMatchObject({ status: StatusPengajuanEvaluasi.SELESAI });
     expect(stub.sendRequests).toHaveLength(7);
     for (const payload of sentPayloads()) {
-      expect(payload.session).toBe(WAHA_SESSION);
       expect(payload.text).not.toMatch(/https?:\/\//i);
       expect(payload.text).toContain('SOPFlow');
     }
-    expect(stub.requests.every((entry) => entry.apiKey === WAHA_API_KEY)).toBe(true);
+    expect(stub.requests.every((entry) => entry.apiKey === EVOLUTION_API_KEY)).toBe(true);
   });
 
   it('membatalkan reminder yang sudah dibuat ketika pengajuan ditolak melalui API sebelum dikirim', async () => {
@@ -505,9 +506,9 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     await Promise.all([worker.processDue(now), worker.processDue(now)]);
     expect(
       sentPayloads()
-        .map((payload) => payload.chatId)
+        .map((payload) => payload.number)
         .sort(),
-    ).toEqual(['6281111111111@c.us', '6282222222222@c.us']);
+    ).toEqual(['6281111111111', '6282222222222']);
   });
 
   it('mengisolasi kegagalan satu penerima agar penerima lain dalam batch tetap berhasil', async () => {
@@ -544,10 +545,10 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     await seedWorkflow();
     const now = new Date();
     await reconciler.reconcile(now);
-    stub.sessionStatus = 'SCAN_QR';
+    stub.connectionState = 'connecting';
 
     await worker.processDue(now);
-    expect(stub.sessionRequests).toHaveLength(1);
+    expect(stub.connectionStateRequests).toHaveLength(1);
     expect(stub.sendRequests).toHaveLength(0);
     const rows = await prisma.pengingatWhatsApp.findMany();
     expect(rows).toHaveLength(2);
@@ -564,7 +565,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
       includeSigners: false,
     });
     await reconcileAndSend(new Date());
-    expect(sentPayloads().map((payload) => payload.chatId)).toEqual(['6281111111111@c.us']);
+    expect(sentPayloads().map((payload) => payload.number)).toEqual(['6281111111111']);
     await expect(prisma.pengingatWhatsApp.count()).resolves.toBe(1);
   });
 
@@ -585,35 +586,49 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
       nohp: '083333333333',
     });
     await reconcileAndSend(new Date());
-    expect(sentPayloads().map((payload) => payload.chatId)).toEqual(['6283333333333@c.us']);
+    expect(sentPayloads().map((payload) => payload.number)).toEqual(['6283333333333']);
   });
 
   it.each([
     ['pengguna dinonaktifkan', { deletedAt: new Date() }],
     ['nomor berubah di luar allowlist', { nohp: '087777777777' }],
     ['peran berubah', { peran: PeranPengguna.PENYUSUN }],
-  ] as const)('menghapus state stale tanpa memanggil WAHA ketika %s', async (_name, data) => {
-    const state = await seedWorkflow({ evaluatorNumbers: ['081111111111'], includeSigners: false });
-    const now = new Date();
-    await reconciler.reconcile(now);
-    await prisma.pengguna.update({ where: { penggunaId: state.evaluatorIds[0] }, data });
-    await worker.processDue(now);
-    await expect(prisma.pengingatWhatsApp.count()).resolves.toBe(0);
-    expect(stub.requests).toHaveLength(0);
-  });
+  ] as const)(
+    'menghapus state stale tanpa memanggil Evolution API ketika %s',
+    async (_name, data) => {
+      const state = await seedWorkflow({
+        evaluatorNumbers: ['081111111111'],
+        includeSigners: false,
+      });
+      const now = new Date();
+      await reconciler.reconcile(now);
+      await prisma.pengguna.update({ where: { penggunaId: state.evaluatorIds[0] }, data });
+      await worker.processDue(now);
+      await expect(prisma.pengingatWhatsApp.count()).resolves.toBe(0);
+      expect(stub.requests).toHaveLength(0);
+    },
+  );
 
   it.each([
     {
-      name: 'session belum WORKING',
-      target: 'session',
-      behavior: { status: 200, body: { name: WAHA_SESSION, status: 'SCAN_QR' } },
+      name: 'instance belum open',
+      target: 'connection',
+      behavior: {
+        status: 200,
+        body: {
+          instance: {
+            instanceName: EVOLUTION_API_INSTANCE,
+            state: 'connecting',
+          },
+        },
+      },
       errorKind: 'SESSION_NOT_READY',
       retryMs: 5 * 60_000,
       expectedPostCount: 0,
     },
     {
       name: 'API key ditolak',
-      target: 'session',
+      target: 'connection',
       behavior: { status: 401, body: { message: 'Invalid API key' } },
       errorKind: 'UNAUTHORIZED',
       retryMs: 5 * 60_000,
@@ -630,7 +645,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     {
       name: 'HTTP 500',
       target: 'send',
-      behavior: { status: 500, body: { message: 'WAHA down' } },
+      behavior: { status: 500, body: { message: 'Evolution API down' } },
       errorKind: 'UNAVAILABLE',
       retryMs: 60_000,
       expectedPostCount: 1,
@@ -644,9 +659,9 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
       expectedPostCount: 1,
     },
     {
-      name: 'nomor ditolak WAHA',
+      name: 'nomor ditolak Evolution API',
       target: 'send',
-      behavior: { status: 400, body: { message: 'chatId invalid' } },
+      behavior: { status: 400, body: { message: 'number invalid' } },
       errorKind: 'BAD_RECIPIENT',
       retryMs: REMINDER_INTERVAL_MS,
       expectedPostCount: 1,
@@ -673,7 +688,7 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
       await seedWorkflow({ evaluatorNumbers: ['081111111111'], includeSigners: false });
       const now = new Date();
       await reconciler.reconcile(now);
-      if (target === 'session') stub.setSessionBehavior(behavior);
+      if (target === 'connection') stub.setConnectionStateBehavior(behavior);
       else stub.enqueueSend(behavior);
 
       await worker.processDue(now);
@@ -689,18 +704,18 @@ describeIntegration('WhatsApp reminder E2E: Nest + MariaDB + HTTP WAHA stub', ()
     },
   );
 
-  it('pulih setelah WAHA kembali siap dan tetap menyimpan reminder meski kegagalan sudah sangat banyak', async () => {
+  it('pulih setelah Evolution API kembali siap dan tetap menyimpan reminder meski kegagalan sudah sangat banyak', async () => {
     await seedWorkflow({ evaluatorNumbers: ['081111111111'], includeSigners: false });
     const now = new Date();
     await reconciler.reconcile(now);
     await prisma.pengingatWhatsApp.updateMany({ data: { consecutiveFailures: 999 } });
-    stub.sessionStatus = 'SCAN_QR';
+    stub.connectionState = 'connecting';
     await worker.processDue(now);
     let reminder = await prisma.pengingatWhatsApp.findFirstOrThrow();
     expect(reminder.consecutiveFailures).toBe(1_000);
     expect(reminder.lastErrorKind).toBe('SESSION_NOT_READY');
 
-    stub.sessionStatus = 'WORKING';
+    stub.connectionState = 'open';
     await worker.processDue(new Date(reminder.nextSendAt.getTime() + 1));
     reminder = await prisma.pengingatWhatsApp.findFirstOrThrow();
     expect(reminder.consecutiveFailures).toBe(0);

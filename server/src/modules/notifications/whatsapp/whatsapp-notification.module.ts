@@ -6,8 +6,8 @@ import { WhatsappReminderReconcilerService } from './whatsapp-reminder-reconcile
 import { WhatsappReminderRepository } from './whatsapp-reminder.repository';
 import { WhatsappReminderSchedulerService } from './whatsapp-reminder-scheduler.service';
 import { WhatsappReminderWorkerService } from './whatsapp-reminder-worker.service';
+import { EvolutionApiProvider } from './providers/evolution-api.provider';
 import { WHATSAPP_PROVIDER } from './providers/whatsapp-provider.interface';
-import { WahaProvider } from './providers/waha.provider';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -18,8 +18,8 @@ import { WahaProvider } from './providers/waha.provider';
     WhatsappReminderReconcilerService,
     WhatsappReminderWorkerService,
     WhatsappReminderSchedulerService,
-    WahaProvider,
-    { provide: WHATSAPP_PROVIDER, useExisting: WahaProvider },
+    EvolutionApiProvider,
+    { provide: WHATSAPP_PROVIDER, useExisting: EvolutionApiProvider },
   ],
 })
 export class WhatsappNotificationModule {}

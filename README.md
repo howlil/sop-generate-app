@@ -33,12 +33,9 @@ SOPFlow is a TypeScript web application with a TanStack Start frontend, a NestJS
    docker compose --env-file .env down
    ```
 
-## MyPaas Deployment
+## Direct Server Deployment
 
-- Deployment mode: `Docker Compose`
-- Compose file: `compose.yml`
-- Main service: `frontend`
-- App port: `3000`
+Deploy directly to the private server with Docker Compose from CI/CD. The compose stack intentionally contains only `db`, `backend`, and `frontend`; Evolution API is an external service reached over HTTPS.
 
 The public HTTP service is `frontend`. It runs Nginx on container port `3000`, proxies `/api/` to `backend:3001`, and serves the TanStack Start app through an internal SSR process on `127.0.0.1:4173`.
 
@@ -53,6 +50,7 @@ JWT_SECRET=
 JWT_REFRESH_SECRET=
 PUBLIC_APP_ORIGIN=https://your-domain.example
 ALLOWED_ORIGINS=https://your-domain.example
+RUN_DB_SEED_ON_START=true
 ```
 
-Optional keys are listed in `.env.example`, including seed control, Swagger, PDF signing, and WhatsApp/WAHA reminder settings.
+`RUN_DB_SEED_ON_START=true` runs `prisma db seed` after migrations during backend startup. Set it to `false` after initial setup if you do not want seed/demo data reconciled on every restart. Optional keys are listed in `.env.example`, including Swagger, PDF signing, and WhatsApp/Evolution API reminder settings.

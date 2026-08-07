@@ -1,12 +1,12 @@
 import { ConfigService } from '@nestjs/config';
-import { WahaProvider } from './waha.provider';
+import { EvolutionApiProvider } from './evolution-api.provider';
 import { WhatsappProviderError } from './whatsapp-provider.interface';
 
 function config(overrides: Record<string, unknown> = {}): ConfigService {
   const values: Record<string, unknown> = {
-    WAHA_BASE_URL: 'http://waha.test:3000/',
-    WAHA_API_KEY: 'secret-api-key-123',
-    WAHA_SESSION: 'sop-staging',
+    EVOLUTION_API_BASE_URL: 'http://evolution.test:8080/',
+    EVOLUTION_API_KEY: 'secret-api-key-123',
+    EVOLUTION_API_INSTANCE: 'sop-staging',
     WHATSAPP_REQUEST_TIMEOUT_MS: 10_000,
     ...overrides,
   };
@@ -15,56 +15,73 @@ function config(overrides: Record<string, unknown> = {}): ConfigService {
   } as unknown as ConfigService;
 }
 
-describe('WahaProvider', () => {
+describe('EvolutionApiProvider', () => {
   afterEach(() => jest.restoreAllMocks());
 
-  it('menerima session WORKING sebagai siap', async () => {
+  it('menerima instance open sebagai siap', async () => {
     jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(JSON.stringify({ status: 'WORKING' }), { status: 200 }));
-    await expect(new WahaProvider(config()).assertReady()).resolves.toBeUndefined();
+      .mockResolvedValue(
+        new Response(JSON.stringify({ instance: { instanceName: 'sop-staging', state: 'open' } }), {
+          status: 200,
+        }),
+      );
+    await expect(new EvolutionApiProvider(config()).assertReady()).resolves.toBeUndefined();
   });
 
-  it('memakai domain WAHA hosted sebagai default', async () => {
+  it('memakai domain Evolution API default', async () => {
     const fetchMock = jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(JSON.stringify({ status: 'WORKING' }), { status: 200 }));
-    await new WahaProvider(config({ WAHA_BASE_URL: undefined })).assertReady();
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ instance: { instanceName: 'sop-production', state: 'open' } }),
+          { status: 200 },
+        ),
+      );
+    await new EvolutionApiProvider(
+      config({ EVOLUTION_API_BASE_URL: undefined, EVOLUTION_API_INSTANCE: undefined }),
+    ).assertReady();
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://waha.howlil.my.id/api/sessions/sop-staging',
+      'https://evolution.example.test/instance/connectionState/sop-production',
       expect.objectContaining({ method: 'GET' }),
     );
   });
 
-  it('menolak session yang belum siap', async () => {
+  it('menolak instance yang belum siap', async () => {
     jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(JSON.stringify({ status: 'SCAN_QR' }), { status: 200 }));
-    await expect(new WahaProvider(config()).assertReady()).rejects.toMatchObject({
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ instance: { instanceName: 'sop-staging', state: 'connecting' } }),
+          { status: 200 },
+        ),
+      );
+    await expect(new EvolutionApiProvider(config()).assertReady()).rejects.toMatchObject({
       kind: 'SESSION_NOT_READY',
     });
   });
 
-  it('mengirim payload WAHA dengan chatId asli dan API key', async () => {
+  it('mengirim payload Evolution API dengan nomor internasional dan API key', async () => {
     const fetchMock = jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(JSON.stringify({ id: 'message-1' }), { status: 201 }));
-    await new WahaProvider(config()).sendText({
+      .mockResolvedValue(
+        new Response(JSON.stringify({ key: { id: 'message-1' } }), { status: 201 }),
+      );
+    await new EvolutionApiProvider(config()).sendText({
       nomorTujuan: '628111111111',
       text: 'Pesan pengingat',
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://waha.test:3000/api/sendText',
+      'http://evolution.test:8080/message/sendText/sop-staging',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          chatId: '628111111111@c.us',
+          number: '628111111111',
           text: 'Pesan pengingat',
-          session: 'sop-staging',
         }),
         // Jest asymmetric matchers are typed as `any`; scoped suppression keeps production strict.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        headers: expect.objectContaining({ 'X-Api-Key': 'secret-api-key-123' }),
+        headers: expect.objectContaining({ apikey: 'secret-api-key-123' }),
       }),
     );
   });
@@ -74,11 +91,12 @@ describe('WahaProvider', () => {
     [401, 'UNAUTHORIZED'],
     [403, 'UNAUTHORIZED'],
     [404, 'SESSION_NOT_READY'],
+    [503, 'SESSION_NOT_READY'],
     [500, 'UNAVAILABLE'],
   ] as const)('memetakan HTTP %i menjadi %s', async (status, kind) => {
     jest.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('error', { status }));
     await expect(
-      new WahaProvider(config()).sendText({ nomorTujuan: '628111111111', text: 'test' }),
+      new EvolutionApiProvider(config()).sendText({ nomorTujuan: '628111111111', text: 'test' }),
     ).rejects.toMatchObject({ kind });
   });
 
@@ -89,7 +107,10 @@ describe('WahaProvider', () => {
         new Response('slow down', { status: 429, headers: { 'retry-after': '120' } }),
       );
     try {
-      await new WahaProvider(config()).sendText({ nomorTujuan: '628111111111', text: 'test' });
+      await new EvolutionApiProvider(config()).sendText({
+        nomorTujuan: '628111111111',
+        text: 'test',
+      });
       throw new Error('Expected provider to reject');
     } catch (error) {
       expect(error).toBeInstanceOf(WhatsappProviderError);
@@ -99,14 +120,14 @@ describe('WahaProvider', () => {
 
   it('menolak respons sukses yang bukan JSON', async () => {
     jest.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('not-json', { status: 200 }));
-    await expect(new WahaProvider(config()).assertReady()).rejects.toMatchObject({
+    await expect(new EvolutionApiProvider(config()).assertReady()).rejects.toMatchObject({
       kind: 'INVALID_RESPONSE',
     });
   });
 
   it('memetakan network error menjadi unavailable tanpa membocorkan API key', async () => {
     jest.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'));
-    await expect(new WahaProvider(config()).assertReady()).rejects.toMatchObject({
+    await expect(new EvolutionApiProvider(config()).assertReady()).rejects.toMatchObject({
       kind: 'UNAVAILABLE',
       message: 'ECONNREFUSED',
       ambiguousDelivery: false,
@@ -116,7 +137,7 @@ describe('WahaProvider', () => {
   it('menandai network error POST sebagai delivery ambigu untuk mencegah duplikasi', async () => {
     jest.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('ECONNRESET'));
     await expect(
-      new WahaProvider(config()).sendText({ nomorTujuan: '628111111111', text: 'test' }),
+      new EvolutionApiProvider(config()).sendText({ nomorTujuan: '628111111111', text: 'test' }),
     ).rejects.toMatchObject({
       kind: 'UNAVAILABLE',
       message: 'ECONNRESET',
@@ -137,7 +158,7 @@ describe('WahaProvider', () => {
         });
       });
     await expect(
-      new WahaProvider(config({ WHATSAPP_REQUEST_TIMEOUT_MS: 5 })).sendText({
+      new EvolutionApiProvider(config({ WHATSAPP_REQUEST_TIMEOUT_MS: 5 })).sendText({
         nomorTujuan: '628111111111',
         text: 'test',
       }),
