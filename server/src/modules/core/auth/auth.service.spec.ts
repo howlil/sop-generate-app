@@ -19,6 +19,7 @@ describe('Pengujian AuthService', () => {
       | 'findActivePenggunaByEmail'
       | 'findActivePenggunaById'
       | 'updateKataSandi'
+      | 'updateNohp'
       | 'startSession'
       | 'storeRefreshToken'
       | 'revokeSession'
@@ -57,6 +58,7 @@ describe('Pengujian AuthService', () => {
       findActivePenggunaByEmail: jest.fn(),
       findActivePenggunaById: jest.fn(),
       updateKataSandi: jest.fn().mockResolvedValue(undefined),
+      updateNohp: jest.fn(),
       startSession: jest.fn().mockResolvedValue({
         ...sampleRow,
         sesiTokenVersion: sampleRow.sesiTokenVersion + 1,
@@ -189,6 +191,40 @@ describe('Pengujian AuthService', () => {
       nohp: sampleRow.nohp,
       tte: { configured: false },
     });
+  });
+
+  it('seharusnya memperbarui nomor HP dan mengembalikan profil terbaru', async () => {
+    const updatedRow = { ...sampleRow, nohp: '6281234567890' };
+    authRepository.findActivePenggunaById.mockResolvedValue(sampleRow);
+    authRepository.updateNohp.mockResolvedValue(updatedRow);
+
+    const actual = await service.updateMyPhone(sampleRow.penggunaId, {
+      nohp: updatedRow.nohp,
+    });
+
+    expect(authRepository.updateNohp).toHaveBeenCalledWith(sampleRow.penggunaId, updatedRow.nohp);
+    expect(actual.nohp).toBe(updatedRow.nohp);
+    expect(actual.penggunaId).toBe(sampleRow.penggunaId);
+  });
+
+  it('seharusnya tidak menulis database ketika nomor HP tidak berubah', async () => {
+    authRepository.findActivePenggunaById.mockResolvedValue(sampleRow);
+
+    const actual = await service.updateMyPhone(sampleRow.penggunaId, {
+      nohp: sampleRow.nohp,
+    });
+
+    expect(authRepository.updateNohp).not.toHaveBeenCalled();
+    expect(actual.nohp).toBe(sampleRow.nohp);
+  });
+
+  it('seharusnya menolak pembaruan nomor HP untuk pengguna yang tidak aktif', async () => {
+    authRepository.findActivePenggunaById.mockResolvedValue(null);
+
+    await expect(
+      service.updateMyPhone('missing-id', { nohp: '6281234567890' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(authRepository.updateNohp).not.toHaveBeenCalled();
   });
 
   it('seharusnya memperbarui password ketika lama password valid', async () => {

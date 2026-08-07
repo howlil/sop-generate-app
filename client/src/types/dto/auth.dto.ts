@@ -42,3 +42,7 @@ export interface ChangePasswordDto {
   kataSandiLama: string;
   kataSandiBaru: string;
 }
+
+export interface UpdateMyPhoneDto {
+  nohp: string;
+}

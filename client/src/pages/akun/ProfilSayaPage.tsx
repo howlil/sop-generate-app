@@ -9,11 +9,31 @@ import { useTTEProfil } from "@/api/tte";
 import { useAppRole } from "@/hooks/useAppRole";
 import { roleMendukungTte } from "@/utils/role-routing";
 import { TteSetupSection } from "@/pages/akun/components/TteSetupSection";
-import { Eye, EyeOff, Mail, Briefcase, Building2, Hash, BadgeCheck, Lock } from "lucide-react";
+import { PhoneProfileSection } from "@/pages/akun/components/PhoneProfileSection";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Briefcase,
+  Building2,
+  Hash,
+  BadgeCheck,
+  Lock,
+  Phone,
+} from "lucide-react";
 import { useState as useSt } from "react";
+import { formatIndonesianMobileNumberForInput } from "@/utils/indonesian-mobile-number";
 
 // ─── Atom: info row dalam kartu profil ────────────────────────────
-function ProfileRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | null }) {
+function ProfileRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value?: string | null;
+}) {
   if (!value) return null;
   return (
     <div className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
@@ -76,7 +96,7 @@ function PasswordInput({
 // ─── Main page ──────────────────────────────────────────────────────
 export function ProfilSayaPage() {
   const { user, role, getRoleLabel, getRoleNip, getRoleDisplayName } = useAppRole();
-  const { changePassword, isChangingPassword } = useAuth();
+  const { changePassword, isChangingPassword, updateMyPhone, isUpdatingMyPhone } = useAuth();
   const tteEnabled = roleMendukungTte(role);
   const { data: profile, isLoading: isProfilLoading } = useTTEProfil({ enabled: tteEnabled });
   const { list: opdList } = useOpd();
@@ -122,13 +142,9 @@ export function ProfilSayaPage() {
 
   return (
     <div className="space-y-6">
-      <SetPageHeader
-        breadcrumb={[{ label: "Profil Saya" }]}
-        title="Profil Saya"
-      />
+      <SetPageHeader breadcrumb={[{ label: "Profil Saya" }]} title="Profil Saya" />
 
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-6 items-start">
-
         {/* ── Kolom kiri: Info akun (Sidebar) ── */}
         <div className="space-y-4 lg:sticky lg:top-6">
           <section className="bg-surface rounded-xl border border-border overflow-hidden">
@@ -148,16 +164,42 @@ export function ProfilSayaPage() {
             {/* Info rows */}
             <div className="px-5 py-2">
               <ProfileRow icon={<Hash className="w-3.5 h-3.5" />} label="NIP" value={displayNip} />
-              <ProfileRow icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={user?.email} />
-              <ProfileRow icon={<Briefcase className="w-3.5 h-3.5" />} label="Jabatan" value={user?.jabatan} />
-              <ProfileRow icon={<BadgeCheck className="w-3.5 h-3.5" />} label="Pangkat" value={user?.pangkat?.trim() || undefined} />
-              <ProfileRow icon={<Building2 className="w-3.5 h-3.5" />} label="OPD" value={opdNama} />
+              <ProfileRow
+                icon={<Mail className="w-3.5 h-3.5" />}
+                label="Email"
+                value={user?.email}
+              />
+              <ProfileRow
+                icon={<Phone className="w-3.5 h-3.5" />}
+                label="Nomor HP"
+                value={formatIndonesianMobileNumberForInput(user?.nohp)}
+              />
+              <ProfileRow
+                icon={<Briefcase className="w-3.5 h-3.5" />}
+                label="Jabatan"
+                value={user?.jabatan}
+              />
+              <ProfileRow
+                icon={<BadgeCheck className="w-3.5 h-3.5" />}
+                label="Pangkat"
+                value={user?.pangkat?.trim() || undefined}
+              />
+              <ProfileRow
+                icon={<Building2 className="w-3.5 h-3.5" />}
+                label="OPD"
+                value={opdNama}
+              />
             </div>
           </section>
         </div>
 
         {/* ── Kolom kanan: Keamanan + TTE ── */}
         <div className="space-y-6">
+          <PhoneProfileSection
+            currentPhone={user?.nohp}
+            isSaving={isUpdatingMyPhone}
+            onSave={async (nohp) => (await updateMyPhone({ nohp })).data.nohp}
+          />
 
           {/* Ubah kata sandi */}
           <section className="bg-surface rounded-xl border border-border overflow-hidden">
@@ -165,7 +207,9 @@ export function ProfilSayaPage() {
               <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
               <div>
                 <h2 className="text-sm font-semibold text-foreground">Kata Sandi</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Perbarui kata sandi login akun Anda.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Perbarui kata sandi login akun Anda.
+                </p>
               </div>
             </div>
             <form onSubmit={handleChangePassword} className="px-5 py-5 space-y-3">
@@ -194,12 +238,20 @@ export function ProfilSayaPage() {
                 describedBy={passwordError || passwordSuccess ? passwordFeedbackId : undefined}
               />
               {passwordError && (
-                <p id={passwordFeedbackId} role="alert" className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                <p
+                  id={passwordFeedbackId}
+                  role="alert"
+                  className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
+                >
                   {passwordError}
                 </p>
               )}
               {passwordSuccess && (
-                <p id={passwordFeedbackId} role="status" className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+                <p
+                  id={passwordFeedbackId}
+                  role="status"
+                  className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2"
+                >
                   Kata sandi berhasil diperbarui.
                 </p>
               )}
@@ -208,14 +260,18 @@ export function ProfilSayaPage() {
                   type="submit"
                   size="sm"
                   className="h-8 text-xs px-4 font-medium"
-                  disabled={isChangingPassword || !kataSandiLama || !kataSandiBaru || !kataSandiKonfirmasi}
+                  disabled={
+                    isChangingPassword || !kataSandiLama || !kataSandiBaru || !kataSandiKonfirmasi
+                  }
                 >
                   {isChangingPassword ? (
                     <span className="flex items-center gap-1.5">
                       <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                       Menyimpan...
                     </span>
-                  ) : "Simpan Perubahan"}
+                  ) : (
+                    "Simpan Perubahan"
+                  )}
                 </Button>
               </div>
             </form>

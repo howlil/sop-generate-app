@@ -44,12 +44,27 @@ describe('Pengujian AuthRepository', () => {
       where: { penggunaId: 'p-1' },
       data: {
         kataSandi: 'new-password-hash',
-        passwordChangedAt: expect.any(Date),
+        passwordChangedAt: expect.any(Date) as Date,
         sesiTokenVersion: { increment: 1 },
         refreshTokenHash: null,
         refreshTokenExpiresAt: null,
       },
     });
+  });
+
+  it('seharusnya memperbarui hanya nomor HP pengguna', async () => {
+    prismaMock.pengguna.update.mockResolvedValueOnce({
+      penggunaId: 'p-1',
+      nohp: '6281234567890',
+    });
+
+    const actual = await repo.updateNohp('p-1', '6281234567890');
+
+    expect(prismaMock.pengguna.update).toHaveBeenCalledWith({
+      where: { penggunaId: 'p-1' },
+      data: { nohp: '6281234567890' },
+    });
+    expect(actual.nohp).toBe('6281234567890');
   });
 
   it('seharusnya startSession menaikkan versi sesi dan menghapus refresh token lama', async () => {

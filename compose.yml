@@ -1,64 +1,25 @@
 name: sop-arsip
 
-# Variabel lingkungan: file .env di root repo / release aktif.
-# Compose ini dipakai sebagai base deployment Easypanel. Jangan bind port host di sini;
-# domain dan HTTPS dikelola oleh reverse proxy Easypanel.
 services:
   db:
     image: mariadb:11.4
     restart: unless-stopped
-    entrypoint:
-      - bash
-      - -euc
-      - |
-        for identifier in "$${MARIADB_DATABASE}" "$${MARIADB_USER}"; do
-          case "$${identifier}" in
-            ""|*[!A-Za-z0-9_]*)
-              echo "DB_NAME dan DB_USER hanya boleh berisi huruf, angka, dan underscore." >&2
-              exit 1
-              ;;
-          esac
-        done
-
-        case "$${MARIADB_PASSWORD}" in
-          ""|*"'"*|*\\*)
-            echo "DB_PASSWORD wajib diisi dan tidak boleh mengandung petik tunggal atau backslash." >&2
-            exit 1
-            ;;
-        esac
-
-        if [ -d /var/lib/mysql/mysql ]; then
-          cat > /tmp/ensure-app-user.sql <<SQL
-        CREATE DATABASE IF NOT EXISTS \`$${MARIADB_DATABASE}\`;
-        CREATE USER IF NOT EXISTS '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
-        ALTER USER '$${MARIADB_USER}'@'%' IDENTIFIED BY '$${MARIADB_PASSWORD}';
-        GRANT ALL PRIVILEGES ON \`$${MARIADB_DATABASE}\`.* TO '$${MARIADB_USER}'@'%';
-        SQL
-          chown mysql:mysql /tmp/ensure-app-user.sql
-          chmod 600 /tmp/ensure-app-user.sql
-          set -- "$${@}" --init-file=/tmp/ensure-app-user.sql
-        fi
-
-        exec docker-entrypoint.sh mariadbd "$${@}"
-      - --
     command:
       - --lower_case_table_names=1
     environment:
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${DB_NAME}
-      MARIADB_USER: ${DB_USER}
-      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME:?set DB_NAME}
+      MARIADB_USER: ${DB_USER:?set DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       TZ: Asia/Jakarta
     volumes:
-      - db-prod-data:/var/lib/mysql
+      - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 30s
-    networks:
-      - sop-network
+      start_period: 60s
+      interval: 15s
+      timeout: 10s
+      retries: 10
 
   backend:
     image: sop-arsip-backend:${APP_VERSION:-local}
@@ -75,15 +36,15 @@ services:
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:-}
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
       DATABASE_HOST: db
       DATABASE_PORT: 3306
-      DATABASE_USER: ${DB_USER}
-      DATABASE_PASSWORD: ${DB_PASSWORD}
-      DATABASE_NAME: ${DB_NAME}
+      DATABASE_USER: ${DB_USER:?set DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      DATABASE_NAME: ${DB_NAME:?set DB_NAME}
       RUN_DB_SEED_ON_START: ${RUN_DB_SEED_ON_START:-false}
       SOP_PDF_STORAGE_DIR: ${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
       PDF_SIGNING_ENABLED: ${PDF_SIGNING_ENABLED:-false}
@@ -93,9 +54,9 @@ services:
       PDF_SIGNING_LOCATION: ${PDF_SIGNING_LOCATION:-Indonesia}
       PDF_SIGNING_CONTACT: ${PDF_SIGNING_CONTACT:-}
       WHATSAPP_ENABLED: ${WHATSAPP_ENABLED:-false}
-      WAHA_BASE_URL: ${WAHA_BASE_URL:-https://waha.howlil.my.id}
+      WAHA_BASE_URL: ${WAHA_BASE_URL:-https://waha.example.test}
       WAHA_API_KEY: ${WAHA_API_KEY:-}
-      WAHA_SESSION: ${WAHA_SESSION:-sop-staging}
+      WAHA_SESSION: ${WAHA_SESSION:-sop-production}
       WHATSAPP_ALLOWED_RECIPIENTS: ${WHATSAPP_ALLOWED_RECIPIENTS:-}
       WHATSAPP_RECONCILE_INTERVAL_SECONDS: ${WHATSAPP_RECONCILE_INTERVAL_SECONDS:-10}
       WHATSAPP_REMINDER_INTERVAL_MINUTES: ${WHATSAPP_REMINDER_INTERVAL_MINUTES:-1440}
@@ -113,8 +74,7 @@ services:
         fi
         exec pnpm start:prod
     volumes:
-      - sop-pdf-prod-data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
-    # Tidak publish ke host. API hanya diakses frontend melalui network Compose.
+      - sop_pdf_data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
     expose:
       - "3001"
     healthcheck:
@@ -123,12 +83,10 @@ services:
           "CMD-SHELL",
           'node -e "require(''http'').get(''http://127.0.0.1:3001/api/health'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
         ]
+      start_period: 30s
       interval: 10s
       timeout: 5s
-      retries: 30
-      start_period: 30s
-    networks:
-      - sop-network
+      retries: 10
 
   frontend:
     image: sop-arsip-frontend:${APP_VERSION:-local}
@@ -139,25 +97,18 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    # Domain Easypanel menuju port internal 3000. Tidak ada port host yang
-    # dipublish; Cloudflare Tunnel tetap masuk melalui gateway Easypanel port 80.
+    environment:
+      SSR_HOST: 127.0.0.1
+      SSR_PORT: 4173
     expose:
       - "3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/"]
+      start_period: 30s
       interval: 10s
       timeout: 5s
-      retries: 30
-      start_period: 30s
-    networks:
-      - sop-network
-
-networks:
-  sop-network:
-    driver: bridge
+      retries: 10
 
 volumes:
-  db-prod-data:
-    name: sop-arsip-db-prod-data
-  sop-pdf-prod-data:
-    name: sop-arsip-pdf-prod-data
+  db_data:
+  sop_pdf_data:

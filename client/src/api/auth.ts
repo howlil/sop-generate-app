@@ -1,22 +1,25 @@
-
-import { apiClient } from '@/lib/api/api-client'
+import { apiClient } from "@/lib/api/api-client";
 import type {
   ApiSuccessResponse,
   ChangePasswordDto,
   LoginApiResponse,
   LoginRequestDto,
-} from '@/types/dto/auth.dto'
+  UpdateMyPhoneDto,
+} from "@/types/dto/auth.dto";
 
 export const authApi = {
-
   login: (payload: LoginRequestDto) =>
-    apiClient.post<LoginApiResponse>('/auth/login', {
+    apiClient.post<LoginApiResponse>("/auth/login", {
       email: payload.email,
       password: payload.kataSandi,
     }),
 
   /** Profil sesi saat ini — memakai cookie HttpOnly; untuk bootstrap setelah refresh. */
-  me: () => apiClient.get<LoginApiResponse>('/auth/me'),
+  me: () => apiClient.get<LoginApiResponse>("/auth/me"),
+
+  /** Memperbarui nomor HP milik pengguna yang sedang login. */
+  updateMyPhone: (payload: UpdateMyPhoneDto) =>
+    apiClient.patch<LoginApiResponse>("/auth/me/nohp", payload),
 
   /**
    * AUTH-02: Refresh access token
@@ -24,34 +27,30 @@ export const authApi = {
    * Returns { success: true } on success.
    */
   refresh: () =>
-    apiClient.post<{ message: string; success: boolean; data: { success: true } }>('/auth/refresh'),
+    apiClient.post<{ message: string; success: boolean; data: { success: true } }>("/auth/refresh"),
 
   /**
    * AUTH-06: Change password for logged-in user
    */
   changePassword: (payload: ChangePasswordDto) =>
-    apiClient.patch<ApiSuccessResponse<{ success: true }>>('/auth/change-password', payload),
+    apiClient.patch<ApiSuccessResponse<{ success: true }>>("/auth/change-password", payload),
 
   /**
    * Logout - calls server to clear HttpOnly cookies
    */
   logout: async () => {
     try {
-      await apiClient.post<{ message: string }>('/auth/logout')
+      await apiClient.post<{ message: string }>("/auth/logout");
     } catch {
       // Continue with local cleanup even if server call fails
     }
     // Note: Token cleanup is handled by backend (HttpOnly cookies)
   },
-}
+};
 
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/config/query-client";
-import {
-  useAuthStore,
-  ensureAuthHydrated,
-  mapPublicDataToAuthUser,
-} from "@/stores/authStore";
+import { useAuthStore, ensureAuthHydrated, mapPublicDataToAuthUser } from "@/stores/authStore";
 import { useToast, showErrorMessages } from "@/hooks/useToast";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { navigateToAppPath, resolvePostLoginPath } from "@/utils/role-routing";
@@ -95,6 +94,17 @@ export function useAuth() {
     },
   });
 
+  const updateMyPhoneMutation = useMutation({
+    mutationFn: (payload: UpdateMyPhoneDto) => authApi.updateMyPhone(payload),
+    onSuccess: (response) => {
+      setUser(mapPublicDataToAuthUser(response.data));
+      showToast("Nomor HP berhasil diperbarui", "success");
+    },
+    onError: (error: Error) => {
+      showErrorMessages(error, "Gagal memperbarui nomor HP");
+    },
+  });
+
   /**
    * Keluar: POST `/auth/logout` (hapus cookie HttpOnly) → kosongkan store → hapus cache React Query.
    * Navigasi ke beranda/login dilakukan pemanggil (mis. HeaderBar).
@@ -114,6 +124,8 @@ export function useAuth() {
     isLoggingIn: loginMutation.isPending,
     changePassword: changePasswordMutation.mutateAsync,
     isChangingPassword: changePasswordMutation.isPending,
+    updateMyPhone: updateMyPhoneMutation.mutateAsync,
+    isUpdatingMyPhone: updateMyPhoneMutation.isPending,
     logout: logoutHandler,
   };
 }

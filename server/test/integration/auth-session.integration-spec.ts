@@ -2,7 +2,7 @@
  * Integration Test: Auth Session Lifecycle
  *
  * Menguji seluruh siklus hidup sesi pengguna:
- *  - Login, /auth/me, refresh token, change password, logout
+ *  - Login, /auth/me, update nomor HP, refresh token, change password, logout
  *  - False cases: kredensial salah, token tidak valid, token kedaluwarsa
  *  - Worst cases: replay refresh token, logout invalidasi token, concurrent session
  *  - Edge cases: logout tanpa cookie, refresh dengan token malformed
@@ -46,7 +46,7 @@ async function seedAuthUser(
   });
 }
 
-async function extractCookies(res: request.Response): Promise<string> {
+function extractCookies(res: request.Response): string {
   const raw = res.headers['set-cookie'];
   const arr = Array.isArray(raw) ? raw : raw ? [raw] : [];
   return arr.map((c: string) => c.split(';')[0]).join('; ');
@@ -110,9 +110,13 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
 
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.email).toBe('pj-evaluator.auth@example.test');
-      expect(res.body.data.peran).toBe(PeranPengguna.PJ_EVALUATOR);
+      expect(res.body).toMatchObject({
+        success: true,
+        data: {
+          email: 'pj-evaluator.auth@example.test',
+          peran: PeranPengguna.PJ_EVALUATOR,
+        },
+      });
       const cookies = res.headers['set-cookie'];
       expect(Array.isArray(cookies) ? cookies.length : cookies ? 1 : 0).toBeGreaterThanOrEqual(1);
     });
@@ -123,12 +127,42 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      agent.set('Cookie', await extractCookies(loginRes));
+      agent.set('Cookie', extractCookies(loginRes));
 
       const meRes = await agent.get(`${API}/auth/me`).expect(200);
-      expect(meRes.body.success).toBe(true);
-      expect(meRes.body.data.email).toBe('pj-evaluator.auth@example.test');
-      expect(meRes.body.data).toHaveProperty('tte');
+      expect(meRes.body).toMatchObject({
+        success: true,
+        data: { email: 'pj-evaluator.auth@example.test' },
+      });
+      expect(meRes.body).toHaveProperty('data.tte');
+    });
+
+    it('PATCH /auth/me/nohp memperbarui nomor HP akun sendiri dan menormalisasi format', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const loginRes = await agent
+        .post(`${API}/auth/login`)
+        .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
+        .expect(201);
+      agent.set('Cookie', extractCookies(loginRes));
+
+      const updateRes = await agent
+        .patch(`${API}/auth/me/nohp`)
+        .send({ nohp: '081234567890' })
+        .expect(200);
+
+      expect(updateRes.body).toMatchObject({
+        data: { nohp: '6281234567890' },
+      });
+      const meRes = await agent.get(`${API}/auth/me`).expect(200);
+      expect(meRes.body).toMatchObject({
+        data: { nohp: '6281234567890' },
+      });
+      await expect(
+        prisma.pengguna.findFirstOrThrow({
+          where: { email: 'pj-evaluator.auth@example.test' },
+          select: { nohp: true },
+        }),
+      ).resolves.toEqual({ nohp: '6281234567890' });
     });
 
     it('POST /auth/refresh dengan refresh token valid mengembalikan token baru', async () => {
@@ -137,10 +171,10 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      agent.set('Cookie', await extractCookies(loginRes));
+      agent.set('Cookie', extractCookies(loginRes));
 
       const refreshRes = await agent.post(`${API}/auth/refresh`).expect(200);
-      expect(refreshRes.body.success).toBe(true);
+      expect(refreshRes.body).toMatchObject({ success: true });
       // Cookie baru seharusnya diterbitkan
       const newCookies = refreshRes.headers['set-cookie'];
       expect(
@@ -154,10 +188,10 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      agent.set('Cookie', await extractCookies(loginRes));
+      agent.set('Cookie', extractCookies(loginRes));
 
       const logoutRes = await agent.post(`${API}/auth/logout`).expect(200);
-      expect(logoutRes.body.success).toBe(true);
+      expect(logoutRes.body).toMatchObject({ success: true });
     });
 
     it('PATCH /auth/change-password mengubah sandi dan login lama menjadi tidak valid', async () => {
@@ -167,7 +201,7 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'penyusun.auth@example.test', password: PASSWORD })
         .expect(201);
-      agent.set('Cookie', await extractCookies(loginRes));
+      agent.set('Cookie', extractCookies(loginRes));
 
       await agent
         .patch(`${API}/auth/change-password`)
@@ -192,7 +226,7 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'penyusun.auth@example.test', password: NEW_PASSWORD })
         .expect(201);
-      agent2.set('Cookie', await extractCookies(relogin));
+      agent2.set('Cookie', extractCookies(relogin));
       await agent2
         .patch(`${API}/auth/change-password`)
         .send({ kataSandiLama: NEW_PASSWORD, kataSandiBaru: PASSWORD })
@@ -243,12 +277,44 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      agent.set('Cookie', await extractCookies(loginRes));
+      agent.set('Cookie', extractCookies(loginRes));
 
       await agent
         .patch(`${API}/auth/change-password`)
         .send({ kataSandiLama: 'SandiSalah123!', kataSandiBaru: 'NewPass789!' })
         .expect(401);
+    });
+
+    it('PATCH /auth/me/nohp menolak nomor tidak valid', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const loginRes = await agent
+        .post(`${API}/auth/login`)
+        .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
+        .expect(201);
+      agent.set('Cookie', extractCookies(loginRes));
+
+      await agent.patch(`${API}/auth/me/nohp`).send({ nohp: '0812-3456-7890' }).expect(400);
+    });
+
+    it('PATCH /auth/me/nohp tanpa sesi mengembalikan 401', async () => {
+      await request(app.getHttpServer())
+        .patch(`${API}/auth/me/nohp`)
+        .send({ nohp: '081234567890' })
+        .expect(401);
+    });
+
+    it('PATCH /auth/me/nohp menolak penggunaId tambahan agar akun lain tidak dapat dipilih', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const loginRes = await agent
+        .post(`${API}/auth/login`)
+        .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
+        .expect(201);
+      agent.set('Cookie', extractCookies(loginRes));
+
+      await agent
+        .patch(`${API}/auth/me/nohp`)
+        .send({ nohp: '081234567890', penggunaId: 'pengguna-lain' })
+        .expect(400);
     });
   });
 
@@ -263,7 +329,7 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      const cookies = await extractCookies(loginRes);
+      const cookies = extractCookies(loginRes);
       agent.set('Cookie', cookies);
 
       await agent.post(`${API}/auth/logout`).expect(200);
@@ -281,7 +347,7 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      const originalCookies = await extractCookies(loginRes);
+      const originalCookies = extractCookies(loginRes);
 
       // Lakukan refresh pertama untuk merotasi token
       const agent2 = request.agent(app.getHttpServer());
@@ -329,11 +395,13 @@ describeIntegration('Auth Session — siklus hidup sesi pengguna', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'pj-evaluator.auth@example.test', password: PASSWORD })
         .expect(201);
-      agent.set('Cookie', await extractCookies(loginRes));
+      agent.set('Cookie', extractCookies(loginRes));
 
       const me = await agent.get(`${API}/auth/me`).expect(200);
-      expect(me.body.data.tte).toBeDefined();
-      expect(typeof me.body.data.tte.configured).toBe('boolean');
+      expect(me.body).toHaveProperty('data.tte');
+      expect(me.body).toMatchObject({
+        data: { tte: { configured: expect.any(Boolean) as boolean } },
+      });
     });
   });
 });

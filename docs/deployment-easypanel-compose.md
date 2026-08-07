@@ -12,7 +12,9 @@ Compose production memakai `expose`:
 - `backend` expose port internal `3001` hanya pada network Compose.
 - `db` hanya berada di network internal compose.
 
-Cloudflare Tunnel menuju gateway Easypanel pada host `localhost:80`. Domain aplikasi di Easypanel lalu diarahkan ke port internal frontend `3000`. Browser tetap memakai satu origin; request `/api/` diproxy oleh Nginx frontend ke `backend:3001`.
+Cloudflare Tunnel menuju gateway Easypanel pada host `localhost:80`. Domain aplikasi di Easypanel harus memilih Compose service `frontend`, protocol `HTTP`, dan port internal `3000`. Browser tetap memakai satu origin; request `/api/` diproxy oleh Nginx frontend ke `backend:3001`.
+
+Setelah target Compose service pada domain ditambah atau diubah, deploy ulang service Compose agar override Easypanel menghubungkan container frontend ke network proxy `easypanel`. Tanpa pilihan `frontend` tersebut, domain dapat menghasilkan `502 Bad Gateway` walaupun seluruh healthcheck container lulus.
 
 ## WAHA Hosted Eksternal
 

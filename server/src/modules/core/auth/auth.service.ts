@@ -7,6 +7,7 @@ import { BCRYPT_SALT_ROUNDS } from '../../../common/auth/password.constants';
 import { AuthRepository, type PenggunaAuthRecord } from './auth.repository';
 import type { ChangePasswordDto } from './dto/change-password.dto';
 import type { LoginDto } from './dto/login.dto';
+import type { UpdateMyPhoneDto } from './dto/update-my-phone.dto';
 import {
   resolveRefreshTokenExpiry,
   resolveAccessTokenExpiry,
@@ -72,6 +73,19 @@ export class AuthService {
       throw new NotFoundException('Pengguna tidak ditemukan');
     }
     return this.mapToPublicPengguna(row);
+  }
+
+  /** Memperbarui nomor HP milik pengguna yang sedang login. */
+  async updateMyPhone(penggunaId: string, dto: UpdateMyPhoneDto): Promise<PublicPengguna> {
+    const row = await this.authRepository.findActivePenggunaById(penggunaId);
+    if (row === null) {
+      throw new NotFoundException('Pengguna tidak ditemukan');
+    }
+    if (row.nohp === dto.nohp) {
+      return this.mapToPublicPengguna(row);
+    }
+    const updated = await this.authRepository.updateNohp(penggunaId, dto.nohp);
+    return this.mapToPublicPengguna(updated);
   }
 
   /**

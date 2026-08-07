@@ -39,7 +39,7 @@ import { toNavigationRole } from "@/utils/role-key";
  */
 export type AuthUser = Pick<
   User,
-  "id" | "email" | "nama" | "peran" | "opdId" | "nip" | "jabatan"
+  "id" | "email" | "nama" | "peran" | "opdId" | "nip" | "jabatan" | "nohp"
 > & {
   pangkat: string;
   tte: PublicPenggunaTteStatus;
@@ -88,6 +88,7 @@ export function mapPublicDataToAuthUser(u: PublicPenggunaLoginData): AuthUser {
     nip: u.nip,
     jabatan: u.jabatan,
     pangkat: u.pangkat,
+    nohp: u.nohp,
     tte: u.tte,
   };
 }
@@ -134,7 +135,7 @@ export async function syncAuthFromCookie(): Promise<boolean> {
 
 export async function ensureAuthHydrated(maxWait = 2000): Promise<void> {
   // persist middleware is unavailable during SSR (no localStorage)
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   if (!useAuthStore.persist) return;
   if (useAuthStore.persist.hasHydrated()) return;
 

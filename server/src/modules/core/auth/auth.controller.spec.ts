@@ -12,7 +12,10 @@ import {
 describe('Pengujian AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<
-    Pick<AuthService, 'login' | 'getMe' | 'refreshSession' | 'logout' | 'changePassword'>
+    Pick<
+      AuthService,
+      'login' | 'getMe' | 'updateMyPhone' | 'refreshSession' | 'logout' | 'changePassword'
+    >
   >;
   let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
   let response: jest.Mocked<Pick<Response, 'cookie' | 'clearCookie'>>;
@@ -35,6 +38,7 @@ describe('Pengujian AuthController', () => {
     authService = {
       login: jest.fn(),
       getMe: jest.fn(),
+      updateMyPhone: jest.fn(),
       refreshSession: jest.fn(),
       logout: jest.fn(),
       changePassword: jest.fn(),
@@ -178,5 +182,29 @@ describe('Pengujian AuthController', () => {
     } as Request & { user: JwtAccessPayload });
     expect(authService.getMe).toHaveBeenCalledWith(pengguna.penggunaId);
     expect(actual.data).toBe(pengguna);
+  });
+
+  it('seharusnya memperbarui nomor HP akun dari sub JWT, bukan dari payload ID', async () => {
+    const updated = { ...pengguna, nohp: '6281234567890' };
+    authService.updateMyPhone.mockResolvedValue(updated);
+    const request = {
+      user: {
+        sub: pengguna.penggunaId,
+        email: pengguna.email,
+        peran: pengguna.peran,
+        sesiTokenVersion: 1,
+      },
+    } as Request & { user: JwtAccessPayload };
+
+    const actual = await controller.updateMyPhone(request, { nohp: updated.nohp });
+
+    expect(authService.updateMyPhone).toHaveBeenCalledWith(pengguna.penggunaId, {
+      nohp: updated.nohp,
+    });
+    expect(actual).toEqual({
+      message: 'Nomor HP berhasil diperbarui',
+      success: true,
+      data: updated,
+    });
   });
 });

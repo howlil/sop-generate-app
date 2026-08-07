@@ -6,6 +6,7 @@ import { JwtAuthGuard, type ApiSuccessResponse } from '../../../common';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateMyPhoneDto } from './dto/update-my-phone.dto';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_NAME,
@@ -37,12 +38,7 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiSuccessResponse<PublicPengguna>> {
-    let loginResult: Awaited<ReturnType<AuthService['login']>>;
-    try {
-      loginResult = await this.authService.login(dto);
-    } catch (error) {
-      throw error;
-    }
+    const loginResult = await this.authService.login(dto);
     const { accessToken, refreshToken, pengguna, cookieMaxAgeMs, refreshCookieMaxAgeMs } =
       loginResult;
     const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
@@ -80,6 +76,30 @@ export class AuthController {
     const pengguna = await this.authService.getMe(req.user.sub);
     return {
       message: 'Data pengguna berhasil diambil',
+      success: true,
+      data: pengguna,
+    };
+  }
+
+  @Patch('me/nohp')
+  @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Perbarui nomor HP pengguna saat ini',
+    description:
+      'ID pengguna selalu diambil dari cookie JWT. Nomor 08... dinormalisasi dan disimpan sebagai 628....',
+  })
+  @ApiResponse({ status: 200, description: 'Nomor HP berhasil diperbarui' })
+  @ApiResponse({ status: 400, description: 'Format nomor HP tidak valid' })
+  @ApiResponse({ status: 401, description: 'Tidak terautentikasi' })
+  @ApiResponse({ status: 404, description: 'Pengguna tidak ditemukan' })
+  async updateMyPhone(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: UpdateMyPhoneDto,
+  ): Promise<ApiSuccessResponse<PublicPengguna>> {
+    const pengguna = await this.authService.updateMyPhone(req.user.sub, dto);
+    return {
+      message: 'Nomor HP berhasil diperbarui',
       success: true,
       data: pengguna,
     };
@@ -168,7 +188,11 @@ export class AuthController {
   }
 
   private getCookie(req: Request, name: string): string | undefined {
-    const raw = req.cookies?.[name];
+    const cookies: unknown = req.cookies;
+    if (typeof cookies !== 'object' || cookies === null) {
+      return undefined;
+    }
+    const raw = (cookies as Record<string, unknown>)[name];
     return typeof raw === 'string' ? raw : undefined;
   }
 }

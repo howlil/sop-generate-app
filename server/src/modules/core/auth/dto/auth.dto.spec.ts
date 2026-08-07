@@ -1,6 +1,8 @@
 import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 import { ChangePasswordDto } from './change-password.dto';
 import { LoginDto } from './login.dto';
+import { UpdateMyPhoneDto } from './update-my-phone.dto';
 
 describe('Pengujian DTO Auth', () => {
   it('seharusnya menerima payload login valid', async () => {
@@ -54,4 +56,19 @@ describe('Pengujian DTO Auth', () => {
     const errors = await validate(dto);
     expect(errors.map((error) => error.property)).toContain('kataSandiLama');
   });
+
+  it('seharusnya menormalisasi nomor HP lokal menjadi format 628', async () => {
+    const dto = plainToInstance(UpdateMyPhoneDto, { nohp: ' 081234567890 ' });
+    await expect(validate(dto)).resolves.toHaveLength(0);
+    expect(dto.nohp).toBe('6281234567890');
+  });
+
+  it.each(['', '+6281234567890', '0812-3456-7890', 'nomor-rusak'])(
+    'seharusnya menolak nomor HP tidak valid: %s',
+    async (nohp) => {
+      const dto = plainToInstance(UpdateMyPhoneDto, { nohp });
+      const errors = await validate(dto);
+      expect(errors.map((error) => error.property)).toContain('nohp');
+    },
+  );
 });

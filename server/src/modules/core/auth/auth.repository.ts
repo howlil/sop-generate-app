@@ -47,6 +47,14 @@ export class AuthRepository {
     });
   }
 
+  /** Memperbarui nomor HP tanpa merotasi atau membatalkan sesi pengguna. */
+  async updateNohp(penggunaId: string, nohp: string): Promise<PenggunaAuthRecord> {
+    return this.prisma.pengguna.update({
+      where: { penggunaId },
+      data: { nohp },
+    });
+  }
+
   async startSession(penggunaId: string): Promise<PenggunaAuthRecord> {
     return this.prisma.pengguna.update({
       where: { penggunaId },

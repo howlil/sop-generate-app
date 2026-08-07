@@ -26,6 +26,8 @@ COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+ENV SSR_HOST=127.0.0.1
+ENV SSR_PORT=4173
 EXPOSE 3000
 
 CMD ["/docker-entrypoint.sh"]

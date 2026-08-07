@@ -2,8 +2,8 @@ import { createServer } from 'node:http'
 import { Readable } from 'node:stream'
 import serverEntry from './dist/server/server.js'
 
-const host = process.env.HOST ?? '127.0.0.1'
-const port = Number(process.env.PORT ?? 4173)
+const host = process.env.SSR_HOST ?? process.env.HOST ?? '127.0.0.1'
+const port = Number(process.env.SSR_PORT ?? process.env.PORT ?? 4173)
 
 function createWebRequest(req) {
   const url = `http://${req.headers.host ?? `${host}:${port}`}${req.url ?? '/'}`
