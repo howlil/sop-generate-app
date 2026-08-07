@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           missing=0
-          for name in ENV_PRODUCTION VPS_HOST VPS_USER VPS_PASSWORD VPS_SUDO_PASSWORD; do
+          for name in ENV_PRODUCTION VPS_HOST VPS_USER VPS_PASSWORD VPS_SUDO_PASSWORD VPN_TYPE VPN_CONFIG; do
             if [ -z "${!name:-}" ]; then
               echo "::error::Repository secret $name belum diisi"
               missing=1
@@ -38,6 +38,8 @@ jobs:
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
           VPS_SUDO_PASSWORD: ${{ secrets.VPS_SUDO_PASSWORD }}
+          VPN_TYPE: ${{ secrets.VPN_TYPE }}
+          VPN_CONFIG: ${{ secrets.VPN_CONFIG }}
 
       - name: Prepare release bundle
         shell: bash
@@ -60,12 +62,64 @@ jobs:
           ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
           VPS_SUDO_PASSWORD: ${{ secrets.VPS_SUDO_PASSWORD }}
 
-      - name: Install SSH password helper
+      - name: Install deployment network tools
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y sshpass
+          sudo apt-get install -y sshpass openvpn wireguard-tools openresolv netcat-openbsd
+
+      - name: Connect VPN
+        shell: bash
+        run: |
+          set -euo pipefail
+          vpn_type="$(printf '%s' "$VPN_TYPE" | tr '[:upper:]' '[:lower:]')"
+
+          case "$vpn_type" in
+            wireguard|wg)
+              printf '%s\n' "$VPN_CONFIG" > "$RUNNER_TEMP/wg0.conf"
+              chmod 600 "$RUNNER_TEMP/wg0.conf"
+              sudo install -m 600 "$RUNNER_TEMP/wg0.conf" /etc/wireguard/wg0.conf
+              sudo wg-quick up wg0
+              ;;
+            openvpn|ovpn)
+              printf '%s\n' "$VPN_CONFIG" > "$RUNNER_TEMP/client.ovpn"
+              chmod 600 "$RUNNER_TEMP/client.ovpn"
+              if [ -n "${VPN_USERNAME:-}" ] || [ -n "${VPN_PASSWORD:-}" ]; then
+                printf '%s\n%s\n' "${VPN_USERNAME:-}" "${VPN_PASSWORD:-}" > "$RUNNER_TEMP/openvpn.auth"
+                chmod 600 "$RUNNER_TEMP/openvpn.auth"
+                sudo openvpn --config "$RUNNER_TEMP/client.ovpn" --auth-user-pass "$RUNNER_TEMP/openvpn.auth" --daemon --log "$RUNNER_TEMP/openvpn.log"
+              else
+                sudo openvpn --config "$RUNNER_TEMP/client.ovpn" --daemon --log "$RUNNER_TEMP/openvpn.log"
+              fi
+              ;;
+            *)
+              echo "::error::VPN_TYPE harus 'wireguard' atau 'openvpn'"
+              exit 1
+              ;;
+          esac
+        env:
+          VPN_TYPE: ${{ secrets.VPN_TYPE }}
+          VPN_CONFIG: ${{ secrets.VPN_CONFIG }}
+          VPN_USERNAME: ${{ secrets.VPN_USERNAME }}
+          VPN_PASSWORD: ${{ secrets.VPN_PASSWORD }}
+
+      - name: Wait for VPS SSH over VPN
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..30}; do
+            if nc -z -w 5 "$VPS_HOST" 22; then
+              echo "VPS SSH port is reachable over VPN"
+              exit 0
+            fi
+            echo "Waiting for VPS SSH over VPN ($attempt/30)..."
+            sleep 5
+          done
+          echo "::error::Cannot reach VPS SSH on port 22 after connecting VPN"
+          exit 1
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
 
       - name: Trust VPS host key
         shell: bash
@@ -157,3 +211,23 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+
+      - name: Disconnect VPN
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          vpn_type="$(printf '%s' "$VPN_TYPE" | tr '[:upper:]' '[:lower:]')"
+
+          case "$vpn_type" in
+            wireguard|wg)
+              sudo wg-quick down wg0 || true
+              ;;
+            openvpn|ovpn)
+              sudo pkill openvpn || true
+              ;;
+            *)
+              ;;
+          esac
+        env:
+          VPN_TYPE: ${{ secrets.VPN_TYPE }}
