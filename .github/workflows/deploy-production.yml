@@ -73,7 +73,11 @@ jobs:
           set -euo pipefail
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          touch ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          if ! ssh-keyscan -T 30 -H "$VPS_HOST" >> ~/.ssh/known_hosts; then
+            echo "::warning::Unable to prefetch VPS host key; deploy SSH connections will verify with StrictHostKeyChecking=accept-new"
+          fi
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
 
@@ -81,7 +85,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sshpass -p "$VPS_PASSWORD" scp \
+          SSH_OPTS=(
+            -o StrictHostKeyChecking=accept-new
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts"
+            -o ConnectTimeout=30
+          )
+          sshpass -p "$VPS_PASSWORD" scp "${SSH_OPTS[@]}" \
             "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.tar.gz" \
             "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.env" \
             "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.sudo" \
@@ -95,7 +104,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sshpass -p "$VPS_PASSWORD" ssh "$VPS_USER@$VPS_HOST" \
+          SSH_OPTS=(
+            -o StrictHostKeyChecking=accept-new
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts"
+            -o ConnectTimeout=30
+          )
+          sshpass -p "$VPS_PASSWORD" ssh "${SSH_OPTS[@]}" "$VPS_USER@$VPS_HOST" \
             "DEPLOY_SHA='$GITHUB_SHA' bash -s" <<'REMOTE'
           set -Eeuo pipefail
 
