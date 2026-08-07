@@ -67,21 +67,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
-      - name: Trust VPS host key
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-
       - name: Upload release to VPS
         shell: bash
         run: |
           set -euo pipefail
           sshpass -p "$VPS_PASSWORD" scp \
+            -o StrictHostKeyChecking=accept-new \
             "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.tar.gz" \
             "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.env" \
             "$RUNNER_TEMP/sopflow-${GITHUB_SHA}.sudo" \
@@ -95,7 +86,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sshpass -p "$VPS_PASSWORD" ssh "$VPS_USER@$VPS_HOST" \
+          sshpass -p "$VPS_PASSWORD" ssh -o StrictHostKeyChecking=accept-new "$VPS_USER@$VPS_HOST" \
             "DEPLOY_SHA='$GITHUB_SHA' bash -s" <<'REMOTE'
           set -Eeuo pipefail
 
