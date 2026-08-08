@@ -32,6 +32,7 @@ services:
         condition: service_healthy
     environment:
       PORT: 3001
+      NODE_OPTIONS: "--max-old-space-size=512"
       NODE_ENV: production
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:-}

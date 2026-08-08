@@ -15,21 +15,21 @@ datasource db {
 /// =========================
 model Pengguna {
   penggunaId                      String               @id @default(uuid()) @db.Char(36)
-  email                           String               @unique @db.VarChar(255)
+  email                           String               @unique @db.VarChar(31)
   opdId                           String               @db.Char(36)
-  nama                            String               @db.VarChar(255)
-  kataSandi                       String               @db.VarChar(60)
+  nama                            String               @db.VarChar(31)
+  kataSandi                       String               @db.Char(60)
   peran                           PeranPengguna
-  nip                             String               @unique @db.VarChar(32)
-  jabatan                         String               @db.VarChar(255)
-  pangkat                         String               @db.VarChar(64)
-  nohp                            String               @db.VarChar(15)
+  nip                             String               @unique @db.Char(18)
+  jabatan                         String               @db.VarChar(28)
+  pangkat                         String               @db.VarChar(25)
+  nohp                            String               @db.VarChar(13)
   sesiTokenVersion                Int                  @default(0)
-  refreshTokenHash                String?              @db.VarChar(60)
+  refreshTokenHash                String?              @db.Char(60)
   refreshTokenExpiresAt           DateTime?
   passwordChangedAt               DateTime?
-  ttePinHash                      String?              @db.VarChar(60)
-  tteP12Base64                    String?              @db.LongText
+  ttePinHash                      String?              @db.Char(60)
+  tteP12Base64                    String?              @db.Text
   tteP12PassphraseEncrypted       String?              @db.VarChar(255)
   deletedAt                       DateTime?
   createdAt                       DateTime             @default(now())
@@ -55,7 +55,7 @@ model Pengguna {
 
 model OPD {
   opdId              String               @id @default(uuid()) @db.Char(36)
-  nama               String               @db.VarChar(255)
+  nama               String               @db.VarChar(28)
   deletedAt          DateTime?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
@@ -87,10 +87,10 @@ model RiwayatOpdPengguna {
 /// =========================
 model Peraturan {
   peraturanId    String         @id @default(uuid()) @db.Char(36)
-  nama           String         @db.VarChar(500)
-  nomor          String         @db.VarChar(255)
+  nama           String         @db.VarChar(31)
+  nomor          String         @db.VarChar(28)
   tahun          Int
-  tentang        String         @db.VarChar(2000)
+  tentang        String         @db.VarChar(73)
   lastEditedById String?        @db.Char(36)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -119,7 +119,7 @@ model OPDPeraturan {
 model SOP {
   sopId      String      @id @default(uuid()) @db.Char(36)
   opdId      String      @db.Char(36)
-  judul      String      @db.VarChar(500)
+  judul      String      @db.VarChar(42)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   detailSops DetailSOP[]
@@ -134,12 +134,12 @@ model DetailSOP {
 
   status                         StatusSOP                        @default(DRAFT)
   versi                          Int                              @default(1)
-  nomorSOP                       String                           @unique @db.VarChar(255)
+  nomorSOP                       String                           @unique @db.VarChar(24)
   tanggalPembuatan               DateTime                         @default(now())
   tanggalRevisi                  DateTime?
   /// Diisi otomatis saat status menjadi BERLAKU via TTE Kepala OPD (tanggal kalender pengesahan, WIB).
   tanggalEfektif                 DateTime?
-  namaLembaga                    String                           @db.VarChar(2000)
+  namaLembaga                    String                           @db.VarChar(28)
   dibuatOlehId                   String?                          @db.Char(36)
   terakhirDieditOlehId           String?                          @db.Char(36)
   /// Versi sumber snapshot saat membuat revisi baru (BERLAKU, DIGANTIKAN, atau DICABUT).
@@ -251,14 +251,14 @@ model SopTerkait {
 model LangkahSOP {
   langkahSopId               String                    @id @default(uuid()) @db.Char(36)
   detailSopId                String                    @db.Char(36)
-  kegiatan                   String                    @db.VarChar(2000)
+  kegiatan                   String                    @db.VarChar(55)
   jenis                      JenisLangkahProsedur      @default(KEGIATAN)
   urutan                     Int
-  kelengkapan                String                    @db.VarChar(2000)
-  keluaran                   String                    @db.VarChar(2000)
+  kelengkapan                String                    @db.VarChar(34)
+  keluaran                   String                    @db.VarChar(23)
   waktu                      Int
   satuanWaktu                SatuanWaktu
-  keterangan                 String                    @db.VarChar(2000)
+  keterangan                 String                    @db.VarChar(37)
   pelaksanaId                String                    @db.Char(36)
   langkahSelanjutnyaYaId     String?                   @db.Char(36)
   langkahSelanjutnyaTidakId  String?                   @db.Char(36)
@@ -282,7 +282,7 @@ model LangkahSOP {
 model Pelaksana {
   pelaksanaId String               @id @default(uuid()) @db.Char(36)
   opdId       String               @db.Char(36)
-  nama        String               @db.VarChar(255)
+  nama        String               @db.VarChar(15)
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   sopDetails  DetailSOPPelaksana[]
@@ -337,7 +337,7 @@ model LogEditSopDomainField {
   detailSopId  String     @db.Char(36)
   penggunaId   String     @db.Char(36)
   logCreatedAt DateTime   @db.DateTime(3)
-  domainField  String     @db.VarChar(191)
+  domainField  String     @db.VarChar(20)
   logEditSop   LogEditSOP @relation(fields: [detailSopId, penggunaId, logCreatedAt], references: [detailSopId, penggunaId, createdAt], onDelete: Cascade)
 
   @@id([detailSopId, penggunaId, logCreatedAt, domainField])
@@ -351,7 +351,7 @@ model PengajuanEvaluasi {
   opdId                              String                  @db.Char(36)
   jenis                              JenisPengajuanEvaluasi
   status                             StatusPengajuanEvaluasi @default(SEDANG_DIEVALUASI)
-  nomorBA                            String?                 @unique @db.VarChar(255)
+  nomorBA                            String?                 @unique @db.VarChar(23)
   tanggalPermintaan                  DateTime?
   tanggalEvaluasi                    DateTime?
   nilaiOPD                           Int?
@@ -395,11 +395,11 @@ model PengingatWhatsApp {
   pengajuanEvaluasiId String                 @db.Char(36)
   penggunaId          String                 @db.Char(36)
   jenis               JenisPengingatWhatsApp
-  nomorTujuan         String                 @db.VarChar(20)
+  nomorTujuan         String                 @db.VarChar(13)
   nextSendAt          DateTime               @db.DateTime(3)
   lastSentAt          DateTime?              @db.DateTime(3)
   consecutiveFailures Int                    @default(0)
-  lastErrorKind       String?                @db.VarChar(64)
+  lastErrorKind       String?                @db.VarChar(14)
   lockedUntil         DateTime?              @db.DateTime(3)
   lockToken           String?                @db.Char(36)
   inAppReadAt         DateTime?              @db.DateTime(3)
@@ -472,9 +472,9 @@ model LogNilaiEvaluasi {
 
 model DokumenTte {
   dokumenTteId        String               @id @default(uuid()) @db.Char(36)
-  nomorDokumen        String               @unique @db.VarChar(500)
+  nomorDokumen        String               @unique @db.VarChar(24)
   jenisDokumen        JenisDokumenTte
-  judulDokumen        String               @db.VarChar(2000)
+  judulDokumen        String               @db.VarChar(28)
   hashDokumen         String               @db.Char(64)
   versiDokumen        Int                  @default(1)
   pdfPath             String?              @db.Text
@@ -483,7 +483,7 @@ model DokumenTte {
   pdfGeneratedAt      DateTime?
   pdfPublishedAt      DateTime?
   pdfRevokedAt        DateTime?
-  pdfStatus           String?              @db.VarChar(32)
+  pdfStatus           String?              @db.VarChar(9)
   detailSopId         String?              @db.Char(36)
   pengajuanEvaluasiId String?              @db.Char(36)
   createdAt           DateTime             @default(now())
@@ -503,11 +503,11 @@ model RiwayatTandaTangan {
   dokumenTteId       String        @db.Char(36)
   peran              PeranPengguna
   signatureValue     String?       @db.LongText
-  signatureAlgorithm String?       @db.VarChar(32)
-  signatureFormat    String?       @db.VarChar(32)
-  certSerialNumber   String?       @db.VarChar(64)
-  certIssuer         String?       @db.VarChar(500)
-  certSubject        String?       @db.VarChar(500)
+  signatureAlgorithm String?       @db.VarChar(13)
+  signatureFormat    String?       @db.VarChar(9)
+  certSerialNumber   String?       @db.VarChar(16)
+  certIssuer         String?       @db.VarChar(24)
+  certSubject        String?       @db.VarChar(32)
   certFingerprint    String?       @db.Char(64)
   certValidFrom      DateTime?
   certValidTo        DateTime?
@@ -687,7 +687,7 @@ model TitikTekukPanahDiagramSOP {
 model OverrideLabelDiagramSOP {
   detailSopId String       @db.Char(36)
   jenis       JenisDiagram
-  kunciLabel  String       @db.VarChar(255)
+  kunciLabel  String       @db.VarChar(8)
   posisiX     Float
   posisiY     Float
   createdAt   DateTime     @default(now())
