@@ -1,8 +1,4 @@
 import { z } from 'zod';
-import {
-  DEFAULT_EVOLUTION_API_BASE_URL,
-  normalizeEvolutionApiBaseUrl,
-} from './evolution-api.config';
 
 const envBoolean = (defaultValue: boolean) =>
   z.preprocess((val) => {
@@ -32,7 +28,7 @@ const optionalUrl = z.preprocess((val) => {
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+    PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().optional()),
     SWAGGER_ENABLED: envBoolean(true),
     JWT_SECRET: z.string().min(32),
@@ -57,27 +53,24 @@ const envSchema = z
       z.string().min(1).default('/app/storage/sop-pdf'),
     ),
 
-    WHATSAPP_ENABLED: envBoolean(false),
-    EVOLUTION_API_BASE_URL: z.preprocess((val) => {
-      const normalized = trimmedEnvironmentString(val);
-      return normalized === '' ? undefined : normalized;
-    }, z.string().url().default(DEFAULT_EVOLUTION_API_BASE_URL).transform(normalizeEvolutionApiBaseUrl)),
-    EVOLUTION_API_KEY: z.preprocess(
-      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().min(16).optional(),
+    NOTIFICATION_IN_APP_ENABLED: envBoolean(true),
+    NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
+
+    WHAAPI_BASE_URL: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().default('https://whaapi.flobaze.com'),
     ),
-    EVOLUTION_API_INSTANCE: z.preprocess(
-      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().min(1).default('sop-production'),
+    WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().default(''),
     ),
-    WHATSAPP_ALLOWED_RECIPIENTS: z.string().default(''),
-    WHATSAPP_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
-    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1_440),
+    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1),
     WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
 
-    PDF_SIGNING_ENABLED: envBoolean(false),
     PDF_SIGNING_P12_BASE64: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().optional(),
@@ -88,35 +81,24 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
-    const evolutionApiUrl = new URL(data.EVOLUTION_API_BASE_URL);
-    if (evolutionApiUrl.username !== '' || evolutionApiUrl.password !== '') {
+    if (data.WHAAPI_TOKEN === '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'EVOLUTION_API_BASE_URL tidak boleh memuat username atau password',
-        path: ['EVOLUTION_API_BASE_URL'],
+        message: 'WHAAPI_TOKEN wajib diisi',
+        path: ['WHAAPI_TOKEN'],
       });
     }
-    if (data.WHATSAPP_ENABLED) {
-      if (data.EVOLUTION_API_KEY === undefined) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'EVOLUTION_API_KEY wajib jika WHATSAPP_ENABLED=true',
-          path: ['EVOLUTION_API_KEY'],
-        });
-      }
-      if (data.NODE_ENV === 'production' && evolutionApiUrl.protocol !== 'https:') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'EVOLUTION_API_BASE_URL wajib memakai HTTPS pada production',
-          path: ['EVOLUTION_API_BASE_URL'],
-        });
-      }
-    }
-    if (data.PDF_SIGNING_ENABLED && data.PDF_SIGNING_P12_BASE64 === undefined) {
+    if (data.WHAAPI_CHANNEL_ID === '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          'PDF_SIGNING_P12_BASE64 wajib jika PDF_SIGNING_ENABLED=true. Isi dengan file .p12/.pfx yang di-encode base64.',
+        message: 'WHAAPI_CHANNEL_ID wajib diisi',
+        path: ['WHAAPI_CHANNEL_ID'],
+      });
+    }
+    if (data.PDF_SIGNING_P12_BASE64 === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'PDF_SIGNING_P12_BASE64 wajib diisi dengan file .p12/.pfx yang di-encode base64.',
         path: ['PDF_SIGNING_P12_BASE64'],
       });
     }

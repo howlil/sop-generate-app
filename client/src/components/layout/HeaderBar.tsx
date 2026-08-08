@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "./NotificationBell";
 import { usePageHeaderContext } from "@/components/layout/PageHeaderProvider";
 import { useAppRole } from "@/hooks/useAppRole";
 import { useAuth } from "@/api/auth";
@@ -60,6 +61,7 @@ export function HeaderBar() {
         }
       >
         {headerContent?.actions}
+        <NotificationBell />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -98,7 +100,7 @@ export function HeaderBar() {
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem
-              className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+              className="text-danger focus:text-danger-foreground focus:bg-danger-subtle cursor-pointer"
               onSelect={() => {
                 void handleLogout();
               }}

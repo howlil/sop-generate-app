@@ -1,15 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { WhatsappRecipientResolverService } from './whatsapp-recipient-resolver.service';
-import { WhatsappReminderRepository } from './whatsapp-reminder.repository';
-import { reminderIdentity } from './whatsapp-reminder.types';
+import { NotificationEventsService } from './notification-events.service';
+import { NotificationRecipientResolverService } from './notification-recipient-resolver.service';
+import { NotificationReminderRepository } from './notification-reminder.repository';
+import { reminderIdentity } from './notification-reminder.types';
 
 @Injectable()
-export class WhatsappReminderReconcilerService {
-  private readonly logger = new Logger(WhatsappReminderReconcilerService.name);
+export class NotificationReminderReconcilerService {
+  private readonly logger = new Logger(NotificationReminderReconcilerService.name);
 
   constructor(
-    private readonly repository: WhatsappReminderRepository,
-    private readonly recipientResolver: WhatsappRecipientResolverService,
+    private readonly repository: NotificationReminderRepository,
+    private readonly recipientResolver: NotificationRecipientResolverService,
+    private readonly notificationEvents: NotificationEventsService,
   ) {}
 
   async reconcile(now = new Date()): Promise<{ desired: number; deleted: number }> {
@@ -24,12 +26,20 @@ export class WhatsappReminderReconcilerService {
     const desiredKeys = new Set(desired.map(reminderIdentity));
     const staleIds = existing
       .filter((reminder) => !desiredKeys.has(reminderIdentity(reminder)))
-      .map((reminder) => reminder.pengingatWhatsAppId);
+      .map((reminder) => reminder.notificationReminderId);
 
     await Promise.all(
       desired.map((reminder) => this.repository.upsertDesiredReminder(reminder, now)),
     );
     const deleted = await this.repository.deleteReminderIds(staleIds);
+    if (desired.length > 0) {
+      for (const penggunaId of new Set(desired.map((reminder) => reminder.penggunaId))) {
+        this.notificationEvents.emitChanged(penggunaId);
+      }
+    }
+    if (deleted > 0) {
+      this.notificationEvents.emitChanged();
+    }
     if (desired.length > 0 || deleted > 0) {
       this.logger.debug(`Reconcile reminder selesai desired=${desired.length} deleted=${deleted}`);
     }

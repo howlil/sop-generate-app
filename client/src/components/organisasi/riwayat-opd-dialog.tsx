@@ -67,7 +67,7 @@ export function RiwayatOpdDialog({
           )}
         >
           {isLoading ? <p className="text-muted-foreground">{loadingMessage}</p> : null}
-          {isError ? <p className="text-red-600">{errorMessage}</p> : null}
+          {isError ? <p className="text-danger">{errorMessage}</p> : null}
           {!isLoading && !isError && rows?.length === 0 ? (
             <p className="text-muted-foreground">{emptyMessage}</p>
           ) : null}

@@ -20,7 +20,7 @@ export function KegiatanCell({ value, onChange }: KegiatanCellProps) {
   return (
     <Textarea
       aria-label="Kegiatan"
-      className="text-xs min-h-[40px] px-1.5 py-1"
+      className="text-sm min-h-9 px-2 py-1.5"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -210,7 +210,7 @@ export function MutuKelengkapanCell({ value, onChange }: MutuKelengkapanCellProp
   return (
     <Textarea
       aria-label="Kelengkapan"
-      className="text-xs min-h-[36px] px-1.5 py-1"
+      className="text-sm min-h-9 px-2 py-1.5"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -249,7 +249,7 @@ export function MutuWaktuCell({ value, onChange }: MutuWaktuCellProps) {
         min={0}
         inputMode="numeric"
         placeholder="0"
-        className="h-9 min-h-9 w-[3.5rem] min-w-[3.5rem] shrink-0 rounded-none rounded-l-control border-0 border-r border-border px-1.5 py-1 text-center text-sm tabular-nums focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-primary"
+        className="h-9 min-h-9 w-[3.5rem] min-w-[3.5rem] shrink-0 rounded-none rounded-l-control border-0 border-r border-border px-2 py-1.5 text-center text-sm tabular-nums focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-primary"
         value={amount}
         onChange={(e) => onChange(e.target.value, unit)}
       />
@@ -280,7 +280,7 @@ export function OutputCell({ value, onChange }: OutputCellProps) {
   return (
     <Textarea
       aria-label="Output"
-      className="text-xs min-h-[36px] px-1.5 py-1"
+      className="text-sm min-h-9 px-2 py-1.5"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -298,7 +298,7 @@ export function KeteranganCell({ value, onChange }: KeteranganCellProps) {
   return (
     <Textarea
       aria-label="Keterangan"
-      className="text-xs min-h-[36px] px-1.5 py-1"
+      className="text-sm min-h-9 px-2 py-1.5"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />

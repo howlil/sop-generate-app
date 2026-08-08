@@ -24288,6 +24288,8 @@ export namespace Prisma {
     lastErrorKind: string | null
     lockedUntil: Date | null
     lockToken: string | null
+    inAppReadAt: Date | null
+    resolvedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -24304,6 +24306,8 @@ export namespace Prisma {
     lastErrorKind: string | null
     lockedUntil: Date | null
     lockToken: string | null
+    inAppReadAt: Date | null
+    resolvedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -24320,6 +24324,8 @@ export namespace Prisma {
     lastErrorKind: number
     lockedUntil: number
     lockToken: number
+    inAppReadAt: number
+    resolvedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -24346,6 +24352,8 @@ export namespace Prisma {
     lastErrorKind?: true
     lockedUntil?: true
     lockToken?: true
+    inAppReadAt?: true
+    resolvedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -24362,6 +24370,8 @@ export namespace Prisma {
     lastErrorKind?: true
     lockedUntil?: true
     lockToken?: true
+    inAppReadAt?: true
+    resolvedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -24378,6 +24388,8 @@ export namespace Prisma {
     lastErrorKind?: true
     lockedUntil?: true
     lockToken?: true
+    inAppReadAt?: true
+    resolvedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -24481,6 +24493,8 @@ export namespace Prisma {
     lastErrorKind: string | null
     lockedUntil: Date | null
     lockToken: string | null
+    inAppReadAt: Date | null
+    resolvedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: PengingatWhatsAppCountAggregateOutputType | null
@@ -24516,6 +24530,8 @@ export namespace Prisma {
     lastErrorKind?: boolean
     lockedUntil?: boolean
     lockToken?: boolean
+    inAppReadAt?: boolean
+    resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
@@ -24536,11 +24552,13 @@ export namespace Prisma {
     lastErrorKind?: boolean
     lockedUntil?: boolean
     lockToken?: boolean
+    inAppReadAt?: boolean
+    resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PengingatWhatsAppOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengingatWhatsAppId" | "pengajuanEvaluasiId" | "penggunaId" | "jenis" | "nomorTujuan" | "nextSendAt" | "lastSentAt" | "consecutiveFailures" | "lastErrorKind" | "lockedUntil" | "lockToken" | "createdAt" | "updatedAt", ExtArgs["result"]["pengingatWhatsApp"]>
+  export type PengingatWhatsAppOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengingatWhatsAppId" | "pengajuanEvaluasiId" | "penggunaId" | "jenis" | "nomorTujuan" | "nextSendAt" | "lastSentAt" | "consecutiveFailures" | "lastErrorKind" | "lockedUntil" | "lockToken" | "inAppReadAt" | "resolvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pengingatWhatsApp"]>
   export type PengingatWhatsAppInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
     pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
@@ -24564,6 +24582,8 @@ export namespace Prisma {
       lastErrorKind: string | null
       lockedUntil: Date | null
       lockToken: string | null
+      inAppReadAt: Date | null
+      resolvedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["pengingatWhatsApp"]>
@@ -24948,6 +24968,8 @@ export namespace Prisma {
     readonly lastErrorKind: FieldRef<"PengingatWhatsApp", 'String'>
     readonly lockedUntil: FieldRef<"PengingatWhatsApp", 'DateTime'>
     readonly lockToken: FieldRef<"PengingatWhatsApp", 'String'>
+    readonly inAppReadAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
+    readonly resolvedAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
     readonly createdAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
     readonly updatedAt: FieldRef<"PengingatWhatsApp", 'DateTime'>
   }
@@ -34066,6 +34088,8 @@ export namespace Prisma {
     lastErrorKind: 'lastErrorKind',
     lockedUntil: 'lockedUntil',
     lockToken: 'lockToken',
+    inAppReadAt: 'inAppReadAt',
+    resolvedAt: 'resolvedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -36196,6 +36220,8 @@ export namespace Prisma {
     lastErrorKind?: StringNullableFilter<"PengingatWhatsApp"> | string | null
     lockedUntil?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
     lockToken?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    inAppReadAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    resolvedAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
     createdAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
     updatedAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
@@ -36214,6 +36240,8 @@ export namespace Prisma {
     lastErrorKind?: SortOrderInput | SortOrder
     lockedUntil?: SortOrderInput | SortOrder
     lockToken?: SortOrderInput | SortOrder
+    inAppReadAt?: SortOrderInput | SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     pengajuanEvaluasi?: PengajuanEvaluasiOrderByWithRelationInput
@@ -36237,6 +36265,8 @@ export namespace Prisma {
     lastErrorKind?: StringNullableFilter<"PengingatWhatsApp"> | string | null
     lockedUntil?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
     lockToken?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    inAppReadAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    resolvedAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
     createdAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
     updatedAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
@@ -36255,6 +36285,8 @@ export namespace Prisma {
     lastErrorKind?: SortOrderInput | SortOrder
     lockedUntil?: SortOrderInput | SortOrder
     lockToken?: SortOrderInput | SortOrder
+    inAppReadAt?: SortOrderInput | SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PengingatWhatsAppCountOrderByAggregateInput
@@ -36279,6 +36311,8 @@ export namespace Prisma {
     lastErrorKind?: StringNullableWithAggregatesFilter<"PengingatWhatsApp"> | string | null
     lockedUntil?: DateTimeNullableWithAggregatesFilter<"PengingatWhatsApp"> | Date | string | null
     lockToken?: StringNullableWithAggregatesFilter<"PengingatWhatsApp"> | string | null
+    inAppReadAt?: DateTimeNullableWithAggregatesFilter<"PengingatWhatsApp"> | Date | string | null
+    resolvedAt?: DateTimeNullableWithAggregatesFilter<"PengingatWhatsApp"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"PengingatWhatsApp"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PengingatWhatsApp"> | Date | string
   }
@@ -38594,6 +38628,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutPengingatWhatsAppInput
@@ -38612,6 +38648,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38626,6 +38664,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
@@ -38644,6 +38684,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38660,6 +38702,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38674,6 +38718,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38690,6 +38736,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40923,6 +40971,8 @@ export namespace Prisma {
     lastErrorKind?: SortOrder
     lockedUntil?: SortOrder
     lockToken?: SortOrder
+    inAppReadAt?: SortOrder
+    resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -40943,6 +40993,8 @@ export namespace Prisma {
     lastErrorKind?: SortOrder
     lockedUntil?: SortOrder
     lockToken?: SortOrder
+    inAppReadAt?: SortOrder
+    resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -40959,6 +41011,8 @@ export namespace Prisma {
     lastErrorKind?: SortOrder
     lockedUntil?: SortOrder
     lockToken?: SortOrder
+    inAppReadAt?: SortOrder
+    resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -45799,6 +45853,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutPengingatWhatsAppInput
@@ -45815,6 +45871,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46245,6 +46303,8 @@ export namespace Prisma {
     lastErrorKind?: StringNullableFilter<"PengingatWhatsApp"> | string | null
     lockedUntil?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
     lockToken?: StringNullableFilter<"PengingatWhatsApp"> | string | null
+    inAppReadAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
+    resolvedAt?: DateTimeNullableFilter<"PengingatWhatsApp"> | Date | string | null
     createdAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
     updatedAt?: DateTimeFilter<"PengingatWhatsApp"> | Date | string
   }
@@ -51680,6 +51740,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     pengguna: PenggunaCreateNestedOneWithoutPengingatWhatsAppInput
@@ -51696,6 +51758,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -54816,6 +54880,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -55478,6 +55544,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
@@ -55494,6 +55562,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -55509,6 +55579,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57074,6 +57146,8 @@ export namespace Prisma {
     lastErrorKind?: string | null
     lockedUntil?: Date | string | null
     lockToken?: string | null
+    inAppReadAt?: Date | string | null
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57230,6 +57304,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengguna?: PenggunaUpdateOneRequiredWithoutPengingatWhatsAppNestedInput
@@ -57246,6 +57322,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57261,6 +57339,8 @@ export namespace Prisma {
     lastErrorKind?: NullableStringFieldUpdateOperationsInput | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockToken?: NullableStringFieldUpdateOperationsInput | string | null
+    inAppReadAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

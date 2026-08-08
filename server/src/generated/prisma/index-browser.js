@@ -334,6 +334,8 @@ exports.Prisma.PengingatWhatsAppScalarFieldEnum = {
   lastErrorKind: 'lastErrorKind',
   lockedUntil: 'lockedUntil',
   lockToken: 'lockToken',
+  inAppReadAt: 'inAppReadAt',
+  resolvedAt: 'resolvedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

@@ -16,7 +16,7 @@ import {
   REFRESH_TOKEN_COOKIE_NAME,
 } from './modules/core/auth/helpers/auth.shared';
 
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3001;
 const CORS_MAX_AGE_SECONDS = 3600;
 
 function normalizeCorsOrigin(origin: string | undefined): string {

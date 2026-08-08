@@ -97,7 +97,7 @@ export function PhoneProfileSection({ currentPhone, isSaving, onSave }: PhonePro
         {success && (
           <p
             role="status"
-            className="rounded-lg border border-green-100 bg-green-50 px-3 py-2 text-xs text-green-700"
+            className="rounded-lg border border-success bg-success-subtle px-3 py-2 text-xs text-success-foreground"
           >
             Nomor HP berhasil diperbarui.
           </p>

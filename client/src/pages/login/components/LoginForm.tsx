@@ -107,7 +107,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           </Label>
           <div className="relative">
             <Mail
-              className="absolute left-3 top-5 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
               aria-hidden
             />
             <Input
@@ -131,7 +131,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           </Label>
           <div className="relative">
             <Lock
-              className="absolute left-3 top-5 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
               aria-hidden
             />
             <Input
@@ -148,7 +148,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded text-muted-foreground transition-colors hover:text-secondary-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:text-secondary-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isSubmitting}
               aria-label={
                 showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"

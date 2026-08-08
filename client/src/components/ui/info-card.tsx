@@ -14,9 +14,9 @@ export interface InfoCardProps {
 
 const VARIANT_MAP: Record<string, string> = {
   neutral: 'border-border bg-surface-subtle text-secondary-foreground',
-  success: 'border-green-300 bg-success-subtle text-success-foreground',
-  warning: 'border-amber-400 bg-warning-subtle text-warning-foreground',
-  info: 'border-blue-300 bg-info-subtle text-info-foreground',
+  success: 'border-success bg-success-subtle text-success-foreground',
+  warning: 'border-warning bg-warning-subtle text-warning-foreground',
+  info: 'border-info bg-info-subtle text-info-foreground',
 }
 
 /**

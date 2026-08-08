@@ -402,6 +402,8 @@ model PengingatWhatsApp {
   lastErrorKind       String?                @db.VarChar(64)
   lockedUntil         DateTime?              @db.DateTime(3)
   lockToken           String?                @db.Char(36)
+  inAppReadAt         DateTime?              @db.DateTime(3)
+  resolvedAt          DateTime?              @db.DateTime(3)
   createdAt           DateTime               @default(now()) @db.DateTime(3)
   updatedAt           DateTime               @updatedAt @db.DateTime(3)
   pengajuanEvaluasi   PengajuanEvaluasi      @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Cascade)
@@ -410,6 +412,7 @@ model PengingatWhatsApp {
   @@unique([pengajuanEvaluasiId, penggunaId, jenis], map: "PengingatWhatsApp_pengajuan_pengguna_jenis_key")
   @@index([nextSendAt, lockedUntil], map: "PengingatWhatsApp_due_lock_idx")
   @@index([pengajuanEvaluasiId], map: "PengingatWhatsApp_pengajuan_idx")
+  @@index([penggunaId, inAppReadAt, createdAt], map: "PengingatWhatsApp_in_app_user_idx")
   @@index([penggunaId], map: "PengingatWhatsApp_pengguna_idx")
 }
 

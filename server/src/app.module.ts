@@ -28,7 +28,7 @@ import { TteProfilModule } from './modules/tte/profil/tte-profil.module';
 import { TtePenandatangananModule } from './modules/tte/penandatanganan/tte-penandatanganan.module';
 import { TteVerifikasiModule } from './modules/tte/verifikasi/tte-verifikasi.module';
 import { TteCoreModule } from './modules/tte/core/tte-core.module';
-import { WhatsappNotificationModule } from './modules/notifications/whatsapp/whatsapp-notification.module';
+import { NotificationModule } from './modules/notifications/reminders/notification.module';
 
 @Module({
   imports: [
@@ -68,7 +68,7 @@ import { WhatsappNotificationModule } from './modules/notifications/whatsapp/wha
     TtePenandatangananModule,
     TteVerifikasiModule,
     TteCoreModule,
-    WhatsappNotificationModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

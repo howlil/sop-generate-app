@@ -58,8 +58,6 @@ export function RelatedPosDialog({
       )}
       emptyMessage="Belum ada SOP lain pada OPD ini."
       emptySearchMessage="Tidak ada SOP yang cocok dengan pencarian."
-      contentClassName="max-w-md"
-      listClassName="max-h-[200px]"
       itemClassName="items-center"
       onConfirm={(selectedIds) => {
         const additionalIds: string[] = []

@@ -279,16 +279,14 @@ export function DetailSOPProsedurEditor({
       <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Button
           variant="outline"
-          size="sm"
-          className="min-h-11 text-sm"
+          size="default"
           onClick={() => guardedAddRow(prosedurRows.length)}
         >
           Tambah langkah
         </Button>
         <Button
           variant="default"
-          size="sm"
-          className="min-h-11 px-4 text-sm"
+          size="default"
           onClick={handleDone}
         >
           Selesai edit

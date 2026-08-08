@@ -115,9 +115,6 @@ export function SOPHeaderSection({
 
   return (
     <div className="space-y-3">
-      <p className="px-0.5 text-xs font-semibold text-secondary-foreground">
-        Header SOP{isReadOnly ? ' (lihat)' : ''}
-      </p>
 
       <MetadataFieldCard
         icon={<Building2 className="h-3.5 w-3.5" />}

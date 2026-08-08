@@ -14,14 +14,14 @@ export interface OptionCardOption<T> {
 
 const VARIANT_STYLES: Record<OptionCardVariant, { selected: string; icon: string; label: string }> = {
   success: {
-    selected: 'border-green-600 bg-green-50',
-    icon: 'text-green-700',
-    label: 'text-green-800',
+    selected: 'border-success bg-success-subtle',
+    icon: 'text-success-foreground',
+    label: 'text-success-foreground',
   },
   warning: {
-    selected: 'border-amber-600 bg-amber-50',
-    icon: 'text-amber-700',
-    label: 'text-amber-900',
+    selected: 'border-warning bg-warning-subtle',
+    icon: 'text-warning-foreground',
+    label: 'text-warning-foreground',
   },
   neutral: {
     selected: 'border-border-strong bg-surface-muted',

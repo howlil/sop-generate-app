@@ -34,93 +34,51 @@ describe('Environment validation', () => {
     });
   });
 
-  it('membolehkan WhatsApp nonaktif tanpa kredensial Evolution API', () => {
+  it('mengaktifkan notifikasi in-app secara default tanpa konfigurasi eksternal', () => {
     expect(validateEnv(baseEnv)).toMatchObject({
-      WHATSAPP_ENABLED: false,
-      EVOLUTION_API_BASE_URL: 'https://evolution.example.test',
-      EVOLUTION_API_INSTANCE: 'sop-production',
+      NOTIFICATION_IN_APP_ENABLED: true,
+      NOTIFICATION_RECONCILE_INTERVAL_SECONDS: 10,
     });
   });
 
-  it('mewajibkan API key Evolution API ketika WhatsApp aktif', () => {
-    expect(() => validateEnv({ ...baseEnv, WHATSAPP_ENABLED: 'true' })).toThrow(
-      /EVOLUTION_API_KEY/,
+  it('mewajibkan host dan from SMTP ketika email notification aktif', () => {
+    expect(() => validateEnv({ ...baseEnv, EMAIL_NOTIFICATIONS_ENABLED: 'true' })).toThrow(
+      /SMTP_HOST/,
     );
   });
 
-  it('menerima konfigurasi Evolution API server sendiri', () => {
+  it('menerima konfigurasi SMTP lengkap ketika email notification aktif', () => {
     expect(
       validateEnv({
         ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
-        EVOLUTION_API_BASE_URL: 'https://evolution.example.test',
-        EVOLUTION_API_KEY: 'secret-api-key-123',
-        EVOLUTION_API_INSTANCE: 'sop-staging',
-        WHATSAPP_ALLOWED_RECIPIENTS: '628111111111',
+        EMAIL_NOTIFICATIONS_ENABLED: 'true',
+        SMTP_HOST: 'smtp.example.test',
+        SMTP_PORT: '587',
+        SMTP_FROM: 'SOPFlow <noreply@example.test>',
+        EMAIL_NOTIFICATIONS_REMINDER_INTERVAL_MINUTES: '5',
       }),
     ).toMatchObject({
-      WHATSAPP_ENABLED: true,
-      EVOLUTION_API_BASE_URL: 'https://evolution.example.test',
+      EMAIL_NOTIFICATIONS_ENABLED: true,
+      SMTP_HOST: 'smtp.example.test',
+      SMTP_PORT: 587,
+      EMAIL_NOTIFICATIONS_REMINDER_INTERVAL_MINUTES: 5,
     });
   });
 
-  it('menormalkan trailing slash URL Evolution API eksternal', () => {
+  it('menerima konfigurasi staging berbasis in-app dan email', () => {
     expect(
       validateEnv({
         ...baseEnv,
-        EVOLUTION_API_BASE_URL: 'https://evolution.example.test///',
-      }),
-    ).toMatchObject({ EVOLUTION_API_BASE_URL: 'https://evolution.example.test' });
-  });
-
-  it('menolak HTTP untuk Evolution API aktif di production', () => {
-    expect(() =>
-      validateEnv({
-        ...baseEnv,
-        NODE_ENV: 'production',
-        JWT_REFRESH_SECRET: 'abcdefghijklmnopqrstuvwxyz123456',
-        WHATSAPP_ENABLED: 'true',
-        EVOLUTION_API_BASE_URL: 'http://evolution.example.test',
-        EVOLUTION_API_KEY: 'secret-api-key-123',
-      }),
-    ).toThrow(/HTTPS/);
-  });
-
-  it('menolak kredensial di URL Evolution API', () => {
-    expect(() =>
-      validateEnv({
-        ...baseEnv,
-        EVOLUTION_API_BASE_URL: 'https://admin:secret@evolution.example.test',
-      }),
-    ).toThrow(/username atau password/);
-  });
-
-  it('membolehkan allowlist kosong agar penerima diambil dari database', () => {
-    expect(
-      validateEnv({
-        ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
-        EVOLUTION_API_KEY: 'secret-api-key-123',
-        WHATSAPP_ALLOWED_RECIPIENTS: '',
-      }),
-    ).toMatchObject({ WHATSAPP_ENABLED: true, WHATSAPP_ALLOWED_RECIPIENTS: '' });
-  });
-
-  it('menerima konfigurasi staging yang aman', () => {
-    expect(
-      validateEnv({
-        ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
-        EVOLUTION_API_BASE_URL: 'https://evolution.example.test',
-        EVOLUTION_API_KEY: 'secret-api-key-123',
-        EVOLUTION_API_INSTANCE: 'sop-staging',
-        WHATSAPP_ALLOWED_RECIPIENTS: '628111111111',
-        WHATSAPP_REMINDER_INTERVAL_MINUTES: '1',
+        NOTIFICATION_IN_APP_ENABLED: 'true',
+        EMAIL_NOTIFICATIONS_ENABLED: 'true',
+        SMTP_HOST: 'smtp.example.test',
+        SMTP_FROM: 'SOPFlow <noreply@example.test>',
+        EMAIL_NOTIFICATIONS_REMINDER_INTERVAL_MINUTES: '1',
       }),
     ).toMatchObject({
-      WHATSAPP_ENABLED: true,
-      EVOLUTION_API_INSTANCE: 'sop-staging',
-      WHATSAPP_REMINDER_INTERVAL_MINUTES: 1,
+      NOTIFICATION_IN_APP_ENABLED: true,
+      EMAIL_NOTIFICATIONS_ENABLED: true,
+      EMAIL_NOTIFICATIONS_REMINDER_INTERVAL_MINUTES: 1,
     });
   });
 });

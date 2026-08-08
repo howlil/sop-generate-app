@@ -28,7 +28,7 @@ export interface SOPListCardProps {
 const ITEM_CLASS =
   'w-full justify-start text-left h-auto rounded-lg border px-2 py-1.5 text-xs transition-colors flex flex-col items-stretch border-border hover:bg-surface-subtle text-secondary-foreground'
 const SELECTED_ITEM_CLASS =
-  'border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100'
+  'border-primary bg-primary-subtle text-primary-hover'
 
 function renderStatus(sop: SOPListItem) {
   const statusDokumen = sop.statusDokumen

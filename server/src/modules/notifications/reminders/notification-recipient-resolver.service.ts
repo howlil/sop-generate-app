@@ -1,80 +1,48 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
-import {
-  isWhatsappRecipientAllowed,
-  normalizeIndonesianWhatsappNumber,
-  parseWhatsappRecipientAllowlist,
-} from './whatsapp-phone.util';
 import type {
   ActionablePengajuan,
-  ActiveWhatsappRecipient,
-  DesiredWhatsappReminder,
-} from './whatsapp-reminder.types';
-import { REMINDER_KIND_BY_STATUS } from './whatsapp-reminder.types';
+  ActiveNotificationRecipient,
+  DesiredNotificationReminder,
+} from './notification-reminder.types';
+import { REMINDER_KIND_BY_STATUS } from './notification-reminder.types';
 
 @Injectable()
-export class WhatsappRecipientResolverService {
-  private readonly logger = new Logger(WhatsappRecipientResolverService.name);
-  private readonly allowlist: ReadonlySet<string>;
+export class NotificationRecipientResolverService {
+  private readonly logger = new Logger(NotificationRecipientResolverService.name);
   private readonly loggedIssues = new Set<string>();
-
-  constructor(config: ConfigService) {
-    this.allowlist = parseWhatsappRecipientAllowlist(
-      config.get<string>('WHATSAPP_ALLOWED_RECIPIENTS', ''),
-    );
-  }
 
   resolve(
     pengajuan: ActionablePengajuan,
-    recipients: readonly ActiveWhatsappRecipient[],
-  ): DesiredWhatsappReminder[] {
+    recipients: readonly ActiveNotificationRecipient[],
+  ): DesiredNotificationReminder[] {
     const kind = REMINDER_KIND_BY_STATUS[pengajuan.status];
     if (kind === undefined) {
       return [];
     }
     const selected = this.selectRecipients(pengajuan, recipients);
-    const desired: DesiredWhatsappReminder[] = [];
-    const seenNumbers = new Set<string>();
-    let invalidCount = 0;
-    let outsideAllowlistCount = 0;
+    const desired: DesiredNotificationReminder[] = [];
+    const seenUsers = new Set<string>();
 
     for (const recipient of selected) {
-      const normalized = normalizeIndonesianWhatsappNumber(recipient.nohp);
-      if (normalized === null) {
-        invalidCount += 1;
+      if (seenUsers.has(recipient.penggunaId)) {
         continue;
       }
-      if (!isWhatsappRecipientAllowed(this.allowlist, normalized)) {
-        outsideAllowlistCount += 1;
-        continue;
-      }
-      if (seenNumbers.has(normalized)) {
-        continue;
-      }
-      seenNumbers.add(normalized);
+      seenUsers.add(recipient.penggunaId);
       desired.push({
         pengajuanEvaluasiId: pengajuan.pengajuanEvaluasiId,
         penggunaId: recipient.penggunaId,
-        jenis: kind,
-        nomorTujuan: normalized,
+        kind: kind,
+        destination: recipient.nohp,
       });
-    }
-
-    if (invalidCount > 0 || outsideAllowlistCount > 0) {
-      this.warnOnce(
-        `recipient:${pengajuan.pengajuanEvaluasiId}:${String(pengajuan.status)}:${invalidCount}:${outsideAllowlistCount}`,
-        `Sebagian penerima reminder dilewati pengajuan=${pengajuan.pengajuanEvaluasiId} ` +
-          `invalid=${invalidCount} outsideAllowlist=${outsideAllowlistCount}`,
-      );
     }
     return desired;
   }
 
   private selectRecipients(
     pengajuan: ActionablePengajuan,
-    recipients: readonly ActiveWhatsappRecipient[],
-  ): ActiveWhatsappRecipient[] {
+    recipients: readonly ActiveNotificationRecipient[],
+  ): ActiveNotificationRecipient[] {
     switch (pengajuan.status) {
       case StatusPengajuanEvaluasi.SEDANG_DIEVALUASI:
         return recipients.filter((recipient) => recipient.peran === PeranPengguna.EVALUATOR);
@@ -109,9 +77,9 @@ export class WhatsappRecipientResolverService {
 
   private requireSingleton(
     pengajuan: ActionablePengajuan,
-    recipients: ActiveWhatsappRecipient[],
+    recipients: ActiveNotificationRecipient[],
     role: string,
-  ): ActiveWhatsappRecipient[] {
+  ): ActiveNotificationRecipient[] {
     if (recipients.length === 1) {
       return recipients;
     }
@@ -121,13 +89,6 @@ export class WhatsappRecipientResolverService {
         `opd=${pengajuan.opdId} jumlah=${recipients.length}; reminder tidak dibuat`,
     );
     return [];
-  }
-
-  private warnOnce(key: string, message: string): void {
-    if (!this.loggedIssues.has(key)) {
-      this.loggedIssues.add(key);
-      this.logger.warn(message);
-    }
   }
 
   private errorOnce(key: string, message: string): void {

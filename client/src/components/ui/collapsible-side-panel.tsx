@@ -40,7 +40,7 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
         ref={ref}
         data-state={collapsed ? 'collapsed' : 'expanded'}
         className={cn(
-          'flex flex-shrink-0 flex-col overflow-hidden bg-surface transition-[width] duration-200 motion-reduce:transition-none',
+          'flex h-full flex-shrink-0 flex-col overflow-hidden bg-surface transition-[width] duration-200 motion-reduce:transition-none',
           isRight ? 'border-l border-border' : 'border-r border-border',
           collapsed ? widthCollapsed : widthExpanded,
           className

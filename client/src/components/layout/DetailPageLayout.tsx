@@ -48,7 +48,7 @@ function DetailWorkspace({
         {leftPanel != null && (
           <div
             data-print-hide
-            className="max-h-[min(46vh,340px)] shrink-0 overflow-auto border-b border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(300px,30vw)] lg:border-b-0 lg:border-r"
+            className="flex flex-col h-full max-h-[min(46vh,340px)] shrink-0 overflow-hidden border-b border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(300px,30vw)] lg:border-b-0 lg:border-r"
           >
             {leftPanel}
           </div>
@@ -61,7 +61,7 @@ function DetailWorkspace({
         {rightPanel != null && (
           <div
             data-print-hide
-            className="max-h-[min(52vh,440px)] shrink-0 overflow-auto border-t border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(340px,28vw)] lg:border-l lg:border-t-0"
+            className="flex flex-col h-full max-h-[min(52vh,440px)] shrink-0 overflow-hidden border-t border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(340px,28vw)] lg:border-l lg:border-t-0"
           >
             {rightPanel}
           </div>

@@ -63,7 +63,7 @@ export type PdfSigningStatusResponse = {
   readonly trustedCaSubject: string | null;
   readonly trustedSignerSubject: string | null;
   readonly verificationPath: string;
-  /** Penjelasan jika `enabled=false` padahal env sudah diatur (mis. P12 rusak atau perlu restart server). */
+  /** Penjelasan error konfigurasi. */
   readonly configError?: string;
 };
 
@@ -93,7 +93,6 @@ export type PdfSignatureVerificationEntryWithTteMatch = PdfSignatureVerification
 };
 
 type PdfSigningConfig = {
-  readonly enabled: boolean;
   readonly p12Base64?: string;
   readonly passphrase: string;
   readonly reason: string;
@@ -331,7 +330,6 @@ export class TtePdfSigningService {
   private getConfig(): PdfSigningConfig {
     const p12Raw = this.configService.get<string>('PDF_SIGNING_P12_BASE64');
     return {
-      enabled: this.readEnvBoolean('PDF_SIGNING_ENABLED', false),
       p12Base64: typeof p12Raw === 'string' && p12Raw.trim() !== '' ? p12Raw.trim() : undefined,
       passphrase: this.configService.get<string>('PDF_SIGNING_P12_PASSPHRASE', ''),
       reason: this.configService.get<string>('PDF_SIGNING_REASON', 'Pengesahan dokumen SOP'),
@@ -340,23 +338,7 @@ export class TtePdfSigningService {
     };
   }
 
-  private readEnvBoolean(key: string, fallback: boolean): boolean {
-    const value = this.configService.get<boolean | string | undefined>(key);
-    if (value === undefined) {
-      return fallback;
-    }
-    if (typeof value === 'boolean') {
-      return value;
-    }
-    const normalized = value.trim().toLowerCase();
-    if (['true', '1', 'yes', 'on'].includes(normalized)) {
-      return true;
-    }
-    if (['false', '0', 'no', 'off'].includes(normalized)) {
-      return false;
-    }
-    return fallback;
-  }
+
 
   private decodePdf(pdfBase64: string): Buffer {
     if (pdfBase64.length > PDF_BASE64_MAX_LENGTH) {

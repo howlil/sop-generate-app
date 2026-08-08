@@ -28,6 +28,6 @@ RUN chmod +x /docker-entrypoint.sh
 
 ENV SSR_HOST=127.0.0.1
 ENV SSR_PORT=4173
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["/docker-entrypoint.sh"]

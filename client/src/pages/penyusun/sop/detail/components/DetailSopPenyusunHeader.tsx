@@ -156,9 +156,16 @@ export function DetailSOPPenyusunHeader({
   }
   return (
     <>
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-sm font-semibold text-foreground">Dokumen SOP</h2>
-        <div className="flex items-center gap-2">
+      <div 
+        className="flex items-center justify-between gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        onWheel={(e) => {
+          if (e.deltaY !== 0) {
+            e.currentTarget.scrollLeft += e.deltaY
+          }
+        }}
+      >
+        <h2 className="text-sm font-semibold text-foreground whitespace-nowrap">Dokumen SOP</h2>
+        <div className="flex items-center gap-2 shrink-0">
           {indicator !== null ? (
             <span
               role="status"

@@ -33,24 +33,36 @@ SOPFlow is a TypeScript web application with a TanStack Start frontend, a NestJS
    docker compose --env-file .env down
    ```
 
-## Direct Server Deployment
+## Deployment on MyPaas
 
-Deploy directly to the private server with Docker Compose from CI/CD. The compose stack intentionally contains only `db`, `backend`, and `frontend`; Evolution API is an external service reached over HTTPS.
+This repository is fully configured for deployment on a MyPaas self-hosted instance.
 
-The public HTTP service is `frontend`. It runs Nginx on container port `3000`, proxies `/api/` to `backend:3001`, and serves the TanStack Start app through an internal SSR process on `127.0.0.1:4173`.
+**MyPaas Settings:**
+- **Deployment Mode:** Docker Compose
+- **Main Service:** `frontend` (listens on `0.0.0.0:80` inside the container)
 
-Required environment keys:
+**Environment Variables:**
+Copy the structure from `.env.example` and provide real values in the MyPaas project settings. Do **not** set a `PORT` or `APP_PORT` variable. The following keys are required:
 
 ```dotenv
-DB_ROOT_PASSWORD=
+DB_ROOT_PASSWORD=your-secure-db-root-password
 DB_NAME=sop_biro_organisasi
 DB_USER=sop_app
-DB_PASSWORD=
-JWT_SECRET=
-JWT_REFRESH_SECRET=
-PUBLIC_APP_ORIGIN=https://your-domain.example
-ALLOWED_ORIGINS=https://your-domain.example
+DB_PASSWORD=your-secure-db-password
+
+JWT_SECRET=your-secret-at-least-32-chars
+JWT_REFRESH_SECRET=your-refresh-secret-at-least-32-chars
+
+PUBLIC_APP_ORIGIN=https://sopflow.yourdomain.com
+ALLOWED_ORIGINS=https://sopflow.yourdomain.com
+
 RUN_DB_SEED_ON_START=true
+
+WHAAPI_BASE_URL=https://whaapi.flobaze.com
+WHAAPI_TOKEN=your-whaapi-token
+WHAAPI_CHANNEL_ID=your-whaapi-channel-id
+
+PDF_SIGNING_P12_BASE64=base64-encoded-p12-certificate
 ```
 
-`RUN_DB_SEED_ON_START=true` runs `prisma db seed` after migrations during backend startup. Set it to `false` after initial setup if you do not want seed/demo data reconciled on every restart. Optional keys are listed in `.env.example`, including Swagger, PDF signing, and WhatsApp/Evolution API reminder settings.
+`RUN_DB_SEED_ON_START=true` runs `prisma db seed` after migrations during backend startup. Set it to `false` after initial setup if you do not want seed/demo data reconciled on every restart. Optional keys are listed in `.env.example`, including Swagger, in-app notifications, WhatsApp intervals, and PDF signing fields.

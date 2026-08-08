@@ -28,7 +28,7 @@ stateDiagram-v2
 3.  **Authentication & Consent:**
     *   Signer membuka tautan dan melakukan login.
     *   Sistem secara sinkronus melakukan pengecekan ke CA (via API) untuk memvalidasi apakah sertifikat elektronik Signer tersebut aktif (belum dicabut / *Revoked*).
-    *   Signer menekan tombol **"Tanda Tangani"** dan aplikasi memunculkan prompt untuk memasukkan *Faktor Autentikasi Ke-2 (2FA)*, seperti PIN 6 digit atau OTP ke WhatsApp/SMS. 
+    *   Signer menekan tombol **"Tanda Tangani"** dan aplikasi memunculkan prompt untuk memasukkan *Faktor Autentikasi Ke-2 (2FA)*, seperti PIN 6 digit atau OTP. 
     *   **Catatan Hukum:** Pemasukan OTP/PIN ini berfungsi sebagai bukti *Consent* (Persetujuan sadar/Niat hukum) bahwa individu tersebut bermaksud menyetujui isi dokumen.
 4.  **Signing Execution:** Aplikasi mengambil *Hash* dokumen dan mengeksekusi API Sign ke CA. (Penjelasan payload API ada di Bab 2).
 5.  **Completion (COMPLETED):** Setelah seluruh pihak menandatangani, aplikasi mengunci struktur PDF dengan menyuntikkan *Time Stamp Token* (TSA) agar waktu terverifikasi. Dokumen *Signed PDF* kemudian siap diunduh (atau dikirim otomatis via email).

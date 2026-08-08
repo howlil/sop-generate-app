@@ -52,7 +52,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         aria-labelledby={ariaLabel == null ? (ariaLabelledBy ?? field?.labelId) : ariaLabelledBy}
         aria-required={(ariaRequired ?? field?.required) || undefined}
         className={cn(
-          'flex h-10 w-full rounded-control border border-border-strong bg-surface px-3 py-2 text-sm text-foreground',
+          'flex h-9 w-full rounded-control border border-border-strong bg-surface px-3 py-1.5 text-sm text-foreground',
           'focus:outline-none focus:ring-2 focus:ring-primary',
           'disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-50',
           className

@@ -21,7 +21,6 @@ RUN DATABASE_URL=mysql://prisma_generate:prisma_generate@127.0.0.1:3306/prisma_g
 RUN pnpm build && test -f dist/src/main.js
 
 # Port internal backend production. Akses publik tetap melalui frontend.
-ENV PORT=3001
 EXPOSE 3001
 
 # Jalankan server

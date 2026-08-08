@@ -83,8 +83,8 @@ Keterangan:
 | N15 | N | Menurut saya perlu, minimal untuk membantu monitoring. Dalam praktik, proses bisa molor karena revisi, menunggu dokumen, atau menunggu tanda tangan. Kalau ada target waktu atau batas tindak lanjut, Biro dan OPD bisa sama-sama melihat mana yang sudah lama tertahan. |
 | P16 | P | Apakah sistem perlu fitur reminder deadline agar proses pembuatan SOP tidak molor? |
 | N16 | N | Iya, itu membantu. Reminder tidak harus rumit dulu, yang penting pengguna bisa melihat dokumen mana yang mendekati batas waktu atau sudah melewati target. Kalau nanti bisa ada notifikasi, itu lebih baik. |
-| P17 | P | Untuk notifikasi, apakah perlu melalui email atau WhatsApp kalau ada revisi atau deadline? |
-| N17 | N | Idealnya ada notifikasi. Kalau email bisa lebih formal, WhatsApp biasanya lebih cepat dibaca. Tapi untuk tahap awal, sistem minimal harus punya notifikasi di dalam aplikasi atau indikator status. Integrasi ke email atau WhatsApp bisa dipertimbangkan kalau memang infrastrukturnya siap. |
+| P17 | P | Untuk notifikasi, apakah perlu melalui email atau notifikasi aplikasi kalau ada revisi atau deadline? |
+| N17 | N | Idealnya ada notifikasi. Email bisa lebih formal, sedangkan notifikasi di dalam aplikasi atau indikator status wajib ada agar pengguna langsung melihat tindak lanjut yang diperlukan. |
 | P18 | P | Apakah setiap perubahan pada SOP harus bisa ditelusuri siapa yang mengubah, kapan, dan apa yang diubah? |
 | N18 | N | Iya, perlu. Karena SOP itu dokumen resmi. Kalau ada perubahan, harus jelas siapa yang melakukan dan kapan dilakukan. Ini penting supaya kalau ada pertanyaan atau perbedaan versi, kita bisa lihat riwayatnya. |
 | P19 | P | Seberapa penting fitur riwayat perubahan atau audit log dalam pembuatan SOP? |
