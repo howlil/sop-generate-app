@@ -66,7 +66,7 @@ const envSchema = z
       trimmedEnvironmentString,
       z.string().default(''),
     ),
-    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1),
+    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
     WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),

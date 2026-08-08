@@ -78,10 +78,10 @@ services:
           "CMD-SHELL",
           'node -e "require(''http'').get(''http://127.0.0.1:3001/api/health'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
         ]
-      start_period: 30s
+      start_period: 120s
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 15
 
   frontend:
     image: sop-arsip-frontend:${APP_VERSION:-local}
