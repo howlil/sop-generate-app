@@ -67,7 +67,7 @@ async function isPortAvailable(port: number): Promise<boolean> {
     server.once('listening', () => {
       server.close(() => resolve(true));
     });
-    server.listen(port, '::');
+    server.listen(port, '0.0.0.0');
   });
 }
 
@@ -134,7 +134,7 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  await app.listen(configuredPort);
+  await app.listen(configuredPort, '0.0.0.0');
   logger.log(`🚀 Server running on http://localhost:${configuredPort}/api`);
   if (swaggerEnabled) {
     logger.log(`📚 Swagger docs: http://localhost:${configuredPort}/docs`);
