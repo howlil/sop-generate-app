@@ -15,9 +15,10 @@ import { e2ePin } from '../support/test-data'
 
 test.describe('End-to-End Business Journey — SOP lifecycle', () => {
   test('J05 Version Replacement — versi baru berlaku menggantikan versi lama', async ({
+    roleApi,
     roleSession,
   }) => {
-    const original = await seedApprovedSop('J05-V1')
+    const original = await seedApprovedSop(roleApi, 'J05-V1')
     const penyusun = await roleSession(users.penyusun)
     const kepalaOpd = await roleSession(users.kepalaOpd)
 
@@ -34,7 +35,7 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
 
     await test.step('Precondition membawa versi baru ke tahap pengesahan tanpa menduplikasi J01/J02', async () => {
       const newVersion = await getWorkbench(penyusun.api, newDetailId)
-      replacementPengajuanId = await advanceVersionToHeadSignaturePrecondition({
+      replacementPengajuanId = await advanceVersionToHeadSignaturePrecondition(roleApi, {
         detailSopId: newDetailId,
         title: newVersion.detail.judul ?? original.title,
         baNumber: `${original.baNumber}-V2`,
@@ -59,9 +60,10 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
 
   test('J06 Revocation — pencabutan mengakhiri keberlakuan dan menghapus SOP dari arsip aktif', async ({
     page,
+    roleApi,
     roleSession,
   }) => {
-    const approved = await seedApprovedSop('J06-REVOKE')
+    const approved = await seedApprovedSop(roleApi, 'J06-REVOKE')
     const kepalaOpd = await roleSession(users.kepalaOpd)
 
     await test.step('Kepala OPD mencabut SOP berlaku melalui UI', async () => {
