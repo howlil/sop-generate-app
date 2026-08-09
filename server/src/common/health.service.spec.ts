@@ -33,9 +33,7 @@ describe('HealthService', () => {
 
   it('liveness tidak bergantung pada database', () => {
     const service = new HealthService(
-      prisma(async () => {
-        throw new Error('database unavailable');
-      }),
+      prisma(() => Promise.reject(new Error('database unavailable'))),
       config(rootDir),
     );
 
@@ -43,7 +41,10 @@ describe('HealthService', () => {
   });
 
   it('ready ketika database dan storage dapat digunakan', async () => {
-    const service = new HealthService(prisma(async () => [{ ok: 1 }]), config(rootDir));
+    const service = new HealthService(
+      prisma(() => Promise.resolve([{ ok: 1 }])),
+      config(rootDir),
+    );
 
     await expect(service.ready()).resolves.toMatchObject({
       status: 'ok',
@@ -53,9 +54,7 @@ describe('HealthService', () => {
 
   it('mengembalikan unavailable ketika database gagal', async () => {
     const service = new HealthService(
-      prisma(async () => {
-        throw new Error('database unavailable');
-      }),
+      prisma(() => Promise.reject(new Error('database unavailable'))),
       config(rootDir),
     );
 
@@ -65,7 +64,10 @@ describe('HealthService', () => {
   it('mengembalikan unavailable ketika storage path tidak dapat dipakai sebagai directory', async () => {
     const filePath = join(rootDir, 'not-a-directory');
     await fs.writeFile(filePath, 'x');
-    const service = new HealthService(prisma(async () => [{ ok: 1 }]), config(filePath));
+    const service = new HealthService(
+      prisma(() => Promise.resolve([{ ok: 1 }])),
+      config(filePath),
+    );
 
     await expect(service.ready()).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
