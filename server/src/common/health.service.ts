@@ -24,9 +24,7 @@ export class HealthService {
     private readonly prisma: PrismaService,
     config: ConfigService,
   ) {
-    this.storageDir = normalize(
-      config.get<string>('SOP_PDF_STORAGE_DIR', '/app/storage/sop-pdf'),
-    );
+    this.storageDir = normalize(config.get<string>('SOP_PDF_STORAGE_DIR', '/app/storage/sop-pdf'));
   }
 
   live(): HealthCheckResult {
