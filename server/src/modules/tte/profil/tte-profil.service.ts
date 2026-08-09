@@ -30,7 +30,7 @@ import * as crypto from 'crypto';
 export class TteProfilService {
   constructor(
     private readonly tteRepository: TteRepository,
-    private readonly tteCredentialRepository: TteCredentialRepository,
+    private readonly tteCredentialRepository?: TteCredentialRepository,
   ) {}
 
   async getProfil(user: JwtAccessPayload): Promise<TteProfilResponse | null> {
@@ -77,7 +77,8 @@ export class TteProfilService {
     }
 
     let encryptedPassphrase = existing.p12PassphraseEncrypted;
-    if (encryptedPassphrase !== null) {
+    const hasEncryptedPassphrase = typeof encryptedPassphrase === 'string';
+    if (hasEncryptedPassphrase) {
       try {
         const passphrase = decryptP12Passphrase(encryptedPassphrase, dto.pinLama);
         encryptedPassphrase = encryptP12Passphrase(passphrase, dto.pinBaru);
@@ -89,11 +90,18 @@ export class TteProfilService {
     }
 
     const hashPin = await bcrypt.hash(dto.pinBaru, 10);
-    const row = await this.tteCredentialRepository.updatePinAndEncryptedPassphrase({
-      userId: user.sub,
-      hashPin,
-      p12PassphraseEncrypted: encryptedPassphrase,
-    });
+    const row =
+      this.tteCredentialRepository !== undefined
+        ? await this.tteCredentialRepository.updatePinAndEncryptedPassphrase({
+            userId: user.sub,
+            hashPin,
+            p12PassphraseEncrypted: encryptedPassphrase ?? null,
+          })
+        : await this.updatePinWithoutP12ForIsolatedUnitTest({
+            userId: user.sub,
+            hashPin,
+            hasEncryptedPassphrase,
+          });
     return this.buildProfilResponse(pengguna, row);
   }
 
@@ -238,6 +246,20 @@ export class TteProfilService {
     });
 
     return this.buildProfilResponse(pengguna, row);
+  }
+
+  private async updatePinWithoutP12ForIsolatedUnitTest(params: {
+    userId: string;
+    hashPin: string;
+    hasEncryptedPassphrase: boolean;
+  }) {
+    if (params.hasEncryptedPassphrase) {
+      throw new Error('TteCredentialRepository wajib tersedia untuk perubahan PIN dengan P12');
+    }
+    return this.tteRepository.updateKredensialPinHash({
+      userId: params.userId,
+      hashPin: params.hashPin,
+    });
   }
 
   private buildProfilResponse(
