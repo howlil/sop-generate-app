@@ -27,24 +27,31 @@ describe('Pengujian util verifikasi tanda tangan PDF', () => {
   it('seharusnya memverifikasi bertanda tangan PDF ketika chain dan digest cocok', async () => {
     const unsignedPdf = await createSamplePdf();
     const p12Buffer = Buffer.from(p12Base64, 'base64');
+    const signedAt = new Date();
     const placeholder = plainAddPlaceholder({
       pdfBuffer: unsignedPdf,
       reason: 'Uji verifikasi',
       contactInfo: '',
       name: 'Penandatangan Uji',
       location: 'Indonesia',
-      signingTime: new Date(),
+      signingTime: signedAt,
       signatureLength: 32_000,
     });
     const signer = new P12Signer(p12Buffer, { passphrase, asn1StrictParsing: false });
-    const signedPdf = await new SignPdf().sign(placeholder, signer, new Date());
-    const actual = verifyPdfWithP12(signedPdf, p12Buffer, passphrase);
+    const signedPdf = await new SignPdf().sign(placeholder, signer, signedAt);
+    const actual = verifyPdfWithP12(signedPdf, p12Buffer, passphrase, signedAt);
+    const first = actual.signatures[0];
+    const diagnostic = first
+      ? `${first.reason}; checks=${JSON.stringify(first.checks)}`
+      : 'signature tidak ditemukan';
+
     expect(actual.hasSignatures).toBe(true);
-    expect(actual.allValid).toBe(true);
-    expect(actual.signatures[0]?.valid).toBe(true);
-    expect(actual.signatures[0]?.checks.digestMatch).toBe(true);
-    expect(actual.signatures[0]?.checks.chainTrusted).toBe(true);
-    expect(actual.signatures[0]?.signedAt).not.toBeNull();
+    expect(actual.allValid, diagnostic).toBe(true);
+    expect(first?.valid, diagnostic).toBe(true);
+    expect(first?.checks.digestMatch, diagnostic).toBe(true);
+    expect(first?.checks.chainTrusted, diagnostic).toBe(true);
+    expect(first?.checks.certificatePeriodValid, diagnostic).toBe(true);
+    expect(first?.signedAt).not.toBeNull();
   });
 
   it('seharusnya menolak tanpa tanda tangan PDF', async () => {
