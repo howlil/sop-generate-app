@@ -1,6 +1,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
+import { ACCESS_TOKEN_COOKIE_NAME } from '../../modules/core/auth/helpers/auth.shared';
 import { CsrfProtectionService } from './csrf-protection.service';
 
 function config(values: Record<string, unknown>): ConfigService {
@@ -55,7 +56,7 @@ describe('CsrfProtectionService', () => {
             'sec-fetch-site': 'cross-site',
             'x-csrf-token': '1',
           },
-          cookies: { access_token: 'cookie-value' },
+          cookies: { [ACCESS_TOKEN_COOKIE_NAME]: 'cookie-value' },
         }),
       ),
     ).toThrow(ForbiddenException);
