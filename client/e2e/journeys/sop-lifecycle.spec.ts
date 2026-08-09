@@ -36,7 +36,6 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
       const newVersion = await getWorkbench(penyusun.api, newDetailId)
       replacementPengajuanId = await advanceVersionToHeadSignaturePrecondition({
         detailSopId: newDetailId,
-        number: newVersion.detail.nomorSOP ?? original.number,
         title: newVersion.detail.judul ?? original.title,
         baNumber: `${original.baNumber}-V2`,
       })
