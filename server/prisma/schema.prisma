@@ -337,7 +337,8 @@ model LogEditSopDomainField {
   detailSopId  String     @db.Char(36)
   penggunaId   String     @db.Char(36)
   logCreatedAt DateTime   @db.DateTime(3)
-  domainField  String     @db.VarChar(20)
+  /// Key internal terpanjang saat ini: `dasarHukumPeraturanIds` / `kualifikasiPelaksanaan` (22 karakter).
+  domainField  String     @db.VarChar(22)
   logEditSop   LogEditSOP @relation(fields: [detailSopId, penggunaId, logCreatedAt], references: [detailSopId, penggunaId, createdAt], onDelete: Cascade)
 
   @@id([detailSopId, penggunaId, logCreatedAt, domainField])
