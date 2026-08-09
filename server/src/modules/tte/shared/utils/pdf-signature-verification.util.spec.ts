@@ -51,16 +51,16 @@ describe('Pengujian util verifikasi tanda tangan PDF', () => {
     const signedPdf = await new SignPdf().sign(placeholder, signer, signedAt);
     const actual = verifyPdfWithP12(signedPdf, p12Buffer, passphrase, signedAt);
     const first = actual.signatures[0];
-    const diagnostic = first
-      ? `${first.reason}; checks=${JSON.stringify(first.checks)}`
-      : 'signature tidak ditemukan';
 
     expect(actual.hasSignatures).toBe(true);
-    expect(actual.allValid, diagnostic).toBe(true);
-    expect(first?.valid, diagnostic).toBe(true);
-    expect(first?.checks.digestMatch, diagnostic).toBe(true);
-    expect(first?.checks.chainTrusted, diagnostic).toBe(true);
-    expect(first?.checks.certificatePeriodValid, diagnostic).toBe(true);
+    expect(first).toBeDefined();
+    expect(first?.checks).toEqual({
+      digestMatch: true,
+      chainTrusted: true,
+      certificatePeriodValid: true,
+    });
+    expect(first?.valid).toBe(true);
+    expect(actual.allValid).toBe(true);
     expect(first?.signedAt).not.toBeNull();
   });
 
