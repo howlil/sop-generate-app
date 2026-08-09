@@ -98,7 +98,8 @@ const users: readonly SeedUser[] = [
 ];
 
 async function main(): Promise<void> {
-  const password = process.env.E2E_SEED_PASSWORD ?? process.env.SEED_DEFAULT_PASSWORD ?? DEFAULT_PASSWORD;
+  const password =
+    process.env.E2E_SEED_PASSWORD ?? process.env.SEED_DEFAULT_PASSWORD ?? DEFAULT_PASSWORD;
   const hash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
   await prisma.$transaction(async (tx) => {
