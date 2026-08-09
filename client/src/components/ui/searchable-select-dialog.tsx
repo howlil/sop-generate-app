@@ -128,11 +128,11 @@ export function SearchableSelectDialog<T>({
                 aria-live="polite"
                 aria-atomic="true"
               >
-                {filteredItems.length} ditemukan
+                {filteredItems.length} pilihan ditemukan
                 {selectedIds.length > 0 ? ` · ${selectedIds.length} dipilih` : ''}
               </p>
             </div>
-            
+
             <div
               className={cn('overflow-y-auto scrollbar-hide', listClassName)}
               aria-describedby={selectionStatusId}
@@ -188,11 +188,7 @@ export function SearchableSelectDialog<T>({
           </div>
 
           <DialogFooter className="px-5 py-4 gap-2 border-t border-border bg-surface">
-            <Button
-              variant="outline"
-              size="default"
-              onClick={handleClose}
-            >
+            <Button variant="outline" size="default" onClick={handleClose}>
               {cancelLabel}
             </Button>
             <Button
