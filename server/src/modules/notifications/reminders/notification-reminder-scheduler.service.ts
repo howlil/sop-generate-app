@@ -10,6 +10,7 @@ const SCHEDULER_NAME = 'notification-reminder-reconcile';
 export class NotificationReminderSchedulerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NotificationReminderSchedulerService.name);
   private readonly inAppEnabled: boolean;
+  private readonly whatsappEnabled: boolean;
   private readonly intervalMs: number;
   private running = false;
 
@@ -20,16 +21,16 @@ export class NotificationReminderSchedulerService implements OnModuleInit, OnMod
     config: ConfigService,
   ) {
     this.inAppEnabled = config.get<boolean>('NOTIFICATION_IN_APP_ENABLED', true);
+    this.whatsappEnabled = config.get<boolean>('WHATSAPP_ENABLED', false);
     this.intervalMs = config.get<number>('NOTIFICATION_RECONCILE_INTERVAL_SECONDS', 10) * 1_000;
   }
 
   onModuleInit(): void {
-
     const interval = setInterval(() => void this.tick(), this.intervalMs);
     this.schedulerRegistry.addInterval(SCHEDULER_NAME, interval);
     this.logger.log(
       `Notification reminder aktif interval=${this.intervalMs}ms ` +
-        `inApp=${this.inAppEnabled}`,
+        `inApp=${this.inAppEnabled} whatsapp=${this.whatsappEnabled}`,
     );
     void this.tick();
   }
@@ -47,7 +48,9 @@ export class NotificationReminderSchedulerService implements OnModuleInit, OnMod
     this.running = true;
     try {
       await this.reconciler.reconcile();
-      await this.pushWorker.processDue();
+      if (this.whatsappEnabled) {
+        await this.pushWorker.processDue();
+      }
     } catch (error) {
       this.logger.error(
         `Siklus notification reminder gagal: ${
