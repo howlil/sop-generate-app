@@ -15,16 +15,23 @@ import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
 import { SetupTteGenerateDto } from '../shared/dto/setup-tte-generate.dto';
 import { SetupTteUploadDto } from '../shared/dto/setup-tte-upload.dto';
 import { mapTtePeranResponse } from '../shared/utils/tte-support';
-import { encryptP12Passphrase } from '../shared/utils/tte-crypto.util';
+import {
+  decryptP12Passphrase,
+  encryptP12Passphrase,
+} from '../shared/utils/tte-crypto.util';
 import { generatePersonalP12 } from '../shared/utils/generate-p12.util';
 import { loadTrustedCertificatesFromP12 } from '../shared/utils/pdf-signing-certificate.util';
+import { TteCredentialRepository } from '../shared/repository/tte-credential.repository';
 import { TteRepository } from '../shared/repository/tte.repository';
 import type { TteProfilResponse } from '../shared/types/tte.types';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class TteProfilService {
-  constructor(private readonly tteRepository: TteRepository) {}
+  constructor(
+    private readonly tteRepository: TteRepository,
+    private readonly tteCredentialRepository: TteCredentialRepository,
+  ) {}
 
   async getProfil(user: JwtAccessPayload): Promise<TteProfilResponse | null> {
     const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
@@ -68,10 +75,24 @@ export class TteProfilService {
     if (!pinValid) {
       throw new UnauthorizedException('PIN lama tidak sesuai');
     }
+
+    let encryptedPassphrase = existing.p12PassphraseEncrypted;
+    if (encryptedPassphrase !== null) {
+      try {
+        const passphrase = decryptP12Passphrase(encryptedPassphrase, dto.pinLama);
+        encryptedPassphrase = encryptP12Passphrase(passphrase, dto.pinBaru);
+      } catch {
+        throw new ConflictException(
+          'Passphrase sertifikat TTE tidak dapat dimigrasikan. PIN tidak diubah.',
+        );
+      }
+    }
+
     const hashPin = await bcrypt.hash(dto.pinBaru, 10);
-    const row = await this.tteRepository.updateKredensialPinHash({
+    const row = await this.tteCredentialRepository.updatePinAndEncryptedPassphrase({
       userId: user.sub,
       hashPin,
+      p12PassphraseEncrypted: encryptedPassphrase,
     });
     return this.buildProfilResponse(pengguna, row);
   }
@@ -200,7 +221,6 @@ export class TteProfilService {
     const pinValid = await bcrypt.compare(dto.pin, existing.hashPin);
     if (!pinValid) throw new UnauthorizedException('PIN tidak sesuai');
 
-    // Validasi P12
     try {
       loadTrustedCertificatesFromP12(file.buffer, dto.p12Passphrase);
     } catch (error) {
