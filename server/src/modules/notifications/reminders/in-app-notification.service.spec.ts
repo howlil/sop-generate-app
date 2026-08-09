@@ -62,8 +62,8 @@ describe('InAppNotificationService', () => {
       expect.objectContaining({
         id: '11111111-1111-4111-8111-111111111111',
         pengajuanEvaluasiId: 'pengajuan-1',
-        title: 'SOP menunggu evaluasi',
-        preview: 'Terdapat 2 SOP dari Dinas Kesehatan yang menunggu evaluasi.',
+        title: 'Menunggu Proses Evaluasi SOP',
+        preview: 'Terdapat 2 dokumen SOP dari Dinas Kesehatan yang menunggu proses evaluasi.',
         readAt: null,
         createdAt,
         updatedAt,
