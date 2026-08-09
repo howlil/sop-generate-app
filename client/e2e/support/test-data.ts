@@ -3,17 +3,18 @@ export const e2ePin = process.env.E2E_TTE_PIN ?? '1234'
 export function e2eRunId(prefix = 'E2E'): string {
   const configured = process.env.E2E_TEST_RUN_ID
   const raw = configured ?? `${new Date().toISOString()}-${Math.random().toString(36).slice(2, 8)}`
-  const safePrefix = prefix.replace(/[^A-Za-z0-9-]/g, '').slice(0, 10)
-  const safeRaw = raw.replace(/[^A-Za-z0-9-]/g, '')
-  return `${safePrefix}-${safeRaw.slice(-13)}`.slice(0, 24)
+  const safePrefix = prefix.replace(/[^A-Za-z0-9]/g, '').slice(0, 4) || 'E2E'
+  const safeRaw = raw.replace(/[^A-Za-z0-9]/g, '')
+  return `${safePrefix}-${safeRaw.slice(-7)}`.slice(0, 12)
 }
 
 export function uniqueEmail(prefix: string): string {
-  return `${prefix.toLowerCase()}.${e2eRunId('user').toLowerCase()}@example.test`
+  const localPrefix = prefix.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'user'
+  return `${localPrefix}.${e2eRunId('u').toLowerCase()}@e2e.test`
 }
 
 export const validPdfBase64 =
-  'JVBERi0xLjEKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyMDAgMjAwXSA+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDQgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjE5NgolJUVPRgo='
+  'JVBERi0xLjEKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyMDAgMjAwXSA+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDQgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjE5NgolJUVPRgo='
 
 export const invalidPdfBase64 = Buffer.from('not a signed pdf', 'utf8').toString('base64')
 
@@ -22,9 +23,9 @@ export function sopFixture(prefix = 'SOP') {
   return {
     suffix,
     title: `E2E SOP ${suffix}`,
-    number: `E2E/${suffix}/2026`,
+    number: `E2E/${suffix}/26`,
     updatedTitle: `E2E SOP Revisi ${suffix}`,
-    baNumber: `BA-E2E-${suffix}`,
+    baNumber: `BA-${suffix}`,
   }
 }
 
