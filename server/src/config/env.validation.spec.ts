@@ -38,8 +38,12 @@ describe('Environment validation', () => {
   });
 
   it('mengaktifkan in-app dan menonaktifkan WhatsApp secara default', () => {
-    const { WHATSAPP_ENABLED: _ignored, ...withoutWhatsappFlag } = baseEnv;
-    expect(validateEnv(withoutWhatsappFlag)).toMatchObject({
+    expect(
+      validateEnv({
+        ...baseEnv,
+        WHATSAPP_ENABLED: undefined,
+      }),
+    ).toMatchObject({
       NOTIFICATION_IN_APP_ENABLED: true,
       NOTIFICATION_RECONCILE_INTERVAL_SECONDS: 10,
       WHATSAPP_ENABLED: false,
