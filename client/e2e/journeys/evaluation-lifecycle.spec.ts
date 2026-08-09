@@ -1,6 +1,8 @@
 import { users } from '../fixtures/users'
 import { expect, test } from '../fixtures/business-test'
 import {
+  approveAllSopAsHeadViaUi,
+  createVersionViaUi,
   evaluateSopViaUi,
   expectEvaluationCompletionBlockedViaUi,
   expectPublicArchiveContains,
@@ -10,10 +12,8 @@ import {
   reviseAndCompleteFollowUpViaUi,
   signBaAsPjEvaluatorViaUi,
   signBaAsPjPenyusunViaUi,
-  approveAllSopAsHeadViaUi,
   submitEvaluationCompletionViaUi,
   submitEvaluationViaUi,
-  createVersionViaUi,
 } from '../support/business-actions'
 import {
   expectNilai,
@@ -34,11 +34,12 @@ import { e2ePin } from '../support/test-data'
 test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
   test('J01 Happy Path — siap evaluasi sampai SOP berlaku dan terlihat publik', async ({
     page,
+    roleApi,
     roleSession,
   }) => {
-    const [sop] = await seedReadySops('J01-HAPPY')
+    const [sop] = await seedReadySops(roleApi, 'J01-HAPPY')
     if (!sop) throw new Error('Precondition J01 gagal membuat SOP')
-    await ensureJourneyTteProfiles()
+    await ensureJourneyTteProfiles(roleApi)
 
     const pjPenyusun = await roleSession(users.pjPenyusun)
     const evaluator = await roleSession(users.evaluator)
@@ -90,9 +91,10 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
   })
 
   test('J02 Revision Loop — perbaikan, tindak lanjut, kirim ulang, dan evaluasi ulang', async ({
+    roleApi,
     roleSession,
   }) => {
-    const { pengajuanId, sops } = await seedActiveEvaluation('J02-REVISION')
+    const { pengajuanId, sops } = await seedActiveEvaluation(roleApi, 'J02-REVISION')
     const [sop] = sops
     if (!sop) throw new Error('Precondition J02 gagal membuat SOP')
 
@@ -143,9 +145,10 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
   })
 
   test('J03 Final Rejection — penolakan final mengunci versi dan memaksa versi baru', async ({
+    roleApi,
     roleSession,
   }) => {
-    const { pengajuanId, sops } = await seedActiveEvaluation('J03-REJECT')
+    const { pengajuanId, sops } = await seedActiveEvaluation(roleApi, 'J03-REJECT')
     const [sop] = sops
     if (!sop) throw new Error('Precondition J03 gagal membuat SOP')
 
@@ -177,9 +180,10 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
   })
 
   test('J04 Mixed Multi-SOP — pengajuan tidak selesai sampai seluruh SOP memenuhi syarat', async ({
+    roleApi,
     roleSession,
   }) => {
-    const { pengajuanId, sops } = await seedActiveEvaluation('J04-MIXED', 2)
+    const { pengajuanId, sops } = await seedActiveEvaluation(roleApi, 'J04-MIXED', 2)
     const [sopA, sopB] = sops
     if (!sopA || !sopB) throw new Error('Precondition J04 membutuhkan dua SOP')
 
@@ -210,7 +214,7 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
     await test.step('Setelah SOP bermasalah ditindaklanjuti, evaluator dapat menilai ulang dan selesai', async () => {
       // Revision UI sendiri sudah diuji penuh pada J02; di J04 ini hanya setup state untuk
       // membuktikan invariant agregasi setelah mixed result diperbaiki.
-      await advanceRevisionForAggregationPrecondition(pengajuanId, sopB.detailSopId)
+      await advanceRevisionForAggregationPrecondition(roleApi, pengajuanId, sopB.detailSopId)
       await openEvaluatorSubmission(evaluator.page, pengajuanId)
       await evaluateSopViaUi(evaluator.page, { title: sopB.title, result: 'SESUAI' })
       await expectNilai(evaluator.api, pengajuanId, sopA.detailSopId, { hasil: 'SESUAI' })
