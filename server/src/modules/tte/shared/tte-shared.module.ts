@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TteRepository } from '../shared/repository/tte.repository';
+import { TteCredentialRepository } from './repository/tte-credential.repository';
+import { TteRepository } from './repository/tte.repository';
 import { TtePublicUrlResolver } from './utils/tte-public-url.resolver';
 
 @Module({
-  providers: [TteRepository, TtePublicUrlResolver],
-  exports: [TteRepository, TtePublicUrlResolver],
+  providers: [TteRepository, TteCredentialRepository, TtePublicUrlResolver],
+  exports: [TteRepository, TteCredentialRepository, TtePublicUrlResolver],
 })
 export class TteSharedModule {}
