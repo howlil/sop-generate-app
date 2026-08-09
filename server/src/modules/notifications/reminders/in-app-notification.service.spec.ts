@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { NotFoundException } from '@nestjs/common';
 import {
   JenisPengingatWhatsApp as NotificationReminderKind,
@@ -50,11 +51,7 @@ function build() {
   const events = new NotificationEventsService();
   const emitted: unknown[] = [];
   const subscription = events.events$.subscribe((event) => emitted.push(event));
-  const service = new InAppNotificationService(
-    repository,
-    new ReminderMessageFactory(),
-    events,
-  );
+  const service = new InAppNotificationService(repository, new ReminderMessageFactory(), events);
   return { service, repository, emitted, subscription };
 }
 
@@ -86,18 +83,14 @@ describe('InAppNotificationService', () => {
       '11111111-1111-4111-8111-111111111111',
       expect.any(Date),
     );
-    expect(emitted).toEqual([
-      expect.objectContaining({ penggunaId: 'user-1', type: 'changed' }),
-    ]);
+    expect(emitted).toEqual([expect.objectContaining({ penggunaId: 'user-1', type: 'changed' })]);
     subscription.unsubscribe();
   });
 
   it('mengembalikan NotFound ketika notifikasi bukan milik pengguna', async () => {
     const { service, repository, subscription } = build();
     repository.markInAppRead.mockResolvedValue(false);
-    await expect(service.markRead('user-1', 'missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.markRead('user-1', 'missing')).rejects.toBeInstanceOf(NotFoundException);
     subscription.unsubscribe();
   });
 
