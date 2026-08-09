@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import { Edit, History, Trash2 } from 'lucide-react'
+import { Edit, History, Trash2, MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { LoadingTableRow } from '@/components/ui/loading-state'
-import { RowActions } from '@/components/data/row-actions'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import {
   PersonMonoCell,
   PersonNameCell,
@@ -226,33 +231,38 @@ export function KepalaOPDTab({
                       <PersonStatusCell status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                     </Table.Td>
                     <Table.ActionTd>
-                      <RowActions
-                        wrap
-                        actions={[
-                          {
-                            icon: History,
-                            title: 'Riwayat penugasan OPD',
-                            onClick: () => {
-                              setRiwayatForId(k.id)
-                              setRiwayatNama(k.nama)
-                            },
-                          },
-                          {
-                            icon: Edit,
-                            title: 'Ubah data / pindah OPD',
-                            onClick: () => openManageDialog(k),
-                          },
-                          {
-                            icon: Trash2,
-                            title: canDeleteKepala(k)
-                              ? 'Hapus Kepala OPD (belum ada SOP terkait)'
-                              : 'Tidak dapat dihapus: masih ada SOP yang dibuat',
-                            destructive: true,
-                            disabled: !canDeleteKepala(k),
-                            onClick: () => onDeleteRequest(k.id),
-                          },
-                        ]}
-                      />
+                      <div className="flex justify-end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4 text-secondary-foreground" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setRiwayatForId(k.id)
+                                setRiwayatNama(k.nama)
+                              }}
+                            >
+                              <History className="mr-2 h-4 w-4" />
+                              Riwayat penugasan
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openManageDialog(k)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Ubah / pindah OPD
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              disabled={!canDeleteKepala(k)}
+                              onClick={() => onDeleteRequest(k.id)}
+                              className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Hapus Kepala OPD
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </Table.ActionTd>
                   </Table.BodyRow>
                 ))

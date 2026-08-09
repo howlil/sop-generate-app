@@ -228,7 +228,7 @@ export function DetailPengajuanEvaluasi() {
             side="left"
             collapsed={leftPanelCollapsed}
             widthCollapsed="w-10"
-            widthExpanded="w-[min(300px,36vw)]"
+            widthExpanded="w-[min(380px,40vw)]"
           >
             {leftPanelCollapsed ? (
               <CollapsedStripButton

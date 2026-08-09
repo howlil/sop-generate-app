@@ -86,7 +86,6 @@ const SEED_WORKFLOW_DOCUMENT_NUMBERS = [
 /** Identitas OPD — dipakai sebagai kunci lookup di SEED_USERS */
 const SEED_OPD_PJ_EVALUATOR = 'Biro Organisasi Sekretariat Daerah';
 const SEED_OPD_DINKES = 'Dinas Kesehatan Provinsi';
-const SEED_OPD_DISKOMINFO = 'Dinas Komunikasi dan Informatika';
 const SEED_OPD_DISDIK = 'Dinas Pendidikan Provinsi';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -117,10 +116,10 @@ interface SeedUserRecord extends Omit<SeedUserInput, 'opdKey'> {
 // ─── Static Seed Data ───────────────────────────────────────────────────────
 
 const SEED_USERS: ReadonlyArray<SeedUserInput> = [
-  // ── Biro Organisasi (PJ_EVALUATOR + evaluator memakai opdId OPD ini) ──
+  // ── Biro Organisasi (PJ_EVALUATOR + EVALUATOR) ──
   {
     email: 'pjevaluator@gmail.com',
-    nama: 'PJ Evaluator (seed)',
+    nama: 'Dr. Bambang Suryono, M.Si.',
     peran: PeranPengguna.PJ_EVALUATOR,
     nip: '198501012009011000',
     jabatan: 'Koordinator Evaluasi SOP',
@@ -130,7 +129,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
   },
   {
     email: 'evaluator1@gmail.com',
-    nama: 'Evaluator 1 (seed)',
+    nama: 'Siti Rahmawati, S.STP',
     peran: PeranPengguna.EVALUATOR,
     nip: '198501012009011001',
     jabatan: 'Evaluator Madya',
@@ -138,20 +137,20 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nohp: '6281234567891',
     opdKey: SEED_OPD_PJ_EVALUATOR,
   },
-  {
-    email: 'evaluator2@gmail.com',
-    nama: 'Evaluator 2 (seed)',
-    peran: PeranPengguna.EVALUATOR,
-    nip: '198501012009011002',
-    jabatan: 'Evaluator Muda',
-    pangkat: 'Penata Tk. I',
-    nohp: '6281234567892',
-    opdKey: SEED_OPD_PJ_EVALUATOR,
-  },
   // ── Dinas Kesehatan ───────────────────────────────────────────────────
   {
+    email: 'kepalaopd.dinkes@gmail.com',
+    nama: 'dr. Hendra Wijaya, Sp.OG',
+    peran: PeranPengguna.KEPALA_OPD,
+    nip: '198501012009011005',
+    jabatan: 'Kepala OPD Dinkes',
+    pangkat: 'Pembina Utama Muda',
+    nohp: '6281234567895',
+    opdKey: SEED_OPD_DINKES,
+  },
+  {
     email: 'pjpenyusun.dinkes@gmail.com',
-    nama: 'PJ Penyusun Dinkes (seed)',
+    nama: 'Dewi Kartika, S.Kep',
     peran: PeranPengguna.PJ_PENYUSUN,
     nip: '198501012009011003',
     jabatan: 'Koordinator Penyusunan SOP Dinkes',
@@ -161,7 +160,7 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
   },
   {
     email: 'penyusun.dinkes@gmail.com',
-    nama: 'Penyusun Dinkes (seed)',
+    nama: 'Budi Santoso, A.Md.Kep',
     peran: PeranPengguna.PENYUSUN,
     nip: '198501012009011004',
     jabatan: 'Analis SOP Dinkes',
@@ -169,51 +168,20 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
     nohp: '6281234567894',
     opdKey: SEED_OPD_DINKES,
   },
-  {
-    email: 'kepalaopd.dinkes@gmail.com',
-    nama: 'Kepala Dinkes (seed)',
-    peran: PeranPengguna.KEPALA_OPD,
-    nip: '198501012009011005',
-    jabatan: 'Kepala OPD Dinkes',
-    pangkat: 'Pembina Utama Muda',
-    nohp: '6281234567895',
-    opdKey: SEED_OPD_DINKES,
-  },
-  // ── Dinas Komunikasi dan Informatika ──────────────────────────────────
-  {
-    email: 'pjpenyusun.diskominfo@gmail.com',
-    nama: 'PJ Penyusun Diskominfo (seed)',
-    peran: PeranPengguna.PJ_PENYUSUN,
-    nip: '198501012009011006',
-    jabatan: 'Koordinator Penyusunan SOP Diskominfo',
-    pangkat: 'Pembina',
-    nohp: '6281234567896',
-    opdKey: SEED_OPD_DISKOMINFO,
-  },
-  {
-    email: 'penyusun.diskominfo@gmail.com',
-    nama: 'Penyusun Diskominfo (seed)',
-    peran: PeranPengguna.PENYUSUN,
-    nip: '198501012009011007',
-    jabatan: 'Analis SOP Diskominfo',
-    pangkat: 'Penata',
-    nohp: '6281234567897',
-    opdKey: SEED_OPD_DISKOMINFO,
-  },
-  {
-    email: 'kepalaopd.diskominfo@gmail.com',
-    nama: 'Kepala Diskominfo (seed)',
-    peran: PeranPengguna.KEPALA_OPD,
-    nip: '198501012009011008',
-    jabatan: 'Kepala OPD Diskominfo',
-    pangkat: 'Pembina Utama Muda',
-    nohp: '6281234567898',
-    opdKey: SEED_OPD_DISKOMINFO,
-  },
   // ── Dinas Pendidikan ──────────────────────────────────────────────────
   {
+    email: 'kepalaopd.disdik@gmail.com',
+    nama: 'Drs. Agus Harimurti, M.Pd.',
+    peran: PeranPengguna.KEPALA_OPD,
+    nip: '198501012009011011',
+    jabatan: 'Kepala Dinas Pendidikan Provinsi',
+    pangkat: 'Pembina Utama Muda',
+    nohp: '6281234567801',
+    opdKey: SEED_OPD_DISDIK,
+  },
+  {
     email: 'pjpenyusun.disdik@gmail.com',
-    nama: 'PJ Penyusun Disdik (seed)',
+    nama: 'Rina Permata, S.Pd.',
     peran: PeranPengguna.PJ_PENYUSUN,
     nip: '198501012009011009',
     jabatan: 'Koordinator Penyusunan SOP Disdik',
@@ -223,22 +191,12 @@ const SEED_USERS: ReadonlyArray<SeedUserInput> = [
   },
   {
     email: 'penyusun.disdik@gmail.com',
-    nama: 'Penyusun Disdik (seed)',
+    nama: 'Ahmad Hidayat, M.Pd.',
     peran: PeranPengguna.PENYUSUN,
     nip: '198501012009011010',
     jabatan: 'Analis SOP Disdik',
     pangkat: 'Penata',
     nohp: '6281234567800',
-    opdKey: SEED_OPD_DISDIK,
-  },
-  {
-    email: 'kepalaopd.disdik@gmail.com',
-    nama: 'Kepala Disdik (seed)',
-    peran: PeranPengguna.KEPALA_OPD,
-    nip: '198501012009011011',
-    jabatan: 'Kepala Dinas Pendidikan Provinsi',
-    pangkat: 'Pembina Utama Muda',
-    nohp: '6281234567801',
     opdKey: SEED_OPD_DISDIK,
   },
 ];
@@ -291,13 +249,11 @@ export class SeedService {
       // 1. OPD
       const opdPjEvaluator = await this.ensureOpd(tx, SEED_OPD_PJ_EVALUATOR);
       const opdDinkes = await this.ensureOpd(tx, SEED_OPD_DINKES);
-      const opdDiskominfo = await this.ensureOpd(tx, SEED_OPD_DISKOMINFO);
       const opdDisdik = await this.ensureOpd(tx, SEED_OPD_DISDIK);
 
       const opdIdMap: Record<string, string> = {
         [SEED_OPD_PJ_EVALUATOR]: opdPjEvaluator.opdId,
         [SEED_OPD_DINKES]: opdDinkes.opdId,
-        [SEED_OPD_DISKOMINFO]: opdDiskominfo.opdId,
         [SEED_OPD_DISDIK]: opdDisdik.opdId,
       };
 
@@ -313,7 +269,6 @@ export class SeedService {
       // 5. OPD ↔ Peraturan
       await this.seedOpdPeraturan(tx, {
         opdDinkesId: opdDinkes.opdId,
-        opdDiskominfoId: opdDiskominfo.opdId,
         opdDisdikId: opdDisdik.opdId,
         peraturanDaerahId: p['12 Tahun 2024'].peraturanId,
         pergubTransformasiId: p['7 Tahun 2023'].peraturanId,
@@ -324,7 +279,6 @@ export class SeedService {
       // 6. Pelaksana
       const pel = await this.seedPelaksana(tx, {
         opdDinkesId: opdDinkes.opdId,
-        opdDiskominfoId: opdDiskominfo.opdId,
         opdDisdikId: opdDisdik.opdId,
       });
 
@@ -332,10 +286,10 @@ export class SeedService {
         // Legacy demo mode: hanya aktif bila env di-set eksplisit.
         const d = await this.seedSopDanDetail(tx, {
           opdDinkesId: opdDinkes.opdId,
-          opdDiskominfoId: opdDiskominfo.opdId,
+          opdDiskominfoId: opdDisdik.opdId,
           opdDisdikId: opdDisdik.opdId,
           penyusunDinkesId: u['penyusun.dinkes@gmail.com'].penggunaId,
-          penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
+          penyusunDiskominfoId: u['penyusun.disdik@gmail.com'].penggunaId,
           penyusunDisdikId: u['penyusun.disdik@gmail.com'].penggunaId,
         });
 
@@ -351,22 +305,22 @@ export class SeedService {
         await this.seedKolaborasi(tx, {
           d,
           evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-          evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+          evaluator2Id: u['evaluator1@gmail.com'].penggunaId,
           penyusunDinkesId: u['penyusun.dinkes@gmail.com'].penggunaId,
           pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
-          penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
+          penyusunDiskominfoId: u['penyusun.disdik@gmail.com'].penggunaId,
         });
 
         const pe = await this.seedPengajuanDanNilaiEvaluasi(tx, {
           d,
           opdDinkesId: opdDinkes.opdId,
-          opdDiskominfoId: opdDiskominfo.opdId,
+          opdDiskominfoId: opdDisdik.opdId,
           opdDisdikId: opdDisdik.opdId,
           evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-          evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+          evaluator2Id: u['evaluator1@gmail.com'].penggunaId,
           pjEvaluatorId: u['pjevaluator@gmail.com'].penggunaId,
           pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
-          pjPenyusunDiskominfoId: u['pjpenyusun.diskominfo@gmail.com'].penggunaId,
+          pjPenyusunDiskominfoId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
           pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
         });
 
@@ -374,7 +328,7 @@ export class SeedService {
 
         await this.ensureProsedurUntukSemuaNilaiEvaluasi(tx, pel, {
           opdDinkesId: opdDinkes.opdId,
-          opdDiskominfoId: opdDiskominfo.opdId,
+          opdDiskominfoId: opdDisdik.opdId,
           opdDisdikId: opdDisdik.opdId,
         });
 
@@ -382,7 +336,7 @@ export class SeedService {
           d,
           pe,
           evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-          evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+          evaluator2Id: u['evaluator1@gmail.com'].penggunaId,
         });
 
         await this.validateSeedEvaluationBusinessRules(tx);
@@ -398,8 +352,9 @@ export class SeedService {
       [
         'Seed selesai.',
         'Reset dev: pnpm db:fresh (prisma migrate reset + seed).',
-        'Cakupan: master data saja: 4 OPD, 12 pengguna, riwayat OPD aktif,',
-        '4 peraturan, relasi OPD-peraturan, dan master pelaksana SOP.',
+        'Cakupan: master data saja: 3 OPD (Biro Organisasi, Dinkes, Disdik),',
+        '8 pengguna (1 PJ Evaluator, 1 Evaluator, 2 PJ Penyusun, 2 Penyusun, 2 Kepala OPD),',
+        'riwayat OPD aktif, 4 peraturan, relasi OPD-peraturan, dan master pelaksana SOP.',
       ].join(' '),
     );
     this.logger.warn(`Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}).`);
@@ -629,7 +584,7 @@ export class SeedService {
     tx: Prisma.TransactionClient,
     params: {
       opdDinkesId: string;
-      opdDiskominfoId: string;
+      opdDiskominfoId?: string;
       opdDisdikId: string;
       peraturanDaerahId: string;
       pergubTransformasiId: string;
@@ -641,13 +596,16 @@ export class SeedService {
       // Dinkes: Perda tata kelola + MenPAN-RB
       { opdId: params.opdDinkesId, peraturanId: params.peraturanDaerahId },
       { opdId: params.opdDinkesId, peraturanId: params.permenpanId },
-      // Diskominfo: Pergub transformasi + Pergub layanan
-      { opdId: params.opdDiskominfoId, peraturanId: params.pergubTransformasiId },
-      { opdId: params.opdDiskominfoId, peraturanId: params.pergubLayananId },
       // Disdik: Perda tata kelola + Pergub layanan
       { opdId: params.opdDisdikId, peraturanId: params.peraturanDaerahId },
       { opdId: params.opdDisdikId, peraturanId: params.pergubLayananId },
     ];
+    if (params.opdDiskominfoId) {
+      pairs.push(
+        { opdId: params.opdDiskominfoId, peraturanId: params.pergubTransformasiId },
+        { opdId: params.opdDiskominfoId, peraturanId: params.pergubLayananId },
+      );
+    }
     for (const pair of pairs) {
       await tx.oPDPeraturan.upsert({
         where: { opdId_peraturanId: pair },
@@ -661,7 +619,7 @@ export class SeedService {
 
   private async seedPelaksana(
     tx: Prisma.TransactionClient,
-    params: { opdDinkesId: string; opdDiskominfoId: string; opdDisdikId: string },
+    params: { opdDinkesId: string; opdDiskominfoId?: string; opdDisdikId: string },
   ): Promise<Record<string, { pelaksanaId: string }>> {
     const result: Record<string, { pelaksanaId: string }> = {};
     const entries: Array<{ key: string; opdId: string; nama: string }> = [
@@ -681,21 +639,6 @@ export class SeedService {
         nama: 'Petugas Rawat Inap Dinkes',
       },
       { key: 'PETUGAS_FARMASI_DINKES', opdId: params.opdDinkesId, nama: 'Petugas Farmasi Dinkes' },
-      {
-        key: 'TIM_LAYANAN_DISKOMINFO',
-        opdId: params.opdDiskominfoId,
-        nama: 'Tim Layanan Informasi Diskominfo',
-      },
-      {
-        key: 'TIM_MEDIA_DISKOMINFO',
-        opdId: params.opdDiskominfoId,
-        nama: 'Tim Media Sosial Diskominfo',
-      },
-      {
-        key: 'TIM_ADUAN_DISKOMINFO',
-        opdId: params.opdDiskominfoId,
-        nama: 'Tim Aduan Masyarakat Diskominfo',
-      },
       { key: 'TIM_PPDB_DISDIK', opdId: params.opdDisdikId, nama: 'Tim Penerimaan PPDB Disdik' },
       {
         key: 'SEKSI_AKREDITASI_DISDIK',
@@ -704,6 +647,25 @@ export class SeedService {
       },
       { key: 'TIM_AKREDITASI_DISDIK', opdId: params.opdDisdikId, nama: 'Tim Akreditasi Disdik' },
     ];
+    if (params.opdDiskominfoId) {
+      entries.push(
+        {
+          key: 'TIM_LAYANAN_DISKOMINFO',
+          opdId: params.opdDiskominfoId,
+          nama: 'Tim Layanan Informasi Diskominfo',
+        },
+        {
+          key: 'TIM_MEDIA_DISKOMINFO',
+          opdId: params.opdDiskominfoId,
+          nama: 'Tim Media Sosial Diskominfo',
+        },
+        {
+          key: 'TIM_ADUAN_DISKOMINFO',
+          opdId: params.opdDiskominfoId,
+          nama: 'Tim Aduan Masyarakat Diskominfo',
+        },
+      );
+    }
     for (const entry of entries) {
       result[entry.key] = await this.upsertPelaksanaByNama(tx, entry.opdId, entry.nama);
     }
