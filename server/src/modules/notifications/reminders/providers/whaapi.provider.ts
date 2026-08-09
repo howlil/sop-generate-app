@@ -42,7 +42,9 @@ export class WhaApiProvider implements NotificationChannel {
       throw new NotificationChannelError('CONFIGURATION', 'Konfigurasi WhaAPI belum lengkap');
     }
     if (this.allowedRecipients.size > 0 && !this.allowedRecipients.has(destination)) {
-      this.logger.debug(`Nomor ${this.maskPhone(destination)} tidak ada di daftar penerima — dilewati`);
+      this.logger.debug(
+        `Nomor ${this.maskPhone(destination)} tidak ada di daftar penerima — dilewati`,
+      );
       return;
     }
 
