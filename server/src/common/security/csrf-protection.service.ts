@@ -75,14 +75,10 @@ export class CsrfProtectionService {
     }
   }
 
-  private requiresProtection(
-    req: Pick<Request, 'path' | 'cookies'>,
-  ): boolean {
+  private requiresProtection(req: Pick<Request, 'path' | 'cookies'>): boolean {
     if (/\/auth\/(login|refresh|logout)$/.test(req.path)) {
       return true;
     }
-    return (
-      hasCookie(req, ACCESS_TOKEN_COOKIE_NAME) || hasCookie(req, REFRESH_TOKEN_COOKIE_NAME)
-    );
+    return hasCookie(req, ACCESS_TOKEN_COOKIE_NAME) || hasCookie(req, REFRESH_TOKEN_COOKIE_NAME);
   }
 }
