@@ -9,6 +9,7 @@ import {
 @Injectable()
 export class WhaApiProvider implements NotificationChannel {
   private readonly logger = new Logger(WhaApiProvider.name);
+  private readonly enabled: boolean;
   private readonly baseUrl: string;
   private readonly token: string;
   private readonly channelId: string;
@@ -16,6 +17,7 @@ export class WhaApiProvider implements NotificationChannel {
   private readonly allowedRecipients: Set<string>;
 
   constructor(config: ConfigService) {
+    this.enabled = config.get<boolean>('WHATSAPP_ENABLED', false);
     this.baseUrl = config.get<string>('WHAAPI_BASE_URL', 'https://whaapi.flobaze.com');
     this.token = config.get<string>('WHAAPI_TOKEN', '');
     this.channelId = config.get<string>('WHAAPI_CHANNEL_ID', '');
@@ -33,14 +35,18 @@ export class WhaApiProvider implements NotificationChannel {
   }
 
   async send(destination: string, message: string): Promise<void> {
+    if (!this.enabled) {
+      throw new NotificationChannelError('CONFIGURATION', 'WhatsApp notification dinonaktifkan');
+    }
+    if (!this.token || !this.channelId) {
+      throw new NotificationChannelError('CONFIGURATION', 'Konfigurasi WhaAPI belum lengkap');
+    }
     if (this.allowedRecipients.size > 0 && !this.allowedRecipients.has(destination)) {
-      this.logger.debug(`Nomor ${destination} tidak ada di daftar penerima — dilewati`);
+      this.logger.debug(`Nomor ${this.maskPhone(destination)} tidak ada di daftar penerima — dilewati`);
       return;
     }
 
-    // Normalisasi nomor ke format internasional (tanpa +)
     const phoneNumber = this.normalizePhone(destination);
-
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
@@ -61,12 +67,11 @@ export class WhaApiProvider implements NotificationChannel {
       if (!response.ok) {
         const respBody = await response.text().catch(() => '');
         const kind = this.httpStatusToKind(response.status);
-        this.logger.warn(`WhaAPI HTTP ${response.status}: ${respBody}`);
-        throw new NotificationChannelError(kind, `WhaAPI HTTP ${response.status}: ${respBody}`);
+        this.logger.warn(`WhaAPI HTTP ${response.status}: ${respBody.slice(0, 500)}`);
+        throw new NotificationChannelError(kind, `WhaAPI HTTP ${response.status}`);
       }
 
-      const result = await response.json().catch(() => null);
-      this.logger.log(`WhaAPI terkirim ke ${this.maskPhone(phoneNumber)}: ${JSON.stringify(result)}`);
+      this.logger.log(`WhaAPI terkirim ke ${this.maskPhone(phoneNumber)}`);
     } catch (error) {
       if (error instanceof NotificationChannelError) throw error;
       if (error instanceof Error && error.name === 'AbortError') {
@@ -81,10 +86,6 @@ export class WhaApiProvider implements NotificationChannel {
     }
   }
 
-  /**
-   * Normalisasi nomor HP ke format internasional tanpa +.
-   * 08123456789 → 628123456789
-   */
   private normalizePhone(phone: string): string {
     let normalized = phone.replace(/[^0-9]/g, '');
     if (normalized.startsWith('0')) {
@@ -94,8 +95,9 @@ export class WhaApiProvider implements NotificationChannel {
   }
 
   private maskPhone(phone: string): string {
-    if (phone.length <= 4) return '***';
-    return `${phone.slice(0, 4)}***${phone.slice(-2)}`;
+    const normalized = phone.replace(/[^0-9]/g, '');
+    if (normalized.length <= 4) return '***';
+    return `${normalized.slice(0, 4)}***${normalized.slice(-2)}`;
   }
 
   private httpStatusToKind(status: number): NotificationChannelErrorKind {
