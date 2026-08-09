@@ -17,12 +17,13 @@ test.describe('End-to-End Business Journey — public document integrity', () =>
   test('J07 Public Document Integrity — arsip, pengesahan TTE, dan PDF dapat diverifikasi', async ({
     page,
     request,
+    roleApi,
   }) => {
-    const approved = await seedApprovedSop('J07-PUBLIC')
+    const approved = await seedApprovedSop(roleApi, 'J07-PUBLIC')
     if (!approved.pengesahan) {
       throw new Error('Precondition J07 tidak menghasilkan payload pengesahan')
     }
-    const signedPdf = await createSignedPdfArtifact(approved)
+    const signedPdf = await createSignedPdfArtifact(roleApi, approved)
 
     await test.step('Pengunjung menemukan SOP berlaku dan membuka pratinjau publik', async () => {
       const result = await apiGet<PublicSopPage>(
