@@ -1,7 +1,7 @@
 import type { APIRequestContext } from '@playwright/test'
 
 import { users } from '../fixtures/users'
-import { apiPatch, apiPost, createAuthenticatedApiContext } from './api'
+import { apiGet, apiPatch, apiPost, createAuthenticatedApiContext } from './api'
 import {
   createApprovedSopFixture,
   createReadySopFixture,
@@ -99,7 +99,6 @@ export async function advanceRevisionForAggregationPrecondition(
  */
 export async function advanceVersionToHeadSignaturePrecondition(params: {
   detailSopId: string
-  number: string
   title: string
   baNumber: string
 }): Promise<string> {
@@ -149,13 +148,10 @@ export async function createSignedPdfArtifact(
 
   const kepalaOpd = await createAuthenticatedApiContext(users.kepalaOpd)
   try {
-    const statusResponse = await kepalaOpd.get('/tte/public/pdf-signing/status')
-    if (!statusResponse.ok()) {
-      throw new Error(`Gagal membaca status PDF signing: ${statusResponse.status()}`)
-    }
-    const statusJson = (await statusResponse.json()) as { data?: { enabled: boolean } }
-    const enabled = statusJson.data?.enabled ?? false
-
+    const status = await apiGet<{ enabled: boolean }>(
+      kepalaOpd,
+      '/tte/public/pdf-signing/status',
+    )
     const signed = await apiPost<{ signedPdfBase64: string }>(kepalaOpd, '/tte/pdf/sign', {
       pin: e2ePin,
       dokumenTteId: approved.pengesahan.dokumenTteId,
@@ -165,7 +161,7 @@ export async function createSignedPdfArtifact(
     })
 
     return {
-      enabled,
+      enabled: status.enabled,
       pdf: Buffer.from(signed.signedPdfBase64, 'base64'),
     }
   } finally {
