@@ -55,15 +55,21 @@ describe('TteProfilService PIN rotation', () => {
     } as unknown as TteRepository;
 
     const credentialRepository = {
-      updatePinAndEncryptedPassphrase: jest.fn().mockImplementation(async (params) => {
-        persistedCiphertext = params.p12PassphraseEncrypted;
-        return {
-          hashPin: params.hashPin,
-          p12Base64: 'dummy-p12-base64',
-          p12PassphraseEncrypted: params.p12PassphraseEncrypted,
-          updatedAt,
-        };
-      }),
+      updatePinAndEncryptedPassphrase: jest.fn().mockImplementation(
+        async (params: {
+          userId: string;
+          hashPin: string;
+          p12PassphraseEncrypted: string | null;
+        }) => {
+          persistedCiphertext = params.p12PassphraseEncrypted ?? '';
+          return {
+            hashPin: params.hashPin,
+            p12Base64: 'dummy-p12-base64',
+            p12PassphraseEncrypted: params.p12PassphraseEncrypted,
+            updatedAt,
+          };
+        },
+      ),
     } as unknown as TteCredentialRepository;
 
     const service = new TteProfilService(repository, credentialRepository);
