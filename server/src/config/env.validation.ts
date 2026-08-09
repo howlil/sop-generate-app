@@ -18,8 +18,7 @@ const envBoolean = (defaultValue: boolean) =>
     return val;
   }, z.boolean().default(defaultValue));
 
-const trimmedEnvironmentString = (val: unknown) =>
-  typeof val === 'string' ? val.trim() : val;
+const trimmedEnvironmentString = (val: unknown) => (typeof val === 'string' ? val.trim() : val);
 
 const optionalUrl = z.preprocess((val) => {
   const normalized = trimmedEnvironmentString(val);
@@ -68,10 +67,7 @@ const envSchema = z
     ),
     WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(
-      trimmedEnvironmentString,
-      z.string().default(''),
-    ),
+    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
     WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
