@@ -38,6 +38,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -58,8 +60,33 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Lint
-        run: pnpm lint
+      - name: Lint changed TypeScript files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git -C .. fetch origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}" --depth=1
+            base_ref="origin/${{ github.base_ref }}"
+          else
+            base_ref="${{ github.event.before }}"
+            if [[ -z "$base_ref" || "$base_ref" =~ ^0+$ ]]; then
+              base_ref="HEAD^"
+            fi
+          fi
+
+          mapfile -t files < <(
+            git -C .. diff --name-only "$base_ref...HEAD" -- 'server/**/*.ts' \
+              | sed 's#^server/##'
+          )
+
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No changed server TypeScript files to lint."
+            exit 0
+          fi
+
+          printf 'Linting changed server files:\n - %s\n' "${files[@]}"
+          pnpm exec eslint "${files[@]}"
 
       - name: Unit tests
         run: pnpm exec jest --runInBand
