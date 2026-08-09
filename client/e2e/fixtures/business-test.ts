@@ -47,15 +47,15 @@ interface BusinessWorkerFixtures {
 /**
  * Fixture khusus business-journey.
  *
- * Satu login dibuat per role per worker. Cookie login yang sama dipakai untuk API
- * precondition/audit dan BrowserContext, sehingga retry/failure tidak menggandakan
- * request login sampai menabrak rate limit produksi.
+ * Satu login dibuat per role per worker. Browser memakai storage state asli dari
+ * host login, sedangkan API precondition/audit memakai Cookie header dari respons
+ * login yang sama. Dengan begitu host-only cookie tidak dipalsukan dan rate limit
+ * produksi tidak dilonggarkan hanya untuk test.
  */
 export const test = base.extend<BusinessTestFixtures, BusinessWorkerFixtures>({
   roleAuth: [
     async ({}, use) => {
       const bundles = new Map<RoleKey, RoleAuthBundle>()
-      const apiHostname = new URL(apiBaseURL).hostname
 
       await use(async (user) => {
         const existing = bundles.get(user.role)
@@ -75,16 +75,19 @@ export const test = base.extend<BusinessTestFixtures, BusinessWorkerFixtures>({
           }
 
           const browserStorageState = await authContext.storageState()
-          const apiStorageState: BrowserStorageState = {
-            ...browserStorageState,
-            cookies: browserStorageState.cookies.map((cookie) => ({
-              ...cookie,
-              domain: apiHostname,
-            })),
+          const cookieHeader = login
+            .headersArray()
+            .filter((header) => header.name.toLowerCase() === 'set-cookie')
+            .map((header) => header.value.split(';')[0])
+            .filter(Boolean)
+            .join('; ')
+          if (!cookieHeader) {
+            throw new Error(`Precondition auth ${user.role} tidak mengembalikan Set-Cookie`)
           }
+
           const api = await playwrightRequest.newContext({
             baseURL: apiBaseURL,
-            storageState: apiStorageState,
+            extraHTTPHeaders: { cookie: cookieHeader },
           })
           const me = await api.get(`${apiBaseURL}/auth/me`)
           if (!me.ok()) {
