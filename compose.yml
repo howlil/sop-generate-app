@@ -35,7 +35,7 @@ services:
       NODE_OPTIONS: "--max-old-space-size=512"
       NODE_ENV: production
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
-      PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:-}
+      PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:?set PUBLIC_APP_ORIGIN}
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
@@ -47,36 +47,39 @@ services:
       DATABASE_USER: ${DB_USER:?set DB_USER}
       DATABASE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       DATABASE_NAME: ${DB_NAME:?set DB_NAME}
-      RUN_DB_SEED_ON_START: ${RUN_DB_SEED_ON_START:-false}
       SOP_PDF_STORAGE_DIR: ${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
-      PDF_SIGNING_P12_BASE64: ${PDF_SIGNING_P12_BASE64:?set PDF_SIGNING_P12_BASE64}
-      PDF_SIGNING_P12_PASSPHRASE: ${PDF_SIGNING_P12_PASSPHRASE:-}
+      NOTIFICATION_IN_APP_ENABLED: ${NOTIFICATION_IN_APP_ENABLED:-true}
+      NOTIFICATION_RECONCILE_INTERVAL_SECONDS: ${NOTIFICATION_RECONCILE_INTERVAL_SECONDS:-10}
+      PDF_SIGNING_ENABLED: ${PDF_SIGNING_ENABLED:-true}
       PDF_SIGNING_REASON: ${PDF_SIGNING_REASON:-Pengesahan dokumen SOP}
       PDF_SIGNING_LOCATION: ${PDF_SIGNING_LOCATION:-Indonesia}
       PDF_SIGNING_CONTACT: ${PDF_SIGNING_CONTACT:-}
+      WHATSAPP_ENABLED: ${WHATSAPP_ENABLED:-false}
       WHAAPI_BASE_URL: ${WHAAPI_BASE_URL:-https://whaapi.flobaze.com}
-      WHAAPI_TOKEN: ${WHAAPI_TOKEN:?set WHAAPI_TOKEN}
-      WHAAPI_CHANNEL_ID: ${WHAAPI_CHANNEL_ID:?set WHAAPI_CHANNEL_ID}
+      WHAAPI_TOKEN: ${WHAAPI_TOKEN:-}
+      WHAAPI_CHANNEL_ID: ${WHAAPI_CHANNEL_ID:-}
       WHATSAPP_ALLOWED_RECIPIENTS: ${WHATSAPP_ALLOWED_RECIPIENTS:-}
+      WHATSAPP_REMINDER_INTERVAL_MINUTES: ${WHATSAPP_REMINDER_INTERVAL_MINUTES:-1440}
+      WHATSAPP_REQUEST_TIMEOUT_MS: ${WHATSAPP_REQUEST_TIMEOUT_MS:-10000}
+      WHATSAPP_MAX_CONCURRENCY: ${WHATSAPP_MAX_CONCURRENCY:-3}
+      WHATSAPP_LOCK_LEASE_SECONDS: ${WHATSAPP_LOCK_LEASE_SECONDS:-60}
     command:
       - sh
       - -c
       - |
         set -eu
         pnpm prisma migrate deploy
-        if [ "$${RUN_DB_SEED_ON_START:-false}" = "true" ]; then
-          echo "RUN_DB_SEED_ON_START=true; running Prisma seed..."
-          pnpm prisma db seed
-        else
-          echo "RUN_DB_SEED_ON_START=false; skipping Prisma seed."
-        fi
         exec pnpm start:prod
     volumes:
       - sop_pdf_data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
     expose:
       - "3001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3001/api/health"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3001/api/health/ready"]
       start_period: 120s
       interval: 10s
       timeout: 5s
@@ -96,6 +99,10 @@ services:
       SSR_PORT: 4173
     expose:
       - "80"
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:80/"]
       start_period: 30s

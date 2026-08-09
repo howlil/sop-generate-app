@@ -12,6 +12,7 @@ import { AppModule } from './app.module';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { createDefaultValidationPipe } from './common';
 import { JSON_BODY_LIMIT, URLENCODED_BODY_LIMIT } from './common/http/request-body-limits';
+import { CsrfProtectionService } from './common/security/csrf-protection.service';
 import {
   SecurityRateLimiterService,
   resolveSecurityRateLimitPolicy,
@@ -47,10 +48,7 @@ function buildCorsOptions(configService: ConfigService): CorsOptions {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   const allowedOriginsRaw = configService.get<string>('ALLOWED_ORIGINS', '').trim();
   const publicAppOrigin = configService.get<string>('PUBLIC_APP_ORIGIN', '').trim();
-  const allowAllOrigins =
-    nodeEnv !== 'production' ||
-    allowedOriginsRaw === '*' ||
-    allowedOriginsRaw.toLowerCase() === 'all';
+  const allowAllOrigins = nodeEnv !== 'production';
   const allowedOrigins = new Set(
     [...allowedOriginsRaw.split(','), publicAppOrigin].map(normalizeCorsOrigin).filter(Boolean),
   );
@@ -58,6 +56,7 @@ function buildCorsOptions(configService: ConfigService): CorsOptions {
     origin: allowAllOrigins
       ? true
       : (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+          // Request tanpa Origin dibutuhkan untuk health checks/internal service calls.
           if (!origin || allowedOrigins.has(normalizeCorsOrigin(origin))) {
             callback(null, true);
             return;
@@ -136,6 +135,16 @@ async function bootstrap() {
   app.useBodyParser('urlencoded', { extended: true, limit: URLENCODED_BODY_LIMIT });
   app.use(cookieParser());
 
+  const csrfProtection = app.get(CsrfProtectionService);
+  app.use((req: Request, _res: unknown, next: NextFunction) => {
+    try {
+      csrfProtection.assertRequest(req);
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
+
   const rateLimiter = app.get(SecurityRateLimiterService);
   app.use((req: Request, _res: unknown, next: NextFunction) => {
     const policy = resolveSecurityRateLimitPolicy(req.method, req.path);
@@ -172,9 +181,7 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  /** Satu instance pipa validasi untuk seluruh aplikasi (sesuai dokumentasi Nest). */
   app.useGlobalPipes(createDefaultValidationPipe());
-
   app.enableCors(buildCorsOptions(configService));
 
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
@@ -214,7 +221,8 @@ async function bootstrap() {
   if (swaggerEnabled) {
     logger.log(`📚 Swagger docs: http://localhost:${configuredPort}/docs`);
   }
-  logger.log(`💚 Health check: http://localhost:${configuredPort}/api/health`);
+  logger.log(`💚 Liveness: http://localhost:${configuredPort}/api/health/live`);
+  logger.log(`✅ Readiness: http://localhost:${configuredPort}/api/health/ready`);
 }
 
 void bootstrap();

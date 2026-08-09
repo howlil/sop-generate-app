@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -67,7 +68,6 @@ export type PdfSigningStatusResponse = {
   readonly trustedCaSubject: string | null;
   readonly trustedSignerSubject: string | null;
   readonly verificationPath: string;
-  /** Penjelasan error konfigurasi. */
   readonly configError?: string;
 };
 
@@ -118,7 +118,7 @@ export class TtePdfSigningService {
 
   getPdfSigningStatus(): PdfSigningStatusResponse {
     return {
-      enabled: true,
+      enabled: this.isPdfSigningEnabled(),
       trustedCaSubject: null,
       trustedSignerSubject: null,
       verificationPath: '/validasi/pdf',
@@ -138,7 +138,8 @@ export class TtePdfSigningService {
       verification.signatures.map((entry) => this.attachTteMatch(entry)),
     );
     return {
-      pdfSigningEnabled: true,
+      // Verifikasi tetap tersedia walaupun pembuatan signature baru dimatikan.
+      pdfSigningEnabled: this.isPdfSigningEnabled(),
       trustedCaSubject: null,
       hasSignatures: verification.hasSignatures,
       allValid: verification.allValid && signatures.every((entry) => entry.tteMatch.matched),
@@ -161,6 +162,9 @@ export class TtePdfSigningService {
     }
     if (dto.jenisDokumen !== JenisDokumenTte.SOP_BERLAKU) {
       return this.buildSkippedCaResponse(pdfBuffer);
+    }
+    if (!this.isPdfSigningEnabled()) {
+      return this.buildDisabledResponse(pdfBuffer);
     }
 
     const kredensial = await this.repository.findKredensial(dto.userId);
@@ -205,6 +209,10 @@ export class TtePdfSigningService {
     pdfBuffer: Buffer;
     signerName: string;
   }): Promise<OfficialPdfSigningResult> {
+    if (!this.isPdfSigningEnabled()) {
+      throw new ConflictException('Penandatanganan PDF kriptografis sedang dinonaktifkan.');
+    }
+
     const kredensial = await this.repository.findKredensial(params.userId);
     if (!kredensial || !kredensial.p12Base64 || !kredensial.p12PassphraseEncrypted) {
       throw new BadRequestException(
@@ -363,6 +371,10 @@ export class TtePdfSigningService {
     return passphrase;
   }
 
+  private isPdfSigningEnabled(): boolean {
+    return this.configService.get<boolean>('PDF_SIGNING_ENABLED', true);
+  }
+
   private getConfig(): PdfSigningConfig {
     const p12Raw = this.configService.get<string>('PDF_SIGNING_P12_BASE64');
     return {
@@ -398,6 +410,16 @@ export class TtePdfSigningService {
       signedPdfBase64: pdfBuffer.toString('base64'),
       sha256SignedPdf: this.sha256Hex(pdfBuffer),
       signatureFormat: 'UNSIGNED_NOT_REQUIRED',
+      certificate: null,
+    };
+  }
+
+  private buildDisabledResponse(pdfBuffer: Buffer): SignPdfResponse {
+    return {
+      signed: false,
+      signedPdfBase64: pdfBuffer.toString('base64'),
+      sha256SignedPdf: this.sha256Hex(pdfBuffer),
+      signatureFormat: 'UNSIGNED_DISABLED',
       certificate: null,
     };
   }

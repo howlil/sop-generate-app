@@ -15,10 +15,7 @@ import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
 import { SetupTteGenerateDto } from '../shared/dto/setup-tte-generate.dto';
 import { SetupTteUploadDto } from '../shared/dto/setup-tte-upload.dto';
 import { mapTtePeranResponse } from '../shared/utils/tte-support';
-import {
-  decryptP12Passphrase,
-  encryptP12Passphrase,
-} from '../shared/utils/tte-crypto.util';
+import { decryptP12Passphrase, encryptP12Passphrase } from '../shared/utils/tte-crypto.util';
 import { generatePersonalP12 } from '../shared/utils/generate-p12.util';
 import { loadTrustedCertificatesFromP12 } from '../shared/utils/pdf-signing-certificate.util';
 import { TteCredentialRepository } from '../shared/repository/tte-credential.repository';
@@ -78,7 +75,7 @@ export class TteProfilService {
 
     let encryptedPassphrase = existing.p12PassphraseEncrypted;
     const hasEncryptedPassphrase = typeof encryptedPassphrase === 'string';
-    if (hasEncryptedPassphrase) {
+    if (typeof encryptedPassphrase === 'string') {
       try {
         const passphrase = decryptP12Passphrase(encryptedPassphrase, dto.pinLama);
         encryptedPassphrase = encryptP12Passphrase(passphrase, dto.pinBaru);

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { NotificationReminderKind } from '../../../generated/prisma';
+import { JenisPengingatWhatsApp as NotificationReminderKind } from '../../../generated/prisma';
 import { NotificationEventsService } from './notification-events.service';
 import { NotificationRecipientResolverService } from './notification-recipient-resolver.service';
 import { NotificationReminderReconcilerService } from './notification-reminder-reconciler.service';
