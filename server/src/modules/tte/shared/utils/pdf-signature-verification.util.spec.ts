@@ -4,10 +4,20 @@ import { P12Signer } from '@signpdf/signer-p12';
 import { SignPdf } from '@signpdf/signpdf';
 import { verifyPdfWithP12 } from './pdf-signature-verification.util';
 
+type PdfDocumentLike = {
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  text(value: string): void;
+  end(): void;
+};
+
+type PdfDocumentConstructor = new () => PdfDocumentLike;
+
+// pdfkit adalah dependency transitif placeholder-plain; resolve dari package tersebut agar
+// test memakai implementasi yang sama tanpa menambah dependency production baru.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDFDocument = require(
   require.resolve('pdfkit', { paths: [require.resolve('@signpdf/placeholder-plain')] }),
-);
+) as PdfDocumentConstructor;
 
 describe('Pengujian util verifikasi tanda tangan PDF', () => {
   let p12Base64 = '';
@@ -64,13 +74,15 @@ describe('Pengujian util verifikasi tanda tangan PDF', () => {
 
 function createSamplePdf(): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument() as {
-      on(event: string, listener: (...args: unknown[]) => void): void;
-      text(value: string): void;
-      end(): void;
-    };
+    const doc = new PDFDocument();
     const chunks: Buffer[] = [];
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('data', (chunk: unknown) => {
+      if (!Buffer.isBuffer(chunk)) {
+        reject(new Error('pdfkit menghasilkan chunk non-Buffer'));
+        return;
+      }
+      chunks.push(chunk);
+    });
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
     doc.text('Dokumen uji verifikasi PDF');
