@@ -204,7 +204,7 @@ jobs:
         run: |
           pnpm prisma generate
           pnpm prisma db push --force-reset --accept-data-loss
-          pnpm prisma db seed
+          pnpm db:seed:e2e
 
       - name: Start backend
         run: |
