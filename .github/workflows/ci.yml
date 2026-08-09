@@ -121,6 +121,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Audit E2E business journeys
+        run: pnpm test:e2e:audit
+
       - name: Lint
         run: pnpm lint
 
