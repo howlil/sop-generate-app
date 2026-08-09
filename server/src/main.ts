@@ -6,11 +6,17 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { WinstonModule } from 'nest-winston';
 import { createServer } from 'node:net';
+import type { NextFunction, Request } from 'express';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { createDefaultValidationPipe } from './common';
 import { JSON_BODY_LIMIT, URLENCODED_BODY_LIMIT } from './common/http/request-body-limits';
+import {
+  SecurityRateLimiterService,
+  resolveSecurityRateLimitPolicy,
+  type SecurityRateLimitPolicy,
+} from './common/security/security-rate-limiter.service';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_NAME,
@@ -18,6 +24,11 @@ import {
 
 const DEFAULT_PORT = 3001;
 const CORS_MAX_AGE_SECONDS = 3600;
+const LOGIN_ACCOUNT_RATE_LIMIT: SecurityRateLimitPolicy = {
+  scope: 'auth-login-account',
+  limit: 10,
+  windowMs: 15 * 60_000,
+};
 
 function normalizeCorsOrigin(origin: string | undefined): string {
   const value = origin?.trim();
@@ -60,6 +71,48 @@ function buildCorsOptions(configService: ConfigService): CorsOptions {
   };
 }
 
+function resolveClientNetworkIdentifier(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  const firstForwarded = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0];
+  const realIp = req.headers['x-real-ip'];
+  const firstRealIp = Array.isArray(realIp) ? realIp[0] : realIp;
+  return (
+    firstForwarded?.trim() ||
+    firstRealIp?.trim() ||
+    req.ip ||
+    req.socket.remoteAddress ||
+    'unknown-client'
+  );
+}
+
+function getCookie(req: Request, name: string): string | undefined {
+  const cookies: unknown = req.cookies;
+  if (typeof cookies !== 'object' || cookies === null) {
+    return undefined;
+  }
+  const value = (cookies as Record<string, unknown>)[name];
+  return typeof value === 'string' && value !== '' ? value : undefined;
+}
+
+function resolveRateLimitIdentifier(req: Request, policy: SecurityRateLimitPolicy): string {
+  if (policy.scope === 'tte-sensitive' || policy.scope === 'tte-setup') {
+    const accessToken = getCookie(req, ACCESS_TOKEN_COOKIE_NAME);
+    if (accessToken !== undefined) {
+      return `session:${accessToken}`;
+    }
+  }
+  return `network:${resolveClientNetworkIdentifier(req)}`;
+}
+
+function resolveLoginEmail(req: Request): string | undefined {
+  const body: unknown = req.body;
+  if (typeof body !== 'object' || body === null) {
+    return undefined;
+  }
+  const email = (body as Record<string, unknown>).email;
+  return typeof email === 'string' && email.trim() !== '' ? email.trim().toLowerCase() : undefined;
+}
+
 async function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const server = createServer();
@@ -82,6 +135,28 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
   app.useBodyParser('urlencoded', { extended: true, limit: URLENCODED_BODY_LIMIT });
   app.use(cookieParser());
+
+  const rateLimiter = app.get(SecurityRateLimiterService);
+  app.use((req: Request, _res: unknown, next: NextFunction) => {
+    const policy = resolveSecurityRateLimitPolicy(req.method, req.path);
+    if (policy === null) {
+      next();
+      return;
+    }
+
+    try {
+      rateLimiter.consume(policy, resolveRateLimitIdentifier(req, policy));
+      if (policy.scope === 'auth-login-ip') {
+        const email = resolveLoginEmail(req);
+        if (email !== undefined) {
+          rateLimiter.consume(LOGIN_ACCOUNT_RATE_LIMIT, email);
+        }
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
 
   process.on('uncaughtException', (err) => {
     logger.error('Uncaught Exception:', err);

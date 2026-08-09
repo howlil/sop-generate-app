@@ -37,7 +37,11 @@ import {
   type PdfSignatureVerificationEntry,
   type VerifyPdfSignaturesResult,
 } from '../shared/utils/pdf-signature-verification.util';
-import { decryptP12Passphrase } from '../shared/utils/tte-crypto.util';
+import {
+  decryptP12Passphrase,
+  encryptP12Passphrase,
+  isLegacyP12PassphraseCiphertext,
+} from '../shared/utils/tte-crypto.util';
 import { TteRepository, type PdfSignatureMetadataInput } from '../shared/repository/tte.repository';
 
 const DEFAULT_SIGNATURE_LENGTH = 32_000;
@@ -159,7 +163,6 @@ export class TtePdfSigningService {
       return this.buildSkippedCaResponse(pdfBuffer);
     }
 
-    // Ambil kredensial P12 pengguna
     const kredensial = await this.repository.findKredensial(dto.userId);
     if (!kredensial || !kredensial.p12Base64 || !kredensial.p12PassphraseEncrypted) {
       throw new BadRequestException(
@@ -167,12 +170,12 @@ export class TtePdfSigningService {
       );
     }
 
-    let p12Passphrase: string;
-    try {
-      p12Passphrase = decryptP12Passphrase(kredensial.p12PassphraseEncrypted, dto.pin);
-    } catch {
-      throw new ForbiddenException('PIN TTE salah atau gagal mendekripsi sertifikat.');
-    }
+    const p12Passphrase = await this.decryptAndUpgradePassphrase({
+      userId: dto.userId,
+      pin: dto.pin,
+      p12Base64: kredensial.p12Base64,
+      encryptedPassphrase: kredensial.p12PassphraseEncrypted,
+    });
 
     const config = this.getConfig();
     const signed = await this.applyPkcs7Signature(
@@ -209,12 +212,12 @@ export class TtePdfSigningService {
       );
     }
 
-    let p12Passphrase: string;
-    try {
-      p12Passphrase = decryptP12Passphrase(kredensial.p12PassphraseEncrypted, params.pin);
-    } catch {
-      throw new ForbiddenException('PIN TTE salah atau gagal mendekripsi sertifikat.');
-    }
+    const p12Passphrase = await this.decryptAndUpgradePassphrase({
+      userId: params.userId,
+      pin: params.pin,
+      p12Base64: kredensial.p12Base64,
+      encryptedPassphrase: kredensial.p12PassphraseEncrypted,
+    });
 
     const config = this.getConfig();
     const signed = await this.applyPkcs7Signature(
@@ -327,6 +330,39 @@ export class TtePdfSigningService {
     }
   }
 
+  private async decryptAndUpgradePassphrase(params: {
+    userId: string;
+    pin: string;
+    p12Base64: string;
+    encryptedPassphrase: string;
+  }): Promise<string> {
+    let passphrase: string;
+    try {
+      passphrase = decryptP12Passphrase(params.encryptedPassphrase, params.pin);
+    } catch {
+      throw new ForbiddenException('PIN TTE salah atau gagal mendekripsi sertifikat.');
+    }
+
+    if (isLegacyP12PassphraseCiphertext(params.encryptedPassphrase)) {
+      try {
+        await this.repository.updateKredensialP12({
+          userId: params.userId,
+          p12Base64: params.p12Base64,
+          p12PassphraseEncrypted: encryptP12Passphrase(passphrase, params.pin),
+        });
+        this.logger.log(`Ciphertext P12 legacy berhasil di-upgrade userId=${params.userId}`);
+      } catch (error) {
+        this.logger.warn(
+          `Ciphertext P12 legacy belum dapat di-upgrade userId=${params.userId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+
+    return passphrase;
+  }
+
   private getConfig(): PdfSigningConfig {
     const p12Raw = this.configService.get<string>('PDF_SIGNING_P12_BASE64');
     return {
@@ -337,8 +373,6 @@ export class TtePdfSigningService {
       contactInfo: this.configService.get<string>('PDF_SIGNING_CONTACT', ''),
     };
   }
-
-
 
   private decodePdf(pdfBase64: string): Buffer {
     if (pdfBase64.length > PDF_BASE64_MAX_LENGTH) {
