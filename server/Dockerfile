@@ -29,6 +29,9 @@ RUN apk add --no-cache wget \
 
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist ./dist
+# Custom Prisma output berada di src/generated dan berisi JS/WASM runtime.
+# Salin eksplisit agar tidak bergantung pada perilaku copy asset compiler Nest.
+COPY --from=builder --chown=node:node /app/src/generated/prisma ./dist/src/generated/prisma
 COPY --from=builder --chown=node:node /app/prisma ./prisma
 COPY --from=builder --chown=node:node /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=node:node /app/package.json ./package.json
