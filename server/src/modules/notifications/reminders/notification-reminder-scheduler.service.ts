@@ -26,6 +26,11 @@ export class NotificationReminderSchedulerService implements OnModuleInit, OnMod
   }
 
   onModuleInit(): void {
+    if (!this.inAppEnabled && !this.whatsappEnabled) {
+      this.logger.log('Notification reminder dinonaktifkan untuk seluruh channel');
+      return;
+    }
+
     const interval = setInterval(() => void this.tick(), this.intervalMs);
     this.schedulerRegistry.addInterval(SCHEDULER_NAME, interval);
     this.logger.log(
@@ -42,7 +47,7 @@ export class NotificationReminderSchedulerService implements OnModuleInit, OnMod
   }
 
   async tick(): Promise<void> {
-    if (this.running) {
+    if ((!this.inAppEnabled && !this.whatsappEnabled) || this.running) {
       return;
     }
     this.running = true;
