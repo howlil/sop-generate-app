@@ -18,7 +18,8 @@ const envBoolean = (defaultValue: boolean) =>
     return val;
   }, z.boolean().default(defaultValue));
 
-const trimmedEnvironmentString = (val: unknown) => (typeof val === 'string' ? val.trim() : val);
+const trimmedEnvironmentString = (val: unknown) =>
+  typeof val === 'string' ? val.trim() : val;
 
 const optionalUrl = z.preprocess((val) => {
   const normalized = trimmedEnvironmentString(val);
@@ -71,6 +72,11 @@ const envSchema = z
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
 
+    /** Secret server khusus untuk melindungi passphrase sertifikat personal TTE. */
+    TTE_ENCRYPTION_SECRET: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().min(32, 'TTE_ENCRYPTION_SECRET minimal 32 karakter'),
+    ),
     PDF_SIGNING_P12_BASE64: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().optional(),
@@ -100,6 +106,23 @@ const envSchema = z
         code: z.ZodIssueCode.custom,
         message: 'PDF_SIGNING_P12_BASE64 wajib diisi dengan file .p12/.pfx yang di-encode base64.',
         path: ['PDF_SIGNING_P12_BASE64'],
+      });
+    }
+    if (data.TTE_ENCRYPTION_SECRET === data.JWT_SECRET) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Gunakan secret TTE yang berbeda dari JWT_SECRET',
+        path: ['TTE_ENCRYPTION_SECRET'],
+      });
+    }
+    if (
+      data.JWT_REFRESH_SECRET !== undefined &&
+      data.TTE_ENCRYPTION_SECRET === data.JWT_REFRESH_SECRET
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Gunakan secret TTE yang berbeda dari JWT_REFRESH_SECRET',
+        path: ['TTE_ENCRYPTION_SECRET'],
       });
     }
     if (data.NODE_ENV !== 'production') {
