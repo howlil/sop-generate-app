@@ -88,7 +88,7 @@ export async function createReadySopFixture(
   const fixture = sopFixture(prefix)
   const relatedFixture = sopFixture(`${prefix}-REL`)
   const pelaksana = await apiPost<Pelaksana>(context, '/pelaksana', {
-    namaPelaksana: `Pelaksana ${fixture.suffix}`,
+    namaPelaksana: `P-${fixture.suffix}`,
   })
   const peraturan = await apiPost<Peraturan>(context, '/peraturan', {
     namaPeraturan: `Peraturan E2E ${fixture.suffix}`,
