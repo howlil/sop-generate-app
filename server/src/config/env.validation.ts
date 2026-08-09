@@ -26,11 +26,16 @@ const optionalUrl = z.preprocess((val) => {
   return normalized === '' ? undefined : normalized;
 }, z.string().url().optional());
 
+const optionalTrimmedString = z.preprocess((val) => {
+  const normalized = trimmedEnvironmentString(val);
+  return normalized === '' ? undefined : normalized;
+}, z.string().optional());
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
-    ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().optional()),
+    ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     SWAGGER_ENABLED: envBoolean(true),
     JWT_SECRET: z.string().min(32),
     JWT_REFRESH_SECRET: z.string().min(32).optional(),
@@ -44,10 +49,8 @@ const envSchema = z
     DATABASE_USER: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.string().min(1),
-    // Hanya dibutuhkan oleh tooling lokal yang memilih memberi URL langsung.
-    // Runtime aplikasi memakai konfigurasi DATABASE_* individual.
     DATABASE_URL: z.string().url().optional(),
-    /** Override origin frontend (mis. https://app.domain.go.id). Kosong = deteksi dari header request. */
+    /** Origin kanonis frontend production. */
     PUBLIC_APP_ORIGIN: optionalUrl,
     SOP_PDF_STORAGE_DIR: z.preprocess(
       trimmedEnvironmentString,
@@ -57,9 +60,11 @@ const envSchema = z
     NOTIFICATION_IN_APP_ENABLED: envBoolean(true),
     NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
 
+    /** Outbound WhatsApp benar-benar opsional. */
+    WHATSAPP_ENABLED: envBoolean(false),
     WHAAPI_BASE_URL: z.preprocess(
       trimmedEnvironmentString,
-      z.string().default('https://whaapi.flobaze.com'),
+      z.string().url().default('https://whaapi.flobaze.com'),
     ),
     WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
@@ -77,35 +82,31 @@ const envSchema = z
       trimmedEnvironmentString,
       z.string().min(32, 'TTE_ENCRYPTION_SECRET minimal 32 karakter'),
     ),
-    PDF_SIGNING_P12_BASE64: z.preprocess(
-      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().optional(),
-    ),
+    /**
+     * Menonaktifkan pembuatan signature baru tanpa mematikan endpoint verifikasi.
+     * P12 signing utama berasal dari kredensial personal pengguna, bukan P12 global server.
+     */
+    PDF_SIGNING_ENABLED: envBoolean(true),
+    /** Legacy compatibility; tidak lagi diwajibkan untuk signing personal. */
+    PDF_SIGNING_P12_BASE64: optionalTrimmedString,
     PDF_SIGNING_P12_PASSPHRASE: z.string().default(''),
     PDF_SIGNING_REASON: z.string().default('Pengesahan dokumen SOP'),
     PDF_SIGNING_LOCATION: z.string().default('Indonesia'),
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
-    if (data.WHAAPI_TOKEN === '') {
+    if (data.WHATSAPP_ENABLED && data.WHAAPI_TOKEN === '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'WHAAPI_TOKEN wajib diisi',
+        message: 'WHAAPI_TOKEN wajib diisi ketika WHATSAPP_ENABLED=true',
         path: ['WHAAPI_TOKEN'],
       });
     }
-    if (data.WHAAPI_CHANNEL_ID === '') {
+    if (data.WHATSAPP_ENABLED && data.WHAAPI_CHANNEL_ID === '') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'WHAAPI_CHANNEL_ID wajib diisi',
+        message: 'WHAAPI_CHANNEL_ID wajib diisi ketika WHATSAPP_ENABLED=true',
         path: ['WHAAPI_CHANNEL_ID'],
-      });
-    }
-    if (data.PDF_SIGNING_P12_BASE64 === undefined) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'PDF_SIGNING_P12_BASE64 wajib diisi dengan file .p12/.pfx yang di-encode base64.',
-        path: ['PDF_SIGNING_P12_BASE64'],
       });
     }
     if (data.TTE_ENCRYPTION_SECRET === data.JWT_SECRET) {
@@ -136,9 +137,27 @@ const envSchema = z
         path: ['JWT_REFRESH_SECRET'],
       });
     }
+
+    const allowedOrigins = data.ALLOWED_ORIGINS.trim().toLowerCase();
+    if (allowedOrigins === '*' || allowedOrigins === 'all') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Wildcard origin tidak diizinkan pada production dengan cookie credentials',
+        path: ['ALLOWED_ORIGINS'],
+      });
+    }
+    if (data.PUBLIC_APP_ORIGIN === undefined && allowedOrigins === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'PUBLIC_APP_ORIGIN atau ALLOWED_ORIGINS wajib diisi pada production',
+        path: ['PUBLIC_APP_ORIGIN'],
+      });
+    }
   });
 
-export function validateEnv(config: Record<string, unknown>) {
+export type ValidatedEnvironment = z.infer<typeof envSchema>;
+
+export function validateEnv(config: Record<string, unknown>): ValidatedEnvironment {
   const parsed = envSchema.safeParse(config);
 
   if (!parsed.success) {
