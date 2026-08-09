@@ -7,13 +7,18 @@ import {
   type Page,
 } from '@playwright/test'
 
-import { createAuthenticatedApiContext, apiBaseURL } from '../support/api'
+import { apiBaseURL } from '../support/api'
 import type { E2eUser, RoleKey } from './users'
 
 const browserApiBaseURL =
   process.env.E2E_BROWSER_API_BASE_URL ?? apiBaseURL.replace('127.0.0.1', 'localhost')
 
 type BrowserStorageState = Awaited<ReturnType<APIRequestContext['storageState']>>
+
+interface RoleAuthBundle {
+  api: APIRequestContext
+  browserStorageState: BrowserStorageState
+}
 
 export interface RoleSession {
   user: E2eUser
@@ -27,12 +32,14 @@ export interface RoleSession {
 export type RoleSessionFactory = (user: E2eUser) => Promise<RoleSession>
 export type RoleApiFactory = (user: E2eUser) => Promise<APIRequestContext>
 type RoleStorageStateFactory = (user: E2eUser) => Promise<BrowserStorageState>
+type RoleAuthFactory = (user: E2eUser) => Promise<RoleAuthBundle>
 
 interface BusinessTestFixtures {
   roleSession: RoleSessionFactory
 }
 
 interface BusinessWorkerFixtures {
+  roleAuth: RoleAuthFactory
   roleApi: RoleApiFactory
   roleStorageState: RoleStorageStateFactory
 }
@@ -40,34 +47,18 @@ interface BusinessWorkerFixtures {
 /**
  * Fixture khusus business-journey.
  *
- * Auth state dibuat sekali per role per worker, lalu dipakai ulang untuk BrowserContext baru.
- * Ini menjaga isolasi antaraktor tanpa menembakkan login berulang sampai terkena rate limit.
+ * Satu login dibuat per role per worker. Cookie login yang sama dipakai untuk API
+ * precondition/audit dan BrowserContext, sehingga retry/failure tidak menggandakan
+ * request login sampai menabrak rate limit produksi.
  */
 export const test = base.extend<BusinessTestFixtures, BusinessWorkerFixtures>({
-  roleApi: [
+  roleAuth: [
     async ({}, use) => {
-      const contexts = new Map<RoleKey, APIRequestContext>()
+      const bundles = new Map<RoleKey, RoleAuthBundle>()
+      const apiHostname = new URL(apiBaseURL).hostname
 
       await use(async (user) => {
-        const existing = contexts.get(user.role)
-        if (existing) return existing
-
-        const context = await createAuthenticatedApiContext(user)
-        contexts.set(user.role, context)
-        return context
-      })
-
-      await Promise.allSettled([...contexts.values()].map((context) => context.dispose()))
-    },
-    { scope: 'worker' },
-  ],
-
-  roleStorageState: [
-    async ({}, use) => {
-      const states = new Map<RoleKey, BrowserStorageState>()
-
-      await use(async (user) => {
-        const existing = states.get(user.role)
+        const existing = bundles.get(user.role)
         if (existing) return existing
 
         const authContext = await playwrightRequest.newContext({ baseURL: browserApiBaseURL })
@@ -80,17 +71,51 @@ export const test = base.extend<BusinessTestFixtures, BusinessWorkerFixtures>({
           })
           if (!login.ok()) {
             const body = await login.text().catch(() => '')
-            throw new Error(
-              `Precondition browser auth ${user.role} gagal (${login.status()}): ${body}`,
-            )
+            throw new Error(`Precondition auth ${user.role} gagal (${login.status()}): ${body}`)
           }
-          const state = await authContext.storageState()
-          states.set(user.role, state)
-          return state
+
+          const browserStorageState = await authContext.storageState()
+          const apiStorageState: BrowserStorageState = {
+            ...browserStorageState,
+            cookies: browserStorageState.cookies.map((cookie) => ({
+              ...cookie,
+              domain: apiHostname,
+            })),
+          }
+          const api = await playwrightRequest.newContext({
+            baseURL: apiBaseURL,
+            storageState: apiStorageState,
+          })
+          const me = await api.get(`${apiBaseURL}/auth/me`)
+          if (!me.ok()) {
+            const body = await me.text().catch(() => '')
+            await api.dispose()
+            throw new Error(`Cookie API ${user.role} gagal (${me.status()}): ${body}`)
+          }
+
+          const bundle = { api, browserStorageState }
+          bundles.set(user.role, bundle)
+          return bundle
         } finally {
           await authContext.dispose()
         }
       })
+
+      await Promise.allSettled([...bundles.values()].map(({ api }) => api.dispose()))
+    },
+    { scope: 'worker' },
+  ],
+
+  roleApi: [
+    async ({ roleAuth }, use) => {
+      await use(async (user) => (await roleAuth(user)).api)
+    },
+    { scope: 'worker' },
+  ],
+
+  roleStorageState: [
+    async ({ roleAuth }, use) => {
+      await use(async (user) => (await roleAuth(user)).browserStorageState)
     },
     { scope: 'worker' },
   ],
