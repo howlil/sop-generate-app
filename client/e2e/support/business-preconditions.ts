@@ -1,13 +1,12 @@
-import type { APIRequestContext } from '@playwright/test'
-
 import { users } from '../fixtures/users'
-import { apiGet, apiPatch, apiPost, createAuthenticatedApiContext } from './api'
+import type { RoleApiFactory } from '../fixtures/business-test'
+import { apiGet, apiPatch, apiPost } from './api'
 import {
-  createApprovedSopFixture,
   createReadySopFixture,
   ensureTteReady,
   finishEvaluation,
   nilaiSopSesuai,
+  signAllSop,
   signBeritaAcara,
   type ApprovedSopFixture,
   type ReadySopFixture,
@@ -16,6 +15,13 @@ import { e2ePin, validPdfBase64 } from './test-data'
 
 interface CreatedPengajuan {
   id: string
+}
+
+interface WorkbenchWithPengesahan {
+  tteSignaturePayloadKepalaOpd?: {
+    dokumenTteId: string
+    userId: string
+  }
 }
 
 export interface ActiveEvaluationFixture {
@@ -27,50 +33,43 @@ export interface ActiveEvaluationFixture {
  * Mutation API di file ini hanya untuk membentuk PRECONDITION journey.
  * Aksi yang menjadi objek pengujian harus dilakukan melalui browser di business-actions.ts.
  */
-export async function seedReadySops(prefix: string, count = 1): Promise<ReadySopFixture[]> {
-  const pjPenyusun = await createAuthenticatedApiContext(users.pjPenyusun)
-  try {
-    const sops: ReadySopFixture[] = []
-    for (let index = 0; index < count; index += 1) {
-      sops.push(await createReadySopFixture(pjPenyusun, `${prefix}-${index + 1}`))
-    }
-    return sops
-  } finally {
-    await pjPenyusun.dispose()
+export async function seedReadySops(
+  apiFor: RoleApiFactory,
+  prefix: string,
+  count = 1,
+): Promise<ReadySopFixture[]> {
+  const pjPenyusun = await apiFor(users.pjPenyusun)
+  const sops: ReadySopFixture[] = []
+  for (let index = 0; index < count; index += 1) {
+    sops.push(await createReadySopFixture(pjPenyusun, `${prefix}-${index + 1}`))
   }
+  return sops
 }
 
 export async function seedActiveEvaluation(
+  apiFor: RoleApiFactory,
   prefix: string,
   count = 1,
 ): Promise<ActiveEvaluationFixture> {
-  const pjPenyusun = await createAuthenticatedApiContext(users.pjPenyusun)
-  try {
-    const sops: ReadySopFixture[] = []
-    for (let index = 0; index < count; index += 1) {
-      sops.push(await createReadySopFixture(pjPenyusun, `${prefix}-${index + 1}`))
-    }
-    const pengajuan = await apiPost<CreatedPengajuan>(pjPenyusun, '/evaluasi', {
-      jenis: 'EVALUASI_REQUEST_OPD',
-      sopDetailIds: sops.map((sop) => sop.detailSopId),
-    })
-    return { pengajuanId: pengajuan.id, sops }
-  } finally {
-    await pjPenyusun.dispose()
+  const pjPenyusun = await apiFor(users.pjPenyusun)
+  const sops: ReadySopFixture[] = []
+  for (let index = 0; index < count; index += 1) {
+    sops.push(await createReadySopFixture(pjPenyusun, `${prefix}-${index + 1}`))
   }
+  const pengajuan = await apiPost<CreatedPengajuan>(pjPenyusun, '/evaluasi', {
+    jenis: 'EVALUASI_REQUEST_OPD',
+    sopDetailIds: sops.map((sop) => sop.detailSopId),
+  })
+  return { pengajuanId: pengajuan.id, sops }
 }
 
-export async function ensureJourneyTteProfiles(): Promise<void> {
+export async function ensureJourneyTteProfiles(apiFor: RoleApiFactory): Promise<void> {
   const contexts = await Promise.all([
-    createAuthenticatedApiContext(users.pjEvaluator),
-    createAuthenticatedApiContext(users.pjPenyusun),
-    createAuthenticatedApiContext(users.kepalaOpd),
+    apiFor(users.pjEvaluator),
+    apiFor(users.pjPenyusun),
+    apiFor(users.kepalaOpd),
   ])
-  try {
-    await Promise.all(contexts.map((context) => ensureTteReady(context)))
-  } finally {
-    await Promise.all(contexts.map((context) => context.dispose()))
-  }
+  await Promise.all(contexts.map((context) => ensureTteReady(context)))
 }
 
 /**
@@ -78,105 +77,124 @@ export async function ensureJourneyTteProfiles(): Promise<void> {
  * Loop revisi UI penuh diuji terpisah di J02 sehingga J04 tetap fokus pada agregasi multi-SOP.
  */
 export async function advanceRevisionForAggregationPrecondition(
+  apiFor: RoleApiFactory,
   pengajuanId: string,
   detailSopId: string,
 ): Promise<void> {
-  const pjPenyusun = await createAuthenticatedApiContext(users.pjPenyusun)
-  try {
-    await apiPatch(
-      pjPenyusun,
-      `/evaluasi/${pengajuanId}/nilai/${detailSopId}/tindak-lanjut-selesai`,
-    )
-    await apiPost(pjPenyusun, `/sop/penyusun-workbench/${detailSopId}/kirim-ulang-evaluasi`)
-  } finally {
-    await pjPenyusun.dispose()
-  }
+  const pjPenyusun = await apiFor(users.pjPenyusun)
+  await apiPatch(
+    pjPenyusun,
+    `/evaluasi/${pengajuanId}/nilai/${detailSopId}/tindak-lanjut-selesai`,
+  )
+  await apiPost(pjPenyusun, `/sop/penyusun-workbench/${detailSopId}/kirim-ulang-evaluasi`)
 }
 
 /**
  * Menyiapkan versi DRAFT yang baru dibuat dari UI sampai tepat sebelum aksi Kepala OPD.
  * J05 menguji create-version dan replacement invariant; evaluasi ulang tidak diduplikasi dari J01/J02.
  */
-export async function advanceVersionToHeadSignaturePrecondition(params: {
-  detailSopId: string
-  title: string
-  baNumber: string
-}): Promise<string> {
-  const pjPenyusun = await createAuthenticatedApiContext(users.pjPenyusun)
-  const evaluator = await createAuthenticatedApiContext(users.evaluator)
-  const pjEvaluator = await createAuthenticatedApiContext(users.pjEvaluator)
-  try {
-    await apiPatch(pjPenyusun, `/sop/status/${params.detailSopId}`, {
-      status: 'MENUNGGU_PENGAJUAN_EVALUASI',
-    })
-    const pengajuan = await apiPost<CreatedPengajuan>(pjPenyusun, '/evaluasi', {
-      jenis: 'EVALUASI_REQUEST_OPD',
-      sopDetailIds: [params.detailSopId],
-    })
-    await nilaiSopSesuai(evaluator, pengajuan.id, params.detailSopId)
-    await finishEvaluation(evaluator, pengajuan.id, params.baNumber)
-    await ensureTteReady(pjEvaluator)
-    await ensureTteReady(pjPenyusun)
-    await signBeritaAcara(
-      pjEvaluator,
-      pengajuan.id,
-      params.baNumber,
-      `Berita Acara ${params.title}`,
-    )
-    await signBeritaAcara(
-      pjPenyusun,
-      pengajuan.id,
-      params.baNumber,
-      `Berita Acara ${params.title}`,
-    )
-    return pengajuan.id
-  } finally {
-    await Promise.all([pjPenyusun.dispose(), evaluator.dispose(), pjEvaluator.dispose()])
+export async function advanceVersionToHeadSignaturePrecondition(
+  apiFor: RoleApiFactory,
+  params: {
+    detailSopId: string
+    title: string
+    baNumber: string
+  },
+): Promise<string> {
+  const pjPenyusun = await apiFor(users.pjPenyusun)
+  const evaluator = await apiFor(users.evaluator)
+  const pjEvaluator = await apiFor(users.pjEvaluator)
+
+  await apiPatch(pjPenyusun, `/sop/status/${params.detailSopId}`, {
+    status: 'MENUNGGU_PENGAJUAN_EVALUASI',
+  })
+  const pengajuan = await apiPost<CreatedPengajuan>(pjPenyusun, '/evaluasi', {
+    jenis: 'EVALUASI_REQUEST_OPD',
+    sopDetailIds: [params.detailSopId],
+  })
+  await nilaiSopSesuai(evaluator, pengajuan.id, params.detailSopId)
+  await finishEvaluation(evaluator, pengajuan.id, params.baNumber)
+  await ensureTteReady(pjEvaluator)
+  await ensureTteReady(pjPenyusun)
+  await signBeritaAcara(
+    pjEvaluator,
+    pengajuan.id,
+    params.baNumber,
+    `Berita Acara ${params.title}`,
+  )
+  await signBeritaAcara(
+    pjPenyusun,
+    pengajuan.id,
+    params.baNumber,
+    `Berita Acara ${params.title}`,
+  )
+  return pengajuan.id
+}
+
+export async function seedApprovedSop(
+  apiFor: RoleApiFactory,
+  prefix: string,
+): Promise<ApprovedSopFixture> {
+  const pjPenyusun = await apiFor(users.pjPenyusun)
+  const evaluator = await apiFor(users.evaluator)
+  const pjEvaluator = await apiFor(users.pjEvaluator)
+  const kepalaOpd = await apiFor(users.kepalaOpd)
+
+  const sop = await createReadySopFixture(pjPenyusun, prefix)
+  const pengajuan = await apiPost<CreatedPengajuan>(pjPenyusun, '/evaluasi', {
+    jenis: 'EVALUASI_REQUEST_OPD',
+    sopDetailIds: [sop.detailSopId],
+  })
+  await nilaiSopSesuai(evaluator, pengajuan.id, sop.detailSopId)
+  await finishEvaluation(evaluator, pengajuan.id, sop.baNumber)
+  await ensureTteReady(pjEvaluator)
+  await ensureTteReady(pjPenyusun)
+  await ensureTteReady(kepalaOpd)
+  await signBeritaAcara(
+    pjEvaluator,
+    pengajuan.id,
+    sop.baNumber,
+    `Berita Acara ${sop.title}`,
+  )
+  await signBeritaAcara(
+    pjPenyusun,
+    pengajuan.id,
+    sop.baNumber,
+    `Berita Acara ${sop.title}`,
+  )
+  await signAllSop(kepalaOpd, pengajuan.id, sop.detailSopId, sop.number, sop.title)
+
+  const workbench = await apiGet<WorkbenchWithPengesahan>(
+    kepalaOpd,
+    `/sop/penyusun-workbench/${sop.detailSopId}`,
+  )
+  return {
+    ...sop,
+    pengajuanId: pengajuan.id,
+    pengesahan: workbench.tteSignaturePayloadKepalaOpd,
   }
 }
 
-export async function seedApprovedSop(prefix: string): Promise<ApprovedSopFixture> {
-  return createApprovedSopFixture(prefix)
-}
-
 export async function createSignedPdfArtifact(
+  apiFor: RoleApiFactory,
   approved: ApprovedSopFixture,
 ): Promise<{ enabled: boolean; pdf: Buffer }> {
   if (!approved.pengesahan) {
     throw new Error('SOP approved tidak memiliki payload pengesahan TTE')
   }
 
-  const kepalaOpd = await createAuthenticatedApiContext(users.kepalaOpd)
-  try {
-    const status = await apiGet<{ enabled: boolean }>(
-      kepalaOpd,
-      '/tte/public/pdf-signing/status',
-    )
-    const signed = await apiPost<{ signedPdfBase64: string }>(kepalaOpd, '/tte/pdf/sign', {
-      pin: e2ePin,
-      dokumenTteId: approved.pengesahan.dokumenTteId,
-      userId: approved.pengesahan.userId,
-      jenisDokumen: 'SOP_BERLAKU',
-      pdfBase64: validPdfBase64,
-    })
+  const kepalaOpd = await apiFor(users.kepalaOpd)
+  const status = await apiGet<{ enabled: boolean }>(kepalaOpd, '/tte/public/pdf-signing/status')
+  const signed = await apiPost<{ signedPdfBase64: string }>(kepalaOpd, '/tte/pdf/sign', {
+    pin: e2ePin,
+    dokumenTteId: approved.pengesahan.dokumenTteId,
+    userId: approved.pengesahan.userId,
+    jenisDokumen: 'SOP_BERLAKU',
+    pdfBase64: validPdfBase64,
+  })
 
-    return {
-      enabled: status.enabled,
-      pdf: Buffer.from(signed.signedPdfBase64, 'base64'),
-    }
-  } finally {
-    await kepalaOpd.dispose()
-  }
-}
-
-/** Helper sempit untuk setup yang membutuhkan context API eksternal. */
-export async function withPjPenyusunApi<T>(
-  action: (context: APIRequestContext) => Promise<T>,
-): Promise<T> {
-  const context = await createAuthenticatedApiContext(users.pjPenyusun)
-  try {
-    return await action(context)
-  } finally {
-    await context.dispose()
+  return {
+    enabled: status.enabled,
+    pdf: Buffer.from(signed.signedPdfBase64, 'base64'),
   }
 }
