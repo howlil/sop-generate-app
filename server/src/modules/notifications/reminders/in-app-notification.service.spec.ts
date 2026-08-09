@@ -1,5 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
-import { NotificationReminderKind, PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
+import {
+  JenisPengingatWhatsApp as NotificationReminderKind,
+  PeranPengguna,
+  StatusPengajuanEvaluasi,
+} from '../../../generated/prisma';
 import { InAppNotificationService } from './in-app-notification.service';
 import { NotificationEventsService } from './notification-events.service';
 import { ReminderMessageFactory } from './reminder-message.factory';
