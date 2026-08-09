@@ -25,17 +25,15 @@ function getApiBaseUrl(): string {
   return resolveApiBaseUrl()
 }
 
-function getHeaders(): HeadersInit {
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+
+function getHeaders(method = 'GET'): HeadersInit {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
 
-  // CSRF Token (if available) — hanya di browser; `document` tidak ada saat SSR.
-  if (typeof document !== 'undefined') {
-    const csrfToken = document
-      .querySelector('meta[name="csrf-token"]')
-      ?.getAttribute('content')
-    if (csrfToken) {
-      headers['X-CSRF-Token'] = csrfToken
-    }
+  // Bukan secret. Header ini memaksa request browser melewati CORS/preflight rules,
+  // lalu server tetap memvalidasi Origin dan Sec-Fetch-Site untuk cookie-auth.
+  if (!SAFE_METHODS.has(method.toUpperCase())) {
+    headers['X-CSRF-Token'] = '1'
   }
 
   return headers
@@ -55,36 +53,34 @@ export class ApiError extends Error {
   }
 }
 
-
 interface ErrorResponseBody {
-  message?: string;
-  errors?: string[];
-  error?: string[];
-  code?: string;
-  statusCode?: number;
-  status?: number;
+  message?: string
+  errors?: string[]
+  error?: string[]
+  code?: string
+  statusCode?: number
+  status?: number
 }
 
-function extractErrors(errorBody: ErrorResponseBody): { message: string; errors?: string[]; code?: string } {
+function extractErrors(errorBody: ErrorResponseBody): {
+  message: string
+  errors?: string[]
+  code?: string
+} {
   const errors = Array.isArray(errorBody.errors)
     ? errorBody.errors
     : Array.isArray(errorBody.error)
-    ? errorBody.error
-    : undefined
+      ? errorBody.error
+      : undefined
 
   const message = errors
     ? errors.join('\n')
     : errorBody.message || `HTTP ${errorBody.statusCode || errorBody.status || 'unknown'}`
 
-  // Extract error code if present
-  const code = 'code' in errorBody ? errorBody.code as string : undefined
-
+  const code = 'code' in errorBody ? (errorBody.code as string) : undefined
   return { message, errors, code }
 }
 
-/**
- * Request queue type for pending requests during token refresh
- */
 interface QueuedRequest<T = unknown> {
   endpoint: string
   options: RequestInit
@@ -93,20 +89,10 @@ interface QueuedRequest<T = unknown> {
   retryCount: number
 }
 
-/**
- * Track if we're currently refreshing to prevent multiple simultaneous refreshes
- */
 let isRefreshing = false
 let refreshPromise: Promise<boolean> | null = null
-
-/**
- * Queue of requests waiting for token refresh to complete
- */
 let requestQueue: QueuedRequest<unknown>[] = []
 
-/**
- * Process queued requests after successful token refresh
- */
 function processRequestQueue() {
   const queue = [...requestQueue]
   requestQueue = []
@@ -118,28 +104,19 @@ function processRequestQueue() {
   })
 }
 
-/**
- * Reject all queued requests (e.g., when refresh fails)
- */
 function rejectRequestQueue(error: Error | ApiError) {
   const queue = [...requestQueue]
   requestQueue = []
-
   queue.forEach(({ reject }) => reject(error))
 }
 
-/**
- * Refresh access token using refresh token cookie.
- * Returns true if refresh succeeded, false otherwise.
- * Tokens are delivered via HttpOnly cookies — no tokens in response body.
- */
 async function refreshAccessToken(): Promise<boolean> {
   try {
     const url = `${getApiBaseUrl()}/auth/refresh`
     const response = await fetch(url, {
       method: 'POST',
-      headers: getHeaders(),
-      credentials: 'include', // Include cookies
+      headers: getHeaders('POST'),
+      credentials: 'include',
     })
 
     return response.ok
@@ -148,9 +125,6 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
-/**
- * Wait for ongoing refresh or start a new one
- */
 function waitForRefresh(): Promise<boolean> {
   if (isRefreshing && refreshPromise) {
     return refreshPromise
@@ -177,10 +151,9 @@ function waitForRefresh(): Promise<boolean> {
   return refreshPromise
 }
 
-const REQUEST_TIMEOUT = 15000 // 15 seconds
+const REQUEST_TIMEOUT = 15000
 
 async function request<T>(endpoint: string, options: RequestInit = {}, retryCount = 0): Promise<T> {
-  // If we're refreshing, queue this request
   if (isRefreshing && retryCount === 0) {
     return new Promise<T>((resolve, reject) => {
       requestQueue.push({
@@ -194,10 +167,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
   }
 
   const url = `${getApiBaseUrl()}${endpoint}`
-  // Filter out empty headers (like Content-Type: '') to allow browser to set FormData boundary
-  const mergedHeaders = { ...getHeaders(), ...options.headers }
+  const method = (options.method ?? 'GET').toUpperCase()
+  const mergedHeaders = { ...getHeaders(method), ...options.headers }
   const headers = Object.fromEntries(
-    Object.entries(mergedHeaders).filter(([_, v]) => v !== '')
+    Object.entries(mergedHeaders).filter(([_, value]) => value !== ''),
   ) as Record<string, string>
 
   let response: Response
@@ -208,14 +181,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
     response = await fetch(url, {
       ...options,
       headers,
-      credentials: 'include', // Include cookies in requests
+      credentials: 'include',
       signal: controller.signal,
     })
   } catch (networkError: unknown) {
     const isTimeout = networkError instanceof DOMException && networkError.name === 'AbortError'
     const message = isTimeout
       ? 'Permintaan melebihi batas waktu'
-      : 'Tidak dapat terhubung ke server API. Pastikan `pnpm start:dev` di folder server sudah jalan.'
+      : 'Tidak dapat terhubung ke server API. Pastikan server API sedang berjalan.'
     throw new ApiError(0, message)
   } finally {
     clearTimeout(timeoutId)
@@ -231,7 +204,6 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
   const isPublicApiEndpoint =
     endpoint.startsWith('/tte/public/') || endpoint.startsWith('/sop/public/')
 
-  // Handle 401 Unauthorized - attempt token refresh
   if (response.status === 401 && !isAuthSessionEndpoint && !isPublicApiEndpoint) {
     if (retryCount === 0) {
       const refreshed = await waitForRefresh()
@@ -265,17 +237,17 @@ export const apiClient = {
       method: 'POST',
       body: isFormData ? (body as FormData) : JSON.stringify(body),
     }
-    
-    // Biarkan browser yang set boundary untuk multipart/form-data
+
     if (isFormData) {
       requestOptions.headers = {
-        // Trik agar fetch menghapus Content-Type bawaan (application/json)
         'Content-Type': '',
       }
     }
     return request<T>(endpoint, requestOptions)
   },
-  patch: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
-  put: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(endpoint: string, body?: unknown) =>
+    request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+  put: <T>(endpoint: string, body?: unknown) =>
+    request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T = void>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
 }
