@@ -78,7 +78,7 @@ export class TteProfilService {
 
     let encryptedPassphrase = existing.p12PassphraseEncrypted;
     const hasEncryptedPassphrase = typeof encryptedPassphrase === 'string';
-    if (hasEncryptedPassphrase) {
+    if (typeof encryptedPassphrase === 'string') {
       try {
         const passphrase = decryptP12Passphrase(encryptedPassphrase, dto.pinLama);
         encryptedPassphrase = encryptP12Passphrase(passphrase, dto.pinBaru);
