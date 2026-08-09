@@ -31,7 +31,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "pdf-signing:generate-cert": "node scripts/generate-pdf-signing-cert.cjs",
     "db:seed": "prisma migrate deploy && prisma db seed",
-    "db:seed:e2e": "prisma migrate deploy && prisma db seed",
+    "db:seed:e2e": "ts-node --transpile-only --compiler-options {\"module\":\"CommonJS\"} prisma/seed-e2e.ts",
     "db:fresh": "prisma migrate reset --force"
   },
   "dependencies": {
