@@ -5,6 +5,10 @@ const crypto = require('crypto');
 const passphrase = process.argv[2] ?? process.env.PDF_SIGNING_P12_PASSPHRASE ?? crypto.randomBytes(16).toString('hex');
 
 const now = new Date();
+// X.509 validity menggunakan presisi waktu yang lebih kasar daripada Date JavaScript dan
+// sertifikat dapat dipakai lintas host dengan clock drift kecil. Backdate 5 menit mencegah
+// sertifikat yang baru dibuat dianggap "belum berlaku" tanpa memperpanjang notAfter.
+const validFrom = new Date(now.getTime() - 5 * 60 * 1000);
 const expiresAt = new Date(now);
 expiresAt.setFullYear(now.getFullYear() + 5);
 
@@ -36,7 +40,7 @@ const signingAttrs = [
 const caCert = forge.pki.createCertificate();
 caCert.publicKey = caKeys.publicKey;
 caCert.serialNumber = serial('ca');
-caCert.validity.notBefore = now;
+caCert.validity.notBefore = validFrom;
 caCert.validity.notAfter = expiresAt;
 caCert.setSubject(caAttrs);
 caCert.setIssuer(caAttrs);
@@ -50,7 +54,7 @@ caCert.sign(caKeys.privateKey, forge.md.sha256.create());
 const signingCert = forge.pki.createCertificate();
 signingCert.publicKey = signingKeys.publicKey;
 signingCert.serialNumber = serial('01');
-signingCert.validity.notBefore = now;
+signingCert.validity.notBefore = validFrom;
 signingCert.validity.notAfter = expiresAt;
 signingCert.setSubject(signingAttrs);
 signingCert.setIssuer(caAttrs);
