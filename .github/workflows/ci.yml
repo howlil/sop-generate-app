@@ -189,10 +189,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Apply production migration chain
+      - name: Validate schema and apply production migration chain
         run: |
+          pnpm prisma validate
           pnpm prisma generate
           pnpm prisma migrate deploy
+          pnpm prisma migrate status
 
       - name: Run database invariant integration tests
         run: pnpm test:integration:run --no-cache -- database-invariants.integration-spec.ts
