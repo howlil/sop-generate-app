@@ -33,6 +33,22 @@ Dokumen ini menjadi kontrak operasional CI untuk lapisan pengujian setelah audit
 6. **Container build**
    - hanya dijalankan setelah seluruh gate di atas berhasil.
 
+## Scope unit coverage backend
+
+Threshold unit coverage backend tetap `80%` untuk branches, functions, lines, dan statements. Threshold tidak diturunkan untuk membuat pipeline hijau.
+
+Coverage unit difokuskan pada domain, policy, mapper, service, dan utility yang dapat diuji secara deterministik tanpa boundary eksternal. Adapter/infrastructure boundary berikut tidak dimasukkan ke denominator unit coverage karena validasinya dilakukan pada integration/system layer:
+
+- logger bootstrap;
+- Prisma connection lifecycle;
+- provider pengiriman notification eksternal dan push worker;
+- filesystem PDF storage adapter;
+- generator kredensial P12;
+- PDF signing orchestrator yang memiliki test/integration path tersendiri;
+- controller, repository, DTO, module wiring, generated Prisma, seed runtime, dan bootstrap aplikasi yang sejak awal memang berada di luar scope unit coverage.
+
+Pengecualian ini bukan berarti komponen tersebut tidak diuji. Boundary tersebut dilindungi melalui backend integration tests, PDF/TTE tests, functional Playwright, critical J01-J07, atau container/runtime verification sesuai lapisannya.
+
 ## Database fidelity
 
 Test yang mengklaim integrasi database atau business workflow wajib menggunakan migration history. Hal ini penting karena sebagian invariant sistem berada di SQL migration/trigger dan tidak dapat direpresentasikan hanya oleh `schema.prisma` + `prisma db push`.
