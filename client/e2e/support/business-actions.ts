@@ -47,12 +47,25 @@ export async function evaluateSopViaUi(
 ): Promise<void> {
   const titlePattern = new RegExp(escapeRegExp(params.title), 'i')
   const sopButton = page.getByRole('button', { name: titlePattern }).first()
-  if (await sopButton.isVisible().catch(() => false)) {
-    await sopButton.click()
-  }
+  await expect(sopButton, `SOP ${params.title} harus tersedia di workspace evaluator`).toBeVisible()
+  await sopButton.click()
 
   const optionName = params.result === 'SESUAI' ? /^sesuai$/i : /^perlu perbaikan$/i
-  await page.getByRole('radio', { name: optionName }).click()
+  const option = page.getByRole('radio', { name: optionName })
+
+  // Pada penilaian ulang, UI sengaja menampilkan keputusan sebelumnya terlebih dahulu.
+  // Evaluator harus memilih "Ubah Penilaian" untuk membuka kontrol keputusan baru.
+  if (!(await option.isVisible())) {
+    const editAssessment = page.getByRole('button', { name: /ubah penilaian/i })
+    await expect(
+      editAssessment,
+      'Penilaian aktif tidak tersedia dan kontrol Ubah Penilaian juga tidak muncul',
+    ).toBeVisible()
+    await editAssessment.click()
+  }
+
+  await expect(option).toBeVisible()
+  await option.click()
 
   if (params.result === 'PERLU_PERBAIKAN') {
     const note = params.note?.trim()
