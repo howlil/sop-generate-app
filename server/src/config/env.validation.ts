@@ -23,7 +23,7 @@ const envBoolean = (defaultValue: boolean) =>
 const optionalEnvBoolean = z.preprocess(parseBoolean, z.boolean().optional());
 
 const trimmedEnvironmentString = (val: unknown) =>
-  typeof val === 'string' ? val.trim() : val;
+  (typeof val === 'string' ? val.trim() : val);
 
 const optionalUrl = z.preprocess((val) => {
   const normalized = trimmedEnvironmentString(val);
@@ -48,15 +48,9 @@ const envSchema = z
       z.string().default('15m'),
     ),
     JWT_REFRESH_EXPIRATION: z.string().default('7d'),
-    DATABASE_HOST: z.preprocess(
-      trimmedEnvironmentString,
-      z.string().min(1).default('localhost'),
-    ),
+    DATABASE_HOST: z.preprocess(trimmedEnvironmentString, z.string().min(1).default('localhost')),
     DATABASE_PORT: z.coerce.number().int().min(1).max(65535).default(3306),
-    DATABASE_USER: z.preprocess(
-      trimmedEnvironmentString,
-      z.string().min(1).default('sop_app'),
-    ),
+    DATABASE_USER: z.preprocess(trimmedEnvironmentString, z.string().min(1).default('sop_app')),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.preprocess(
       trimmedEnvironmentString,
@@ -71,12 +65,7 @@ const envSchema = z
     ),
 
     NOTIFICATION_IN_APP_ENABLED: envBoolean(true),
-    NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(300)
-      .default(10),
+    NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
 
     /**
      * Flag lama tetap diterima agar deployment lama tidak berubah perilaku.
@@ -89,22 +78,9 @@ const envSchema = z
     ),
     WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(
-      trimmedEnvironmentString,
-      z.string().default(''),
-    ),
-    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(43_200)
-      .default(1440),
-    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce
-      .number()
-      .int()
-      .min(1_000)
-      .max(60_000)
-      .default(10_000),
+    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
+    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
 
