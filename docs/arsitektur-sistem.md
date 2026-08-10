@@ -28,7 +28,7 @@ Backend
   +--> persistent PDF storage /app/storage/sop-pdf
   |      (Docker volume: sop_pdf_data)
   |
-  +--> WhaAPI (opsional, outbound)
+  +--> Wago self-hosted (opsional, outbound WhatsApp)
 ```
 
 Port di atas adalah port internal container/service. Pengguna publik tidak perlu membuka port 8080 atau 3001 secara langsung; public ingress/reverse proxy menangani HTTP/HTTPS dan meneruskan traffic ke service frontend.
@@ -98,13 +98,15 @@ Reminder in-app dijalankan oleh scheduler backend dan tidak memerlukan provider 
 
 ### WhatsApp
 
-Provider aktif adalah `WhaApiProvider`. Tidak ada lagi feature flag `WHATSAPP_ENABLED`.
+Provider aktif adalah `WagoProvider`, yang mengirim outbound text ke instance Wago self-hosted melalui `POST /messages/send` dengan Bearer API key.
 
-- `WHAAPI_TOKEN` kosong + `WHAAPI_CHANNEL_ID` kosong: WhatsApp nonaktif.
+- `WAGO_BASE_URL` kosong + `WAGO_API_KEY` kosong: WhatsApp nonaktif.
 - keduanya terisi: WhatsApp aktif.
 - hanya salah satu terisi: konfigurasi dianggap invalid dan backend menolak startup.
 
-Base URL dan parameter tuning lain mempunyai default aplikasi/Compose dan dapat dioverride bila memang diperlukan.
+Recipient policy tidak disimpan ulang atau dikelola oleh SOPFlow. Nomor receiver harus di-allow secara manual pada Wago. Bila Wago menolak `RECIPIENT_NOT_ALLOWED` atau `RECIPIENT_OPTED_OUT`, SOPFlow menyimpan kegagalan reminder dan menjadwalkan percobaan berikutnya sesuai interval reminder; SOPFlow tidak mencoba membypass policy Wago.
+
+Setiap logical reminder occurrence membawa `Idempotency-Key` yang stabil selama retry. Setelah reminder berhasil dicatat oleh SOPFlow, `lastSentAt` berubah sehingga occurrence reminder berikutnya memperoleh key baru. Respons Wago `DUPLICATE_MESSAGE` untuk key occurrence yang sama dianggap sebagai logical success agar timeout/retry transport tidak menggandakan pesan.
 
 Suite integration Evolution API lama telah dihapus karena tidak sesuai dengan source module notifikasi aktif.
 
@@ -136,6 +138,8 @@ Service pada `compose.yml`:
 - `cap_drop: ALL`;
 - tidak membutuhkan `cap_add`.
 
+Wago di-host sebagai service/gateway terpisah. SOPFlow hanya membutuhkan HTTPS base URL Wago dan API key server-side; API key tidak boleh dimasukkan ke bundle frontend.
+
 ## Reverse proxy dan MyPaas
 
 Pada deployment melalui platform seperti MyPaas, reverse proxy/public ingress menerima request publik pada HTTP/HTTPS dan mengarahkan hostname aplikasi ke internal frontend port `8080`.
@@ -153,7 +157,7 @@ Secret berikut tidak boleh di-hardcode atau dicommit:
 - password database;
 - JWT secret dan refresh secret;
 - `TTE_ENCRYPTION_SECRET`;
-- WhaAPI token/channel bila WhatsApp digunakan.
+- `WAGO_API_KEY` bila WhatsApp digunakan.
 
 Auth menggunakan cookie/JWT sesuai implementasi backend. CORS production harus menggunakan origin eksplisit karena request authenticated memakai credentials.
 
