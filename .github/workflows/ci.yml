@@ -247,21 +247,6 @@ jobs:
       - server-quality
       - client-quality
       - database-invariants
-    services:
-      mariadb:
-        image: mariadb:11.4
-        env:
-          MARIADB_ROOT_PASSWORD: ci-root-password
-          MARIADB_DATABASE: ci_e2e
-          MARIADB_USER: ci
-          MARIADB_PASSWORD: ci
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="healthcheck.sh --connect --innodb_initialized"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=20
     env:
       NODE_ENV: test
       PORT: 3000
@@ -290,6 +275,30 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Start MariaDB matching production
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d \
+            --name sop-ci-critical-e2e-db \
+            -e MARIADB_ROOT_PASSWORD=ci-root-password \
+            -e MARIADB_DATABASE=ci_e2e \
+            -e MARIADB_USER=ci \
+            -e MARIADB_PASSWORD=ci \
+            -p 3306:3306 \
+            mariadb:11.4 \
+            --lower_case_table_names=1
+
+          for i in {1..30}; do
+            if docker exec sop-ci-critical-e2e-db healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs sop-ci-critical-e2e-db
+          exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -349,6 +358,10 @@ jobs:
           path: client/playwright-report
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Stop MariaDB
+        if: always()
+        run: docker rm -f sop-ci-critical-e2e-db || true
 
   container-build:
     name: Container build
