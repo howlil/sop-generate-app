@@ -145,7 +145,7 @@ async function submitPinDialog(page: Page, buttonName: RegExp, pin: string): Pro
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   await dialog.getByPlaceholder(/masukkan pin/i).fill(pin)
-  await dialog.getByRole('button', { name: /^tanda tangan$/i }).click()
+  await dialog.getByRole('button', { name: /^tanda tangan(?:i)?$/i }).click()
   await expect(dialog).toBeHidden({ timeout: 30_000 })
 }
 
