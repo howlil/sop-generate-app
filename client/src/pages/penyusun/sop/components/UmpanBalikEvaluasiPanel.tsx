@@ -1,8 +1,10 @@
 import { Check, MessageSquare } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/ui/loading-state'
 import { EmptyState } from '@/components/ui/empty-state'
 import { HasilEvaluasiBadge } from '@/components/status/hasil-evaluasi-badge'
+import { useTandaiTindakLanjutSelesai } from '@/api/evaluasi'
 import {
   getStatusTindakLanjutBadgeClass,
   getStatusTindakLanjutLabel,
@@ -32,6 +34,8 @@ export function UmpanBalikEvaluasiPanel({
   umpanBalik,
   isLoading = false,
 }: UmpanBalikEvaluasiPanelProps) {
+  const tandaiTindakLanjutSelesai = useTandaiTindakLanjutSelesai(umpanBalik?.detailSopId)
+
   if (isLoading) {
     return <LoadingState compact message="Memuat komentar evaluasi…" />
   }
@@ -56,6 +60,15 @@ export function UmpanBalikEvaluasiPanel({
     umpanBalikData.statusTindakLanjut,
     umpanBalikData.statusTindakLanjutLabel,
   )
+
+  const handleTandaiSelesai = () => {
+    void tandaiTindakLanjutSelesai
+      .mutateAsync({
+        pengajuanEvaluasiId: umpanBalikData.pengajuanEvaluasiId,
+        detailSopId: umpanBalikData.detailSopId,
+      })
+      .catch(() => undefined)
+  }
 
   return (
     <div className="p-3 space-y-3">
@@ -92,6 +105,21 @@ export function UmpanBalikEvaluasiPanel({
             Ditandai selesai oleh {umpanBalikData.ditindaklanjutiOleh.nama} pada{' '}
             {formatDate(umpanBalikData.ditindaklanjutiPada)}
           </p>
+        ) : null}
+        {isTerbuka && !isDitolak ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="mt-1 h-8 w-full gap-1.5 text-xs"
+            disabled={tandaiTindakLanjutSelesai.isPending}
+            onClick={handleTandaiSelesai}
+          >
+            <Check className="h-3.5 w-3.5" aria-hidden />
+            {tandaiTindakLanjutSelesai.isPending
+              ? 'Menandai selesai…'
+              : 'Tandai tindak lanjut selesai'}
+          </Button>
         ) : null}
       </div>
     </div>

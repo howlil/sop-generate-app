@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { HeadContent, Scripts, createRootRoute, redirect } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
@@ -106,6 +107,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body suppressHydrationWarning>
         <ErrorBoundary fallback={<RouteErrorPage error={new Error("Terjadi kesalahan yang tidak terduga pada aplikasi.")} reset={() => window.location.reload()} />}>
           <QueryClientProvider client={queryClient}>
+            <AppHydrationMarker />
             <RouteFocusManager>{children}</RouteFocusManager>
             <GlobalToast />
             {import.meta.env.DEV && (
@@ -130,4 +132,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   );
+}
+
+/**
+ * Marks the document interactive only after React hydration has committed.
+ * E2E tests use this observable boundary instead of network-idle heuristics,
+ * which are unreliable for dashboards with background queries/dev tooling.
+ */
+function AppHydrationMarker() {
+  useEffect(() => {
+    document.documentElement.dataset.appHydrated = "true";
+    return () => {
+      delete document.documentElement.dataset.appHydrated;
+    };
+  }, []);
+
+  return null;
 }

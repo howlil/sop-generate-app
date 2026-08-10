@@ -29,7 +29,11 @@ export async function loginViaUi(page: Page, user: E2eUser): Promise<void> {
 }
 
 export async function waitForAppReady(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+  // SSR markup may be visible before React has attached event handlers. Waiting on
+  // the root hydration marker prevents interactions from being overwritten by hydration.
+  await expect(page.locator('html[data-app-hydrated="true"]')).toBeAttached()
+  await expect(page.locator('body')).toBeVisible()
 }
 
 export async function logoutViaUi(page: Page): Promise<void> {
@@ -114,6 +118,12 @@ export async function searchPageIfAvailable(
     if (!(await input.isVisible().catch(() => false))) continue
     await input.fill(value)
     await expect(input).toHaveValue(value)
+
+    // Arsip global search is debounced into router state. Synchronize on that
+    // observable state instead of sleeping or assuming fill() means results are ready.
+    if ((await input.getAttribute('id')) === 'arsip-global-search') {
+      await expect(page).toHaveURL((url) => url.searchParams.get('q') === value)
+    }
     return
   }
 

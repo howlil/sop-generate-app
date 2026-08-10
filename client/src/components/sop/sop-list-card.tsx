@@ -65,6 +65,7 @@ function SopListItemButton({
     <Button
       type="button"
       variant="ghost"
+      aria-pressed={isSelected}
       className={cn(ITEM_CLASS, isSelected && SELECTED_ITEM_CLASS)}
       onClick={() => onSelect(sop.id)}
     >
