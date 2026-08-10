@@ -21,7 +21,9 @@ export class NotificationReminderSchedulerService implements OnModuleInit, OnMod
     config: ConfigService,
   ) {
     this.inAppEnabled = config.get<boolean>('NOTIFICATION_IN_APP_ENABLED', true);
-    this.whatsappEnabled = config.get<boolean>('WHATSAPP_ENABLED', false);
+    const whatsappToken = config.get<string>('WHAAPI_TOKEN', '').trim();
+    const whatsappChannelId = config.get<string>('WHAAPI_CHANNEL_ID', '').trim();
+    this.whatsappEnabled = whatsappToken !== '' && whatsappChannelId !== '';
     this.intervalMs = config.get<number>('NOTIFICATION_RECONCILE_INTERVAL_SECONDS', 10) * 1_000;
   }
 
