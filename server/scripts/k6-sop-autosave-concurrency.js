@@ -32,19 +32,19 @@ let failedAutosaveSamples = 0
 export function setup() {
   const userA = login(EMAIL_A, PASSWORD_A)
   const userB = login(EMAIL_B, PASSWORD_B)
-  const suffix = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
+  const suffix = compactSuffix()
   const sop = post(
     '/sop',
     {
-      judul: `K6 Concurrency SOP ${suffix}`,
-      nomorSop: `K6/CONC/${suffix}`,
+      judul: `K6 SOP ${suffix}`,
+      nomorSop: `K6/${suffix}/26`,
       namaLembaga: 'Biro Organisasi Sumbar',
     },
     userA.cookie,
   )
   const pelaksana = post(
     '/pelaksana',
-    { namaPelaksana: `Pelaksana K6 ${suffix}` },
+    { namaPelaksana: `K6-${suffix}` },
     userA.cookie,
   )
 
@@ -58,13 +58,13 @@ export function setup() {
 
 export default function (data) {
   const actor = __VU % 2 === 0 ? data.userA : data.userB
-  const marker = `vu-${__VU}-iter-${__ITER}-${Date.now()}`
+  const marker = `v${__VU}i${__ITER}${Date.now().toString(36).slice(-6)}`
 
   group('parallel-like autosave header', () => {
     const response = patch(
       `/sop/header/${data.detailSopId}?logsLimit=25`,
       {
-        namaLembaga: `Biro Organisasi Sumbar ${marker}`,
+        namaLembaga: `Biro K6 ${marker}`.slice(0, 28),
         lampiran: {
           peringatan: [`Peringatan ${marker}`],
         },
@@ -216,6 +216,10 @@ function parseJson(response) {
   } catch {
     return null
   }
+}
+
+function compactSuffix() {
+  return `${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`.slice(-10)
 }
 
 function truncate(value) {
