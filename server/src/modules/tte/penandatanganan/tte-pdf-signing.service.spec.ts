@@ -12,10 +12,20 @@ import { TtePdfSigningService } from './tte-pdf-signing.service';
 import { TteRepository } from '../shared/repository/tte.repository';
 import { encryptP12Passphrase } from '../shared/utils/tte-crypto.util';
 
+type PdfDocumentLike = {
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  text(value: string): void;
+  end(): void;
+};
+
+type PdfDocumentConstructor = new () => PdfDocumentLike;
+
+// pdfkit adalah dependency transitif placeholder-plain; resolve dari package tersebut agar
+// test memakai implementasi yang sama tanpa menambah dependency production baru.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDFDocument = require(
   require.resolve('pdfkit', { paths: [require.resolve('@signpdf/placeholder-plain')] }),
-);
+) as PdfDocumentConstructor;
 
 describe('Pengujian TtePdfSigningService', () => {
   let service: TtePdfSigningService;
@@ -173,7 +183,9 @@ describe('Pengujian TtePdfSigningService', () => {
       },
     );
     expect(actual.signed).toBe(true);
-    expect(repository.updateRiwayatPdfSignatureMetadata).toHaveBeenCalledWith(
+    expect(repository.updateRiwayatPdfSignatureMetadata).toHaveBeenCalledTimes(1);
+    const metadataUpdate: unknown = repository.updateRiwayatPdfSignatureMetadata.mock.calls[0]?.[0];
+    expect(metadataUpdate).toEqual(
       expect.objectContaining({
         userId,
         dokumenTteId,
@@ -192,11 +204,7 @@ describe('Pengujian TtePdfSigningService', () => {
     expect(fields[0]?.reason).toContain('SI-SOP-TTE');
     expect(parsePdfTteSigningReason(fields[0]?.reason ?? null)).toEqual(expectedBinding);
 
-    const verification = verifyPdfWithP12(
-      signedPdf,
-      Buffer.from(p12Base64, 'base64'),
-      passphrase,
-    );
+    const verification = verifyPdfWithP12(signedPdf, Buffer.from(p12Base64, 'base64'), passphrase);
     expect(verification.hasSignatures).toBe(true);
     expect(verification.signatures[0]?.checks).toEqual({
       digestMatch: true,
@@ -212,13 +220,15 @@ describe('Pengujian TtePdfSigningService', () => {
 
 function createSamplePdf(): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument() as {
-      on(event: string, listener: (...args: unknown[]) => void): void;
-      text(value: string): void;
-      end(): void;
-    };
+    const doc = new PDFDocument();
     const chunks: Buffer[] = [];
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('data', (chunk: unknown) => {
+      if (!Buffer.isBuffer(chunk)) {
+        reject(new Error('pdfkit menghasilkan chunk non-Buffer'));
+        return;
+      }
+      chunks.push(chunk);
+    });
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
     doc.text('Dokumen uji Berita Acara arsip');
