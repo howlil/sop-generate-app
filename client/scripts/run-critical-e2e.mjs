@@ -42,7 +42,7 @@ const failures = []
 
 for (const journeyId of journeyIds) {
   console.log(`\n=== ${journeyId}: reset database melalui migration history ===`)
-  mustRun('pnpm', ['prisma', 'migrate', 'reset', '--force', '--skip-seed'], serverDir)
+  mustRun('pnpm', ['prisma', 'migrate', 'reset', '--force'], serverDir)
   mustRun('pnpm', ['db:seed:e2e'], serverDir)
 
   console.log(`=== ${journeyId}: execute isolated journey ===`)
