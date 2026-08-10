@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { isReminderStillEligible } from './reminder-eligibility.util';
 import { ReminderMessageFactory } from './reminder-message.factory';
 import { NotificationReminderRepository } from './notification-reminder.repository';
+import type { ClaimedNotificationReminder } from './notification-reminder.types';
 import {
   NOTIFICATION_CHANNEL,
   NotificationChannelError,
@@ -81,7 +82,9 @@ export class PushReminderWorkerService {
 
     try {
       const message = this.messageFactory.build(reminder);
-      await this.channel.send(reminder.destination, message.body);
+      await this.channel.send(reminder.destination, message.body, {
+        idempotencyKey: this.buildIdempotencyKey(reminder),
+      });
       const sentAt = new Date();
       await this.repository.markSuccess(
         notificationReminderId,
@@ -110,6 +113,11 @@ export class PushReminderWorkerService {
       );
       return true;
     }
+  }
+
+  private buildIdempotencyKey(reminder: ClaimedNotificationReminder): string {
+    const occurrence = reminder.lastSentAt?.getTime().toString() ?? 'initial';
+    return `sopflow-reminder:${reminder.notificationReminderId}:${occurrence}`;
   }
 
   private normalizeError(error: unknown): NotificationChannelError {
