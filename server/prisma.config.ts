@@ -4,11 +4,16 @@ import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
 
 function requiredEnvironment(name: string): string {
-  const value = process.env[name];
+  const value = process.env[name]?.trim();
   if (value === undefined || value === '') {
     throw new Error(`${name} wajib diisi`);
   }
   return value;
+}
+
+function environmentOrDefault(name: string, fallback: string): string {
+  const value = process.env[name]?.trim();
+  return value === undefined || value === '' ? fallback : value;
 }
 
 function resolveDatabaseUrl(): string {
@@ -16,17 +21,17 @@ function resolveDatabaseUrl(): string {
     return process.env['DATABASE_URL'];
   }
 
-  const port = Number(process.env['DATABASE_PORT'] ?? '3306');
+  const port = Number(environmentOrDefault('DATABASE_PORT', '3306'));
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error('DATABASE_PORT tidak valid');
   }
 
   const url = new URL('mysql://localhost');
-  url.hostname = requiredEnvironment('DATABASE_HOST');
+  url.hostname = environmentOrDefault('DATABASE_HOST', 'localhost');
   url.port = String(port);
-  url.username = requiredEnvironment('DATABASE_USER');
+  url.username = environmentOrDefault('DATABASE_USER', 'sop_app');
   url.password = requiredEnvironment('DATABASE_PASSWORD');
-  url.pathname = `/${requiredEnvironment('DATABASE_NAME')}`;
+  url.pathname = `/${environmentOrDefault('DATABASE_NAME', 'sop_biro_organisasi')}`;
   return url.toString();
 }
 
