@@ -1,6 +1,9 @@
 import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import { NotificationRecipientResolverService } from './notification-recipient-resolver.service';
-import type { ActionablePengajuan, ActiveNotificationRecipient } from './notification-reminder.types';
+import type {
+  ActionablePengajuan,
+  ActiveNotificationRecipient,
+} from './notification-reminder.types';
 
 const basePengajuan: ActionablePengajuan = {
   pengajuanEvaluasiId: 'pengajuan-1',
@@ -16,7 +19,14 @@ function recipient(
   peran: PeranPengguna,
   opdId = 'opd-1',
 ): ActiveNotificationRecipient {
-  return { penggunaId, peran, opdId, email: `${penggunaId}@example.test`, nama: penggunaId, nohp: `628123456789` };
+  return {
+    penggunaId,
+    peran,
+    opdId,
+    email: `${penggunaId}@example.test`,
+    nama: penggunaId,
+    nohp: `628123456789`,
+  };
 }
 
 describe('NotificationRecipientResolverService', () => {
@@ -36,10 +46,7 @@ describe('NotificationRecipientResolverService', () => {
       recipient('eval-1', PeranPengguna.EVALUATOR),
       recipient('eval-2', PeranPengguna.EVALUATOR),
     ]);
-    expect(actual.map((row) => row.destination)).toEqual([
-      '628123456789',
-      '628123456789',
-    ]);
+    expect(actual.map((row) => row.destination)).toEqual(['628123456789', '628123456789']);
   });
 
   it('melakukan deduplikasi penerima berdasarkan pengguna', () => {
