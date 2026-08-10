@@ -22,8 +22,7 @@ const envBoolean = (defaultValue: boolean) =>
 
 const optionalEnvBoolean = z.preprocess(parseBoolean, z.boolean().optional());
 
-const trimmedEnvironmentString = (val: unknown) =>
-  (typeof val === 'string' ? val.trim() : val);
+const trimmedEnvironmentString = (val: unknown) => (typeof val === 'string' ? val.trim() : val);
 
 const optionalUrl = z.preprocess((val) => {
   const normalized = trimmedEnvironmentString(val);
