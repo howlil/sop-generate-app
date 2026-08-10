@@ -57,7 +57,7 @@ const envSchema = z
       trimmedEnvironmentString,
       z.string().min(1).default('sop_app'),
     ),
-    DATABASE_PASSWORD: z.preprocess(trimmedEnvironmentString, z.string().min(1)),
+    DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.preprocess(
       trimmedEnvironmentString,
       z.string().min(1).default('sop_biro_organisasi'),
@@ -79,10 +79,10 @@ const envSchema = z
       .default(10),
 
     /**
-     * Flag lama tetap diterima agar deployment lama tidak rusak, tetapi status
-     * WhatsApp ditentukan dari kelengkapan token + channel di hasil validasi.
+     * Flag lama tetap diterima agar deployment lama tidak berubah perilaku.
+     * Instalasi baru tidak perlu mengisinya: token + channel otomatis mengaktifkan WhatsApp.
      */
-    WHATSAPP_ENABLED: envBoolean(false),
+    WHATSAPP_ENABLED: optionalEnvBoolean,
     WHAAPI_BASE_URL: z.preprocess(
       trimmedEnvironmentString,
       z.string().url().default('https://whaapi.flobaze.com'),
@@ -128,6 +128,7 @@ const envSchema = z
   .superRefine((data, ctx) => {
     const hasWhatsappToken = data.WHAAPI_TOKEN !== '';
     const hasWhatsappChannel = data.WHAAPI_CHANNEL_ID !== '';
+
     if (hasWhatsappToken && !hasWhatsappChannel) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -140,6 +141,20 @@ const envSchema = z
         code: z.ZodIssueCode.custom,
         message: 'WHAAPI_TOKEN wajib diisi ketika WHAAPI_CHANNEL_ID dikonfigurasi',
         path: ['WHAAPI_TOKEN'],
+      });
+    }
+    if (data.WHATSAPP_ENABLED === true && !hasWhatsappToken) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'WHAAPI_TOKEN wajib diisi ketika WHATSAPP_ENABLED=true',
+        path: ['WHAAPI_TOKEN'],
+      });
+    }
+    if (data.WHATSAPP_ENABLED === true && !hasWhatsappChannel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'WHAAPI_CHANNEL_ID wajib diisi ketika WHATSAPP_ENABLED=true',
+        path: ['WHAAPI_CHANNEL_ID'],
       });
     }
     if (data.TTE_ENCRYPTION_SECRET === data.JWT_SECRET) {
@@ -190,7 +205,8 @@ const envSchema = z
   .transform((data) => ({
     ...data,
     SWAGGER_ENABLED: data.SWAGGER_ENABLED ?? data.NODE_ENV !== 'production',
-    WHATSAPP_ENABLED: data.WHAAPI_TOKEN !== '' && data.WHAAPI_CHANNEL_ID !== '',
+    WHATSAPP_ENABLED:
+      data.WHATSAPP_ENABLED ?? (data.WHAAPI_TOKEN !== '' && data.WHAAPI_CHANNEL_ID !== ''),
   }));
 
 export type ValidatedEnvironment = z.infer<typeof envSchema>;
