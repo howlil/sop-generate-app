@@ -75,7 +75,7 @@ jobs:
           fi
 
           mapfile -t files < <(
-            git -C .. diff --name-only "$base_ref...HEAD" -- 'server/**/*.ts' \
+            git -C .. diff --diff-filter=ACMR --name-only "$base_ref...HEAD" -- 'server/**/*.ts' \
               | sed 's#^server/##'
           )
 
