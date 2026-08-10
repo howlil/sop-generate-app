@@ -44,6 +44,10 @@ for (const journeyId of journeyIds) {
     clientDir,
     {
       E2E_SEED: 'false',
+      // roleAuth di business fixture sudah membuktikan login untuk role yang benar-benar
+      // dipakai journey. Login preflight global per proses hanya menggandakan request
+      // auth dan dapat memicu rate limit ketika J01-J07 dijalankan terisolasi.
+      E2E_SKIP_LOGIN_PREFLIGHT: 'true',
       E2E_TEST_RUN_ID: `${journeyId}-${Date.now()}`,
     },
   )
