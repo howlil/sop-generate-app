@@ -30,8 +30,9 @@ export interface ActiveEvaluationFixture {
 }
 
 /**
- * Mutation API di file ini hanya untuk membentuk PRECONDITION journey.
- * Aksi yang menjadi objek pengujian harus dilakukan melalui browser di business-actions.ts.
+ * Mutation API di file ini hanya untuk membentuk PRECONDITION atau membersihkan
+ * state lintas journey. Aksi yang menjadi objek pengujian harus dilakukan melalui
+ * browser di business-actions.ts.
  */
 export async function seedReadySops(
   apiFor: RoleApiFactory,
@@ -61,6 +62,62 @@ export async function seedActiveEvaluation(
     sopDetailIds: sops.map((sop) => sop.detailSopId),
   })
   return { pengajuanId: pengajuan.id, sops }
+}
+
+/**
+ * Menutup pengajuan yang sengaja berhenti di SELESAI_DIEVALUASI karena scope journey
+ * hanya menguji evaluasi. Backend mendefinisikan state itu masih aktif sampai BA
+ * ditandatangani kedua PJ dan SOP disahkan Kepala OPD. Tanpa cleanup ini, journey
+ * berikutnya berbagi OPD dan akan ditolak oleh invariant satu pengajuan aktif per OPD.
+ *
+ * Cleanup tetap memakai API publik aplikasi dan diletakkan di layer precondition,
+ * sehingga tidak menyamarkan aksi bisnis yang sedang diuji melalui browser.
+ */
+export async function finalizeEvaluationForJourneyIsolation(
+  apiFor: RoleApiFactory,
+  params: {
+    pengajuanId: string
+    sops: readonly ReadySopFixture[]
+    baNumber: string
+  },
+): Promise<void> {
+  if (params.sops.length === 0) {
+    throw new Error('Cleanup isolation membutuhkan minimal satu SOP')
+  }
+
+  const pjEvaluator = await apiFor(users.pjEvaluator)
+  const pjPenyusun = await apiFor(users.pjPenyusun)
+  const kepalaOpd = await apiFor(users.kepalaOpd)
+
+  await Promise.all([
+    ensureTteReady(pjEvaluator),
+    ensureTteReady(pjPenyusun),
+    ensureTteReady(kepalaOpd),
+  ])
+
+  const joinedTitle = params.sops.map((sop) => sop.title).join(', ')
+  await signBeritaAcara(
+    pjEvaluator,
+    params.pengajuanId,
+    params.baNumber,
+    `Berita Acara ${joinedTitle}`,
+  )
+  await signBeritaAcara(
+    pjPenyusun,
+    params.pengajuanId,
+    params.baNumber,
+    `Berita Acara ${joinedTitle}`,
+  )
+
+  await apiPost(kepalaOpd, `/tte/tanda-tangani/pengajuan/${params.pengajuanId}/sop-semua`, {
+    pin: e2ePin,
+    nomorDokumen: params.sops[0]?.number,
+    judulDokumen: joinedTitle,
+    sopPdfs: params.sops.map((sop) => ({
+      detailSopId: sop.detailSopId,
+      pdfBase64: validPdfBase64,
+    })),
+  })
 }
 
 export async function ensureJourneyTteProfiles(apiFor: RoleApiFactory): Promise<void> {
