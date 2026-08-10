@@ -10,6 +10,10 @@ Remove legacy compatibility code, dead source paths, stale configuration surface
 
 This cleanup is intentionally more aggressive than a compatibility-preserving refactor. Some old deployment/data formats will no longer be supported after upgrade.
 
+## Branch and open-PR policy
+
+The cleanup branch is based directly on the current `main` and must not depend on PR #9, #10, #13, or #14. Where this cleanup overlaps the minimal-env work in PR #13, the implementation should preserve the same intended end state without making this branch depend on that PR. If both PRs remain open, conflicts must be resolved explicitly before either is merged.
+
 ## Scope
 
 ### Backend
@@ -43,7 +47,7 @@ The cleanup must document this breaking behavior clearly in upgrade/TTE document
 1. Remove `WHATSAPP_ENABLED` from production configuration, Compose, tests, CI, and docs.
 2. Keep secrets such as JWT secrets, DB password, and `TTE_ENCRYPTION_SECRET` external to source control.
 3. Do not add new environment knobs for stable runtime values.
-4. Coordinate with the minimal-env refactor so stable defaults remain code/Compose defaults rather than user-facing variables.
+4. When this branch touches configuration also changed by PR #13, preserve the minimal operator-facing configuration goal rather than reintroducing tuning variables.
 
 ### Documentation
 
