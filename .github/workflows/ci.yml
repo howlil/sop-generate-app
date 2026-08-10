@@ -136,21 +136,6 @@ jobs:
   database-invariants:
     name: Database migration invariants
     runs-on: ubuntu-latest
-    services:
-      mariadb:
-        image: mariadb:11.4
-        env:
-          MARIADB_ROOT_PASSWORD: ci-root-password
-          MARIADB_DATABASE: ci_database_invariants_test
-          MARIADB_USER: ci
-          MARIADB_PASSWORD: ci
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="healthcheck.sh --connect --innodb_initialized"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=20
     env:
       CI: "true"
       NODE_ENV: test
@@ -175,6 +160,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Start MariaDB matching production
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d \
+            --name sop-ci-database-invariants \
+            -e MARIADB_ROOT_PASSWORD=ci-root-password \
+            -e MARIADB_DATABASE=ci_database_invariants_test \
+            -e MARIADB_USER=ci \
+            -e MARIADB_PASSWORD=ci \
+            -p 3306:3306 \
+            mariadb:11.4 \
+            --lower_case_table_names=1
+
+          for i in {1..30}; do
+            if docker exec sop-ci-database-invariants healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs sop-ci-database-invariants
+          exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -212,6 +222,11 @@ jobs:
 
       - name: Run database invariant integration tests
         run: pnpm test:integration:run --no-cache -- database-invariants.integration-spec.ts
+
+      - name: Stop MariaDB
+        if: always()
+        working-directory: .
+        run: docker rm -f sop-ci-database-invariants || true
 
   critical-e2e:
     name: Critical E2E business journeys
