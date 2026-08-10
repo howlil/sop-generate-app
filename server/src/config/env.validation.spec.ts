@@ -78,6 +78,17 @@ describe('Environment validation', () => {
     });
   });
 
+  it('menghormati flag disable eksplisit dari deployment lama', () => {
+    expect(
+      validateEnv({
+        ...baseEnv,
+        WHATSAPP_ENABLED: 'false',
+        WHAAPI_TOKEN: 'test-token',
+        WHAAPI_CHANNEL_ID: 'test-channel',
+      }),
+    ).toMatchObject({ WHATSAPP_ENABLED: false });
+  });
+
   it('menerima PDF signing default tanpa P12 global server', () => {
     expect(
       validateEnv({
