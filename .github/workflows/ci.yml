@@ -133,6 +133,70 @@ jobs:
       - name: Build
         run: pnpm build
 
+  database-invariants:
+    name: Database migration invariants
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: ci-root-password
+          MARIADB_DATABASE: ci_database_invariants_test
+          MARIADB_USER: ci
+          MARIADB_PASSWORD: ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      CI: "true"
+      NODE_ENV: test
+      RUN_INTEGRATION: "true"
+      INTEGRATION_TEST_DOCKER: "true"
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DATABASE_USER: ci
+      DATABASE_PASSWORD: ci
+      DATABASE_NAME: ci_database_invariants_test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ci_database_invariants_test
+      JWT_SECRET: ci-invariant-jwt-secret-that-is-at-least-32-characters
+      JWT_REFRESH_SECRET: ci-invariant-refresh-secret-that-is-at-least-32-characters
+      TTE_ENCRYPTION_SECRET: ci-invariant-tte-secret-that-is-at-least-32-characters
+      PUBLIC_APP_ORIGIN: http://localhost:5173
+      WHATSAPP_ENABLED: "false"
+      NOTIFICATION_IN_APP_ENABLED: "false"
+      PDF_SIGNING_ENABLED: "false"
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create disposable database schema
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push --force-reset --accept-data-loss
+
+      - name: Run database invariant integration tests
+        run: pnpm test:integration:run --no-cache -- database-invariants.integration-spec.ts
+
   critical-e2e:
     name: Critical E2E business journeys
     runs-on: ubuntu-latest
