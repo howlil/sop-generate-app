@@ -221,7 +221,7 @@ jobs:
         working-directory: server
         run: |
           pnpm prisma generate
-          pnpm prisma migrate reset --force --skip-seed
+          pnpm prisma migrate reset --force
           pnpm db:seed:e2e
 
       - name: Start backend
@@ -330,7 +330,7 @@ jobs:
         working-directory: server
         run: |
           pnpm prisma generate
-          pnpm prisma migrate reset --force --skip-seed
+          pnpm prisma migrate reset --force
           pnpm db:seed:e2e
 
       - name: Start backend
