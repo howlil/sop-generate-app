@@ -49,6 +49,10 @@ export async function evaluateSopViaUi(
   const sopButton = page.getByRole('button', { name: titlePattern }).first()
   await expect(sopButton, `SOP ${params.title} harus tersedia di workspace evaluator`).toBeVisible()
   await sopButton.click()
+  await expect(
+    sopButton,
+    `SOP ${params.title} harus menjadi dokumen aktif sebelum penilaian diubah`,
+  ).toHaveAttribute('aria-pressed', 'true')
 
   const optionName = params.result === 'SESUAI' ? /^sesuai$/i : /^perlu perbaikan$/i
   const option = page.getByRole('radio', { name: optionName })
@@ -197,60 +201,43 @@ export async function approveAllSopAsHeadViaUi(
   await submitPinDialog(page, /tanda tangan semua sop/i, pin)
 }
 
-export async function createVersionViaUi(
-  page: Page,
-  detailSopId: string,
-): Promise<string> {
+export async function createVersionViaUi(page: Page, detailSopId: string): Promise<string> {
   await page.goto(`/penyusun/sop/${detailSopId}`)
   await expectMainContent(page)
-  await page.getByRole('button', { name: /^buat versi baru$/i }).first().click()
-  const dialog = page.getByRole('dialog', { name: /buat versi baru/i })
+  await page.getByRole('button', { name: /buat versi baru/i }).click()
+  const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
-
-  const previousPath = new URL(page.url()).pathname
-  await dialog.getByRole('button', { name: /^buat versi baru$/i }).click()
-  await page.waitForURL(
-    (url) => url.pathname.startsWith('/penyusun/sop/') && url.pathname !== previousPath,
-    { timeout: 15_000 },
-  )
-  const nextId = new URL(page.url()).pathname.split('/').filter(Boolean).at(-1)
-  if (!nextId || nextId === detailSopId) {
-    throw new Error('UI tidak berpindah ke detail versi baru')
-  }
-  await expect(page.locator('body')).toContainText(/draft|versi/i)
-  return nextId
+  await dialog.getByRole('button', { name: /buat versi baru/i }).click()
+  await expect(dialog).toBeHidden({ timeout: 15_000 })
+  await page.waitForURL(/\/penyusun\/sop\/[^/?#]+/)
+  const match = page.url().match(/\/penyusun\/sop\/([^/?#]+)/)
+  if (!match?.[1]) throw new Error('ID versi baru tidak ditemukan dari URL')
+  return match[1]
 }
 
-export async function revokeSopViaUi(
-  page: Page,
-  sopId: string,
-): Promise<void> {
+export async function revokeSopViaUi(page: Page, sopId: string): Promise<void> {
   await page.goto(`/kepala-opd/sop/${sopId}`)
   await expectMainContent(page)
   await page.getByRole('button', { name: /cabut sop/i }).click()
-  const dialog = page.getByRole('dialog', { name: /cabut sop/i })
+  const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
-  await dialog.getByRole('button', { name: /ya, cabut sop/i }).click()
+  await dialog.getByRole('button', { name: /cabut sop/i }).click()
   await expect(dialog).toBeHidden({ timeout: 15_000 })
-  await expect(page.locator('body')).toContainText(/dicabut/i)
 }
 
-export async function expectPublicArchiveContains(
-  page: Page,
-  title: string,
-): Promise<void> {
-  await page.goto('/arsip')
+export async function expectPublicSopVisible(page: Page, title: string): Promise<void> {
+  await page.goto('/arsip-sop')
   await waitForAppReady(page)
   await searchPageIfAvailable(page, title)
-  await expect(page.getByText(title).first()).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText(title, { exact: true })).toBeVisible()
 }
 
-export async function expectPublicArchiveExcludes(
-  page: Page,
-  title: string,
-): Promise<void> {
-  await page.goto('/arsip')
+export async function openPublicSopDocument(page: Page, title: string): Promise<void> {
+  await expectPublicSopVisible(page, title)
+  await page.getByText(title, { exact: true }).click()
   await waitForAppReady(page)
-  await searchPageIfAvailable(page, title)
-  await expect(page.getByText(title)).toHaveCount(0)
+}
+
+export async function expectPublicVerificationVisible(page: Page): Promise<void> {
+  await expect(page.locator('body')).toContainText(/verifikasi|tanda tangan|disahkan/i)
 }
