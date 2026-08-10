@@ -40,11 +40,11 @@ Test yang mengklaim integrasi database atau business workflow wajib menggunakan 
 Untuk database disposable digunakan:
 
 ```bash
-pnpm prisma migrate reset --force --skip-seed
+pnpm prisma migrate reset --force
 pnpm db:seed:e2e
 ```
 
-Integration runner memakai prinsip yang sama di `docker-compose.test.yml`.
+Pada Prisma ORM 7, seeding dijalankan secara eksplisit sehingga reset migration tidak memerlukan `--skip-seed`. Integration runner memakai prinsip yang sama di `docker-compose.test.yml`.
 
 ## Kontrak revisi dan kirim ulang
 
