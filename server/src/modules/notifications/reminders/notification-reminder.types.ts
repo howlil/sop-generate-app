@@ -35,6 +35,7 @@ export type ClaimedNotificationReminder = Readonly<{
   penggunaId: string;
   kind: NotificationReminderKind;
   destination: string;
+  lastSentAt: Date | null;
   consecutiveFailures: number;
   lockToken: string | null;
   pengajuanEvaluasi: ActionablePengajuan;
