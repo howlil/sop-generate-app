@@ -62,6 +62,9 @@ Aturan ini dijaga oleh service saat pengajuan dibuat:
 - Detail SOP wajib ditemukan pada OPD pengguna/pengajuan.
 - Detail SOP wajib berada pada status `MENUNGGU_PENGAJUAN_EVALUASI`.
 - Satu OPD tidak boleh punya lebih dari satu pengajuan aktif lintas jobdesk.
+- Pengecekan pengajuan aktif dan pembuatan pengajuan baru diserialisasi per OPD. `PengajuanEvaluasiRepository.runTransaction(..., opdId)` mengambil row lock `SELECT ... FOR UPDATE` pada baris `OPD` sebelum membaca pengajuan blocking, sehingga dua request paralel untuk OPD yang sama tidak dapat sama-sama melewati pengecekan.
+
+Invariant concurrency ini diuji terhadap MariaDB nyata pada `test/integration/database-invariants.integration-spec.ts`: dua request paralel untuk OPD yang sama harus menghasilkan tepat satu pengajuan aktif dan satu request konflik.
 
 ## Invariant Pelaksana dan Langkah SOP
 
@@ -78,8 +81,13 @@ Aturan ini dijaga oleh service saat pengajuan dibuat:
 ## Invariant DokumenTte dan Tanda Tangan
 
 - `DokumenTte` wajib memiliki tepat satu parent: `detailSopId` atau `pengajuanEvaluasiId`.
+- Kondisi kedua parent kosong maupun kedua parent terisi ditolak oleh CHECK constraint migration dan diverifikasi oleh dedicated negative integration test.
 - `DokumenTte.nomorDokumen` unik global.
 - `PengajuanEvaluasi.nomorBA` unik global saat terisi; nilai `NULL` diperbolehkan untuk pengajuan yang belum memiliki BA.
 - Satu dokumen hanya boleh memiliki satu tanda tangan per peran melalui unique `(dokumenTteId, peran)`.
 - `RiwayatTandaTangan.peran` adalah snapshot peran saat tanda tangan.
 - `DokumenTte.judulDokumen`, `nomorDokumen`, dan `hashDokumen` adalah snapshot legal dokumen saat legalisasi.
+
+## Verifikasi Migration-backed
+
+Constraint yang berasal dari raw SQL migration—termasuk trigger dan CHECK constraint—tidak boleh diverifikasi menggunakan `prisma db push`, karena `db push` hanya menyinkronkan schema Prisma dan tidak mereplay raw migration SQL. Integration test dan CI menggunakan migration chain (`prisma migrate reset`/`prisma migrate deploy`) sebelum menjalankan invariant test.
