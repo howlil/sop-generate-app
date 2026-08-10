@@ -29,7 +29,8 @@ export async function loginViaUi(page: Page, user: E2eUser): Promise<void> {
 }
 
 export async function waitForAppReady(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+  await expect(page.locator('body')).toBeVisible()
 }
 
 export async function logoutViaUi(page: Page): Promise<void> {
