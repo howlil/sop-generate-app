@@ -37,18 +37,15 @@ describe('WagoProvider', () => {
       idempotencyKey: 'sopflow-reminder:r1:initial',
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://wago.example.test/messages/send',
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          Authorization: 'Bearer wa_test_key',
-          'Content-Type': 'application/json',
-          'Idempotency-Key': 'sopflow-reminder:r1:initial',
-        }),
-        body: JSON.stringify({ to: '6285373945490', text: 'Pesan uji' }),
-      }),
-    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe('https://wago.example.test/messages/send');
+    expect(init.method).toBe('POST');
+    expect(headers.get('Authorization')).toBe('Bearer wa_test_key');
+    expect(headers.get('Content-Type')).toBe('application/json');
+    expect(headers.get('Idempotency-Key')).toBe('sopflow-reminder:r1:initial');
+    expect(init.body).toBe(JSON.stringify({ to: '6285373945490', text: 'Pesan uji' }));
   });
 
   it.each([
