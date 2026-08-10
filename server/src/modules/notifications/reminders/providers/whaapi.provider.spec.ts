@@ -2,6 +2,12 @@ import { ConfigService } from '@nestjs/config';
 import { NotificationChannelError } from './notification-channel.interface';
 import { WhaApiProvider } from './whaapi.provider';
 
+interface WhaApiRequestBody {
+  app_id: string;
+  message: string;
+  phone_number: string;
+}
+
 function config(values: Record<string, unknown>): ConfigService {
   return {
     get: jest.fn((key: string, fallback: unknown) =>
@@ -30,6 +36,32 @@ function httpResponse(status: number, body = ''): Response {
     status,
     text: jest.fn().mockResolvedValue(body),
   } as unknown as Response;
+}
+
+function parseRequestBody(init: RequestInit | undefined): WhaApiRequestBody {
+  if (typeof init?.body !== 'string') {
+    throw new Error('Expected JSON string request body');
+  }
+
+  const parsed: unknown = JSON.parse(init.body);
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null ||
+    !('app_id' in parsed) ||
+    !('message' in parsed) ||
+    !('phone_number' in parsed) ||
+    typeof parsed.app_id !== 'string' ||
+    typeof parsed.message !== 'string' ||
+    typeof parsed.phone_number !== 'string'
+  ) {
+    throw new Error('Unexpected WhaAPI request body');
+  }
+
+  return {
+    app_id: parsed.app_id,
+    message: parsed.message,
+    phone_number: parsed.phone_number,
+  };
 }
 
 async function captureChannelError(action: () => Promise<void>): Promise<NotificationChannelError> {
@@ -79,9 +111,7 @@ describe('WhaApiProvider', () => {
   });
 
   it('mengirim payload terotorisasi dan menormalisasi nomor lokal 08 menjadi 62', async () => {
-    const fetchSpy = jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(httpResponse(200));
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 
     await provider().send('0812-3456-7890', 'Halo SOP');
 
@@ -95,7 +125,7 @@ describe('WhaApiProvider', () => {
         Authorization: 'Bearer test-token',
       },
     });
-    expect(JSON.parse(String(init?.body))).toEqual({
+    expect(parseRequestBody(init)).toEqual({
       app_id: 'channel-1',
       message: 'Halo SOP',
       phone_number: '6281234567890',
@@ -104,14 +134,12 @@ describe('WhaApiProvider', () => {
   });
 
   it('mempertahankan nomor internasional digit-only tanpa prefix nol', async () => {
-    const fetchSpy = jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(httpResponse(200));
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 
     await provider().send('+62 812 3456 7890', 'Halo');
 
     const [, init] = fetchSpy.mock.calls[0] ?? [];
-    expect(JSON.parse(String(init?.body)).phone_number).toBe('6281234567890');
+    expect(parseRequestBody(init).phone_number).toBe('6281234567890');
   });
 
   it.each([
@@ -124,9 +152,7 @@ describe('WhaApiProvider', () => {
     [503, 'UNAVAILABLE'],
     [418, 'UNKNOWN'],
   ] as const)('memetakan HTTP %s menjadi error channel %s', async (status, expectedKind) => {
-    jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(httpResponse(status, `provider error ${status}`));
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(status, `provider error ${status}`));
 
     const error = await captureChannelError(() => provider().send('081234567890', 'Pesan'));
 
@@ -136,9 +162,7 @@ describe('WhaApiProvider', () => {
 
   it('tetap memetakan HTTP error ketika response body gagal dibaca', async () => {
     const response = httpResponse(500);
-    jest
-      .spyOn(response, 'text')
-      .mockRejectedValue(new Error('body unavailable'));
+    jest.spyOn(response, 'text').mockRejectedValue(new Error('body unavailable'));
     jest.spyOn(globalThis, 'fetch').mockResolvedValue(response);
 
     const error = await captureChannelError(() => provider().send('081234567890', 'Pesan'));
@@ -176,9 +200,7 @@ describe('WhaApiProvider', () => {
   });
 
   it('menerima destination pendek yang ada di allow-list dan tetap mengirim', async () => {
-    const fetchSpy = jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(httpResponse(200));
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 
     await provider({ WHATSAPP_ALLOWED_RECIPIENTS: '1234' }).send('1234', 'Ping');
 
