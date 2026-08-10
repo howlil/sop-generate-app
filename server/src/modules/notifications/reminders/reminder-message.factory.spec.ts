@@ -142,10 +142,8 @@ describe('ReminderMessageFactory', () => {
   });
 
   it('fail closed untuk jenis reminder yang tidak dikenal', () => {
-    expect(() =>
-      factory.build(
-        reminder('UNKNOWN' as NotificationReminderKind),
-      ),
-    ).toThrow('Unhandled reminder kind: UNKNOWN');
+    expect(() => factory.build(reminder('UNKNOWN' as NotificationReminderKind))).toThrow(
+      'Unhandled reminder kind: UNKNOWN',
+    );
   });
 });
