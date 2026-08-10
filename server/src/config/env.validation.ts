@@ -1,24 +1,29 @@
 import { z } from 'zod';
 
-const envBoolean = (defaultValue: boolean) =>
-  z.preprocess((val) => {
-    if (typeof val !== 'string') {
-      return val;
-    }
-    const normalized = val.trim().toLowerCase();
-    if (normalized === '') {
-      return undefined;
-    }
-    if (['true', '1', 'yes', 'on'].includes(normalized)) {
-      return true;
-    }
-    if (['false', '0', 'no', 'off'].includes(normalized)) {
-      return false;
-    }
+const parseBoolean = (val: unknown): unknown => {
+  if (typeof val !== 'string') {
     return val;
-  }, z.boolean().default(defaultValue));
+  }
+  const normalized = val.trim().toLowerCase();
+  if (normalized === '') {
+    return undefined;
+  }
+  if (['true', '1', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['false', '0', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
+  return val;
+};
 
-const trimmedEnvironmentString = (val: unknown) => (typeof val === 'string' ? val.trim() : val);
+const envBoolean = (defaultValue: boolean) =>
+  z.preprocess(parseBoolean, z.boolean().default(defaultValue));
+
+const optionalEnvBoolean = z.preprocess(parseBoolean, z.boolean().optional());
+
+const trimmedEnvironmentString = (val: unknown) =>
+  typeof val === 'string' ? val.trim() : val;
 
 const optionalUrl = z.preprocess((val) => {
   const normalized = trimmedEnvironmentString(val);
@@ -35,7 +40,7 @@ const envSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    SWAGGER_ENABLED: envBoolean(true),
+    SWAGGER_ENABLED: optionalEnvBoolean,
     JWT_SECRET: z.string().min(32),
     JWT_REFRESH_SECRET: z.string().min(32).optional(),
     JWT_EXPIRATION: z.preprocess(
@@ -43,11 +48,20 @@ const envSchema = z
       z.string().default('15m'),
     ),
     JWT_REFRESH_EXPIRATION: z.string().default('7d'),
-    DATABASE_HOST: z.string().min(1),
+    DATABASE_HOST: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().min(1).default('localhost'),
+    ),
     DATABASE_PORT: z.coerce.number().int().min(1).max(65535).default(3306),
-    DATABASE_USER: z.string().min(1),
-    DATABASE_PASSWORD: z.string().min(1),
-    DATABASE_NAME: z.string().min(1),
+    DATABASE_USER: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().min(1).default('sop_app'),
+    ),
+    DATABASE_PASSWORD: z.preprocess(trimmedEnvironmentString, z.string().min(1)),
+    DATABASE_NAME: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().min(1).default('sop_biro_organisasi'),
+    ),
     DATABASE_URL: z.string().url().optional(),
     /** Origin kanonis frontend production. */
     PUBLIC_APP_ORIGIN: optionalUrl,
@@ -57,9 +71,17 @@ const envSchema = z
     ),
 
     NOTIFICATION_IN_APP_ENABLED: envBoolean(true),
-    NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
+    NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(300)
+      .default(10),
 
-    /** Outbound WhatsApp benar-benar opsional. */
+    /**
+     * Flag lama tetap diterima agar deployment lama tidak rusak, tetapi status
+     * WhatsApp ditentukan dari kelengkapan token + channel di hasil validasi.
+     */
     WHATSAPP_ENABLED: envBoolean(false),
     WHAAPI_BASE_URL: z.preprocess(
       trimmedEnvironmentString,
@@ -67,9 +89,22 @@ const envSchema = z
     ),
     WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
-    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
+    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().default(''),
+    ),
+    WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(43_200)
+      .default(1440),
+    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1_000)
+      .max(60_000)
+      .default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
 
@@ -91,18 +126,20 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
-    if (data.WHATSAPP_ENABLED && data.WHAAPI_TOKEN === '') {
+    const hasWhatsappToken = data.WHAAPI_TOKEN !== '';
+    const hasWhatsappChannel = data.WHAAPI_CHANNEL_ID !== '';
+    if (hasWhatsappToken && !hasWhatsappChannel) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'WHAAPI_TOKEN wajib diisi ketika WHATSAPP_ENABLED=true',
-        path: ['WHAAPI_TOKEN'],
+        message: 'WHAAPI_CHANNEL_ID wajib diisi ketika WHAAPI_TOKEN dikonfigurasi',
+        path: ['WHAAPI_CHANNEL_ID'],
       });
     }
-    if (data.WHATSAPP_ENABLED && data.WHAAPI_CHANNEL_ID === '') {
+    if (!hasWhatsappToken && hasWhatsappChannel) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'WHAAPI_CHANNEL_ID wajib diisi ketika WHATSAPP_ENABLED=true',
-        path: ['WHAAPI_CHANNEL_ID'],
+        message: 'WHAAPI_TOKEN wajib diisi ketika WHAAPI_CHANNEL_ID dikonfigurasi',
+        path: ['WHAAPI_TOKEN'],
       });
     }
     if (data.TTE_ENCRYPTION_SECRET === data.JWT_SECRET) {
@@ -142,14 +179,19 @@ const envSchema = z
         path: ['ALLOWED_ORIGINS'],
       });
     }
-    if (data.PUBLIC_APP_ORIGIN === undefined && allowedOrigins === '') {
+    if (data.PUBLIC_APP_ORIGIN === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'PUBLIC_APP_ORIGIN atau ALLOWED_ORIGINS wajib diisi pada production',
+        message: 'PUBLIC_APP_ORIGIN wajib diisi pada production',
         path: ['PUBLIC_APP_ORIGIN'],
       });
     }
-  });
+  })
+  .transform((data) => ({
+    ...data,
+    SWAGGER_ENABLED: data.SWAGGER_ENABLED ?? data.NODE_ENV !== 'production',
+    WHATSAPP_ENABLED: data.WHAAPI_TOKEN !== '' && data.WHAAPI_CHANNEL_ID !== '',
+  }));
 
 export type ValidatedEnvironment = z.infer<typeof envSchema>;
 
