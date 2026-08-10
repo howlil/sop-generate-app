@@ -33,7 +33,7 @@ import { e2ePin } from '../support/test-data'
 
 test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
   test('J01 Happy Path — siap evaluasi sampai SOP berlaku dan terlihat publik', async ({
-    page,
+    publicPage,
     roleApi,
     roleSession,
   }) => {
@@ -86,7 +86,7 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
     })
 
     await test.step('Outcome akhir dapat ditemukan dari arsip publik tanpa sesi login', async () => {
-      await expectPublicArchiveContains(page, sop.title)
+      await expectPublicArchiveContains(publicPage, sop.title)
     })
   })
 
