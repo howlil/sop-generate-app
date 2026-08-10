@@ -67,7 +67,7 @@ services:
         pnpm install --frozen-lockfile &&
         pnpm prisma generate &&
         test -f src/generated/prisma/index.d.ts &&
-        pnpm prisma migrate reset --force --skip-seed &&
+        pnpm prisma migrate reset --force &&
         if [ -n \"$$INTEGRATION_TEST_PATTERN\" ]; then
           pnpm test:integration:run --no-cache -- \"$$INTEGRATION_TEST_PATTERN\";
         else
