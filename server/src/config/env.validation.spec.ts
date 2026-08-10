@@ -9,7 +9,6 @@ const baseEnv = {
   DATABASE_USER: 'test',
   DATABASE_PASSWORD: 'test',
   DATABASE_NAME: 'test',
-  WHATSAPP_ENABLED: 'false',
   PDF_SIGNING_ENABLED: 'false',
 };
 
@@ -37,54 +36,46 @@ describe('Environment validation', () => {
     });
   });
 
-  it('mengaktifkan in-app dan menonaktifkan WhatsApp secara default', () => {
-    expect(
-      validateEnv({
-        ...baseEnv,
-        WHATSAPP_ENABLED: undefined,
-      }),
-    ).toMatchObject({
+  it('mengaktifkan in-app dan membiarkan WhatsApp nonaktif ketika credential kosong', () => {
+    expect(validateEnv(baseEnv)).toMatchObject({
       NOTIFICATION_IN_APP_ENABLED: true,
       NOTIFICATION_RECONCILE_INTERVAL_SECONDS: 10,
-      WHATSAPP_ENABLED: false,
+      WHAAPI_TOKEN: '',
+      WHAAPI_CHANNEL_ID: '',
     });
   });
 
-  it('tidak mewajibkan kredensial WhaAPI ketika WhatsApp nonaktif', () => {
+  it('menerima konfigurasi WhatsApp lengkap tanpa feature flag', () => {
     expect(
       validateEnv({
         ...baseEnv,
-        WHATSAPP_ENABLED: 'false',
-        WHAAPI_TOKEN: '',
-        WHAAPI_CHANNEL_ID: '',
-      }),
-    ).toMatchObject({ WHATSAPP_ENABLED: false });
-  });
-
-  it('mewajibkan token dan channel ketika WhatsApp aktif', () => {
-    expect(() =>
-      validateEnv({
-        ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
-        WHAAPI_TOKEN: '',
-        WHAAPI_CHANNEL_ID: '',
-      }),
-    ).toThrow(/WHAAPI_TOKEN/);
-  });
-
-  it('menerima konfigurasi WhatsApp lengkap ketika aktif', () => {
-    expect(
-      validateEnv({
-        ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
         WHAAPI_TOKEN: 'test-token',
         WHAAPI_CHANNEL_ID: 'test-channel',
       }),
     ).toMatchObject({
-      WHATSAPP_ENABLED: true,
       WHAAPI_TOKEN: 'test-token',
       WHAAPI_CHANNEL_ID: 'test-channel',
     });
+  });
+
+  it('menolak token WhatsApp tanpa channel', () => {
+    expect(() =>
+      validateEnv({
+        ...baseEnv,
+        WHAAPI_TOKEN: 'test-token',
+        WHAAPI_CHANNEL_ID: '',
+      }),
+    ).toThrow(/WHAAPI_CHANNEL_ID/);
+  });
+
+  it('menolak channel WhatsApp tanpa token', () => {
+    expect(() =>
+      validateEnv({
+        ...baseEnv,
+        WHAAPI_TOKEN: '',
+        WHAAPI_CHANNEL_ID: 'test-channel',
+      }),
+    ).toThrow(/WHAAPI_TOKEN/);
   });
 
   it('menerima PDF signing nonaktif tanpa P12 global server', () => {
