@@ -76,10 +76,7 @@ export class WagoProvider implements NotificationChannel {
       }
 
       const kind = this.errorToKind(response.status, errorCode);
-      const detail =
-        typeof errorBody.message === 'string'
-          ? errorBody.message
-          : `Wago HTTP ${response.status}`;
+      const detail = typeof errorBody.message === 'string' ? errorBody.message : `Wago HTTP ${response.status}`;
       this.logger.warn(
         `Wago HTTP ${response.status} code=${errorCode || 'UNKNOWN'} ` +
           `tujuan=${this.maskPhone(phoneNumber)}`,
