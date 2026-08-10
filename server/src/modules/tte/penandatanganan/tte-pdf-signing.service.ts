@@ -38,11 +38,7 @@ import {
   type PdfSignatureVerificationEntry,
   type VerifyPdfSignaturesResult,
 } from '../shared/utils/pdf-signature-verification.util';
-import {
-  decryptP12Passphrase,
-  encryptP12Passphrase,
-  isLegacyP12PassphraseCiphertext,
-} from '../shared/utils/tte-crypto.util';
+import { decryptP12Passphrase } from '../shared/utils/tte-crypto.util';
 import { TteRepository, type PdfSignatureMetadataInput } from '../shared/repository/tte.repository';
 
 const DEFAULT_SIGNATURE_LENGTH = 32_000;
@@ -174,10 +170,8 @@ export class TtePdfSigningService {
       );
     }
 
-    const p12Passphrase = await this.decryptAndUpgradePassphrase({
-      userId: dto.userId,
+    const p12Passphrase = this.decryptPassphrase({
       pin: dto.pin,
-      p12Base64: kredensial.p12Base64,
       encryptedPassphrase: kredensial.p12PassphraseEncrypted,
     });
 
@@ -220,10 +214,8 @@ export class TtePdfSigningService {
       );
     }
 
-    const p12Passphrase = await this.decryptAndUpgradePassphrase({
-      userId: params.userId,
+    const p12Passphrase = this.decryptPassphrase({
       pin: params.pin,
-      p12Base64: kredensial.p12Base64,
       encryptedPassphrase: kredensial.p12PassphraseEncrypted,
     });
 
@@ -338,37 +330,14 @@ export class TtePdfSigningService {
     }
   }
 
-  private async decryptAndUpgradePassphrase(params: {
-    userId: string;
-    pin: string;
-    p12Base64: string;
-    encryptedPassphrase: string;
-  }): Promise<string> {
-    let passphrase: string;
+  private decryptPassphrase(params: { pin: string; encryptedPassphrase: string }): string {
     try {
-      passphrase = decryptP12Passphrase(params.encryptedPassphrase, params.pin);
+      return decryptP12Passphrase(params.encryptedPassphrase, params.pin);
     } catch {
-      throw new ForbiddenException('PIN TTE salah atau gagal mendekripsi sertifikat.');
+      throw new ForbiddenException(
+        'PIN TTE salah atau kredensial sertifikat perlu disiapkan ulang.',
+      );
     }
-
-    if (isLegacyP12PassphraseCiphertext(params.encryptedPassphrase)) {
-      try {
-        await this.repository.updateKredensialP12({
-          userId: params.userId,
-          p12Base64: params.p12Base64,
-          p12PassphraseEncrypted: encryptP12Passphrase(passphrase, params.pin),
-        });
-        this.logger.log(`Ciphertext P12 legacy berhasil di-upgrade userId=${params.userId}`);
-      } catch (error) {
-        this.logger.warn(
-          `Ciphertext P12 legacy belum dapat di-upgrade userId=${params.userId}: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      }
-    }
-
-    return passphrase;
   }
 
   private isPdfSigningEnabled(): boolean {
