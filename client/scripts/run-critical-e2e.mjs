@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 const clientDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const serverDir = resolve(clientDir, '..', 'server')
 const journeyIds = ['J01', 'J02', 'J03', 'J04', 'J05', 'J06', 'J07']
+const auditAll = process.argv.includes('--audit-all') || process.env.E2E_CRITICAL_AUDIT_ALL === 'true'
 
 function run(command, args, cwd, extraEnv = {}) {
   const result = spawnSync(command, args, {
@@ -15,7 +16,12 @@ function run(command, args, cwd, extraEnv = {}) {
   })
 
   if (result.error) throw result.error
-  if (result.status !== 0) process.exit(result.status ?? 1)
+  return result.status ?? 1
+}
+
+function mustRun(command, args, cwd, extraEnv = {}) {
+  const status = run(command, args, cwd, extraEnv)
+  if (status !== 0) process.exit(status)
 }
 
 function assertDisposableDatabase() {
@@ -30,21 +36,36 @@ function assertDisposableDatabase() {
 }
 
 assertDisposableDatabase()
-run(process.execPath, ['scripts/audit-e2e-journeys.mjs'], clientDir)
+mustRun(process.execPath, ['scripts/audit-e2e-journeys.mjs'], clientDir)
+
+const failures = []
 
 for (const journeyId of journeyIds) {
   console.log(`\n=== ${journeyId}: reset database melalui migration history ===`)
-  run('pnpm', ['prisma', 'migrate', 'reset', '--force', '--skip-seed'], serverDir)
-  run('pnpm', ['db:seed:e2e'], serverDir)
+  mustRun('pnpm', ['prisma', 'migrate', 'reset', '--force', '--skip-seed'], serverDir)
+  mustRun('pnpm', ['db:seed:e2e'], serverDir)
 
   console.log(`=== ${journeyId}: execute isolated journey ===`)
-  run(
+  const status = run(
     process.execPath,
     ['scripts/run-e2e.mjs', 'journeys', '--grep', `^${journeyId}\\b`, '--project=chromium'],
     clientDir,
     {
+      E2E_CRITICAL: 'true',
+      E2E_CRITICAL_AUDIT_ALL: auditAll ? 'true' : 'false',
       E2E_SEED: 'false',
       E2E_TEST_RUN_ID: `${journeyId}-${Date.now()}`,
     },
   )
+
+  if (status === 0) continue
+  failures.push(journeyId)
+  if (!auditAll) process.exit(status)
 }
+
+if (failures.length > 0) {
+  console.error(`\nCritical audit gagal pada: ${failures.join(', ')}`)
+  process.exit(1)
+}
+
+console.log(`\nCritical audit lulus: ${journeyIds.join(', ')}`)
