@@ -34,7 +34,7 @@ run(process.execPath, ['scripts/audit-e2e-journeys.mjs'], clientDir)
 
 for (const journeyId of journeyIds) {
   console.log(`\n=== ${journeyId}: reset database melalui migration history ===`)
-  run('pnpm', ['prisma', 'migrate', 'reset', '--force', '--skip-seed'], serverDir)
+  run('pnpm', ['prisma', 'migrate', 'reset', '--force'], serverDir)
   run('pnpm', ['db:seed:e2e'], serverDir)
 
   console.log(`=== ${journeyId}: execute isolated journey ===`)
