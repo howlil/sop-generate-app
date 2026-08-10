@@ -1,7 +1,14 @@
-import type { INestApplication } from '@nestjs/common';
+import { ConflictException, type INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
-import { PeranPengguna, StatusSOP } from '../../src/generated/prisma';
+import {
+  JenisDokumenTte,
+  JenisPengajuanEvaluasi,
+  PeranPengguna,
+  StatusPengajuanEvaluasi,
+  StatusSOP,
+} from '../../src/generated/prisma';
+import { PengajuanEvaluasiService } from '../../src/modules/evaluation/pengajuan/pengajuan-evaluasi.service';
 import {
   assertSafeIntegrationDatabase,
   pingIntegrationDatabase,
@@ -17,18 +24,41 @@ type CountRow = {
 
 const TEST_PASSWORD_HASH = 'x'.repeat(60);
 
-async function createTestUser(prisma: PrismaService, opdId: string, suffix: string) {
+async function createTestUser(
+  prisma: PrismaService,
+  opdId: string,
+  suffix: string,
+  peran: PeranPengguna = PeranPengguna.PENYUSUN,
+) {
   return prisma.pengguna.create({
     data: {
       email: `db-${suffix}@test.local`,
       opdId,
       nama: `User DB ${suffix}`,
       kataSandi: TEST_PASSWORD_HASH,
-      peran: PeranPengguna.PENYUSUN,
+      peran,
       nip: suffix.padEnd(18, '0').slice(0, 18),
       jabatan: 'Penyusun',
       pangkat: 'Penata',
       nohp: `628${suffix.replace(/\D/g, '').padEnd(10, '0').slice(0, 10)}`,
+    },
+  });
+}
+
+async function createPendingDetail(prisma: PrismaService, opdId: string, suffix: string) {
+  const sop = await prisma.sOP.create({
+    data: {
+      opdId,
+      judul: `SOP Pending ${suffix}`,
+    },
+  });
+  return prisma.detailSOP.create({
+    data: {
+      sopId: sop.sopId,
+      status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
+      versi: 1,
+      nomorSOP: `DB-PENDING-${suffix}`,
+      namaLembaga: 'OPD DB Concurrency',
     },
   });
 }
@@ -203,5 +233,86 @@ describeIntegration('Database migration invariants', () => {
     });
 
     expect(reloaded?.lastEditedById).toBeNull();
+  });
+
+  it('menolak DokumenTte tanpa parent maupun dengan dua parent sekaligus', async () => {
+    const opd = await prisma.oPD.create({ data: { nama: 'OPD DB XOR' } });
+    const detail = await createPendingDetail(prisma, opd.opdId, 'XOR');
+    const pengajuan = await prisma.pengajuanEvaluasi.create({
+      data: {
+        opdId: opd.opdId,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+      },
+    });
+    const baseDokumen = {
+      jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
+      judulDokumen: 'Dokumen XOR',
+      hashDokumen: 'a'.repeat(64),
+    };
+
+    await expect(
+      prisma.dokumenTte.create({
+        data: {
+          ...baseDokumen,
+          nomorDokumen: 'DB-XOR-NONE',
+        },
+      }),
+    ).rejects.toThrow();
+
+    await expect(
+      prisma.dokumenTte.create({
+        data: {
+          ...baseDokumen,
+          nomorDokumen: 'DB-XOR-BOTH',
+          detailSopId: detail.detailSopId,
+          pengajuanEvaluasiId: pengajuan.pengajuanEvaluasiId,
+        },
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('menjaga maksimal satu pengajuan evaluasi aktif per OPD saat request paralel', async () => {
+    const service = app.get(PengajuanEvaluasiService);
+    const opd = await prisma.oPD.create({ data: { nama: 'OPD DB Concurrency' } });
+    const pjPenyusun = await createTestUser(
+      prisma,
+      opd.opdId,
+      '303',
+      PeranPengguna.PJ_PENYUSUN,
+    );
+    const [detailA, detailB] = await Promise.all([
+      createPendingDetail(prisma, opd.opdId, 'CONC-A'),
+      createPendingDetail(prisma, opd.opdId, 'CONC-B'),
+    ]);
+    const user = {
+      sub: pjPenyusun.penggunaId,
+      email: pjPenyusun.email,
+      peran: PeranPengguna.PJ_PENYUSUN,
+    };
+
+    const results = await Promise.allSettled([
+      service.create(user, {
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
+        sopDetailIds: [detailA.detailSopId],
+      }),
+      service.create(user, {
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+        sopDetailIds: [detailB.detailSopId],
+      }),
+    ]);
+
+    const fulfilled = results.filter((result) => result.status === 'fulfilled');
+    const rejected = results.filter((result) => result.status === 'rejected');
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(ConflictException);
+    await expect(
+      prisma.pengajuanEvaluasi.count({
+        where: {
+          opdId: opd.opdId,
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+        },
+      }),
+    ).resolves.toBe(1);
   });
 });
