@@ -20,7 +20,11 @@ export class NotificationChannelError extends Error {
   }
 }
 
+export type NotificationSendOptions = Readonly<{
+  idempotencyKey?: string;
+}>;
+
 export interface NotificationChannel {
   /** Kirim pesan ke tujuan (nomor HP, device token, dsb). */
-  send(destination: string, message: string): Promise<void>;
+  send(destination: string, message: string, options?: NotificationSendOptions): Promise<void>;
 }

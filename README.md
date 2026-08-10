@@ -16,7 +16,7 @@ Backend NestJS :3001
 MariaDB :3306
 
 Backend -> persistent PDF volume /app/storage/sop-pdf
-Backend -> WhaAPI (opsional)
+Backend -> Wago self-hosted (opsional, outbound WhatsApp)
 ```
 
 Port `8080`, `3001`, dan `3306` adalah port internal service/container. Pada deployment normal hanya frontend yang menjadi target public ingress.
@@ -77,18 +77,22 @@ PUBLIC_APP_ORIGIN=https://sopflow.example.com
 
 Nilai tuning/default lain tersedia pada `.env.example` dan `compose.yml`.
 
-## WhatsApp notification (opsional)
+## WhatsApp notification melalui Wago (opsional)
 
-Tidak ada lagi `WHATSAPP_ENABLED`.
+Outbound WhatsApp menggunakan gateway Wago yang di-host terpisah. SOPFlow tidak mengelola pairing akun WhatsApp atau recipient policy Wago.
 
-Isi kedua credential berikut untuk mengaktifkan outbound WhatsApp:
+Isi kedua nilai berikut untuk mengaktifkan outbound WhatsApp:
 
 ```dotenv
-WHAAPI_TOKEN=your-token
-WHAAPI_CHANNEL_ID=your-channel-id
+WAGO_BASE_URL=https://wago.example.com
+WAGO_API_KEY=wa_your_api_key
 ```
 
 Jika keduanya kosong, WhatsApp nonaktif. Jika hanya salah satu yang diisi, backend menolak startup karena konfigurasi tidak lengkap.
+
+Sebelum SOPFlow dapat mengirim ke suatu nomor, nomor receiver tersebut harus di-allow secara manual pada Wago. SOPFlow tidak memanggil endpoint recipient allow/opt-out secara otomatis. Setelah nomor di-allow, reminder yang sebelumnya ditolak dapat berhasil pada jadwal pengiriman berikutnya.
+
+SOPFlow mengirim text reminder ke `POST /messages/send` dengan Bearer API key dan `Idempotency-Key`. Idempotency digunakan agar retry transport dari occurrence reminder yang sama tidak membuat pesan logical yang sama terkirim dua kali.
 
 ## TTE dan PDF signing
 

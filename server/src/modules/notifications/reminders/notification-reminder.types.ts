@@ -35,6 +35,7 @@ export type ClaimedNotificationReminder = Readonly<{
   penggunaId: string;
   kind: NotificationReminderKind;
   destination: string;
+  lastSentAt: Date | null;
   consecutiveFailures: number;
   lockToken: string | null;
   pengajuanEvaluasi: ActionablePengajuan;
@@ -65,7 +66,8 @@ export const REMINDER_KIND_BY_STATUS: Readonly<
 > = {
   [StatusPengajuanEvaluasi.SEDANG_DIEVALUASI]: NotificationReminderKind.EVALUASI_SOP,
   [StatusPengajuanEvaluasi.SELESAI_DIEVALUASI]: NotificationReminderKind.TTD_BA_PJ_EVALUATOR,
-  [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR]: NotificationReminderKind.TTD_BA_PJ_PENYUSUN,
+  [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR]:
+    NotificationReminderKind.TTD_BA_PJ_PENYUSUN,
   [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN]: NotificationReminderKind.TTD_SOP_KEPALA_OPD,
 };
 
@@ -74,7 +76,8 @@ export const EXPECTED_STATUS_BY_REMINDER_KIND: Readonly<
 > = {
   [NotificationReminderKind.EVALUASI_SOP]: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
   [NotificationReminderKind.TTD_BA_PJ_EVALUATOR]: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
-  [NotificationReminderKind.TTD_BA_PJ_PENYUSUN]: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
+  [NotificationReminderKind.TTD_BA_PJ_PENYUSUN]:
+    StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
   [NotificationReminderKind.TTD_SOP_KEPALA_OPD]: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
 };
 

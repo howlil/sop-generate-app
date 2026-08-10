@@ -36,46 +36,48 @@ describe('Environment validation', () => {
     });
   });
 
-  it('mengaktifkan in-app dan membiarkan WhatsApp nonaktif ketika credential kosong', () => {
+  it('mengaktifkan in-app dan membiarkan WhatsApp nonaktif ketika konfigurasi Wago kosong', () => {
     expect(validateEnv(baseEnv)).toMatchObject({
       NOTIFICATION_IN_APP_ENABLED: true,
       NOTIFICATION_RECONCILE_INTERVAL_SECONDS: 10,
-      WHAAPI_TOKEN: '',
-      WHAAPI_CHANNEL_ID: '',
+      WAGO_API_KEY: '',
+      WAGO_REQUEST_TIMEOUT_MS: 10_000,
     });
+    expect(validateEnv(baseEnv).WAGO_BASE_URL).toBeUndefined();
   });
 
-  it('menerima konfigurasi WhatsApp lengkap tanpa feature flag', () => {
+  it('menerima konfigurasi Wago lengkap tanpa feature flag', () => {
     expect(
       validateEnv({
         ...baseEnv,
-        WHAAPI_TOKEN: 'test-token',
-        WHAAPI_CHANNEL_ID: 'test-channel',
+        WAGO_BASE_URL: 'https://wago.example.test',
+        WAGO_API_KEY: 'wa_test_key',
       }),
     ).toMatchObject({
-      WHAAPI_TOKEN: 'test-token',
-      WHAAPI_CHANNEL_ID: 'test-channel',
+      WAGO_BASE_URL: 'https://wago.example.test',
+      WAGO_API_KEY: 'wa_test_key',
+      WAGO_REQUEST_TIMEOUT_MS: 10_000,
     });
   });
 
-  it('menolak token WhatsApp tanpa channel', () => {
+  it('menolak URL Wago tanpa API key', () => {
     expect(() =>
       validateEnv({
         ...baseEnv,
-        WHAAPI_TOKEN: 'test-token',
-        WHAAPI_CHANNEL_ID: '',
+        WAGO_BASE_URL: 'https://wago.example.test',
+        WAGO_API_KEY: '',
       }),
-    ).toThrow(/WHAAPI_CHANNEL_ID/);
+    ).toThrow(/WAGO_API_KEY/);
   });
 
-  it('menolak channel WhatsApp tanpa token', () => {
+  it('menolak API key Wago tanpa URL', () => {
     expect(() =>
       validateEnv({
         ...baseEnv,
-        WHAAPI_TOKEN: '',
-        WHAAPI_CHANNEL_ID: 'test-channel',
+        WAGO_BASE_URL: '',
+        WAGO_API_KEY: 'wa_test_key',
       }),
-    ).toThrow(/WHAAPI_TOKEN/);
+    ).toThrow(/WAGO_BASE_URL/);
   });
 
   it('menerima PDF signing nonaktif tanpa P12 global server', () => {
