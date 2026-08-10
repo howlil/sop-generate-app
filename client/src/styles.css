@@ -50,7 +50,9 @@
   --color-foreground: #0f172a;
   --color-secondary-foreground: #475569;
   --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
   --color-border-strong: #64748b;
+  --color-primary: #1d4ed8;
   --color-primary-hover: #1e40af;
   --color-primary-subtle: #eff6ff;
   --color-primary-foreground: #ffffff;
@@ -65,18 +67,6 @@
   --color-info: #1d4ed8;
   --color-info-subtle: #dbeafe;
   --color-info-foreground: #1e40af;
-  /* Compatibility aliases for existing CSS-variable consumers. */
-  --color-bg-body: #f8fafc;
-  --color-bg-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text-heading: #0f172a;
-  --color-text-secondary: #475569;
-  --color-primary: #1d4ed8;
-  --color-primary-active: #172554;
-  --color-primary-muted: #eff6ff;
-  --color-icon: #475569;
-  --color-icon-muted: #64748b;
-  --color-notification-dot: #fb2c36;
   /* Card & button — from Figma Manajemen OPD design */
   --color-btn-primary-bg: #030213;
   --color-search-input-bg: #f3f3f5;
@@ -99,13 +89,11 @@
   --color-toggle-inactive-bg: #cbced4;
   --color-status-inactive: #99a1af;
   --color-row-border: #f3f4f6;
-  /* Typography and compatibility neutrals. */
-  /* Legacy gray utilities now resolve to a single Slate neutral family. */
+  /* Typography neutrals. */
   --color-gray-50: #f8fafc;
   --color-gray-100: #f1f5f9;
   --color-gray-200: #e2e8f0;
   --color-gray-300: #cbd5e1;
-  /* Raised for readable legacy informational text on white surfaces. */
   --color-gray-400: #64748b;
   --color-gray-500: #64748b;
   --color-gray-600: #475569;
@@ -155,8 +143,8 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: var(--color-text-heading);
-  background: var(--color-bg-body);
+  color: var(--color-foreground);
+  background: var(--color-background);
   font-size: var(--font-body);
   font-weight: var(--font-weight-regular);
   line-height: var(--font-body-line);
@@ -264,7 +252,7 @@ body.sop-print-preparing .sop-diagram-screen-off {
   background: #cbd5e1;
 }
 
-/* Hindari teks mikro yang sulit dibaca; utilitas lama tetap kompatibel. */
+/* Hindari teks mikro yang sulit dibaca. */
 [class~="text-[8px]"],
 [class~="text-[9px]"],
 [class~="text-[10px]"],
