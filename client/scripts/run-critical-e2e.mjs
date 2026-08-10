@@ -53,6 +53,7 @@ for (const journeyId of journeyIds) {
     {
       E2E_CRITICAL: 'true',
       E2E_CRITICAL_AUDIT_ALL: auditAll ? 'true' : 'false',
+      E2E_REPORT_DIR: auditAll ? `playwright-report/${journeyId}` : 'playwright-report',
       E2E_SEED: 'false',
       E2E_TEST_RUN_ID: `${journeyId}-${Date.now()}`,
     },
