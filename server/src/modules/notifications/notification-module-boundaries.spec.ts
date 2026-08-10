@@ -1,11 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const PROVIDER_IMPLEMENTATION_DETAILS = [
-  /whaapi\.flobaze\.com/i,
-  /\/api\/v1\/send-message/i,
-  /whaapi\.provider/i,
-] as const;
+const PROVIDER_IMPLEMENTATION_DETAILS = [/\/messages\/send/i, /wago\.provider/i] as const;
 
 function listFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
