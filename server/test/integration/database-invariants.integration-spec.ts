@@ -28,7 +28,7 @@ async function createTestUser(prisma: PrismaService, opdId: string, suffix: stri
       nip: suffix.padEnd(18, '0').slice(0, 18),
       jabatan: 'Penyusun',
       pangkat: 'Penata',
-      nohp: `08${suffix.replace(/\D/g, '').padEnd(11, '0').slice(0, 11)}`,
+      nohp: `628${suffix.replace(/\D/g, '').padEnd(10, '0').slice(0, 10)}`,
     },
   });
 }
@@ -201,6 +201,7 @@ describeIntegration('Database migration invariants', () => {
       where: { peraturanId: peraturan.peraturanId },
       select: { lastEditedById: true },
     });
+
     expect(reloaded?.lastEditedById).toBeNull();
   });
 });
