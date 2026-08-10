@@ -59,16 +59,11 @@ const envSchema = z
     NOTIFICATION_IN_APP_ENABLED: envBoolean(true),
     NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
 
-    /** Outbound WhatsApp aktif ketika token dan channel sama-sama tersedia. */
-    WHAAPI_BASE_URL: z.preprocess(
-      trimmedEnvironmentString,
-      z.string().url().default('https://whaapi.flobaze.com'),
-    ),
-    WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    /** Outbound WhatsApp aktif ketika URL dan API key Wago sama-sama tersedia. */
+    WAGO_BASE_URL: optionalUrl,
+    WAGO_API_KEY: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    WAGO_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
-    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
 
@@ -90,20 +85,20 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
-    const hasWhatsappToken = data.WHAAPI_TOKEN !== '';
-    const hasWhatsappChannel = data.WHAAPI_CHANNEL_ID !== '';
-    if (hasWhatsappToken !== hasWhatsappChannel) {
-      if (hasWhatsappToken) {
+    const hasWagoBaseUrl = data.WAGO_BASE_URL !== undefined;
+    const hasWagoApiKey = data.WAGO_API_KEY !== '';
+    if (hasWagoBaseUrl !== hasWagoApiKey) {
+      if (hasWagoBaseUrl) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'WHAAPI_CHANNEL_ID wajib diisi bersama WHAAPI_TOKEN',
-          path: ['WHAAPI_CHANNEL_ID'],
+          message: 'WAGO_API_KEY wajib diisi bersama WAGO_BASE_URL',
+          path: ['WAGO_API_KEY'],
         });
       } else {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'WHAAPI_TOKEN wajib diisi bersama WHAAPI_CHANNEL_ID',
-          path: ['WHAAPI_TOKEN'],
+          message: 'WAGO_BASE_URL wajib diisi bersama WAGO_API_KEY',
+          path: ['WAGO_BASE_URL'],
         });
       }
     }
