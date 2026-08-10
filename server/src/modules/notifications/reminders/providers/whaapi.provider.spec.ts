@@ -152,7 +152,9 @@ describe('WhaApiProvider', () => {
     [503, 'UNAVAILABLE'],
     [418, 'UNKNOWN'],
   ] as const)('memetakan HTTP %s menjadi error channel %s', async (status, expectedKind) => {
-    jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(status, `provider error ${status}`));
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(httpResponse(status, `provider error ${status}`));
 
     const error = await captureChannelError(() => provider().send('081234567890', 'Pesan'));
 
