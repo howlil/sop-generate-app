@@ -6,7 +6,9 @@ import {
 import { isReminderStillEligible } from './reminder-eligibility.util';
 import type { ClaimedNotificationReminder } from './notification-reminder.types';
 
-function reminder(overrides: Partial<ClaimedNotificationReminder> = {}): ClaimedNotificationReminder {
+function reminder(
+  overrides: Partial<ClaimedNotificationReminder> = {},
+): ClaimedNotificationReminder {
   const base: ClaimedNotificationReminder = {
     notificationReminderId: 'reminder-1',
     pengajuanEvaluasiId: 'pengajuan-1',
