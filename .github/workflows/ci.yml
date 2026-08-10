@@ -89,7 +89,7 @@ jobs:
           pnpm exec eslint "${files[@]}"
 
       - name: Unit tests + coverage threshold
-        run: pnpm test:coverage:ci
+        run: pnpm exec jest --coverage --runInBand
 
       - name: Build
         run: pnpm build
