@@ -121,7 +121,8 @@ export async function reviseAndCompleteFollowUpViaUi(
   const titleInput = page.getByPlaceholder('Judul SOP')
   await expect(titleInput).toBeVisible()
   await titleInput.fill(params.revisedTitle)
-  await expect(page.getByRole('status')).toContainText(/tersimpan/i, { timeout: 15_000 })
+  const autosaveStatus = page.getByRole('status', { name: 'Status autosave header SOP' })
+  await expect(autosaveStatus).toContainText(/tersimpan/i, { timeout: 15_000 })
 
   await commentsTab.click()
   const complete = page.getByRole('button', { name: /tandai tindak lanjut selesai/i })
