@@ -57,12 +57,16 @@ export async function resetIntegrationDatabase(prisma: PrismaService): Promise<v
     'OPD',
   ];
 
-  await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS=0');
-  try {
-    for (const table of tables) {
-      await prisma.$executeRawUnsafe(`DELETE FROM \`${table}\``);
+  // FOREIGN_KEY_CHECKS berlaku per session. Pin seluruh reset ke satu interactive
+  // transaction agar flag OFF/ON tidak bocor ke koneksi lain di connection pool.
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS=0');
+    try {
+      for (const table of tables) {
+        await tx.$executeRawUnsafe(`DELETE FROM \`${table}\``);
+      }
+    } finally {
+      await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS=1');
     }
-  } finally {
-    await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS=1');
-  }
+  });
 }
