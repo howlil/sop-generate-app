@@ -36,6 +36,8 @@ type RoleAuthFactory = (user: E2eUser) => Promise<RoleAuthBundle>
 
 interface BusinessTestFixtures {
   roleSession: RoleSessionFactory
+  /** Browser tanpa cookie/localStorage untuk mengaudit permukaan publik. */
+  publicPage: Page
 }
 
 interface BusinessWorkerFixtures {
@@ -122,6 +124,20 @@ export const test = base.extend<BusinessTestFixtures, BusinessWorkerFixtures>({
     },
     { scope: 'worker' },
   ],
+
+  publicPage: async ({ browser }, use, testInfo) => {
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } })
+    const page = await context.newPage()
+    const runtimeErrors: string[] = []
+    page.on('pageerror', (error) => runtimeErrors.push(error.message))
+
+    await use(page)
+    await context.close()
+
+    if (testInfo.status === testInfo.expectedStatus) {
+      expect(runtimeErrors, 'public journey tidak boleh menghasilkan pageerror').toEqual([])
+    }
+  },
 
   roleSession: async ({ browser, roleApi, roleStorageState }, use, testInfo) => {
     const sessions: RoleSession[] = []
