@@ -8,6 +8,7 @@ const criticalAudit = process.env.E2E_CRITICAL === 'true'
 const fullCriticalAudit = process.env.E2E_CRITICAL_AUDIT_ALL === 'true'
 const compatibilityAudit = process.env.E2E_COMPAT === 'true'
 const deterministicAudit = criticalAudit || compatibilityAudit
+const reportDir = process.env.E2E_REPORT_DIR ?? 'playwright-report'
 
 export default defineConfig({
   testDir: fileURLToPath(new URL('./e2e', import.meta.url)),
@@ -25,7 +26,7 @@ export default defineConfig({
   workers: 1,
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['html', { outputFolder: reportDir, open: 'never' }],
   ],
   use: {
     baseURL,
