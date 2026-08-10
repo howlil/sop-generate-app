@@ -189,10 +189,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Create disposable database schema
+      - name: Apply production migration chain
         run: |
           pnpm prisma generate
-          pnpm prisma db push --force-reset --accept-data-loss
+          pnpm prisma migrate deploy
 
       - name: Run database invariant integration tests
         run: pnpm test:integration:run --no-cache -- database-invariants.integration-spec.ts
@@ -203,6 +203,7 @@ jobs:
     needs:
       - server-quality
       - client-quality
+      - database-invariants
     services:
       mariadb:
         image: mariadb:11.4
@@ -269,7 +270,7 @@ jobs:
         working-directory: server
         run: |
           pnpm prisma generate
-          pnpm prisma db push --force-reset --accept-data-loss
+          pnpm prisma migrate deploy
           pnpm db:seed:e2e
 
       - name: Start backend
