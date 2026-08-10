@@ -17,10 +17,10 @@ export class WhaApiProvider implements NotificationChannel {
   private readonly allowedRecipients: Set<string>;
 
   constructor(config: ConfigService) {
-    this.enabled = config.get<boolean>('WHATSAPP_ENABLED', false);
     this.baseUrl = config.get<string>('WHAAPI_BASE_URL', 'https://whaapi.flobaze.com');
-    this.token = config.get<string>('WHAAPI_TOKEN', '');
-    this.channelId = config.get<string>('WHAAPI_CHANNEL_ID', '');
+    this.token = config.get<string>('WHAAPI_TOKEN', '').trim();
+    this.channelId = config.get<string>('WHAAPI_CHANNEL_ID', '').trim();
+    this.enabled = this.token !== '' && this.channelId !== '';
     this.timeoutMs = config.get<number>('WHATSAPP_REQUEST_TIMEOUT_MS', 10_000);
     const raw = config.get<string>('WHATSAPP_ALLOWED_RECIPIENTS', '');
     this.allowedRecipients =
@@ -36,10 +36,10 @@ export class WhaApiProvider implements NotificationChannel {
 
   async send(destination: string, message: string): Promise<void> {
     if (!this.enabled) {
-      throw new NotificationChannelError('CONFIGURATION', 'WhatsApp notification dinonaktifkan');
-    }
-    if (!this.token || !this.channelId) {
-      throw new NotificationChannelError('CONFIGURATION', 'Konfigurasi WhaAPI belum lengkap');
+      throw new NotificationChannelError(
+        'CONFIGURATION',
+        'WhatsApp notification membutuhkan WHAAPI_TOKEN dan WHAAPI_CHANNEL_ID',
+      );
     }
     if (this.allowedRecipients.size > 0 && !this.allowedRecipients.has(destination)) {
       this.logger.debug(
