@@ -9,9 +9,14 @@ export type ReminderMessage = Readonly<{
   body: string;
 }>;
 
+type ReminderMessageInput = Pick<
+  ClaimedNotificationReminder,
+  'kind' | 'pengajuanEvaluasi' | 'pengguna'
+>;
+
 @Injectable()
 export class ReminderMessageFactory {
-  build(reminder: ClaimedNotificationReminder): ReminderMessage {
+  build(reminder: ReminderMessageInput): ReminderMessage {
     const recipientName = this.singleLine(reminder.pengguna.nama, 'Bapak/Ibu');
     const opdName = this.singleLine(reminder.pengajuanEvaluasi.opdNama, 'OPD terkait');
     const commonClosing =
