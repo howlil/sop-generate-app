@@ -51,16 +51,13 @@ for (const project of projects) {
   console.log(`=== ${project}: execute compatibility smoke ===`)
   const status = run(
     process.execPath,
-    [
-      'scripts/run-e2e.mjs',
-      ...specs,
-      `--project=${project}`,
-    ],
+    ['scripts/run-e2e.mjs', ...specs, `--project=${project}`],
     clientDir,
     {
       E2E_ALL_BROWSERS: 'true',
       E2E_COMPAT: 'true',
       E2E_CRITICAL: 'false',
+      E2E_REPORT_DIR: `playwright-report/compat-${project}`,
       E2E_SEED: 'false',
       E2E_TEST_RUN_ID: `compat-${project}-${Date.now()}`,
     },
