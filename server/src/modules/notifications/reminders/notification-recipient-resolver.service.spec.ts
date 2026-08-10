@@ -30,7 +30,7 @@ describe('NotificationRecipientResolverService', () => {
     expect(actual.map((row) => row.penggunaId)).toEqual(['eval-1', 'eval-2']);
   });
 
-  it('menggunakan email penerima sebagai tujuan legacy reminder', () => {
+  it('menggunakan nomor HP penerima sebagai tujuan reminder WhatsApp', () => {
     const service = new NotificationRecipientResolverService();
     const actual = service.resolve(basePengajuan, [
       recipient('eval-1', PeranPengguna.EVALUATOR),
@@ -95,5 +95,4 @@ describe('NotificationRecipientResolverService', () => {
     );
     expect(actual.map((row) => row.penggunaId)).toEqual(['kepala']);
   });
-
 });
