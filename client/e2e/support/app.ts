@@ -115,6 +115,12 @@ export async function searchPageIfAvailable(
     if (!(await input.isVisible().catch(() => false))) continue
     await input.fill(value)
     await expect(input).toHaveValue(value)
+
+    // Arsip global search is debounced into router state. Synchronize on that
+    // observable state instead of sleeping or assuming fill() means results are ready.
+    if ((await input.getAttribute('id')) === 'arsip-global-search') {
+      await expect(page).toHaveURL((url) => url.searchParams.get('q') === value)
+    }
     return
   }
 
