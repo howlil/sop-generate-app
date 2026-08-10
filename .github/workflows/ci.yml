@@ -169,12 +169,16 @@ jobs:
         run: docker compose -f docker-compose.test.yml --profile test down -v --remove-orphans
 
   critical-e2e:
-    name: Critical E2E business journeys
+    name: Critical E2E ${{ matrix.journey }}
     runs-on: ubuntu-latest
     needs:
       - server-quality
       - client-quality
       - server-integration
+    strategy:
+      fail-fast: false
+      matrix:
+        journey: [J01, J02, J03, J04, J05, J06, J07]
     services:
       mariadb:
         image: mariadb:11.4
@@ -237,7 +241,7 @@ jobs:
         working-directory: client
         run: pnpm install --frozen-lockfile
 
-      - name: Apply production migration history to disposable database
+      - name: Apply production migration history to fresh database
         working-directory: server
         run: |
           pnpm prisma generate
@@ -261,9 +265,11 @@ jobs:
         working-directory: client
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run J01-J07
+      - name: Run isolated business journey
         working-directory: client
-        run: pnpm test:e2e:critical
+        env:
+          E2E_TEST_RUN_ID: ${{ matrix.journey }}-${{ github.run_id }}
+        run: node scripts/run-e2e.mjs journeys --grep '^${{ matrix.journey }}\b' --project=chromium
 
       - name: Dump backend log on failure
         if: failure()
@@ -273,7 +279,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: critical-e2e-playwright-report
+          name: critical-e2e-${{ matrix.journey }}-playwright-report
           path: client/playwright-report
           if-no-files-found: ignore
           retention-days: 7
