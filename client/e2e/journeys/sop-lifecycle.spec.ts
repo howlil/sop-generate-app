@@ -59,7 +59,7 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
   })
 
   test('J06 Revocation — pencabutan mengakhiri keberlakuan dan menghapus SOP dari arsip aktif', async ({
-    page,
+    publicPage,
     roleApi,
     roleSession,
   }) => {
@@ -72,7 +72,7 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
     })
 
     await test.step('SOP dicabut tidak lagi tersedia pada arsip publik aktif', async () => {
-      await expectPublicArchiveExcludes(page, approved.title)
+      await expectPublicArchiveExcludes(publicPage, approved.title)
     })
   })
 })
