@@ -30,7 +30,7 @@ Aturannya:
 - postcondition boleh dibaca melalui API pada `support/business-audit.ts` untuk memverifikasi invariant server;
 - setiap role pada journey memakai `BrowserContext` terpisah melalui `fixtures/business-test.ts`;
 - setiap test menggunakan data unik dan harus dapat dijalankan sendiri pada database test yang dapat di-reset;
-- `scenario-traceability.spec.ts` adalah meta/legacy mapping test, **bukan** bukti bahwa suatu business journey sudah dieksekusi.
+- `scenario-traceability.spec.ts` adalah meta-test pemetaan traceability, **bukan** bukti bahwa suatu business journey sudah dieksekusi.
 
 `pnpm test:e2e:audit` menjaga kontrak arsitektur tersebut dan dijalankan oleh CI.
 
