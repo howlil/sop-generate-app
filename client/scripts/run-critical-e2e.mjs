@@ -33,8 +33,8 @@ assertDisposableDatabase()
 run(process.execPath, ['scripts/audit-e2e-journeys.mjs'], clientDir)
 
 for (const journeyId of journeyIds) {
-  console.log(`\n=== ${journeyId}: reset disposable database ===`)
-  run('pnpm', ['prisma', 'db', 'push', '--force-reset', '--accept-data-loss'], serverDir)
+  console.log(`\n=== ${journeyId}: reset disposable database from migrations ===`)
+  run('pnpm', ['prisma', 'migrate', 'reset', '--force'], serverDir)
   run('pnpm', ['db:seed:e2e'], serverDir)
 
   console.log(`=== ${journeyId}: execute isolated journey ===`)
@@ -44,6 +44,10 @@ for (const journeyId of journeyIds) {
     clientDir,
     {
       E2E_SEED: 'false',
+      // roleAuth di business fixture sudah membuktikan login untuk role yang benar-benar
+      // dipakai journey. Login preflight global per proses hanya menggandakan request
+      // auth dan dapat memicu rate limit ketika J01-J07 dijalankan terisolasi.
+      E2E_SKIP_LOGIN_PREFLIGHT: 'true',
       E2E_TEST_RUN_ID: `${journeyId}-${Date.now()}`,
     },
   )

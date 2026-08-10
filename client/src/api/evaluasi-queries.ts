@@ -109,6 +109,7 @@ export function useEvaluasiWorkspaceOpd(
     queryKey: queryKeys.evaluasiWorkspaceOpd(opdId, queryParams),
     queryFn: () => evaluasiApi.workspaceOpd(opdId, queryParams),
     enabled: Boolean(opdId) && enabled,
+    placeholderData: (previousData) => previousData,
     ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   });
 }
@@ -131,6 +132,7 @@ export function useEvaluasiWorkspacePengajuan(
     queryKey: queryKeys.evaluasiWorkspacePengajuan(pengajuanEvaluasiId, queryParams),
     queryFn: () => evaluasiApi.workspacePengajuan(pengajuanEvaluasiId, queryParams),
     enabled: Boolean(pengajuanEvaluasiId) && enabled,
+    placeholderData: (previousData) => previousData,
     ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   });
 }

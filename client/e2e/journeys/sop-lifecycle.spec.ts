@@ -3,9 +3,9 @@ import { expect, test } from '../fixtures/business-test'
 import {
   approveAllSopAsHeadViaUi,
   createVersionViaUi,
-  expectPublicArchiveExcludes,
   revokeSopViaUi,
 } from '../support/business-actions'
+import { apiBaseURL } from '../support/api'
 import { expectPengajuanStatus, expectSopStatus, getWorkbench } from '../support/business-audit'
 import {
   advanceVersionToHeadSignaturePrecondition,
@@ -59,7 +59,7 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
   })
 
   test('J06 Revocation — pencabutan mengakhiri keberlakuan dan menghapus SOP dari arsip aktif', async ({
-    page,
+    publicPage,
     roleApi,
     roleSession,
   }) => {
@@ -72,7 +72,16 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
     })
 
     await test.step('SOP dicabut tidak lagi tersedia pada arsip publik aktif', async () => {
-      await expectPublicArchiveExcludes(page, approved.title)
+      const response = await publicPage.request.get(`${apiBaseURL}/sop/public/sop`, {
+        params: { search: approved.title, page: 1, limit: 20 },
+      })
+      await expect(response, 'endpoint arsip publik harus dapat diakses tanpa autentikasi').toBeOK()
+
+      const body = (await response.json()) as {
+        data?: { items?: Array<{ judul?: string }> }
+      }
+      const items = body.data?.items ?? []
+      expect(items.some((item) => item.judul === approved.title)).toBe(false)
     })
   })
 })

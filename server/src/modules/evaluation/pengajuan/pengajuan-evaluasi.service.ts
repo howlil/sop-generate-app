@@ -152,6 +152,7 @@ export class PengajuanEvaluasiService {
         }
         return dibuat.pengajuanEvaluasiId;
       },
+      opdIdPengguna,
     );
     const created = await this.pengajuanEvaluasiRepository.findByIdFull(idBaru);
     if (created === null) {
@@ -219,7 +220,7 @@ export class PengajuanEvaluasiService {
           'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang halaman lalu coba lagi.',
         );
       }
-    });
+    }, opdId);
   }
 
   /** OPD terikat akun PJ Penyusun / Kepala OPD (untuk workspace tanpa param opdId). */

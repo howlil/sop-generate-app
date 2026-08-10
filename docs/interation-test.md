@@ -1,6 +1,6 @@
 # Rencana Integration Test Core Workflow
 
-Dokumen ini berisi rancangan test case integration test untuk aplikasi SOP Generator & Evaluator. Fokus pengujian adalah memastikan beberapa komponen backend bekerja bersama dengan benar, yaitu route/controller, guard autentikasi dan otorisasi, service, repository, validasi DTO, transaksi database, dan perubahan status data.
+Dokumen ini berisi rancangan test case integration test untuk aplikasi SOP Generator & Evaluator. Fokus pengujian adalah memastikan beberapa komponen backend bekerja bersama dengan benar, yaitu route/controller, guard autentikasi dan otorisasi, service, repository, validasi DTO, transaksi database, constraint migration, dan perubahan status data.
 
 Nama file mengikuti permintaan: `interation-test.md`.
 
@@ -27,8 +27,9 @@ Pengujian pada dokumen ini berada di level integration test. Artinya, test berja
    - `KEPALA_OPD`
 3. Minimal satu OPD aktif tersedia.
 4. Setiap test harus melakukan cleanup atau berjalan dalam transaksi/database reset agar tidak saling memengaruhi.
-5. Test dijalankan menggunakan HTTP request terhadap aplikasi NestJS, misalnya dengan `supertest`.
+5. Test dijalankan menggunakan HTTP request terhadap aplikasi NestJS, misalnya dengan `supertest`, atau langsung melalui application service untuk skenario concurrency database.
 6. Assertion dilakukan pada response API dan kondisi database setelah request.
+7. Database test harus dibentuk dari migration chain yang sama dengan production agar raw SQL trigger dan CHECK constraint ikut terpasang.
 
 ## Cara Menjalankan Integration Test
 
@@ -43,7 +44,9 @@ cd C:\Users\howlil\Documents\tugas-akhir\codingan\server
 pnpm test:integration:docker
 ```
 
-Runner akan: menunggu DB sehat → `pnpm install` → `prisma generate` → `prisma db push --force-reset` → menjalankan **semua** `*.integration-spec.ts` (`core-workflow`, `tte-pdf-qr-verifikasi`).
+Runner akan: menunggu DB sehat → `pnpm install` → `prisma generate` → `prisma migrate reset --force` → menjalankan seluruh `*.integration-spec.ts`, termasuk core workflow, PDF/QR TTE, dan dedicated database-invariant suite.
+
+`prisma db push` sengaja **tidak** digunakan sebagai setup integration test. `db push` tidak mereplay raw SQL migration, sehingga trigger dan CHECK constraint production dapat tidak terpasang walaupun schema Prisma terlihat sinkron.
 
 Hanya suite PDF/QR:
 
@@ -79,8 +82,9 @@ docker compose -f docker-compose.test.yml down -v
 Catatan penting:
 - Integration test akan melakukan reset data pada database test.
 - Test akan dibatalkan jika `DATABASE_NAME` tidak mengandung kata `test`.
-- Test tidak menggunakan browser/UI; request dilakukan ke aplikasi NestJS menggunakan HTTP test client.
+- Test tidak menggunakan browser/UI; request dilakukan ke aplikasi NestJS menggunakan HTTP test client atau service aplikasi untuk kasus concurrency.
 - Test memeriksa response API dan state database setelah request.
+- Dedicated `database-invariants.integration-spec.ts` memverifikasi migration history, index, enum, FK, referential actions, trigger satu `BERLAKU`, XOR parent `DokumenTte`, dan serialisasi pengajuan aktif per OPD.
 - Credential di `server/.env.test` adalah credential khusus lingkungan test, bukan credential production.
 
 ## Data Uji Utama
@@ -109,6 +113,7 @@ Setiap integration test minimal memeriksa:
 5. Role yang tidak berwenang ditolak.
 6. Transisi status tidak melompati aturan bisnis.
 7. Transaksi database rollback ketika salah satu langkah gagal.
+8. Constraint database yang berasal dari migration benar-benar aktif pada MariaDB test.
 
 ## Tabel Test Case Integration
 
@@ -164,7 +169,7 @@ Setiap integration test minimal memeriksa:
 | IT-48 | Critical | Konsistensi OPD | Pengguna OPD A mencoba mengakses dokumen OPD B | `PENYUSUN` OPD A | Contoh: `GET /sop/penyusun-workbench/:detailSopId` | Request ditolak, data OPD B tidak bocor |
 | IT-49 | Critical | Konsistensi Data | Mengajukan evaluasi dengan sebagian DetailSOP valid dan sebagian tidak valid | `PJ_PENYUSUN` | `POST /evaluasi` | Transaksi dibatalkan seluruhnya, tidak ada pengajuan parsial |
 | IT-50 | Critical | Concurrency | Dua request mengubah status pengajuan/SOP secara bersamaan | Role sesuai skenario | Endpoint status/evaluasi/TTE | Salah satu request berhasil, request konflik ditolak, data akhir tetap konsisten |
-| IT-51 | Critical | Pengajuan Evaluasi | Membuat pengajuan saat masih ada pengajuan aktif/blocking pada OPD/SOP yang sama | `PJ_PENYUSUN` | `POST /evaluasi` | Request ditolak, tidak ada pengajuan aktif ganda |
+| IT-51 | Critical | Pengajuan Evaluasi | Dua request paralel mencoba membuka pengajuan aktif untuk OPD yang sama | `PJ_PENYUSUN` | `POST /evaluasi` | Row lock OPD menserialisasi transaksi; tepat satu request berhasil, request lain konflik, dan hanya satu pengajuan aktif tersimpan |
 | IT-52 | Critical | Pengajuan Evaluasi | Pengajuan `EVALUASI_REQUEST_OPD` dibuat dengan payload `nilaiOPD` | `PJ_PENYUSUN`/`EVALUATOR` | `POST /evaluasi` atau `PATCH /evaluasi/:id/selesai` | Request ditolak karena evaluasi EVALUASI_REQUEST_OPD tidak memakai nilai OPD |
 | IT-53 | Critical | Evaluasi SOP | Evaluator mengisi nilai saat pengajuan bukan `SEDANG_DIEVALUASI` | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/nilai/:detailSopId` | Request ditolak, nilai evaluasi tidak berubah |
 | IT-54 | Critical | Evaluasi SOP | Evaluator menilai DetailSOP yang bukan anggota pengajuan | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/nilai/:detailSopId` | Request ditolak, SOP luar pengajuan tidak dapat dinilai |
@@ -180,7 +185,7 @@ Setiap integration test minimal memeriksa:
 | IT-64 | Critical | TTE Profil | Mengubah PIN TTE dengan PIN lama salah | Role TTE | `PATCH /tte/profil/pin` | Request ditolak, hash PIN tidak berubah |
 | IT-65 | Critical | TTE BA | Role yang sama menandatangani BA dua kali | `PJ_EVALUATOR` atau `PJ_PENYUSUN` | `POST /tte/tanda-tangani/ba/:pengajuanId` | Request kedua ditolak, tidak ada duplikasi `RiwayatTandaTangan` |
 | IT-66 | Critical | TTE BA | Pengguna yang belum membuat PIN mencoba tanda tangan BA | `PJ_EVALUATOR`/`PJ_PENYUSUN` | `POST /tte/tanda-tangani/ba/:pengajuanId` | Request ditolak, tidak ada dokumen atau riwayat tanda tangan baru |
-| IT-67 | Critical | TTE Integrity | Dokumen TTE memiliki parent tidak valid, yaitu SOP dan Pengajuan sekaligus atau keduanya kosong | Role TTE | Endpoint tanda tangan terkait | Request ditolak, data dokumen TTE tidak dipakai |
+| IT-67 | Critical | TTE Integrity | `DokumenTte` memiliki parent tidak valid: SOP dan Pengajuan sekaligus atau keduanya kosong | Role TTE | Constraint database / endpoint tanda tangan terkait | CHECK constraint migration menolak kedua bentuk data invalid |
 | IT-68 | Critical | TTE SOP | Kepala OPD dari OPD lain menandatangani SOP pengajuan | `KEPALA_OPD` OPD lain | `POST /tte/tanda-tangani/pengajuan/:pengajuanId/sop-semua` | Request ditolak, tidak ada SOP menjadi `BERLAKU` |
 | IT-69 | Critical | Versi SOP | Versi baru disahkan dan menggantikan versi lama yang masih `BERLAKU` | `KEPALA_OPD` | `POST /tte/tanda-tangani/pengajuan/:pengajuanId/sop-semua` | Versi baru menjadi `BERLAKU`, versi lama berubah menjadi `DIGANTIKAN` |
 | IT-70 | Critical | Versi SOP | Menghapus versi draft yang bukan draft atau sudah masuk evaluasi | `PENYUSUN`/`PJ_PENYUSUN` | `DELETE /sop/:detailSopId/versi-draft` | Request ditolak, versi non-draft tidak terhapus |
@@ -212,11 +217,11 @@ pnpm test:integration:docker:pdf
 
 ## Tambahan Constraint Coverage
 
-Test case IT-51 sampai IT-75 ditambahkan untuk menutup constraint bisnis yang tidak selalu terlihat pada happy path core workflow. Constraint ini penting karena sebagian besar risiko sistem muncul bukan saat alur normal berjalan, tetapi saat data lintas status, lintas OPD, atau lintas transaksi berada dalam kondisi edge case.
+Test case IT-51 sampai IT-75 menutup constraint bisnis yang tidak selalu terlihat pada happy path core workflow. Dedicated database-invariant suite menambah pembuktian langsung pada database MariaDB hasil migration, bukan hanya mock/service-level assertion.
 
 | Constraint | Test Case |
 |---|---|
-| Tidak boleh ada pengajuan evaluasi aktif ganda untuk SOP/OPD yang sama | IT-51 |
+| Maksimal satu pengajuan evaluasi aktif lintas jobdesk per OPD, termasuk dua request paralel | IT-51 + `database-invariants.integration-spec.ts` |
 | Evaluasi `EVALUASI_REQUEST_OPD` tidak menggunakan nilai OPD, sedangkan evaluasi `EVALUASI_REQUEST_EVALUATOR` wajib nilai OPD saat selesai | IT-28, IT-29, IT-52 |
 | Evaluator hanya boleh menilai pengajuan aktif berstatus `SEDANG_DIEVALUASI` | IT-53 |
 | DetailSOP yang dinilai harus menjadi anggota pengajuan | IT-54 |
@@ -228,7 +233,7 @@ Test case IT-51 sampai IT-75 ditambahkan untuk menutup constraint bisnis yang ti
 | PIN TTE tidak boleh dibuat ulang lewat endpoint register dan perubahan PIN butuh PIN lama valid | IT-63, IT-64 |
 | Tanda tangan BA tidak boleh duplikat untuk role yang sama | IT-65 |
 | Tanda tangan elektronik harus ditolak jika kredensial TTE belum dibuat | IT-66 |
-| Dokumen TTE wajib memiliki parent yang valid dan tunggal | IT-67 |
+| `DokumenTte` wajib memiliki tepat satu parent (XOR) | IT-67 + `database-invariants.integration-spec.ts` |
 | Kepala OPD tidak boleh menandatangani SOP OPD lain | IT-68 |
 | Pengesahan versi baru harus mengganti versi lama yang berlaku | IT-69 |
 | Versi non-draft atau versi yang sudah masuk proses tidak boleh dihapus sebagai draft | IT-70 |
@@ -237,6 +242,19 @@ Test case IT-51 sampai IT-75 ditambahkan untuk menutup constraint bisnis yang ti
 | Nilai OPD di luar skala tidak boleh memengaruhi KPI laporan | IT-73 |
 | Update bersamaan harus ditangani dengan conflict/optimistic locking | IT-74 |
 | Endpoint read-only tidak boleh menyebabkan mutasi status bisnis | IT-75 |
+
+## Dedicated Database Invariant Suite
+
+File `server/test/integration/database-invariants.integration-spec.ts` dijalankan setelah migration chain production diterapkan. Suite ini secara eksplisit memverifikasi:
+
+1. `_prisma_migrations` memiliki migration yang selesai.
+2. Index operasional penting terpasang.
+3. Trigger maksimal satu `DetailSOP.BERLAKU` per SOP aktif.
+4. Foreign key invalid ditolak.
+5. Nilai enum invalid ditolak pada level database.
+6. Referential action `Cascade`, `Restrict`, dan `SetNull` bekerja.
+7. XOR parent `DokumenTte` menolak kondisi kedua parent kosong maupun kedua parent terisi.
+8. Dua pembuatan pengajuan aktif paralel pada OPD yang sama diserialisasi dengan row lock OPD; tepat satu berhasil.
 
 ## Detail Skenario Kritis
 
@@ -466,11 +484,12 @@ Alur berikut dapat dijadikan satu integration scenario besar, tetapi tetap sebai
 | SOP dicabut ketika masih ada revisi berjalan | IT-71 |
 | SOP belum berlaku tampil di publik atau data internal bocor | IT-39, IT-40, IT-41, IT-72 |
 | Nilai OPD invalid memengaruhi laporan | IT-46, IT-47, IT-73 |
-| Konflik update bersamaan merusak data | IT-50, IT-74 |
+| Konflik update bersamaan merusak data | IT-50, IT-51, IT-74 |
 | Endpoint baca mengubah status bisnis | IT-75 |
+| Raw SQL migration tidak ikut teruji karena setup memakai `db push` | Dedicated database-invariant suite + migration-backed reset/deploy |
 
 ## Kesimpulan
 
-Integration test yang paling penting untuk sistem ini adalah pengujian pada alur pengajuan evaluasi, revisi, penyelesaian evaluasi, tanda tangan elektronik, pengesahan SOP, dan arsip publik. Area tersebut disebut critical karena melibatkan perubahan status lintas tabel, otorisasi lintas role, dan transaksi database yang harus konsisten.
+Integration test yang paling penting untuk sistem ini adalah pengujian pada alur pengajuan evaluasi, revisi, penyelesaian evaluasi, tanda tangan elektronik, pengesahan SOP, arsip publik, dan invariant database. Area tersebut disebut critical karena melibatkan perubahan status lintas tabel, otorisasi lintas role, transaksi database, serta constraint raw SQL yang harus konsisten.
 
-Jika seluruh test case critical lulus, maka backend memiliki bukti kuat bahwa core workflow aplikasi berjalan konsisten dari sisi API dan database. Pengujian ini tetap perlu dilengkapi dengan end-to-end test apabila ingin membuktikan perjalanan pengguna dari antarmuka aplikasi secara penuh.
+Jika seluruh test case critical dan dedicated database-invariant suite lulus pada migration chain production, maka backend memiliki bukti kuat bahwa core workflow aplikasi berjalan konsisten dari sisi API dan database. Pengujian ini tetap perlu dilengkapi dengan end-to-end test untuk membuktikan perjalanan pengguna dari antarmuka aplikasi secara penuh.
