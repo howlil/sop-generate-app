@@ -1,0 +1,277 @@
+name: Release verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      vus:
+        description: k6 virtual users
+        required: true
+        default: "20"
+        type: string
+      duration:
+        description: k6 test duration
+        required: true
+        default: "1m"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-verification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-critical-audit:
+    name: Full J01-J07 audit (zero retry)
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: release-root-password
+          MARIADB_DATABASE: release_critical_test
+          MARIADB_USER: ci
+          MARIADB_PASSWORD: ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      CI: "true"
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DATABASE_USER: ci
+      DATABASE_PASSWORD: ci
+      DATABASE_NAME: release_critical_test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/release_critical_test
+      JWT_SECRET: release-critical-jwt-secret-that-is-at-least-32-characters
+      JWT_REFRESH_SECRET: release-critical-refresh-secret-at-least-32-characters
+      TTE_ENCRYPTION_SECRET: release-critical-tte-secret-at-least-32-characters
+      PUBLIC_APP_ORIGIN: http://localhost:5173
+      ALLOWED_ORIGINS: http://127.0.0.1:5173,http://localhost:5173
+      SOP_PDF_STORAGE_DIR: /tmp/sopflow-release-critical-storage
+      WHATSAPP_ENABLED: "false"
+      NOTIFICATION_IN_APP_ENABLED: "false"
+      PDF_SIGNING_ENABLED: "true"
+      E2E_CRITICAL: "true"
+      E2E_CRITICAL_AUDIT_ALL: "true"
+      E2E_BASE_URL: http://localhost:5173
+      E2E_API_BASE_URL: http://127.0.0.1:3000/api/v1
+      E2E_BROWSER_API_BASE_URL: http://localhost:3000/api/v1
+      E2E_API_HEALTH_URL: http://127.0.0.1:3000/api/health/ready
+      E2E_SKIP_LOGIN_PREFLIGHT: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
+      - name: Install dependencies
+        run: |
+          pnpm --dir server install --frozen-lockfile
+          pnpm --dir client install --frozen-lockfile
+      - name: Prepare migration-backed database
+        run: |
+          pnpm --dir server prisma generate
+          pnpm --dir server prisma migrate reset --force --skip-seed
+          pnpm --dir server db:seed:e2e
+      - name: Start backend
+        run: |
+          pnpm --dir server start > /tmp/release-critical-server.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/release-critical-server.log
+          exit 1
+      - name: Install Chromium
+        run: pnpm --dir client exec playwright install --with-deps chromium
+      - name: Run all critical journeys and collect all failures
+        run: pnpm --dir client test:e2e:critical:audit
+      - name: Upload critical audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-critical-audit-reports
+          path: client/playwright-report
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Dump backend log on failure
+        if: failure()
+        run: cat /tmp/release-critical-server.log || true
+
+  cross-browser-compatibility:
+    name: Cross-browser compatibility smoke
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: release-root-password
+          MARIADB_DATABASE: release_compat_test
+          MARIADB_USER: ci
+          MARIADB_PASSWORD: ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      CI: "true"
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DATABASE_USER: ci
+      DATABASE_PASSWORD: ci
+      DATABASE_NAME: release_compat_test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/release_compat_test
+      JWT_SECRET: release-compat-jwt-secret-that-is-at-least-32-characters
+      JWT_REFRESH_SECRET: release-compat-refresh-secret-at-least-32-characters
+      TTE_ENCRYPTION_SECRET: release-compat-tte-secret-at-least-32-characters
+      PUBLIC_APP_ORIGIN: http://localhost:5173
+      ALLOWED_ORIGINS: http://127.0.0.1:5173,http://localhost:5173
+      SOP_PDF_STORAGE_DIR: /tmp/sopflow-release-compat-storage
+      WHATSAPP_ENABLED: "false"
+      NOTIFICATION_IN_APP_ENABLED: "false"
+      PDF_SIGNING_ENABLED: "false"
+      E2E_BASE_URL: http://localhost:5173
+      E2E_API_BASE_URL: http://127.0.0.1:3000/api/v1
+      E2E_BROWSER_API_BASE_URL: http://localhost:3000/api/v1
+      E2E_API_HEALTH_URL: http://127.0.0.1:3000/api/health/ready
+      E2E_SKIP_LOGIN_PREFLIGHT: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
+      - name: Install dependencies
+        run: |
+          pnpm --dir server install --frozen-lockfile
+          pnpm --dir client install --frozen-lockfile
+      - name: Prepare migration-backed database
+        run: |
+          pnpm --dir server prisma generate
+          pnpm --dir server prisma migrate reset --force --skip-seed
+          pnpm --dir server db:seed:e2e
+      - name: Start backend
+        run: |
+          pnpm --dir server start > /tmp/release-compat-server.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/release-compat-server.log
+          exit 1
+      - name: Install browser engines
+        run: pnpm --dir client exec playwright install --with-deps chromium firefox webkit
+      - name: Run compatibility smoke on Firefox, WebKit, and mobile Chromium
+        run: pnpm --dir client test:e2e:compat
+      - name: Upload compatibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-cross-browser-reports
+          path: client/playwright-report
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Dump backend log on failure
+        if: failure()
+        run: cat /tmp/release-compat-server.log || true
+
+  autosave-load:
+    name: Autosave k6 thresholds
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: release-root-password
+          MARIADB_DATABASE: release_load_test
+          MARIADB_USER: ci
+          MARIADB_PASSWORD: ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DATABASE_USER: ci
+      DATABASE_PASSWORD: ci
+      DATABASE_NAME: release_load_test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/release_load_test
+      JWT_SECRET: release-load-jwt-secret-that-is-at-least-32-characters
+      JWT_REFRESH_SECRET: release-load-refresh-secret-at-least-32-characters
+      TTE_ENCRYPTION_SECRET: release-load-tte-secret-at-least-32-characters
+      PUBLIC_APP_ORIGIN: http://localhost:5173
+      ALLOWED_ORIGINS: http://127.0.0.1:5173,http://localhost:5173
+      SOP_PDF_STORAGE_DIR: /tmp/sopflow-release-load-storage
+      WHATSAPP_ENABLED: "false"
+      NOTIFICATION_IN_APP_ENABLED: "false"
+      PDF_SIGNING_ENABLED: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
+      - name: Install server dependencies
+        run: pnpm --dir server install --frozen-lockfile
+      - name: Prepare migration-backed database
+        run: |
+          pnpm --dir server prisma generate
+          pnpm --dir server prisma migrate reset --force --skip-seed
+          pnpm --dir server db:seed:e2e
+      - name: Start backend
+        run: |
+          pnpm --dir server start > /tmp/release-load-server.log 2>&1 &
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/release-load-server.log
+          exit 1
+      - name: Run pinned k6 autosave load thresholds
+        run: |
+          docker run --rm --network host \
+            -v "$PWD/server/scripts:/scripts:ro" \
+            -e API_BASE_URL=http://127.0.0.1:3000/api/v1 \
+            -e VUS="${{ inputs.vus }}" \
+            -e DURATION="${{ inputs.duration }}" \
+            grafana/k6:2.1.0 run /scripts/k6-sop-autosave-concurrency.js
+      - name: Dump backend log on failure
+        if: failure()
+        run: cat /tmp/release-load-server.log || true
