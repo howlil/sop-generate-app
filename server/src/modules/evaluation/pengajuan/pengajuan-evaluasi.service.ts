@@ -152,6 +152,7 @@ export class PengajuanEvaluasiService {
         }
         return dibuat.pengajuanEvaluasiId;
       },
+      opdIdPengguna,
     );
     const created = await this.pengajuanEvaluasiRepository.findByIdFull(idBaru);
     if (created === null) {
@@ -179,47 +180,50 @@ export class PengajuanEvaluasiService {
     if (sopDetailIds.length === 0) {
       return;
     }
-    await this.pengajuanEvaluasiRepository.runTransaction(async (tx: Prisma.TransactionClient) => {
-      const blocking = await tx.pengajuanEvaluasi.findFirst({
-        where: {
-          opdId,
-          status: {
-            in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
+    await this.pengajuanEvaluasiRepository.runTransaction(
+      async (tx: Prisma.TransactionClient) => {
+        const blocking = await tx.pengajuanEvaluasi.findFirst({
+          where: {
+            opdId,
+            status: {
+              in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
+            },
           },
-        },
-        select: { pengajuanEvaluasiId: true },
-      });
-      if (blocking !== null) {
-        return;
-      }
-      await this.assertDetailSopSiapDalamOpd(tx, sopDetailIds, opdId);
-      const sekarang = new Date();
-      await tx.pengajuanEvaluasi.create({
-        data: {
-          opdId,
-          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
-          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          tanggalPermintaan: sekarang,
-          tanggalEvaluasi: sekarang,
-          nilaiEvaluasi: {
-            create: sopDetailIds.map((detailSopId) => ({ detailSopId })),
+          select: { pengajuanEvaluasiId: true },
+        });
+        if (blocking !== null) {
+          return;
+        }
+        await this.assertDetailSopSiapDalamOpd(tx, sopDetailIds, opdId);
+        const sekarang = new Date();
+        await tx.pengajuanEvaluasi.create({
+          data: {
+            opdId,
+            jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            tanggalPermintaan: sekarang,
+            tanggalEvaluasi: sekarang,
+            nilaiEvaluasi: {
+              create: sopDetailIds.map((detailSopId) => ({ detailSopId })),
+            },
           },
-        },
-        select: { pengajuanEvaluasiId: true },
-      });
-      const promoted = await tx.detailSOP.updateMany({
-        where: {
-          detailSopId: { in: sopDetailIds },
-          status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
-        },
-        data: { status: StatusSOP.SEDANG_DIEVALUASI },
-      });
-      if (promoted.count !== sopDetailIds.length) {
-        throw new ConflictException(
-          'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang halaman lalu coba lagi.',
-        );
-      }
-    });
+          select: { pengajuanEvaluasiId: true },
+        });
+        const promoted = await tx.detailSOP.updateMany({
+          where: {
+            detailSopId: { in: sopDetailIds },
+            status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
+          },
+          data: { status: StatusSOP.SEDANG_DIEVALUASI },
+        });
+        if (promoted.count !== sopDetailIds.length) {
+          throw new ConflictException(
+            'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang halaman lalu coba lagi.',
+          );
+        }
+      },
+      opdId,
+    );
   }
 
   /** OPD terikat akun PJ Penyusun / Kepala OPD (untuk workspace tanpa param opdId). */
