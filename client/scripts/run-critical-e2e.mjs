@@ -40,7 +40,7 @@ for (const journeyId of journeyIds) {
   console.log(`=== ${journeyId}: execute isolated journey ===`)
   run(
     process.execPath,
-    ['scripts/run-e2e.mjs', 'journeys', '--grep', `^${journeyId}\\b`, '--project=chromium'],
+    ['scripts/run-e2e.mjs', 'journeys', '--grep', `${journeyId}\\b`, '--project=chromium'],
     clientDir,
     {
       E2E_SEED: 'false',
