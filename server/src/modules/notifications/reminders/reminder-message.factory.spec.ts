@@ -12,8 +12,7 @@ function reminder(
 ): ClaimedNotificationReminder {
   const statusByKind: Record<NotificationReminderKind, StatusPengajuanEvaluasi> = {
     [NotificationReminderKind.EVALUASI_SOP]: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-    [NotificationReminderKind.TTD_BA_PJ_EVALUATOR]:
-      StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+    [NotificationReminderKind.TTD_BA_PJ_EVALUATOR]: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
     [NotificationReminderKind.TTD_BA_PJ_PENYUSUN]:
       StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
     [NotificationReminderKind.TTD_SOP_KEPALA_OPD]:
