@@ -473,9 +473,11 @@ model LogNilaiEvaluasi {
 
 model DokumenTte {
   dokumenTteId        String               @id @default(uuid()) @db.Char(36)
-  nomorDokumen        String               @unique @db.VarChar(24)
+  /// SOP: nomorDokumen input (maks. 500) + '-' + nomorSOP (maks. 255).
+  nomorDokumen        String               @unique @db.VarChar(756)
   jenisDokumen        JenisDokumenTte
-  judulDokumen        String               @db.VarChar(28)
+  /// SOP: judulDokumen input (maks. 2000) + ' - ' + judul SOP (maks. 500).
+  judulDokumen        String               @db.VarChar(2503)
   hashDokumen         String               @db.Char(64)
   versiDokumen        Int                  @default(1)
   pdfPath             String?              @db.Text
@@ -505,10 +507,13 @@ model RiwayatTandaTangan {
   peran              PeranPengguna
   signatureValue     String?       @db.LongText
   signatureAlgorithm String?       @db.VarChar(13)
-  signatureFormat    String?       @db.VarChar(9)
-  certSerialNumber   String?       @db.VarChar(16)
-  certIssuer         String?       @db.VarChar(24)
-  certSubject        String?       @db.VarChar(32)
+  /// Implementasi signing menulis PKCS7_DETACHED (14 karakter).
+  signatureFormat    String?       @db.VarChar(14)
+  /// Serial X.509 node-forge direpresentasikan sebagai hex; 20 octet = 40 karakter.
+  certSerialNumber   String?       @db.VarChar(40)
+  /// Distinguished name sertifikat tidak aman dibatasi oleh panjang data sampel.
+  certIssuer         String?       @db.Text
+  certSubject        String?       @db.Text
   certFingerprint    String?       @db.Char(64)
   certValidFrom      DateTime?
   certValidTo        DateTime?
