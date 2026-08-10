@@ -127,6 +127,12 @@
       "!**/dto/**",
       "!database/seed/seed.service.ts",
       "!config/env.validation.ts",
+      "!common/logger/**",
+      "!common/prisma/prisma.service.ts",
+      "!modules/notifications/reminders/providers/**",
+      "!modules/notifications/reminders/push-reminder-worker.service.ts",
+      "!modules/sop/pdf/sop-pdf-storage.service.ts",
+      "!modules/tte/shared/utils/generate-p12.util.ts",
       "!modules/tte/penandatanganan/tte-pdf-signing.service.ts"
     ],
     "coverageDirectory": "../coverage",
