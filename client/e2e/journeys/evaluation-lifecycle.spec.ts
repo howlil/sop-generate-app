@@ -26,7 +26,6 @@ import {
 import {
   advanceRevisionForAggregationPrecondition,
   ensureJourneyTteProfiles,
-  finalizeEvaluationForJourneyIsolation,
   seedActiveEvaluation,
   seedReadySops,
 } from '../support/business-preconditions'
@@ -144,15 +143,6 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
       await submitEvaluationCompletionViaUi(evaluator.page, finalBaNumber)
       await expectPengajuanStatus(evaluator.api, pengajuanId, 'SELESAI_DIEVALUASI')
     })
-
-    await test.step('Cleanup isolation menutup workflow yang bukan scope J02', async () => {
-      await finalizeEvaluationForJourneyIsolation(roleApi, {
-        pengajuanId,
-        sops: [sop],
-        baNumber: finalBaNumber,
-      })
-      await expectPengajuanStatus(pjPenyusun.api, pengajuanId, 'SELESAI')
-    })
   })
 
   test('J03 Final Rejection — penolakan final mengunci versi dan memaksa versi baru', async ({
@@ -233,15 +223,6 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
       await expectNilai(evaluator.api, pengajuanId, sopB.detailSopId, { hasil: 'SESUAI' })
       await submitEvaluationCompletionViaUi(evaluator.page, finalBaNumber)
       await expectPengajuanStatus(evaluator.api, pengajuanId, 'SELESAI_DIEVALUASI')
-    })
-
-    await test.step('Cleanup isolation menutup workflow yang bukan scope J04', async () => {
-      await finalizeEvaluationForJourneyIsolation(roleApi, {
-        pengajuanId,
-        sops: [sopA, sopB],
-        baNumber: finalBaNumber,
-      })
-      await expectPengajuanStatus(evaluator.api, pengajuanId, 'SELESAI')
     })
   })
 })
