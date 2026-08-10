@@ -22,10 +22,9 @@ ENV NODE_ENV=production
 ENV SSR_HOST=127.0.0.1
 ENV SSR_PORT=4173
 
-RUN apk add --no-cache nginx wget libcap \
+RUN apk add --no-cache nginx wget \
   && mkdir -p /run/nginx /var/lib/nginx /var/log/nginx \
-  && chown -R node:node /run/nginx /var/lib/nginx /var/log/nginx /app \
-  && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
+  && chown -R node:node /run/nginx /var/lib/nginx /var/log/nginx /app
 
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist ./dist
@@ -36,5 +35,5 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod 0755 /docker-entrypoint.sh
 
 USER node
-EXPOSE 80
+EXPOSE 8080
 CMD ["/docker-entrypoint.sh"]
