@@ -131,6 +131,23 @@ jobs:
       - name: Build
         run: pnpm build
 
+  minimal-production-config:
+    name: Minimal production config
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_APP_ORIGIN: https://sop.example.test
+      DB_PASSWORD: ci-password
+      JWT_SECRET: ci-jwt-secret-that-is-at-least-32-characters-long
+      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-at-least-32-characters-long
+      TTE_ENCRYPTION_SECRET: ci-tte-secret-that-is-different-and-at-least-32-characters
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Compose with five required env values
+        run: docker compose -f compose.yml config --quiet
+
   critical-e2e:
     name: Critical E2E business journeys
     runs-on: ubuntu-latest
@@ -244,6 +261,7 @@ jobs:
     needs:
       - server-quality
       - client-quality
+      - minimal-production-config
       - critical-e2e
     env:
       PUBLIC_APP_ORIGIN: https://sop.example.test
