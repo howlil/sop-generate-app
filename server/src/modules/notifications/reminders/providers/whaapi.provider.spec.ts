@@ -29,19 +29,23 @@ describe('WhaApiProvider', () => {
   }
 
   it('menolak pengiriman ketika channel WhatsApp dinonaktifkan', async () => {
-    await expect(provider({ WHATSAPP_ENABLED: false }).send('081234567890', 'test')).rejects.toMatchObject({
+    await expect(
+      provider({ WHATSAPP_ENABLED: false }).send('081234567890', 'test'),
+    ).rejects.toMatchObject({
       kind: 'CONFIGURATION',
     });
   });
 
-  it.each([
-    { WHAAPI_TOKEN: '' },
-    { WHAAPI_CHANNEL_ID: '' },
-  ])('menolak konfigurasi WhaAPI yang belum lengkap: %o', async (overrides) => {
-    await expect(provider(overrides).send('081234567890', 'test')).rejects.toMatchObject({
-      kind: 'CONFIGURATION',
-    });
-  });
+  it.each([{ WHAAPI_TOKEN: '' }, { WHAAPI_CHANNEL_ID: '' }])(
+    'menolak konfigurasi WhaAPI yang belum lengkap: %o',
+    async (overrides) => {
+      await expect(
+        provider(overrides).send('081234567890', 'test'),
+      ).rejects.toMatchObject({
+        kind: 'CONFIGURATION',
+      });
+    },
+  );
 
   it('melewati tujuan yang tidak termasuk allowlist tanpa memanggil provider', async () => {
     const fetchMock = jest.fn();
@@ -66,11 +70,13 @@ describe('WhaApiProvider', () => {
     expect(url).toBe('https://whaapi.example.test/api/v1/send-message');
     expect(options.method).toBe('POST');
     expect(options.headers).toMatchObject({ Authorization: 'Bearer token-test' });
-    expect(JSON.parse(String(options.body))).toEqual({
-      app_id: 'channel-test',
-      message: 'Pesan pengingat',
-      phone_number: '6281234567890',
-    });
+    expect(options.body).toBe(
+      JSON.stringify({
+        app_id: 'channel-test',
+        message: 'Pesan pengingat',
+        phone_number: '6281234567890',
+      }),
+    );
   });
 
   it.each([
@@ -114,7 +120,9 @@ describe('WhaApiProvider', () => {
   });
 
   it('memetakan error jaringan menjadi UNKNOWN', async () => {
-    global.fetch = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+    global.fetch = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
 
     await expect(provider().send('6281234567890', 'test')).rejects.toMatchObject({
       kind: 'UNKNOWN',
