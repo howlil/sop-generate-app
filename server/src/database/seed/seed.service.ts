@@ -197,13 +197,12 @@ export class SeedService {
         '4 peraturan, relasi OPD-peraturan, dan master pelaksana SOP.',
       ].join(' '),
     );
-    this.logger.warn(`Login seed menggunakan SEED_DEFAULT_PASSWORD (default ${DEFAULT_SEED_PASSWORD}).`);
+    this.logger.warn(
+      `Login seed menggunakan SEED_DEFAULT_PASSWORD (default ${DEFAULT_SEED_PASSWORD}).`,
+    );
   }
 
-  private async ensureOpd(
-    tx: Prisma.TransactionClient,
-    nama: string,
-  ): Promise<{ opdId: string }> {
+  private async ensureOpd(tx: Prisma.TransactionClient, nama: string): Promise<{ opdId: string }> {
     const existing = await tx.oPD.findFirst({
       where: { nama },
       select: { opdId: true },
