@@ -20,8 +20,8 @@ function build(inAppEnabled: boolean, whatsappConfigured = false) {
   const config = {
     get: jest.fn((key: string, fallback: unknown) => {
       if (key === 'NOTIFICATION_IN_APP_ENABLED') return inAppEnabled;
-      if (key === 'WHAAPI_TOKEN') return whatsappConfigured ? 'test-token' : '';
-      if (key === 'WHAAPI_CHANNEL_ID') return whatsappConfigured ? 'test-channel' : '';
+      if (key === 'WAGO_BASE_URL') return whatsappConfigured ? 'https://wago.example.test' : '';
+      if (key === 'WAGO_API_KEY') return whatsappConfigured ? 'wa_test_key' : '';
       if (key === 'NOTIFICATION_RECONCILE_INTERVAL_SECONDS') return 10;
       return fallback;
     }),
@@ -95,7 +95,7 @@ describe('NotificationReminderSchedulerService', () => {
     expect(pushWorker.processDue).toHaveBeenCalledTimes(1);
   });
 
-  it('menjalankan worker push hanya ketika pasangan credential WhatsApp tersedia', async () => {
+  it('menjalankan worker push hanya ketika pasangan konfigurasi Wago tersedia', async () => {
     const configured = build(false, true);
     await configured.service.tick();
     expect(configured.reconciler.reconcile).toHaveBeenCalledTimes(1);
