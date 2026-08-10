@@ -26,6 +26,7 @@ import {
 import {
   advanceRevisionForAggregationPrecondition,
   ensureJourneyTteProfiles,
+  finalizeEvaluationForJourneyIsolation,
   seedActiveEvaluation,
   seedReadySops,
 } from '../support/business-preconditions'
@@ -103,6 +104,7 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
     const pjPenyusun = await roleSession(users.pjPenyusun)
     const note = 'Lengkapi keluaran proses dan pastikan hasil setiap langkah dapat diverifikasi.'
     const revisedTitle = `${sop.title} Revisi`
+    const finalBaNumber = `${sop.baNumber}-REV`
 
     await test.step('Evaluator meminta perbaikan dengan catatan resmi melalui UI', async () => {
       await openEvaluatorSubmission(evaluator.page, pengajuanId)
@@ -139,8 +141,17 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
       await expect(evaluator.page.locator('body')).toContainText(/penilaian ulang|tinjauan ulang/i)
       await evaluateSopViaUi(evaluator.page, { title: revisedTitle, result: 'SESUAI' })
       await expectNilai(evaluator.api, pengajuanId, sop.detailSopId, { hasil: 'SESUAI' })
-      await submitEvaluationCompletionViaUi(evaluator.page, `${sop.baNumber}-REV`)
+      await submitEvaluationCompletionViaUi(evaluator.page, finalBaNumber)
       await expectPengajuanStatus(evaluator.api, pengajuanId, 'SELESAI_DIEVALUASI')
+    })
+
+    await test.step('Cleanup isolation menutup workflow yang bukan scope J02', async () => {
+      await finalizeEvaluationForJourneyIsolation(roleApi, {
+        pengajuanId,
+        sops: [sop],
+        baNumber: finalBaNumber,
+      })
+      await expectPengajuanStatus(pjPenyusun.api, pengajuanId, 'SELESAI')
     })
   })
 
@@ -189,6 +200,7 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
 
     const evaluator = await roleSession(users.evaluator)
     const note = 'SOP kedua perlu perbaikan pada keluaran proses sebelum pengajuan dapat diselesaikan.'
+    const finalBaNumber = `${sopA.baNumber}-MIX`
 
     await test.step('Evaluator memberi hasil berbeda pada dua SOP melalui UI', async () => {
       await openEvaluatorSubmission(evaluator.page, pengajuanId)
@@ -219,8 +231,17 @@ test.describe('End-to-End Business Journey — evaluation lifecycle', () => {
       await evaluateSopViaUi(evaluator.page, { title: sopB.title, result: 'SESUAI' })
       await expectNilai(evaluator.api, pengajuanId, sopA.detailSopId, { hasil: 'SESUAI' })
       await expectNilai(evaluator.api, pengajuanId, sopB.detailSopId, { hasil: 'SESUAI' })
-      await submitEvaluationCompletionViaUi(evaluator.page, `${sopA.baNumber}-MIX`)
+      await submitEvaluationCompletionViaUi(evaluator.page, finalBaNumber)
       await expectPengajuanStatus(evaluator.api, pengajuanId, 'SELESAI_DIEVALUASI')
+    })
+
+    await test.step('Cleanup isolation menutup workflow yang bukan scope J04', async () => {
+      await finalizeEvaluationForJourneyIsolation(roleApi, {
+        pengajuanId,
+        sops: [sopA, sopB],
+        baNumber: finalBaNumber,
+      })
+      await expectPengajuanStatus(evaluator.api, pengajuanId, 'SELESAI')
     })
   })
 })
