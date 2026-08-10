@@ -83,7 +83,7 @@ jobs:
       - name: Prepare migration-backed database
         run: |
           pnpm --dir server prisma generate
-          pnpm --dir server prisma migrate reset --force --skip-seed
+          pnpm --dir server prisma migrate reset --force
           pnpm --dir server db:seed:e2e
       - name: Start backend
         run: |
@@ -171,7 +171,7 @@ jobs:
       - name: Prepare migration-backed database
         run: |
           pnpm --dir server prisma generate
-          pnpm --dir server prisma migrate reset --force --skip-seed
+          pnpm --dir server prisma migrate reset --force
           pnpm --dir server db:seed:e2e
       - name: Start backend
         run: |
@@ -251,7 +251,7 @@ jobs:
       - name: Prepare migration-backed database
         run: |
           pnpm --dir server prisma generate
-          pnpm --dir server prisma migrate reset --force --skip-seed
+          pnpm --dir server prisma migrate reset --force
           pnpm --dir server db:seed:e2e
       - name: Start backend
         run: |
