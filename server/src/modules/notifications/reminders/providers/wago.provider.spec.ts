@@ -84,12 +84,14 @@ describe('WagoProvider', () => {
   });
 
   it('menganggap DUPLICATE_MESSAGE sebagai logical success', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ success: false, error: 'DUPLICATE_MESSAGE', message: 'duplicate' }),
-        { status: 409, headers: { 'Content-Type': 'application/json' } },
-      ),
-    ) as typeof fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ success: false, error: 'DUPLICATE_MESSAGE', message: 'duplicate' }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } },
+        ),
+      ) as typeof fetch;
     const provider = createProvider();
 
     await expect(provider.send('6285373945490', 'Pesan uji')).resolves.toBeUndefined();
