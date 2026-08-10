@@ -11,6 +11,7 @@ import { ReminderMessageFactory } from './reminder-message.factory';
 import {
   NotificationChannelError,
   type NotificationChannel,
+  type NotificationChannelErrorKind,
 } from './providers/notification-channel.interface';
 
 type RepositoryMock = jest.Mocked<
@@ -24,6 +25,8 @@ type RepositoryMock = jest.Mocked<
     | 'markFailure'
   >
 >;
+
+type RetryCase = readonly [NotificationChannelErrorKind, number | undefined, number];
 
 function createRepository(): RepositoryMock {
   return {
@@ -112,8 +115,8 @@ describe('PushReminderWorkerService', () => {
       candidates: 0,
       processed: 0,
     });
-    expect(repository.tryClaim).not.toHaveBeenCalled();
-    expect(repository.findDueCandidateIds).toHaveBeenCalledWith(now, 8);
+    expect(repository.tryClaim.mock.calls).toHaveLength(0);
+    expect(repository.findDueCandidateIds.mock.calls).toEqual([[now, 8]]);
   });
 
   it('melewati candidate yang gagal di-claim atau hilang setelah claim', async () => {
@@ -121,13 +124,14 @@ describe('PushReminderWorkerService', () => {
     repository.findDueCandidateIds.mockResolvedValue(['a', 'b']);
     repository.tryClaim.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
     repository.findClaimed.mockResolvedValueOnce(null);
-    const channel: NotificationChannel = { send: jest.fn() };
+    const send = jest.fn();
+    const channel: NotificationChannel = { send };
 
     await expect(createWorker(repository, channel).processDue(now)).resolves.toEqual({
       candidates: 2,
       processed: 0,
     });
-    expect(channel.send).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
   });
 
   it('melepas claim reminder yang sudah tidak eligible tanpa mengirim pesan', async () => {
@@ -143,14 +147,15 @@ describe('PushReminderWorkerService', () => {
       }),
     );
     repository.releaseClaim.mockResolvedValue(true);
-    const channel: NotificationChannel = { send: jest.fn() };
+    const send = jest.fn();
+    const channel: NotificationChannel = { send };
 
     await expect(createWorker(repository, channel).processDue(now)).resolves.toEqual({
       candidates: 1,
       processed: 1,
     });
-    expect(repository.releaseClaim).toHaveBeenCalledWith('a', expect.any(String));
-    expect(channel.send).not.toHaveBeenCalled();
+    expect(repository.releaseClaim.mock.calls).toEqual([['a', expect.any(String)]]);
+    expect(send).not.toHaveBeenCalled();
   });
 
   it('mengirim reminder eligible lalu menjadwalkan interval berikutnya', async () => {
@@ -159,34 +164,34 @@ describe('PushReminderWorkerService', () => {
     repository.tryClaim.mockResolvedValue(true);
     repository.findClaimed.mockResolvedValue(claimedReminder());
     repository.markSuccess.mockResolvedValue(true);
-    const channel: NotificationChannel = { send: jest.fn().mockResolvedValue(undefined) };
+    const send = jest.fn().mockResolvedValue(undefined);
+    const channel: NotificationChannel = { send };
 
     await expect(createWorker(repository, channel).processDue(now)).resolves.toEqual({
       candidates: 1,
       processed: 1,
     });
 
-    expect(channel.send).toHaveBeenCalledWith(
+    expect(send).toHaveBeenCalledWith(
       '6281234567890',
       expect.stringContaining('menunggu proses evaluasi'),
     );
-    expect(repository.markSuccess).toHaveBeenCalledWith(
-      'a',
-      expect.any(String),
-      expect.any(Date),
-      expect.any(Date),
-    );
-    const [, , sentAt, nextSendAt] = repository.markSuccess.mock.calls[0]!;
+    expect(repository.markSuccess.mock.calls).toHaveLength(1);
+    const successCall = repository.markSuccess.mock.calls[0];
+    expect(successCall).toBeDefined();
+    const [, , sentAt, nextSendAt] = successCall!;
     expect(nextSendAt.getTime() - sentAt.getTime()).toBe(120_000);
   });
 
-  it.each([
+  const retryCases: RetryCase[] = [
     ['BAD_RECIPIENT', undefined, 120_000],
     ['RATE_LIMITED', 45_000, 45_000],
     ['UNAUTHORIZED', undefined, 300_000],
     ['CONFIGURATION', undefined, 300_000],
     ['TIMEOUT', undefined, 60_000],
-  ] as const)(
+  ];
+
+  it.each(retryCases)(
     'menerapkan retry policy untuk error channel %s',
     async (kind, retryAfterMs, expectedDelayMs) => {
       const repository = createRepository();
@@ -202,12 +207,9 @@ describe('PushReminderWorkerService', () => {
         processed: 1,
       });
 
-      expect(repository.markFailure).toHaveBeenCalledWith(
-        'a',
-        expect.any(String),
-        new Date(now.getTime() + expectedDelayMs),
-        kind,
-      );
+      expect(repository.markFailure.mock.calls).toEqual([
+        ['a', expect.any(String), new Date(now.getTime() + expectedDelayMs), kind],
+      ]);
     },
   );
 
@@ -222,39 +224,42 @@ describe('PushReminderWorkerService', () => {
     };
 
     await createWorker(repository, channel).processDue(now);
-    expect(repository.markFailure).toHaveBeenCalledWith(
-      'a',
-      expect.any(String),
-      new Date(now.getTime() + 15 * 60_000),
-      'UNAVAILABLE',
-    );
+    expect(repository.markFailure.mock.calls).toEqual([
+      [
+        'a',
+        expect.any(String),
+        new Date(now.getTime() + 15 * 60_000),
+        'UNAVAILABLE',
+      ],
+    ]);
   });
 
-  it.each([
-    [new Error('socket reset'), 'socket reset'],
-    ['raw failure', 'Kegagalan channel tidak diketahui'],
-  ])('menormalisasi error channel tidak dikenal', async (thrown, _message) => {
-    const repository = createRepository();
-    repository.findDueCandidateIds.mockResolvedValue(['a']);
-    repository.tryClaim.mockResolvedValue(true);
-    repository.findClaimed.mockResolvedValue(claimedReminder());
-    repository.markFailure.mockResolvedValue(true);
-    const channel: NotificationChannel = { send: jest.fn().mockRejectedValue(thrown) };
+  it.each([new Error('socket reset'), 'raw failure'])(
+    'menormalisasi error channel tidak dikenal: %p',
+    async thrown => {
+      const repository = createRepository();
+      repository.findDueCandidateIds.mockResolvedValue(['a']);
+      repository.tryClaim.mockResolvedValue(true);
+      repository.findClaimed.mockResolvedValue(claimedReminder());
+      repository.markFailure.mockResolvedValue(true);
+      const channel: NotificationChannel = { send: jest.fn().mockRejectedValue(thrown) };
 
-    await createWorker(repository, channel).processDue(now);
-    expect(repository.markFailure).toHaveBeenCalledWith(
-      'a',
-      expect.any(String),
-      new Date(now.getTime() + 60_000),
-      'UNKNOWN',
-    );
-  });
+      await createWorker(repository, channel).processDue(now);
+      expect(repository.markFailure.mock.calls).toEqual([
+        ['a', expect.any(String), new Date(now.getTime() + 60_000), 'UNKNOWN'],
+      ]);
+    },
+  );
 
   it('menangkap kegagalan tak terduga per candidate tanpa menggagalkan batch lain', async () => {
     const repository = createRepository();
     repository.findDueCandidateIds.mockResolvedValue(['a', 'b']);
-    repository.tryClaim.mockRejectedValueOnce(new Error('database down')).mockResolvedValueOnce(true);
-    repository.findClaimed.mockResolvedValueOnce(claimedReminder({ notificationReminderId: 'b' }));
+    repository.tryClaim
+      .mockRejectedValueOnce(new Error('database down'))
+      .mockResolvedValueOnce(true);
+    repository.findClaimed.mockResolvedValueOnce(
+      claimedReminder({ notificationReminderId: 'b' }),
+    );
     repository.markSuccess.mockResolvedValue(true);
     const channel: NotificationChannel = { send: jest.fn().mockResolvedValue(undefined) };
 
