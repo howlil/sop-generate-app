@@ -190,10 +190,24 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Validate schema and apply production migration chain
+        shell: bash
         run: |
+          set -euo pipefail
           pnpm prisma validate
           pnpm prisma generate
-          pnpm prisma migrate deploy
+
+          set +e
+          migration_output="$(pnpm prisma migrate deploy 2>&1)"
+          migration_status=$?
+          set -e
+          printf '%s\n' "$migration_output"
+
+          if [[ "$migration_status" -ne 0 ]]; then
+            annotation="$(printf '%s\n' "$migration_output" | tail -n 20 | tr '\n' ' ')"
+            echo "::error title=Prisma migrate deploy failed::$annotation"
+            exit "$migration_status"
+          fi
+
           pnpm prisma migrate status
 
       - name: Run database invariant integration tests
