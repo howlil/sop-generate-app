@@ -39,9 +39,7 @@ describe('WhaApiProvider', () => {
   it.each([{ WHAAPI_TOKEN: '' }, { WHAAPI_CHANNEL_ID: '' }])(
     'menolak konfigurasi WhaAPI yang belum lengkap: %o',
     async (overrides) => {
-      await expect(
-        provider(overrides).send('081234567890', 'test'),
-      ).rejects.toMatchObject({
+      await expect(provider(overrides).send('081234567890', 'test')).rejects.toMatchObject({
         kind: 'CONFIGURATION',
       });
     },
