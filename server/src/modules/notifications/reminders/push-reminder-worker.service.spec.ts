@@ -74,7 +74,8 @@ function setup() {
     markSuccess: jest.fn(),
     markFailure: jest.fn(),
   };
-  const channel: NotificationChannel = { send: jest.fn() };
+  const send = jest.fn<Promise<void>, [string, string]>();
+  const channel: NotificationChannel = { send };
   const config = {
     get: jest.fn((key: string, fallback: number) => {
       const values: Record<string, number> = {
@@ -92,7 +93,7 @@ function setup() {
     config,
     channel,
   );
-  return { service, repository, channel };
+  return { service, repository, send };
 }
 
 describe('PushReminderWorkerService', () => {
@@ -116,7 +117,7 @@ describe('PushReminderWorkerService', () => {
   });
 
   it('melepas claim untuk reminder stale yang tidak lagi eligible', async () => {
-    const { service, repository, channel } = setup();
+    const { service, repository, send } = setup();
     repository.findDueCandidateIds.mockResolvedValue(['r-1']);
     repository.tryClaim.mockResolvedValue({ id: 'claimed' });
     repository.findClaimed.mockResolvedValue(
@@ -130,18 +131,18 @@ describe('PushReminderWorkerService', () => {
 
     await expect(service.processDue(now)).resolves.toEqual({ candidates: 1, processed: 1 });
     expect(repository.releaseClaim).toHaveBeenCalledTimes(1);
-    expect(channel.send).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
   });
 
   it('mengirim reminder eligible lalu menjadwalkan interval berikutnya', async () => {
-    const { service, repository, channel } = setup();
+    const { service, repository, send } = setup();
     repository.findDueCandidateIds.mockResolvedValue(['r-1']);
     repository.tryClaim.mockResolvedValue({ id: 'claimed' });
     repository.findClaimed.mockResolvedValue(claimedReminder());
-    (channel.send as jest.Mock).mockResolvedValue(undefined);
+    send.mockResolvedValue(undefined);
 
     await expect(service.processDue(now)).resolves.toEqual({ candidates: 1, processed: 1 });
-    expect(channel.send).toHaveBeenCalledWith('6281234567890', expect.stringContaining('SOPFlow'));
+    expect(send).toHaveBeenCalledWith('6281234567890', expect.stringContaining('SOPFlow'));
     expect(repository.markSuccess).toHaveBeenCalledWith(
       'r-1',
       expect.any(String),
@@ -195,11 +196,11 @@ describe('PushReminderWorkerService', () => {
       delay: 15 * 60_000,
     },
   ])('mencatat kegagalan channel dan backoff untuk $label', async ({ error, failures, delay }) => {
-    const { service, repository, channel } = setup();
+    const { service, repository, send } = setup();
     repository.findDueCandidateIds.mockResolvedValue(['r-1']);
     repository.tryClaim.mockResolvedValue({ id: 'claimed' });
     repository.findClaimed.mockResolvedValue(claimedReminder({ consecutiveFailures: failures }));
-    (channel.send as jest.Mock).mockRejectedValue(error);
+    send.mockRejectedValue(error);
 
     await expect(service.processDue(now)).resolves.toEqual({ candidates: 1, processed: 1 });
     expect(repository.markFailure).toHaveBeenCalledWith(
@@ -213,33 +214,36 @@ describe('PushReminderWorkerService', () => {
   it.each([
     [new Error('unexpected'), 'UNKNOWN'],
     ['non-error failure', 'UNKNOWN'],
-  ])('menormalisasi error channel yang tidak bertipe NotificationChannelError', async (error, kind) => {
-    const { service, repository, channel } = setup();
-    repository.findDueCandidateIds.mockResolvedValue(['r-1']);
-    repository.tryClaim.mockResolvedValue({ id: 'claimed' });
-    repository.findClaimed.mockResolvedValue(claimedReminder());
-    (channel.send as jest.Mock).mockRejectedValue(error);
+  ])(
+    'menormalisasi error channel yang tidak bertipe NotificationChannelError',
+    async (error, kind) => {
+      const { service, repository, send } = setup();
+      repository.findDueCandidateIds.mockResolvedValue(['r-1']);
+      repository.tryClaim.mockResolvedValue({ id: 'claimed' });
+      repository.findClaimed.mockResolvedValue(claimedReminder());
+      send.mockRejectedValue(error);
 
-    await service.processDue(now);
-    expect(repository.markFailure).toHaveBeenCalledWith(
-      'r-1',
-      expect.any(String),
-      expect.any(Date),
-      kind,
-    );
-  });
+      await service.processDue(now);
+      expect(repository.markFailure).toHaveBeenCalledWith(
+        'r-1',
+        expect.any(String),
+        expect.any(Date),
+        kind,
+      );
+    },
+  );
 
   it('mengisolasi exception satu kandidat dan tetap memproses kandidat lain', async () => {
-    const { service, repository, channel } = setup();
+    const { service, repository, send } = setup();
     repository.findDueCandidateIds.mockResolvedValue(['r-1', 'r-2', 'r-3']);
-    repository.tryClaim.mockImplementation(async (id: string) => {
-      if (id === 'r-1') throw new Error('database hiccup');
-      return { id: 'claimed' };
+    repository.tryClaim.mockImplementation((id: string) => {
+      if (id === 'r-1') return Promise.reject(new Error('database hiccup'));
+      return Promise.resolve({ id: 'claimed' });
     });
     repository.findClaimed.mockResolvedValue(claimedReminder());
-    (channel.send as jest.Mock).mockResolvedValue(undefined);
+    send.mockResolvedValue(undefined);
 
     await expect(service.processDue(now)).resolves.toEqual({ candidates: 3, processed: 2 });
-    expect(channel.send).toHaveBeenCalledTimes(2);
+    expect(send).toHaveBeenCalledTimes(2);
   });
 });
