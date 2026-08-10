@@ -274,15 +274,20 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     preferredSopAppliedRef.current = true;
   }, [preferredSopId, sopsForOpd]);
 
-  /* Jaga selectedSopId konsisten saat daftar SOP berubah (bukan fetch). */
+  /*
+   * Jaga selectedSopId konsisten hanya setelah workspace baru benar-benar tersedia.
+   * Saat query key berubah karena pengguna memilih SOP lain, React Query dapat membuat
+   * workspace sementara undefined. Jangan reset pilihan pada transient loading state itu.
+   */
   useEffect(() => {
+    if (workspace === undefined) return;
     const stillInList = sopsForOpd.some((s) => s.id === effectiveSopId);
     if (!stillInList && sopsForOpd.length > 0) {
       setSelectedSopId(sopsForOpd[0].id);
     } else if (!stillInList) {
       setSelectedSopId(null);
     }
-  }, [sopsForOpd, effectiveSopId]);
+  }, [workspace, sopsForOpd, effectiveSopId]);
 
   const draftReadOnly = isPengajuanReadOnly || isSopReadOnly;
 
@@ -393,169 +398,96 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     canSubmit: canAjukan,
     blockingMessage: blockingAjukan,
     onSuccess: () => {
-      setIsSubmitOpen(false);
-      setTimeout(
-        () => navigate({ to: listHref }),
-        POST_SUBMIT_DELAY_MS,
-      );
+      setTimeout(() => {
+        void navigate({ to: listHref });
+      }, POST_SUBMIT_DELAY_MS);
     },
   });
 
-  const tolakPengajuan = useTolakPengajuanEvaluasi();
-  const handleTolakPengajuan = useCallback(
-    async (alasan: string) => {
-      if (!pengajuanAktifEffektif) return;
-      await tolakPengajuan.mutateAsync({
-        pengajuanEvaluasiId: pengajuanAktifEffektif.id,
-        alasan,
-        version: pengajuanAktifEffektif.version,
-      });
+  const {
+    handleTolakPengajuan,
+    isPending: isTolakPending,
+    error: tolakError,
+    reset: resetTolak,
+  } = useTolakPengajuanEvaluasi({
+    pengajuanId: pengajuanAktifEffektif?.id,
+    pengajuanVersion: pengajuanAktifEffektif?.version,
+    onSuccess: () => {
       setIsTolakOpen(false);
-      navigate({ to: listHref });
     },
-    [listHref, navigate, pengajuanAktifEffektif, tolakPengajuan],
+  });
+
+  const handleTolakConfirm = useCallback(
+    async (alasan: string) => {
+      resetTolak();
+      await handleTolakPengajuan(alasan);
+    },
+    [handleTolakPengajuan, resetTolak],
   );
 
-  useDocumentTitle(opd ? `Evaluasi SOP — ${opd.nama}` : undefined);
+  const submitErrorObj: PengajuanEvaluasiSubmitError | null =
+    evaluasiSubmitError
+      ? { message: evaluasiSubmitError }
+      : null;
 
-  const riwayatOpd = useMemo(() => {
-    if (!workspace?.riwayatOpd?.length) return [];
-    return workspace.riwayatOpd.map((r) => ({
-      tanggal: r.tanggal,
-      evaluator: r.evaluatorNama,
-      nilaiOPD: r.nilaiOPD ?? undefined,
-    }));
-  }, [workspace]);
+  const tolakErrorMessage = tolakError
+    ? tolakError instanceof ApiError
+      ? tolakError.messages.join(" ")
+      : tolakError.message
+    : null;
 
   const previewProps = useMemo(() => {
-    if (!workspace?.preview?.workbench) return null;
-    try {
-      return mapPenyusunWorkbenchToPreviewProps(workspace.preview.workbench);
-    } catch {
-      return null;
-    }
-  }, [workspace]);
+    const workbench = workspace?.preview?.workbench;
+    if (!workbench) return null;
+    return mapPenyusunWorkbenchToPreviewProps(workbench);
+  }, [workspace?.preview?.workbench]);
 
   const diagramRenderState = useSopPreviewDiagramState(
-    previewProps
-      ? {
-          diagramKonfigurasi: previewProps.diagramKonfigurasi,
-          prosedurRows: previewProps.prosedurRows,
-          implementers: previewProps.implementers,
-        }
-      : null,
-    diagramPreviewTab,
+    workspace?.preview?.workbench ?? null,
   );
 
-  const resourceNotFound =
-    workspaceError instanceof ApiError && workspaceError.status === 404;
+  useDocumentTitle(selectedSop?.judul ?? "Evaluasi SOP");
 
-  /** Convert string error to PengajuanEvaluasiSubmitError shape */
-  const submitErrorObj = useMemo((): PengajuanEvaluasiSubmitError => {
-    if (!evaluasiSubmitError) return { kind: "none", items: [] };
-    return {
-      kind: "blocked",
-      items: [],
-      message: evaluasiSubmitError,
-    };
-  }, [evaluasiSubmitError]);
-
-  const notFoundMessage =
-    props.mode === "opd"
-      ? "OPD tidak ditemukan."
-      : "Pengajuan evaluasi tidak ditemukan.";
-
-  if (isLoadingWorkspace && !workspace) {
+  if (isLoadingWorkspace) {
     return (
-      <DetailPageLayout
-        breadcrumb={[
-          { label: "Evaluasi SOP", to: listHref },
-        ]}
-        title="Evaluasi SOP"
-        description=""
-        backTo={listHref}
-        main={
-          <p className="p-4 text-sm text-secondary-foreground">Memuat data evaluasi…</p>
-        }
-      />
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        Memuat workspace evaluasi...
+      </div>
     );
   }
 
-  if (workspaceError && !resourceNotFound) {
+  if (workspaceError) {
     return (
-      <DetailPageLayout
-        breadcrumb={[
-          { label: "Evaluasi SOP", to: listHref },
-        ]}
-        title="Evaluasi SOP"
-        description=""
-        backTo={listHref}
-        main={
-          <p className="p-4 text-sm text-red-600">
-            {workspaceError instanceof Error
-              ? workspaceError.message
-              : "Gagal memuat data evaluasi."}
-          </p>
-        }
-      />
+      <div className="p-6 text-sm text-red-600">
+        Gagal memuat workspace evaluasi.
+      </div>
     );
   }
 
-  if (resourceNotFound || (!opd && !isLoadingWorkspace)) {
+  if (!workspace) {
     return (
-      <DetailPageLayout
-        breadcrumb={[
-          { label: "Evaluasi SOP", to: listHref },
-        ]}
-        title="Evaluasi SOP"
-        description=""
-        backTo={listHref}
-        main={<p className="p-4 text-sm text-secondary-foreground">{notFoundMessage}</p>}
-      />
-    );
-  }
-
-  if (!opd) {
-    return (
-      <DetailPageLayout
-        breadcrumb={[
-          { label: "Evaluasi SOP", to: listHref },
-        ]}
-        title="Evaluasi SOP"
-        description=""
-        backTo={listHref}
-        main={
-          <p className="p-4 text-sm text-secondary-foreground">Memuat data OPD…</p>
-        }
-      />
+      <div className="p-6 text-sm text-muted-foreground">
+        Workspace evaluasi belum tersedia.
+      </div>
     );
   }
 
   return (
     <>
       <DetailPageLayout
-        breadcrumb={[
-          { label: "Evaluasi SOP", to: listHref },
-          { label: opd.nama },
-        ]}
-        title={`Evaluasi SOP — ${opd.nama}`}
-        description={
-          pengajuanAktifEffektif?.status === "DITOLAK"
-            ? "Pengajuan ditolak final. Seluruh versi SOP di dalamnya tidak dapat diajukan ulang dan penyusun wajib membuat versi baru."
-            : isPengajuanReadOnly
-            ? "Mode baca — pengajuan evaluasi ini sudah selesai. Lihat hasil dan riwayat di panel kanan."
-            : "Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
-        }
-        backTo={listHref}
-        backSize="icon"
         header={
           <>
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-sm font-semibold text-foreground">
-                Penilaian SOP
-              </h2>
-              <div className="flex items-center gap-2">
-                {!isPengajuanReadOnly ? (
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Workspace Evaluasi SOP
+                </p>
+                <h1 className="text-lg font-semibold text-foreground">
+                  {workspace.opd.nama}
+                </h1>
+              </div>
+              <div className="flex items-center gap-2 print:hidden">
+                {pengajuanAktifEffektif?.status === "SEDANG_DIEVALUASI" ? (
                   <>
                     <Button
                       variant="outline"
@@ -758,12 +690,16 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         isSubmitting={isAjukanSubmitting}
         evaluasiSubmitError={submitErrorObj}
       />
+
       <TolakPengajuanEvaluasiDialog
         open={isTolakOpen}
-        onOpenChange={setIsTolakOpen}
-        jumlahSop={pengajuanAktifEffektif?.nilaiPerDetail.length ?? 0}
-        onConfirm={(alasan) => void handleTolakPengajuan(alasan)}
-        isSubmitting={tolakPengajuan.isPending}
+        onOpenChange={(open) => {
+          setIsTolakOpen(open);
+          if (!open) resetTolak();
+        }}
+        onConfirm={(alasan) => void handleTolakConfirm(alasan)}
+        isPending={isTolakPending}
+        errorMessage={tolakErrorMessage}
       />
     </>
   );
