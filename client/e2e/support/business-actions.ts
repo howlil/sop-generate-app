@@ -109,17 +109,21 @@ export async function reviseAndCompleteFollowUpViaUi(
   await page.goto(`/penyusun/sop/${params.detailSopId}`)
   await expectMainContent(page)
 
-  await page.getByRole('button', { name: /komentar evaluasi/i }).click()
+  const commentsTab = page.getByRole('tab', { name: /komentar evaluasi/i })
+  await expect(commentsTab).toBeVisible()
+  await commentsTab.click()
   await expect(page.getByText(params.note, { exact: true })).toBeVisible()
 
   // Perubahan kecil membuktikan bahwa versi revisi benar-benar editable dari UI.
-  await page.getByRole('button', { name: /^edit$/i }).click().catch(() => undefined)
+  const editTab = page.getByRole('tab', { name: /^edit$/i })
+  await expect(editTab).toBeVisible()
+  await editTab.click()
   const titleInput = page.getByPlaceholder('Judul SOP')
   await expect(titleInput).toBeVisible()
   await titleInput.fill(params.revisedTitle)
   await expect(page.getByRole('status')).toContainText(/tersimpan/i, { timeout: 15_000 })
 
-  await page.getByRole('button', { name: /komentar evaluasi/i }).click()
+  await commentsTab.click()
   const complete = page.getByRole('button', { name: /tandai tindak lanjut selesai/i })
   await expect(complete).toBeVisible()
   await complete.click()
