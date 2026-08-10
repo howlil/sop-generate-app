@@ -67,7 +67,7 @@ export class NotificationReminderRepository {
         jenis: true,
       },
     });
-    return rows.map(r => ({
+    return rows.map((r) => ({
       notificationReminderId: r.pengingatWhatsAppId,
       pengajuanEvaluasiId: r.pengajuanEvaluasiId,
       penggunaId: r.penggunaId,
@@ -84,12 +84,12 @@ export class NotificationReminderRepository {
           jenis: reminder.kind,
         },
       },
-      create: { 
+      create: {
         pengajuanEvaluasiId: reminder.pengajuanEvaluasiId,
         penggunaId: reminder.penggunaId,
         jenis: reminder.kind,
         nomorTujuan: reminder.destination,
-        nextSendAt: now 
+        nextSendAt: now,
       },
       update: { nomorTujuan: reminder.destination },
     });
@@ -155,6 +155,7 @@ export class NotificationReminderRepository {
         penggunaId: true,
         jenis: true,
         nomorTujuan: true,
+        lastSentAt: true,
         consecutiveFailures: true,
         lockToken: true,
         pengajuanEvaluasi: {
@@ -189,6 +190,7 @@ export class NotificationReminderRepository {
       penggunaId: row.penggunaId,
       kind: row.jenis,
       destination: row.nomorTujuan,
+      lastSentAt: row.lastSentAt,
       consecutiveFailures: row.consecutiveFailures,
       lockToken: row.lockToken,
       pengajuanEvaluasi: {
@@ -260,7 +262,10 @@ export class NotificationReminderRepository {
     take: number,
   ): Promise<
     Array<
-      Omit<ClaimedNotificationReminder, 'consecutiveFailures' | 'lockToken'> & {
+      Omit<
+        ClaimedNotificationReminder,
+        'consecutiveFailures' | 'lockToken' | 'lastSentAt'
+      > & {
         inAppReadAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
