@@ -88,17 +88,17 @@ describe('WhaApiProvider', () => {
     expect(error.message).toContain('dinonaktifkan');
   });
 
-  it.each([
-    [{ WHAAPI_TOKEN: '' }, 'token kosong'],
-    [{ WHAAPI_CHANNEL_ID: '' }, 'channel kosong'],
-  ])('menolak konfigurasi WhaAPI yang tidak lengkap: %s', async (overrides) => {
-    const error = await captureChannelError(() =>
-      provider(overrides).send('081234567890', 'Pesan'),
-    );
+  it.each([{ WHAAPI_TOKEN: '' }, { WHAAPI_CHANNEL_ID: '' }])(
+    'menolak konfigurasi WhaAPI yang tidak lengkap: %p',
+    async (overrides) => {
+      const error = await captureChannelError(() =>
+        provider(overrides).send('081234567890', 'Pesan'),
+      );
 
-    expect(error.kind).toBe('CONFIGURATION');
-    expect(error.message).toContain('belum lengkap');
-  });
+      expect(error.kind).toBe('CONFIGURATION');
+      expect(error.message).toContain('belum lengkap');
+    },
+  );
 
   it('melewati penerima di luar allow-list tanpa memanggil provider eksternal', async () => {
     const fetchSpy = jest.spyOn(globalThis, 'fetch');
