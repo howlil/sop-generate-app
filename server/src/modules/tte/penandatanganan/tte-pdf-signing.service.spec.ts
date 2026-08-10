@@ -153,6 +153,11 @@ describe('Pengujian TtePdfSigningService', () => {
       userId,
       jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
     };
+    let metadataUpdate: unknown;
+    repository.updateRiwayatPdfSignatureMetadata.mockImplementation((value: unknown) => {
+      metadataUpdate = value;
+      return Promise.resolve(undefined);
+    });
     repository.findRiwayatForPdfSigning.mockResolvedValue({
       userId,
       dokumenTteId,
@@ -184,19 +189,16 @@ describe('Pengujian TtePdfSigningService', () => {
     );
     expect(actual.signed).toBe(true);
     expect(repository.updateRiwayatPdfSignatureMetadata).toHaveBeenCalledTimes(1);
-    const metadataUpdate: unknown = repository.updateRiwayatPdfSignatureMetadata.mock.calls[0]?.[0];
-    expect(metadataUpdate).toEqual(
-      expect.objectContaining({
-        userId,
-        dokumenTteId,
-        metadata: expect.objectContaining({
-          signatureAlgorithm: 'SHA256withRSA',
-          signatureFormat: 'PKCS7_DETACHED',
-          certFingerprint: actual.certificate?.fingerprint,
-          certSerialNumber: actual.certificate?.serialNumber,
-        }),
-      }),
-    );
+    expect(metadataUpdate).toMatchObject({
+      userId,
+      dokumenTteId,
+      metadata: {
+        signatureAlgorithm: 'SHA256withRSA',
+        signatureFormat: 'PKCS7_DETACHED',
+        certFingerprint: actual.certificate?.fingerprint,
+        certSerialNumber: actual.certificate?.serialNumber,
+      },
+    });
 
     const signedPdf = Buffer.from(actual.signedPdfBase64, 'base64');
     const fields = extractPdfSignatureFields(signedPdf);
