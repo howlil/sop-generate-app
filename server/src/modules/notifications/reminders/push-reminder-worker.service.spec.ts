@@ -178,8 +178,8 @@ describe('PushReminderWorkerService', () => {
     );
     expect(repository.markSuccess.mock.calls).toHaveLength(1);
     const successCall = repository.markSuccess.mock.calls[0];
-    expect(successCall).toBeDefined();
-    const [, , sentAt, nextSendAt] = successCall!;
+    if (!successCall) throw new Error('markSuccess tidak dipanggil');
+    const [, , sentAt, nextSendAt] = successCall;
     expect(nextSendAt.getTime() - sentAt.getTime()).toBe(120_000);
   });
 
@@ -225,18 +225,13 @@ describe('PushReminderWorkerService', () => {
 
     await createWorker(repository, channel).processDue(now);
     expect(repository.markFailure.mock.calls).toEqual([
-      [
-        'a',
-        expect.any(String),
-        new Date(now.getTime() + 15 * 60_000),
-        'UNAVAILABLE',
-      ],
+      ['a', expect.any(String), new Date(now.getTime() + 15 * 60_000), 'UNAVAILABLE'],
     ]);
   });
 
   it.each([new Error('socket reset'), 'raw failure'])(
     'menormalisasi error channel tidak dikenal: %p',
-    async thrown => {
+    async (thrown) => {
       const repository = createRepository();
       repository.findDueCandidateIds.mockResolvedValue(['a']);
       repository.tryClaim.mockResolvedValue(true);
@@ -257,9 +252,7 @@ describe('PushReminderWorkerService', () => {
     repository.tryClaim
       .mockRejectedValueOnce(new Error('database down'))
       .mockResolvedValueOnce(true);
-    repository.findClaimed.mockResolvedValueOnce(
-      claimedReminder({ notificationReminderId: 'b' }),
-    );
+    repository.findClaimed.mockResolvedValueOnce(claimedReminder({ notificationReminderId: 'b' }));
     repository.markSuccess.mockResolvedValue(true);
     const channel: NotificationChannel = { send: jest.fn().mockResolvedValue(undefined) };
 
