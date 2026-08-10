@@ -5,6 +5,9 @@ const clientDir = fileURLToPath(new URL('.', import.meta.url))
 const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5173'
 const startClient = process.env.E2E_SKIP_WEB_SERVER !== 'true'
 const criticalAudit = process.env.E2E_CRITICAL === 'true'
+const fullCriticalAudit = process.env.E2E_CRITICAL_AUDIT_ALL === 'true'
+const compatibilityAudit = process.env.E2E_COMPAT === 'true'
+const deterministicAudit = criticalAudit || compatibilityAudit
 
 export default defineConfig({
   testDir: fileURLToPath(new URL('./e2e', import.meta.url)),
@@ -15,10 +18,10 @@ export default defineConfig({
   },
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
-  // Critical business journeys are deterministic audit tests: never mask a failure with retry.
-  retries: criticalAudit ? 0 : process.env.CI ? 2 : 0,
-  // Stop the critical run at the first broken invariant so later tests cannot inherit dirty state.
-  maxFailures: criticalAudit ? 1 : 0,
+  // Audit/release verification must surface the first real execution result; never mask it with retry.
+  retries: deterministicAudit ? 0 : process.env.CI ? 2 : 0,
+  // Normal critical PR runs remain fail-fast. Full audit mode intentionally collects all J01-J07 failures.
+  maxFailures: criticalAudit && !fullCriticalAudit ? 1 : 0,
   workers: 1,
   reporter: [
     ['list'],
