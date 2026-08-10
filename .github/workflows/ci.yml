@@ -32,8 +32,6 @@ jobs:
       DATABASE_NAME: ci
       DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ci
       PUBLIC_APP_ORIGIN: http://localhost:5173
-      WHATSAPP_ENABLED: "false"
-      PDF_SIGNING_ENABLED: "false"
 
     steps:
       - name: Checkout
@@ -169,9 +167,7 @@ jobs:
       PUBLIC_APP_ORIGIN: http://localhost:5173
       ALLOWED_ORIGINS: http://127.0.0.1:5173,http://localhost:5173
       SOP_PDF_STORAGE_DIR: /tmp/sopflow-e2e-storage
-      WHATSAPP_ENABLED: "false"
       NOTIFICATION_IN_APP_ENABLED: "false"
-      PDF_SIGNING_ENABLED: "true"
       E2E_CRITICAL: "true"
       E2E_BASE_URL: http://localhost:5173
       E2E_API_BASE_URL: http://127.0.0.1:3000/api/v1
@@ -250,23 +246,17 @@ jobs:
       - client-quality
       - critical-e2e
     env:
-      DB_ROOT_PASSWORD: ci-root-password
-      DB_NAME: ci
-      DB_USER: ci
+      PUBLIC_APP_ORIGIN: https://sop.example.test
       DB_PASSWORD: ci-password
       JWT_SECRET: ci-jwt-secret-that-is-at-least-32-characters-long
       JWT_REFRESH_SECRET: ci-refresh-secret-that-is-at-least-32-characters-long
       TTE_ENCRYPTION_SECRET: ci-tte-secret-that-is-different-and-at-least-32-characters
-      PUBLIC_APP_ORIGIN: https://sop.example.test
-      ALLOWED_ORIGINS: https://sop.example.test
-      WHATSAPP_ENABLED: "false"
-      PDF_SIGNING_ENABLED: "false"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate Compose
+      - name: Validate Compose with minimal production env
         run: docker compose -f compose.yml config --quiet
 
       - name: Build backend image
