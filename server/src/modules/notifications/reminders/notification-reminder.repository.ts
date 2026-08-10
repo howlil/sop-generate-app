@@ -262,10 +262,7 @@ export class NotificationReminderRepository {
     take: number,
   ): Promise<
     Array<
-      Omit<
-        ClaimedNotificationReminder,
-        'consecutiveFailures' | 'lockToken' | 'lastSentAt'
-      > & {
+      Omit<ClaimedNotificationReminder, 'consecutiveFailures' | 'lockToken' | 'lastSentAt'> & {
         inAppReadAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
