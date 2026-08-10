@@ -1,11 +1,22 @@
 export const e2ePin = process.env.E2E_TTE_PIN ?? '1234'
 
+function compactHash(value: string): string {
+  let hash = 2166136261
+  for (const character of value) {
+    hash ^= character.charCodeAt(0)
+    hash = Math.imul(hash, 16777619)
+  }
+  return (hash >>> 0).toString(36).slice(-3).padStart(3, '0')
+}
+
 export function e2eRunId(prefix = 'E2E'): string {
   const configured = process.env.E2E_TEST_RUN_ID
   const raw = configured ?? `${new Date().toISOString()}-${Math.random().toString(36).slice(2, 8)}`
-  const safePrefix = prefix.replace(/[^A-Za-z0-9]/g, '').slice(0, 4) || 'E2E'
-  const safeRaw = raw.replace(/[^A-Za-z0-9]/g, '')
-  return `${safePrefix}-${safeRaw.slice(-7)}`.slice(0, 12)
+  const normalizedPrefix = prefix.replace(/[^A-Za-z0-9]/g, '') || 'E2E'
+  const safePrefix = normalizedPrefix.slice(0, 3)
+  const prefixHash = compactHash(normalizedPrefix)
+  const safeRaw = raw.replace(/[^A-Za-z0-9]/g, '') || 'run'
+  return `${safePrefix}${prefixHash}-${safeRaw.slice(-5)}`.slice(0, 12)
 }
 
 export function uniqueEmail(prefix: string): string {
