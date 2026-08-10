@@ -29,8 +29,7 @@ export class PushReminderWorkerService {
   ) {
     this.maxConcurrency = config.get<number>('WHATSAPP_MAX_CONCURRENCY', 3);
     this.leaseMs = config.get<number>('WHATSAPP_LOCK_LEASE_SECONDS', 60) * 1_000;
-    this.reminderIntervalMs =
-      config.get<number>('WHATSAPP_REMINDER_INTERVAL_MINUTES', 1) * 60_000;
+    this.reminderIntervalMs = config.get<number>('WHATSAPP_REMINDER_INTERVAL_MINUTES', 1) * 60_000;
   }
 
   async processDue(now = new Date()): Promise<{ candidates: number; processed: number }> {
@@ -128,11 +127,7 @@ export class PushReminderWorkerService {
     );
   }
 
-  private nextAttemptAt(
-    error: NotificationChannelError,
-    failures: number,
-    now: Date,
-  ): Date {
+  private nextAttemptAt(error: NotificationChannelError, failures: number, now: Date): Date {
     if (error.kind === 'BAD_RECIPIENT') {
       return new Date(now.getTime() + this.reminderIntervalMs);
     }
