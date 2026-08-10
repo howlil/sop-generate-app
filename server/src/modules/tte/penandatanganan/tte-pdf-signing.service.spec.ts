@@ -3,7 +3,11 @@ import { execSync } from 'child_process';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JenisDokumenTte, PeranPengguna } from '../../../generated/prisma';
-import { verifyPdfWithP12 } from '../shared/utils/pdf-signature-verification.util';
+import {
+  extractPdfSignatureFields,
+  parsePdfTteSigningReason,
+  verifyPdfWithP12,
+} from '../shared/utils/pdf-signature-verification.util';
 import { TtePdfSigningService } from './tte-pdf-signing.service';
 import { TteRepository } from '../shared/repository/tte.repository';
 import { encryptP12Passphrase } from '../shared/utils/tte-crypto.util';
@@ -38,7 +42,7 @@ describe('Pengujian TtePdfSigningService', () => {
     if (!line) {
       throw new Error('Gagal menghasilkan sertifikat uji PDF.');
     }
-    p12Base64 = line.split('=')[1];
+    p12Base64 = line.slice('PDF_SIGNING_P12_BASE64='.length).trim();
   });
 
   beforeEach(async () => {
@@ -134,6 +138,11 @@ describe('Pengujian TtePdfSigningService', () => {
   it('seharusnya menyimpan metadata sertifikat real dan binding TTE pada PDF SOP', async () => {
     const userId = '00000000-0000-4000-8000-0000000000aa';
     const dokumenTteId = '00000000-0000-4000-8000-0000000000bb';
+    const expectedBinding = {
+      dokumenTteId,
+      userId,
+      jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
+    };
     repository.findRiwayatForPdfSigning.mockResolvedValue({
       userId,
       dokumenTteId,
@@ -176,16 +185,27 @@ describe('Pengujian TtePdfSigningService', () => {
         }),
       }),
     );
+
+    const signedPdf = Buffer.from(actual.signedPdfBase64, 'base64');
+    const fields = extractPdfSignatureFields(signedPdf);
+    expect(fields).toHaveLength(1);
+    expect(fields[0]?.reason).toContain('SI-SOP-TTE');
+    expect(parsePdfTteSigningReason(fields[0]?.reason ?? null)).toEqual(expectedBinding);
+
     const verification = verifyPdfWithP12(
-      Buffer.from(actual.signedPdfBase64, 'base64'),
+      signedPdf,
       Buffer.from(p12Base64, 'base64'),
       passphrase,
     );
-    expect(verification.signatures[0]?.binding).toEqual({
-      dokumenTteId,
-      userId,
-      jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
+    expect(verification.hasSignatures).toBe(true);
+    expect(verification.signatures[0]?.checks).toEqual({
+      digestMatch: true,
+      chainTrusted: true,
+      certificatePeriodValid: true,
     });
+    expect(verification.signatures[0]?.valid).toBe(true);
+    expect(verification.allValid).toBe(true);
+    expect(verification.signatures[0]?.binding).toEqual(expectedBinding);
     expect(verification.signatures[0]?.signedAt).not.toBeNull();
   });
 });
