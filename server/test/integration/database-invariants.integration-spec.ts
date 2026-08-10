@@ -274,12 +274,7 @@ describeIntegration('Database migration invariants', () => {
   it('menjaga maksimal satu pengajuan evaluasi aktif per OPD saat request paralel', async () => {
     const service = app.get(PengajuanEvaluasiService);
     const opd = await prisma.oPD.create({ data: { nama: 'OPD DB Concurrency' } });
-    const pjPenyusun = await createTestUser(
-      prisma,
-      opd.opdId,
-      '303',
-      PeranPengguna.PJ_PENYUSUN,
-    );
+    const pjPenyusun = await createTestUser(prisma, opd.opdId, '303', PeranPengguna.PJ_PENYUSUN);
     const [detailA, detailB] = await Promise.all([
       createPendingDetail(prisma, opd.opdId, 'CONC-A'),
       createPendingDetail(prisma, opd.opdId, 'CONC-B'),
@@ -305,7 +300,7 @@ describeIntegration('Database migration invariants', () => {
     const rejected = results.filter((result) => result.status === 'rejected');
     expect(fulfilled).toHaveLength(1);
     expect(rejected).toHaveLength(1);
-    expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(ConflictException);
+    expect(rejected[0]?.reason).toBeInstanceOf(ConflictException);
     await expect(
       prisma.pengajuanEvaluasi.count({
         where: {
