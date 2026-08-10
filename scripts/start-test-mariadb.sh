@@ -6,6 +6,7 @@ database_name="${2:?database name is required}"
 database_user="${3:-ci}"
 database_password="${4:-ci}"
 root_password="${5:-ci-root-password}"
+host_port="${6:-3307}"
 
 # Mirror compose.yml exactly: the migration history was created for a
 # case-insensitive MariaDB table-name policy.
@@ -13,7 +14,7 @@ docker rm -f "$container_name" >/dev/null 2>&1 || true
 
 docker run -d \
   --name "$container_name" \
-  -p 3306:3306 \
+  -p "${host_port}:3306" \
   -e "MARIADB_ROOT_PASSWORD=$root_password" \
   -e "MARIADB_DATABASE=$database_name" \
   -e "MARIADB_USER=$database_user" \
@@ -23,7 +24,7 @@ docker run -d \
 
 for _ in $(seq 1 60); do
   if docker exec "$container_name" healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then
-    echo "MariaDB $container_name is ready with lower_case_table_names=1."
+    echo "MariaDB $container_name is ready on port $host_port with lower_case_table_names=1."
     exit 0
   fi
   sleep 2
