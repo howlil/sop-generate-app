@@ -172,6 +172,7 @@ jobs:
       WHATSAPP_ENABLED: "false"
       NOTIFICATION_IN_APP_ENABLED: "false"
       PDF_SIGNING_ENABLED: "true"
+      E2E_CRITICAL: "true"
       E2E_BASE_URL: http://localhost:5173
       E2E_API_BASE_URL: http://127.0.0.1:3000/api/v1
       E2E_BROWSER_API_BASE_URL: http://localhost:3000/api/v1
