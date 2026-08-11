@@ -6,11 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
-import {
-  JenisPengajuanEvaluasi,
-  PeranPengguna,
-  StatusSOP,
-} from '../../../generated/prisma';
+import { JenisPengajuanEvaluasi, PeranPengguna, StatusSOP } from '../../../generated/prisma';
 import {
   mapPengajuanEvaluasiRow,
   type PengajuanEvaluasiApiPayload,
