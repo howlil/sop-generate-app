@@ -1,11 +1,11 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
-import type { PeraturanResponseDto } from './dto/peraturan-response.dto';
+import { isPrismaUniqueConstraintError } from '../../../common/prisma/prisma-error.util';
 import type { CreatePeraturanDto } from './dto/create-peraturan.dto';
+import type { PeraturanResponseDto } from './dto/peraturan-response.dto';
 import type { UpdatePeraturanDto } from './dto/update-peraturan.dto';
 import { UserOpdAccessService } from '../opd/user-opd-access.service';
 import { PeraturanRepository, type PeraturanRow } from './peraturan.repository';
-import { Prisma } from '../../../generated/prisma';
 
 @Injectable()
 export class PeraturanService {
@@ -44,7 +44,7 @@ export class PeraturanService {
   async list(user: JwtAccessPayload, queryOpdId?: string): Promise<PeraturanResponseDto[]> {
     const opdId = await this.resolveOpdIdOrThrow(user, queryOpdId);
     const rows = await this.peraturanRepository.findManyByOpdId(opdId);
-    return rows.map((r) => this.mapRow(r, opdId));
+    return rows.map((row) => this.mapRow(row, opdId));
   }
 
   async getById(
@@ -72,11 +72,11 @@ export class PeraturanService {
         lastEditedById: user.sub,
       });
       return this.mapRow(row, opdId);
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+    } catch (error) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw new ConflictException('Nomor dan tahun peraturan sudah terdaftar');
       }
-      throw err;
+      throw error;
     }
   }
 
@@ -113,11 +113,11 @@ export class PeraturanService {
     try {
       const row = await this.peraturanRepository.updateMasterWithLastEditor(id, patch, user.sub);
       return this.mapRow(row, opdId);
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+    } catch (error) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw new ConflictException('Nomor dan tahun peraturan sudah terdaftar');
       }
-      throw err;
+      throw error;
     }
   }
 
