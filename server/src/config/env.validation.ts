@@ -1,22 +1,26 @@
 import { z } from 'zod';
 
-const envBoolean = (defaultValue: boolean) =>
-  z.preprocess((val) => {
-    if (typeof val !== 'string') {
-      return val;
-    }
-    const normalized = val.trim().toLowerCase();
-    if (normalized === '') {
-      return undefined;
-    }
-    if (['true', '1', 'yes', 'on'].includes(normalized)) {
-      return true;
-    }
-    if (['false', '0', 'no', 'off'].includes(normalized)) {
-      return false;
-    }
+const parseBoolean = (val: unknown): unknown => {
+  if (typeof val !== 'string') {
     return val;
-  }, z.boolean().default(defaultValue));
+  }
+  const normalized = val.trim().toLowerCase();
+  if (normalized === '') {
+    return undefined;
+  }
+  if (['true', '1', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['false', '0', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
+  return val;
+};
+
+const envBoolean = (defaultValue: boolean) =>
+  z.preprocess(parseBoolean, z.boolean().default(defaultValue));
+
+const optionalEnvBoolean = z.preprocess(parseBoolean, z.boolean().optional());
 
 const trimmedEnvironmentString = (val: unknown) => (typeof val === 'string' ? val.trim() : val);
 
@@ -36,7 +40,7 @@ const envSchema = z
     E2E_CRITICAL: envBoolean(false),
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    SWAGGER_ENABLED: envBoolean(true),
+    SWAGGER_ENABLED: optionalEnvBoolean,
     JWT_SECRET: z.string().min(32),
     JWT_REFRESH_SECRET: z.string().min(32).optional(),
     JWT_EXPIRATION: z.preprocess(
@@ -44,11 +48,14 @@ const envSchema = z
       z.string().default('15m'),
     ),
     JWT_REFRESH_EXPIRATION: z.string().default('7d'),
-    DATABASE_HOST: z.string().min(1),
+    DATABASE_HOST: z.preprocess(trimmedEnvironmentString, z.string().min(1).default('localhost')),
     DATABASE_PORT: z.coerce.number().int().min(1).max(65535).default(3306),
-    DATABASE_USER: z.string().min(1),
+    DATABASE_USER: z.preprocess(trimmedEnvironmentString, z.string().min(1).default('sop_app')),
     DATABASE_PASSWORD: z.string().min(1),
-    DATABASE_NAME: z.string().min(1),
+    DATABASE_NAME: z.preprocess(
+      trimmedEnvironmentString,
+      z.string().min(1).default('sop_biro_organisasi'),
+    ),
     DATABASE_URL: z.string().url().optional(),
     /** Origin kanonis frontend production. */
     PUBLIC_APP_ORIGIN: optionalUrl,
@@ -140,14 +147,18 @@ const envSchema = z
         path: ['ALLOWED_ORIGINS'],
       });
     }
-    if (data.PUBLIC_APP_ORIGIN === undefined && allowedOrigins === '') {
+    if (data.PUBLIC_APP_ORIGIN === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'PUBLIC_APP_ORIGIN atau ALLOWED_ORIGINS wajib diisi pada production',
+        message: 'PUBLIC_APP_ORIGIN wajib diisi pada production',
         path: ['PUBLIC_APP_ORIGIN'],
       });
     }
-  });
+  })
+  .transform((data) => ({
+    ...data,
+    SWAGGER_ENABLED: data.SWAGGER_ENABLED ?? data.NODE_ENV !== 'production',
+  }));
 
 export type ValidatedEnvironment = z.infer<typeof envSchema>;
 

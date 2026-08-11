@@ -132,6 +132,23 @@ jobs:
       - name: Build
         run: pnpm build
 
+  minimal-production-config:
+    name: Minimal production config
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_APP_ORIGIN: https://sop.example.test
+      DB_PASSWORD: ci-password
+      JWT_SECRET: ci-jwt-secret-that-is-at-least-32-characters-long
+      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-at-least-32-characters-long
+      TTE_ENCRYPTION_SECRET: ci-tte-secret-that-is-different-and-at-least-32-characters
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Compose with minimal production env
+        run: docker compose -f compose.yml config --quiet
+
   database-invariants:
     name: Database migration invariants
     runs-on: ubuntu-latest
@@ -366,24 +383,20 @@ jobs:
     needs:
       - server-quality
       - client-quality
+      - minimal-production-config
       - critical-e2e
     env:
-      DB_ROOT_PASSWORD: ci-root-password
-      DB_NAME: ci
-      DB_USER: ci
+      PUBLIC_APP_ORIGIN: https://sop.example.test
       DB_PASSWORD: ci-password
       JWT_SECRET: ci-jwt-secret-that-is-at-least-32-characters-long
       JWT_REFRESH_SECRET: ci-refresh-secret-that-is-at-least-32-characters-long
       TTE_ENCRYPTION_SECRET: ci-tte-secret-that-is-different-and-at-least-32-characters
-      PUBLIC_APP_ORIGIN: https://sop.example.test
-      ALLOWED_ORIGINS: https://sop.example.test
-      PDF_SIGNING_ENABLED: "false"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate Compose
+      - name: Validate Compose with minimal production env
         run: docker compose -f compose.yml config --quiet
 
       - name: Build backend image

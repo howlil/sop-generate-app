@@ -7,9 +7,9 @@ services:
     command:
       - --lower_case_table_names=1
     environment:
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${DB_NAME:?set DB_NAME}
-      MARIADB_USER: ${DB_USER:?set DB_USER}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+      MARIADB_DATABASE: sop_biro_organisasi
+      MARIADB_USER: sop_app
       MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       TZ: Asia/Jakarta
     volumes:
@@ -31,35 +31,17 @@ services:
       db:
         condition: service_healthy
     environment:
-      PORT: 3001
       NODE_OPTIONS: "--max-old-space-size=512"
       NODE_ENV: production
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:?set PUBLIC_APP_ORIGIN}
-      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
       TTE_ENCRYPTION_SECRET: ${TTE_ENCRYPTION_SECRET:?set TTE_ENCRYPTION_SECRET}
       DATABASE_HOST: db
-      DATABASE_PORT: 3306
-      DATABASE_USER: ${DB_USER:?set DB_USER}
       DATABASE_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
-      DATABASE_NAME: ${DB_NAME:?set DB_NAME}
-      SOP_PDF_STORAGE_DIR: ${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
-      NOTIFICATION_IN_APP_ENABLED: ${NOTIFICATION_IN_APP_ENABLED:-true}
-      NOTIFICATION_RECONCILE_INTERVAL_SECONDS: ${NOTIFICATION_RECONCILE_INTERVAL_SECONDS:-10}
-      PDF_SIGNING_ENABLED: ${PDF_SIGNING_ENABLED:-true}
-      PDF_SIGNING_REASON: ${PDF_SIGNING_REASON:-Pengesahan dokumen SOP}
-      PDF_SIGNING_LOCATION: ${PDF_SIGNING_LOCATION:-Indonesia}
-      PDF_SIGNING_CONTACT: ${PDF_SIGNING_CONTACT:-}
       WAGO_BASE_URL: ${WAGO_BASE_URL:-}
       WAGO_API_KEY: ${WAGO_API_KEY:-}
       WAGO_REQUEST_TIMEOUT_MS: ${WAGO_REQUEST_TIMEOUT_MS:-10000}
-      WHATSAPP_REMINDER_INTERVAL_MINUTES: ${WHATSAPP_REMINDER_INTERVAL_MINUTES:-1440}
-      WHATSAPP_MAX_CONCURRENCY: ${WHATSAPP_MAX_CONCURRENCY:-3}
-      WHATSAPP_LOCK_LEASE_SECONDS: ${WHATSAPP_LOCK_LEASE_SECONDS:-60}
     command:
       - sh
       - -c
@@ -68,7 +50,7 @@ services:
         pnpm prisma migrate deploy
         exec pnpm start:prod
     volumes:
-      - sop_pdf_data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
+      - sop_pdf_data:/app/storage/sop-pdf
     expose:
       - "3001"
     security_opt:
