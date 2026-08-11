@@ -96,10 +96,7 @@ describe('PengajuanEvaluasiService', () => {
         {},
       );
 
-      expect(getRequiredUserOpdId).toHaveBeenCalledWith(
-        'pen-1',
-        'OPD pengguna tidak ditemukan',
-      );
+      expect(getRequiredUserOpdId).toHaveBeenCalledWith('pen-1', 'OPD pengguna tidak ditemukan');
       expect(repository.buildWhereFromQuery).toHaveBeenCalledWith(expect.any(Object), 'opd-a');
       expect(actual).toEqual([]);
     });
