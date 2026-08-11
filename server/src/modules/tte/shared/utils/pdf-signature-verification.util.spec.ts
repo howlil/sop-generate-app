@@ -2,10 +2,7 @@ import { execSync } from 'child_process';
 import { plainAddPlaceholder } from '@signpdf/placeholder-plain';
 import { P12Signer } from '@signpdf/signer-p12';
 import { SignPdf } from '@signpdf/signpdf';
-import {
-  extractPdfSignatureFields,
-  verifyPdfWithP12,
-} from './pdf-signature-verification.util';
+import { extractPdfSignatureFields, verifyPdfWithP12 } from './pdf-signature-verification.util';
 
 type PdfDocumentLike = {
   on(event: string, listener: (...args: unknown[]) => void): void;
