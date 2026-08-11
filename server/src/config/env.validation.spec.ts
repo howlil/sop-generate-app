@@ -36,6 +36,13 @@ describe('Environment validation', () => {
     });
   });
 
+  it('menormalkan flag critical E2E dan default-nya nonaktif', () => {
+    expect(validateEnv(baseEnv)).toMatchObject({ E2E_CRITICAL: false });
+    expect(validateEnv({ ...baseEnv, E2E_CRITICAL: 'true' })).toMatchObject({
+      E2E_CRITICAL: true,
+    });
+  });
+
   it('mengaktifkan in-app dan membiarkan WhatsApp nonaktif ketika konfigurasi Wago kosong', () => {
     expect(validateEnv(baseEnv)).toMatchObject({
       NOTIFICATION_IN_APP_ENABLED: true,

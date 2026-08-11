@@ -15,6 +15,17 @@ type Bucket = {
 const MINUTE_MS = 60_000;
 
 /**
+ * Critical E2E menjalankan journey terisolasi terhadap satu proses backend yang sama.
+ * Bypass hanya berlaku pada test harness tersebut; development dan production tetap dibatasi.
+ */
+export function shouldApplySecurityRateLimit(
+  nodeEnv: string | undefined,
+  e2eCritical: boolean,
+): boolean {
+  return !(nodeEnv === 'test' && e2eCritical);
+}
+
+/**
  * Route policy sengaja kecil dan eksplisit: hanya endpoint yang rawan brute-force
  * atau mahal secara CPU yang dibatasi pada layer aplikasi.
  */

@@ -16,6 +16,7 @@ import { CsrfProtectionService } from './common/security/csrf-protection.service
 import {
   SecurityRateLimiterService,
   resolveSecurityRateLimitPolicy,
+  shouldApplySecurityRateLimit,
   type SecurityRateLimitPolicy,
 } from './common/security/security-rate-limiter.service';
 import {
@@ -130,6 +131,9 @@ async function bootstrap() {
     bodyParser: false,
   });
   const configService = app.get(ConfigService);
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  const e2eCritical = configService.get<boolean>('E2E_CRITICAL', false);
+  const applySecurityRateLimit = shouldApplySecurityRateLimit(nodeEnv, e2eCritical);
 
   app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
   app.useBodyParser('urlencoded', { extended: true, limit: URLENCODED_BODY_LIMIT });
@@ -147,6 +151,11 @@ async function bootstrap() {
 
   const rateLimiter = app.get(SecurityRateLimiterService);
   app.use((req: Request, _res: unknown, next: NextFunction) => {
+    if (!applySecurityRateLimit) {
+      next();
+      return;
+    }
+
     const policy = resolveSecurityRateLimitPolicy(req.method, req.path);
     if (policy === null) {
       next();
@@ -184,7 +193,6 @@ async function bootstrap() {
   app.useGlobalPipes(createDefaultValidationPipe());
   app.enableCors(buildCorsOptions(configService));
 
-  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   const swaggerEnabled = configService.get<boolean>('SWAGGER_ENABLED', nodeEnv !== 'production');
   if (swaggerEnabled) {
     const config = new DocumentBuilder()
