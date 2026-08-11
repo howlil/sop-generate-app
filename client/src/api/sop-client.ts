@@ -16,52 +16,24 @@ import type {
   UpdateStatusDto,
 } from '@/types/dto/sop.dto'
 
-async function unwrapPelaksanaMaster<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  return unwrapApiData(promise)
-}
-
-async function unwrapSopListEnvelope(
-  promise: Promise<ApiSuccessResponse<SopDaftarRow[]>>,
-): Promise<SopDaftarRow[]> {
-  return unwrapApiData(promise)
-}
-
-async function unwrapSopCreateEnvelope(
-  promise: Promise<ApiSuccessResponse<SopDaftarRow>>,
-): Promise<SopDaftarRow> {
-  return unwrapApiData(promise)
-}
-
-async function unwrapPenyusunWorkbench(
-  promise: Promise<ApiSuccessResponse<PenyusunWorkbenchData>>,
-): Promise<PenyusunWorkbenchData> {
-  return unwrapApiData(promise)
-}
-
 export const sopApi = {
-  findAll: (params?: SopListQueryParams) => {
-    const query = buildQueryString(params as Record<string, unknown> | undefined)
-    return unwrapSopListEnvelope(
-      apiClient.get<ApiSuccessResponse<SopDaftarRow[]>>(`/sop${query}`),
-    )
-  },
-
-  create: (payload: CreateSopRequestDto) =>
-    unwrapSopCreateEnvelope(
-      apiClient.post<ApiSuccessResponse<SopDaftarRow>>('/sop', payload),
+  findAll: (params?: SopListQueryParams) =>
+    unwrapApiData(
+      apiClient.get<ApiSuccessResponse<SopDaftarRow[]>>(`/sop${buildQueryString(params)}`),
     ),
 
-  getPenyusunWorkbench: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) => {
-    const query = buildQueryString(params as Record<string, unknown> | undefined)
-    return unwrapPenyusunWorkbench(
+  create: (payload: CreateSopRequestDto) =>
+    unwrapApiData(apiClient.post<ApiSuccessResponse<SopDaftarRow>>('/sop', payload)),
+
+  getPenyusunWorkbench: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) =>
+    unwrapApiData(
       apiClient.get<ApiSuccessResponse<PenyusunWorkbenchData>>(
-        `/sop/penyusun-workbench/${detailSopId}${query}`,
+        `/sop/penyusun-workbench/${detailSopId}${buildQueryString(params)}`,
       ),
-    )
-  },
+    ),
 
   updateSopHeader: (detailSopId: string, payload: UpdateSopHeaderDto) =>
-    unwrapPenyusunWorkbench(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(
         `/sop/header/${detailSopId}`,
         payload,
@@ -69,7 +41,7 @@ export const sopApi = {
     ),
 
   updateSopProsedur: (detailSopId: string, payload: UpdateSopProsedurDto) =>
-    unwrapPenyusunWorkbench(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(
         `/sop/langkah/${detailSopId}`,
         payload,
@@ -77,7 +49,7 @@ export const sopApi = {
     ),
 
   updateSopDiagram: (detailSopId: string, payload: UpdateSopDiagramDto) =>
-    unwrapPenyusunWorkbench(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(
         `/sop/diagram/${detailSopId}`,
         payload,
@@ -85,34 +57,30 @@ export const sopApi = {
     ),
 
   updateStatus: (id: string, payload: UpdateStatusDto) =>
-    unwrapPenyusunWorkbench(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(`/sop/status/${id}`, payload),
     ),
 
-  cabutSop: (id: string, params?: PenyusunWorkbenchQueryParams) => {
-    const query = buildQueryString(params as Record<string, unknown> | undefined)
-    return unwrapPenyusunWorkbench(
-      apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(`/sop/cabut/${id}${query}`),
-    )
-  },
-
-  kirimUlangEvaluasiSetelahRevisi: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) => {
-    const query = buildQueryString(params as Record<string, unknown> | undefined)
-    return unwrapPenyusunWorkbench(
+  cabutSop: (id: string, params?: PenyusunWorkbenchQueryParams) =>
+    unwrapApiData(
       apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(
-        `/sop/penyusun-workbench/${detailSopId}/kirim-ulang-evaluasi${query}`,
+        `/sop/cabut/${id}${buildQueryString(params)}`,
       ),
-    )
-  },
+    ),
 
-  buatVersiBaru: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) => {
-    const query = buildQueryString(params as Record<string, unknown> | undefined)
-    return unwrapPenyusunWorkbench(
+  kirimUlangEvaluasiSetelahRevisi: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) =>
+    unwrapApiData(
       apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(
-        `/sop/${detailSopId}/buat-versi-baru${query}`,
+        `/sop/penyusun-workbench/${detailSopId}/kirim-ulang-evaluasi${buildQueryString(params)}`,
       ),
-    )
-  },
+    ),
+
+  buatVersiBaru: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) =>
+    unwrapApiData(
+      apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(
+        `/sop/${detailSopId}/buat-versi-baru${buildQueryString(params)}`,
+      ),
+    ),
 
   getRiwayatVersi: (sopId: string) =>
     unwrapApiData(
@@ -125,23 +93,21 @@ export const sopApi = {
     ),
 
   hapusSopDraftAwal: (detailSopId: string) =>
-    unwrapApiData(
-      apiClient.delete<ApiSuccessResponse<null>>(`/sop/${detailSopId}/draft`),
-    ),
+    unwrapApiData(apiClient.delete<ApiSuccessResponse<null>>(`/sop/${detailSopId}/draft`)),
 
   findPelaksana: (opdId: string) =>
-    unwrapPelaksanaMaster(
+    unwrapApiData(
       apiClient.get<ApiSuccessResponse<Pelaksana[]>>(`/pelaksana?opdId=${encodeURIComponent(opdId)}`),
     ),
 
   createPelaksana: (payload: CreatePelaksanaDto) =>
-    unwrapPelaksanaMaster(apiClient.post<ApiSuccessResponse<Pelaksana>>('/pelaksana', payload)),
+    unwrapApiData(apiClient.post<ApiSuccessResponse<Pelaksana>>('/pelaksana', payload)),
 
   updatePelaksana: (id: string, namaPelaksana: string) =>
-    unwrapPelaksanaMaster(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<Pelaksana>>(`/pelaksana/${id}`, { namaPelaksana }),
     ),
 
   deletePelaksana: (id: string) =>
-    unwrapPelaksanaMaster(apiClient.delete<ApiSuccessResponse<null>>(`/pelaksana/${id}`)),
+    unwrapApiData(apiClient.delete<ApiSuccessResponse<null>>(`/pelaksana/${id}`)),
 }
