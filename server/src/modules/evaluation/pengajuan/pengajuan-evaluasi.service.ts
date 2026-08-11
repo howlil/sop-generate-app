@@ -6,21 +6,22 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
-import { JenisPengajuanEvaluasi, PeranPengguna, StatusSOP } from '../../../generated/prisma';
-import {
-  mapPengajuanEvaluasiRow,
-  type PengajuanEvaluasiApiPayload,
-} from './pengajuan-evaluasi.mapper';
 import {
   resolvePagination,
   toPaginatedData,
   type PaginatedData,
 } from '../../../common/utils/pagination.util';
+import { JenisPengajuanEvaluasi, PeranPengguna, StatusSOP } from '../../../generated/prisma';
+import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
 import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
+import type { PengajuanEvaluasiRingkasResponseDto } from './dto/pengajuan-evaluasi-ringkas-response.dto';
 import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
-import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
+import {
+  mapPengajuanEvaluasiRow,
+  type PengajuanEvaluasiApiPayload,
+} from './pengajuan-evaluasi.mapper';
 import {
   PengajuanEvaluasiRepository,
   type PengajuanTransactionFailure,
@@ -64,7 +65,7 @@ export class PengajuanEvaluasiService {
   async findAllRingkas(
     user: JwtAccessPayload,
     query: PengajuanEvaluasiRingkasQueryDto,
-  ): Promise<PaginatedData<Record<string, unknown>>> {
+  ): Promise<PaginatedData<PengajuanEvaluasiRingkasResponseDto>> {
     const forcedOpdId = await this.resolveForcedOpdFilter(user);
     const whereInput = this.pengajuanEvaluasiRepository.buildWhereRingkasFromQuery(
       query,
