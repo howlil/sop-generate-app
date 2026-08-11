@@ -276,13 +276,14 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
 
   /* Jaga selectedSopId konsisten saat daftar SOP berubah (bukan fetch). */
   useEffect(() => {
+    if (!workspace) return;
     const stillInList = sopsForOpd.some((s) => s.id === effectiveSopId);
     if (!stillInList && sopsForOpd.length > 0) {
       setSelectedSopId(sopsForOpd[0].id);
     } else if (!stillInList) {
       setSelectedSopId(null);
     }
-  }, [sopsForOpd, effectiveSopId]);
+  }, [workspace, sopsForOpd, effectiveSopId]);
 
   const draftReadOnly = isPengajuanReadOnly || isSopReadOnly;
 
