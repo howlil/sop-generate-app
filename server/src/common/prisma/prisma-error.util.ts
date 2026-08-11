@@ -1,7 +1,12 @@
 type PrismaErrorLike = Readonly<{ code?: unknown }>;
 
 function hasStringCode(error: unknown): error is PrismaErrorLike & { code: string } {
-  return typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string';
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string'
+  );
 }
 
 /** Memeriksa kode error Prisma tanpa membocorkan kelas runtime Prisma ke service domain. */
