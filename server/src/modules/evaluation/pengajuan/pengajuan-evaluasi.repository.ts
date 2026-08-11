@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { displayStatusPengajuan } from '../../../common/status/status-display';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { JenisDokumenTte, Prisma } from '../../../generated/prisma';
+import {
+  JenisDokumenTte,
+  type JenisPengajuanEvaluasi,
+  Prisma,
+  type StatusPengajuanEvaluasi,
+  StatusPengajuanEvaluasi as StatusPengajuanEvaluasiEnum,
+  type StatusSOP,
+  StatusSOP as StatusSOPEnum,
+} from '../../../generated/prisma';
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
 import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
 
@@ -43,29 +51,149 @@ export type PengajuanEvaluasiDetailRow = Prisma.PengajuanEvaluasiGetPayload<{
   include: typeof pengajuanEvaluasiDetailInclude;
 }>;
 
+export type PengajuanTransactionFailure =
+  | { readonly error: 'ACTIVE_EXISTS' }
+  | { readonly error: 'DETAIL_NOT_FOUND'; readonly detailSopId: string }
+  | {
+      readonly error: 'DETAIL_BAD_STATUS';
+      readonly detailSopId: string;
+      readonly status: StatusSOP;
+    }
+  | { readonly error: 'STATUS_DRIFT' };
+
+export type CreatePengajuanTransactionResult =
+  | { readonly ok: true; readonly pengajuanEvaluasiId: string }
+  | ({ readonly ok: false } & PengajuanTransactionFailure);
+
+export type EnsurePengajuanTransactionResult =
+  | {
+      readonly ok: true;
+      readonly created: boolean;
+      readonly pengajuanEvaluasiId?: string;
+    }
+  | ({ readonly ok: false } & Exclude<PengajuanTransactionFailure, { error: 'ACTIVE_EXISTS' }>);
+
+type CreatePengajuanTransactionParams = Readonly<{
+  opdId: string;
+  jenis: JenisPengajuanEvaluasi;
+  sopDetailIds: readonly string[];
+  activeStatuses: readonly StatusPengajuanEvaluasi[];
+  eligibleDetailStatuses: readonly StatusSOP[];
+}>;
+
+class PengajuanTransactionAbort extends Error {
+  constructor(readonly failure: PengajuanTransactionFailure) {
+    super(failure.error);
+    this.name = 'PengajuanTransactionAbort';
+  }
+}
+
 @Injectable()
 export class PengajuanEvaluasiRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Menjalankan transaksi Prisma. Jika `lockOpdId` diberikan, baris OPD dikunci
-   * lebih dulu agar pengecekan dan pembuatan pengajuan aktif terserialisasi per OPD.
-   */
-  async runTransaction<T>(
-    fn: (tx: Prisma.TransactionClient) => Promise<T>,
-    lockOpdId?: string,
-  ): Promise<T> {
-    return this.prisma.$transaction(async (tx) => {
-      if (lockOpdId !== undefined) {
+  async createPengajuanDenganLock(
+    params: CreatePengajuanTransactionParams,
+  ): Promise<CreatePengajuanTransactionResult> {
+    return this.executeCreatePengajuanDenganLock(params);
+  }
+
+  async ensurePengajuanRequestOpdDenganLock(
+    params: CreatePengajuanTransactionParams,
+  ): Promise<EnsurePengajuanTransactionResult> {
+    const result = await this.executeCreatePengajuanDenganLock(params);
+    if (!result.ok && result.error === 'ACTIVE_EXISTS') {
+      return { ok: true, created: false };
+    }
+    if (!result.ok) {
+      return result;
+    }
+    return {
+      ok: true,
+      created: true,
+      pengajuanEvaluasiId: result.pengajuanEvaluasiId,
+    };
+  }
+
+  private async executeCreatePengajuanDenganLock(
+    params: CreatePengajuanTransactionParams,
+  ): Promise<CreatePengajuanTransactionResult> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw<Array<{ opdId: string }>>`
           SELECT opdId
           FROM OPD
-          WHERE opdId = ${lockOpdId}
+          WHERE opdId = ${params.opdId}
           FOR UPDATE
         `;
+        const blocking = await tx.pengajuanEvaluasi.findFirst({
+          where: {
+            opdId: params.opdId,
+            status: { in: [...params.activeStatuses] },
+          },
+          select: { pengajuanEvaluasiId: true },
+        });
+        if (blocking !== null) {
+          return { ok: false, error: 'ACTIVE_EXISTS' } as const;
+        }
+        const details = await tx.detailSOP.findMany({
+          where: {
+            detailSopId: { in: [...params.sopDetailIds] },
+            sop: { opdId: params.opdId },
+          },
+          select: { detailSopId: true, status: true },
+        });
+        const detailById = new Map(details.map((detail) => [detail.detailSopId, detail]));
+        const eligibleStatuses = new Set<StatusSOP>(params.eligibleDetailStatuses);
+        for (const detailSopId of params.sopDetailIds) {
+          const detail = detailById.get(detailSopId);
+          if (detail === undefined) {
+            return { ok: false, error: 'DETAIL_NOT_FOUND', detailSopId } as const;
+          }
+          if (!eligibleStatuses.has(detail.status)) {
+            return {
+              ok: false,
+              error: 'DETAIL_BAD_STATUS',
+              detailSopId,
+              status: detail.status,
+            } as const;
+          }
+        }
+        const sekarang = new Date();
+        const dibuat = await tx.pengajuanEvaluasi.create({
+          data: {
+            opdId: params.opdId,
+            jenis: params.jenis,
+            status: StatusPengajuanEvaluasiEnum.SEDANG_DIEVALUASI,
+            tanggalPermintaan: sekarang,
+            tanggalEvaluasi: sekarang,
+            nilaiEvaluasi: {
+              create: params.sopDetailIds.map((detailSopId) => ({ detailSopId })),
+            },
+          },
+          select: { pengajuanEvaluasiId: true },
+        });
+        const promoted = await tx.detailSOP.updateMany({
+          where: {
+            detailSopId: { in: [...params.sopDetailIds] },
+            status: { in: [...params.eligibleDetailStatuses] },
+          },
+          data: { status: StatusSOPEnum.SEDANG_DIEVALUASI },
+        });
+        if (promoted.count !== params.sopDetailIds.length) {
+          throw new PengajuanTransactionAbort({ error: 'STATUS_DRIFT' });
+        }
+        return {
+          ok: true,
+          pengajuanEvaluasiId: dibuat.pengajuanEvaluasiId,
+        } as const;
+      });
+    } catch (error) {
+      if (error instanceof PengajuanTransactionAbort) {
+        return { ok: false, ...error.failure };
       }
-      return fn(tx);
-    });
+      throw error;
+    }
   }
 
   async findOpdIdPengguna(penggunaId: string): Promise<string | null> {
@@ -136,9 +264,7 @@ export class PengajuanEvaluasiRepository {
     }
     const term = query.search?.trim();
     if (term !== undefined && term.length > 0) {
-      parts.push({
-        opd: { nama: { contains: term } },
-      });
+      parts.push({ opd: { nama: { contains: term } } });
     }
     return parts.length === 0 ? {} : { AND: parts };
   }
