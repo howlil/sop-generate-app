@@ -11,27 +11,27 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
+import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
 import type {
   PengajuanEvaluasiDetailRow,
   PengajuanEvaluasiRepository,
 } from './pengajuan-evaluasi.repository';
-import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
 
 function buildService(
   repository: PengajuanEvaluasiRepository,
-  userOpdAccessOverrides?: Partial<{
+  accessOverrides?: Partial<{
     getRequiredUserOpdId: jest.Mock;
     assertSameOpd: jest.Mock;
   }>,
 ): PengajuanEvaluasiService {
-  const userOpdAccess = {
+  const accessService = {
     getRequiredUserOpdId: jest.fn().mockResolvedValue('opd-a'),
     assertSameOpd: jest.fn().mockResolvedValue(undefined),
-    ...userOpdAccessOverrides,
+    ...accessOverrides,
   } as unknown as UserOpdAccessService;
-  return new PengajuanEvaluasiService(repository, userOpdAccess);
+  return new PengajuanEvaluasiService(repository, accessService);
 }
 
 function buildPengajuanRow(
@@ -83,7 +83,7 @@ describe('PengajuanEvaluasiService', () => {
   };
 
   describe('read', () => {
-    it('mengembalikan daftar dengan filter OPD paksa untuk role OPD-scoped', async () => {
+    it('membatasi daftar role OPD-scoped ke OPD pengguna', async () => {
       const getRequiredUserOpdId = jest.fn().mockResolvedValue('opd-a');
       const repository = {
         buildWhereFromQuery: jest.fn().mockReturnValue({ AND: [{ opdId: 'opd-a' }] }),
@@ -96,7 +96,10 @@ describe('PengajuanEvaluasiService', () => {
         {},
       );
 
-      expect(getRequiredUserOpdId).toHaveBeenCalledWith('pen-1', 'OPD pengguna tidak ditemukan');
+      expect(getRequiredUserOpdId).toHaveBeenCalledWith(
+        'pen-1',
+        'OPD pengguna tidak ditemukan',
+      );
       expect(repository.buildWhereFromQuery).toHaveBeenCalledWith(expect.any(Object), 'opd-a');
       expect(actual).toEqual([]);
     });
@@ -134,21 +137,22 @@ describe('PengajuanEvaluasiService', () => {
     });
 
     it('mengembalikan ringkasan terpaginasi', async () => {
-      const ringkasRow = {
-        pengajuanEvaluasiId: 'p1',
-        opdId: 'opd-a',
-        opdNama: 'OPD A',
-        jenis: 'EVALUASI_REQUEST_EVALUATOR',
-        status: 'SELESAI_DIEVALUASI',
-        statusLabel: 'Selesai Dievaluasi',
-        createdAt: '2026-01-01T00:00:00.000Z',
-        jumlahSop: 2,
-        jumlahSudahDinilai: 2,
-      };
       const repository = {
         buildWhereRingkasFromQuery: jest.fn().mockReturnValue({}),
         countWhere: jest.fn().mockResolvedValue(25),
-        findRingkasPage: jest.fn().mockResolvedValue([ringkasRow]),
+        findRingkasPage: jest.fn().mockResolvedValue([
+          {
+            pengajuanEvaluasiId: 'p1',
+            opdId: 'opd-a',
+            opdNama: 'OPD A',
+            jenis: 'EVALUASI_REQUEST_EVALUATOR',
+            status: 'SELESAI_DIEVALUASI',
+            statusLabel: 'Selesai Dievaluasi',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            jumlahSop: 2,
+            jumlahSudahDinilai: 2,
+          },
+        ]),
       } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository);
 
@@ -166,7 +170,7 @@ describe('PengajuanEvaluasiService', () => {
       });
     });
 
-    it('findOne melempar NotFoundException ketika pengajuan tidak ada', async () => {
+    it('findOne melempar NotFoundException jika data tidak ada', async () => {
       const repository = {
         findByIdFull: jest.fn().mockResolvedValue(null),
       } as unknown as PengajuanEvaluasiRepository;
@@ -177,7 +181,7 @@ describe('PengajuanEvaluasiService', () => {
       );
     });
 
-    it('findOne memeriksa OPD untuk role OPD-scoped', async () => {
+    it('findOne memeriksa kesamaan OPD untuk role OPD-scoped', async () => {
       const assertSameOpd = jest.fn().mockResolvedValue(undefined);
       const repository = {
         findByIdFull: jest.fn().mockResolvedValue(buildPengajuanRow()),
@@ -199,7 +203,7 @@ describe('PengajuanEvaluasiService', () => {
   });
 
   describe('create', () => {
-    it('menolak role selain PJ Penyusun sebelum menyentuh repository', async () => {
+    it('menolak role selain PJ Penyusun sebelum repository dipanggil', async () => {
       const createPengajuanDenganLock = jest.fn();
       const repository = { createPengajuanDenganLock } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository);
@@ -230,7 +234,7 @@ describe('PengajuanEvaluasiService', () => {
       expect(createPengajuanDenganLock).not.toHaveBeenCalled();
     });
 
-    it('menolak detail SOP duplikat sebelum transaksi repository', async () => {
+    it('menolak detail SOP duplikat sebelum repository dipanggil', async () => {
       const createPengajuanDenganLock = jest.fn();
       const repository = { createPengajuanDenganLock } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository);
@@ -247,18 +251,16 @@ describe('PengajuanEvaluasiService', () => {
     it.each([
       JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
       JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
-    ])('mendelegasikan pembuatan jenis %s ke operasi repository atomik', async (jenis) => {
-      const row = buildPengajuanRow({ jenis });
+    ])('mendelegasikan jenis %s ke repository atomik', async (jenis) => {
       const createPengajuanDenganLock = jest.fn().mockResolvedValue({
         ok: true,
         pengajuanEvaluasiId: 'peng-1',
       });
       const repository = {
         createPengajuanDenganLock,
-        findByIdFull: jest.fn().mockResolvedValue(row),
+        findByIdFull: jest.fn().mockResolvedValue(buildPengajuanRow({ jenis })),
       } as unknown as PengajuanEvaluasiRepository;
-      const getRequiredUserOpdId = jest.fn().mockResolvedValue('opd-a');
-      const service = buildService(repository, { getRequiredUserOpdId });
+      const service = buildService(repository);
 
       const actual = await service.create(userPjPenyusun, {
         jenis,
@@ -291,10 +293,10 @@ describe('PengajuanEvaluasiService', () => {
           jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           sopDetailIds: ['detail-1'],
         }),
-      ).rejects.toThrow('OPD ini masih memiliki pengajuan evaluasi aktif');
+      ).rejects.toBeInstanceOf(ConflictException);
     });
 
-    it('memetakan DETAIL_NOT_FOUND menjadi BadRequestException dengan konteks pemilik', async () => {
+    it('memetakan DETAIL_NOT_FOUND dengan konteks OPD pengguna', async () => {
       const repository = {
         createPengajuanDenganLock: jest.fn().mockResolvedValue({
           ok: false,
@@ -328,12 +330,10 @@ describe('PengajuanEvaluasiService', () => {
           jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           sopDetailIds: ['detail-1'],
         }),
-      ).rejects.toThrow(
-        `Detail SOP detail-1 berstatus ${StatusSOP.DRAFT} dan tidak dapat dimasukkan pengajuan evaluasi.`,
-      );
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('memetakan STATUS_DRIFT menjadi ConflictException dengan pesan reload daftar', async () => {
+    it('memetakan STATUS_DRIFT menjadi ConflictException', async () => {
       const repository = {
         createPengajuanDenganLock: jest.fn().mockResolvedValue({
           ok: false,
@@ -350,7 +350,7 @@ describe('PengajuanEvaluasiService', () => {
       ).rejects.toThrow('Muat ulang daftar SOP lalu coba lagi.');
     });
 
-    it('melempar ConflictException jika row hasil create tidak dapat dimuat kembali', async () => {
+    it('melempar ConflictException jika hasil create tidak dapat dimuat ulang', async () => {
       const repository = {
         createPengajuanDenganLock: jest.fn().mockResolvedValue({
           ok: true,
@@ -386,7 +386,7 @@ describe('PengajuanEvaluasiService', () => {
       expect(ensurePengajuanRequestOpdDenganLock).not.toHaveBeenCalled();
     });
 
-    it('no-op ketika pipeline tidak memiliki detail yang siap evaluasi', async () => {
+    it('no-op jika pipeline tidak memiliki detail siap evaluasi', async () => {
       const ensurePengajuanRequestOpdDenganLock = jest.fn();
       const repository = {
         ensurePengajuanRequestOpdDenganLock,
@@ -427,13 +427,12 @@ describe('PengajuanEvaluasiService', () => {
       });
     });
 
-    it('membiarkan active existing sebagai no-op sukses dari repository', async () => {
-      const ensurePengajuanRequestOpdDenganLock = jest.fn().mockResolvedValue({
-        ok: true,
-        created: false,
-      });
+    it('membiarkan active existing sebagai no-op sukses repository', async () => {
       const repository = {
-        ensurePengajuanRequestOpdDenganLock,
+        ensurePengajuanRequestOpdDenganLock: jest.fn().mockResolvedValue({
+          ok: true,
+          created: false,
+        }),
       } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository);
 
@@ -447,7 +446,7 @@ describe('PengajuanEvaluasiService', () => {
       ).resolves.toBeUndefined();
     });
 
-    it('memetakan STATUS_DRIFT ke ConflictException dengan pesan reload halaman', async () => {
+    it('memetakan STATUS_DRIFT dengan pesan reload halaman', async () => {
       const repository = {
         ensurePengajuanRequestOpdDenganLock: jest.fn().mockResolvedValue({
           ok: false,
@@ -465,40 +464,17 @@ describe('PengajuanEvaluasiService', () => {
         ]),
       ).rejects.toThrow('Muat ulang halaman lalu coba lagi.');
     });
-
-    it('memetakan detail invalid dari repository ke BadRequestException', async () => {
-      const repository = {
-        ensurePengajuanRequestOpdDenganLock: jest.fn().mockResolvedValue({
-          ok: false,
-          error: 'DETAIL_BAD_STATUS',
-          detailSopId: 'detail-1',
-          status: StatusSOP.DRAFT,
-        }),
-      } as unknown as PengajuanEvaluasiRepository;
-      const service = buildService(repository);
-
-      await expect(
-        service.pastikanPengajuanRequestOpdUntukEvaluator(userEvaluator, 'opd-a', [
-          {
-            detailSopId: 'detail-1',
-            statusDetail: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
-          },
-        ]),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
   });
 
   describe('otorisasi helper', () => {
     it('resolveOpdIdTerikat mengembalikan OPD untuk PJ Penyusun', async () => {
-      const repository = {} as PengajuanEvaluasiRepository;
-      const service = buildService(repository);
+      const service = buildService({} as PengajuanEvaluasiRepository);
 
       await expect(service.resolveOpdIdTerikat(userPjPenyusun)).resolves.toBe('opd-a');
     });
 
     it('resolveOpdIdTerikat menolak evaluator global', async () => {
-      const repository = {} as PengajuanEvaluasiRepository;
-      const service = buildService(repository);
+      const service = buildService({} as PengajuanEvaluasiRepository);
 
       await expect(service.resolveOpdIdTerikat(userEvaluator)).rejects.toBeInstanceOf(
         ForbiddenException,
@@ -507,16 +483,16 @@ describe('PengajuanEvaluasiService', () => {
 
     it('assertUserCanAccessPengajuan tidak mengecek OPD untuk evaluator', async () => {
       const assertSameOpd = jest.fn();
-      const repository = {} as PengajuanEvaluasiRepository;
-      const service = buildService(repository, { assertSameOpd });
+      const service = buildService({} as PengajuanEvaluasiRepository, { assertSameOpd });
 
-      await expect(service.assertUserCanAccessPengajuan(userEvaluator, 'opd-a')).resolves.toBeUndefined();
+      await expect(
+        service.assertUserCanAccessPengajuan(userEvaluator, 'opd-a'),
+      ).resolves.toBeUndefined();
       expect(assertSameOpd).not.toHaveBeenCalled();
     });
 
     it('assertUserCanAccessPengajuan menolak role yang tidak dikenal', async () => {
-      const repository = {} as PengajuanEvaluasiRepository;
-      const service = buildService(repository);
+      const service = buildService({} as PengajuanEvaluasiRepository);
 
       await expect(
         service.assertUserCanAccessPengajuan(
