@@ -2,6 +2,9 @@ import type { ConfigService } from '@nestjs/config';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { buildCorsOptions } from './cors-options';
 
+type CorsOriginCallback = (error: Error | null, allow?: boolean) => void;
+type CorsOriginResolver = (origin: string | undefined, callback: CorsOriginCallback) => void;
+
 function buildConfig(values: Record<string, string>): ConfigService {
   return {
     get: jest.fn((key: string, fallback?: string) => values[key] ?? fallback),
@@ -15,10 +18,11 @@ function resolveOrigin(
   if (typeof options.origin !== 'function') {
     return Promise.resolve(options.origin === true ? true : undefined);
   }
+  const originResolver = options.origin as CorsOriginResolver;
   return new Promise((resolve, reject) => {
-    options.origin?.(origin, (error, allow) => {
+    originResolver(origin, (error, allow) => {
       if (error !== null) {
-        reject(error);
+        reject(error instanceof Error ? error : new Error(String(error)));
         return;
       }
       resolve(allow);
