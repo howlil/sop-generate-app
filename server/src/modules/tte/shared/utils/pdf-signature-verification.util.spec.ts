@@ -2,7 +2,10 @@ import { execSync } from 'child_process';
 import { plainAddPlaceholder } from '@signpdf/placeholder-plain';
 import { P12Signer } from '@signpdf/signer-p12';
 import { SignPdf } from '@signpdf/signpdf';
-import { verifyPdfWithP12 } from './pdf-signature-verification.util';
+import {
+  extractPdfSignatureFields,
+  verifyPdfWithP12,
+} from './pdf-signature-verification.util';
 
 type PdfDocumentLike = {
   on(event: string, listener: (...args: unknown[]) => void): void;
@@ -62,6 +65,20 @@ describe('Pengujian util verifikasi tanda tangan PDF', () => {
     expect(first?.valid).toBe(true);
     expect(actual.allValid).toBe(true);
     expect(first?.signedAt).not.toBeNull();
+  });
+
+  it('mempertahankan byte nol yang masih termasuk panjang DER PKCS#7', () => {
+    const der = Buffer.from('3003020100', 'hex');
+    const paddedContents = Buffer.concat([der, Buffer.alloc(8)]).toString('hex');
+    const pdf = Buffer.from(
+      `%PDF-1.4\n1 0 obj\n<< /Type /Sig /ByteRange [0 1 2 3] /Contents <${paddedContents}> /Reason (Uji) >>\nendobj\n%%EOF`,
+      'latin1',
+    );
+
+    const signatures = extractPdfSignatureFields(pdf);
+
+    expect(signatures).toHaveLength(1);
+    expect(signatures[0]?.pkcs7Buffer).toEqual(der);
   });
 
   it('seharusnya menolak tanpa tanda tangan PDF', async () => {
