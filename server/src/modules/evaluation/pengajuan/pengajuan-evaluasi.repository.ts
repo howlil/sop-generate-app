@@ -63,9 +63,25 @@ type SignedSopPengesahanRepairDetail = {
 export class PengajuanEvaluasiRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Menjalankan transaksi Prisma (alur create pengajuan evaluasi di service). */
-  async runTransaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction(fn);
+  /**
+   * Menjalankan transaksi Prisma. Jika `lockOpdId` diberikan, baris OPD dikunci
+   * lebih dulu agar pengecekan dan pembuatan pengajuan aktif terserialisasi per OPD.
+   */
+  async runTransaction<T>(
+    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+    lockOpdId?: string,
+  ): Promise<T> {
+    return this.prisma.$transaction(async (tx) => {
+      if (lockOpdId !== undefined) {
+        await tx.$queryRaw<Array<{ opdId: string }>>`
+          SELECT opdId
+          FROM OPD
+          WHERE opdId = ${lockOpdId}
+          FOR UPDATE
+        `;
+      }
+      return fn(tx);
+    });
   }
 
   async findOpdIdPengguna(penggunaId: string): Promise<string | null> {
