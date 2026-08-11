@@ -52,4 +52,3 @@ describe('SecurityRateLimiterService', () => {
     expect(() => limiter.consume(policy, 'client-a', 2_001)).not.toThrow();
   });
 });
-
