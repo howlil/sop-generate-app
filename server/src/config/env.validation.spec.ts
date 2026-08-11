@@ -9,7 +9,6 @@ const baseEnv = {
   DATABASE_USER: 'test',
   DATABASE_PASSWORD: 'test',
   DATABASE_NAME: 'test',
-  WHATSAPP_ENABLED: 'false',
   PDF_SIGNING_ENABLED: 'false',
 };
 
@@ -37,54 +36,55 @@ describe('Environment validation', () => {
     });
   });
 
-  it('mengaktifkan in-app dan menonaktifkan WhatsApp secara default', () => {
-    expect(
-      validateEnv({
-        ...baseEnv,
-        WHATSAPP_ENABLED: undefined,
-      }),
-    ).toMatchObject({
-      NOTIFICATION_IN_APP_ENABLED: true,
-      NOTIFICATION_RECONCILE_INTERVAL_SECONDS: 10,
-      WHATSAPP_ENABLED: false,
+  it('menormalkan flag critical E2E dan default-nya nonaktif', () => {
+    expect(validateEnv(baseEnv)).toMatchObject({ E2E_CRITICAL: false });
+    expect(validateEnv({ ...baseEnv, E2E_CRITICAL: 'true' })).toMatchObject({
+      E2E_CRITICAL: true,
     });
   });
 
-  it('tidak mewajibkan kredensial WhaAPI ketika WhatsApp nonaktif', () => {
+  it('mengaktifkan in-app dan membiarkan WhatsApp nonaktif ketika konfigurasi Wago kosong', () => {
+    expect(validateEnv(baseEnv)).toMatchObject({
+      NOTIFICATION_IN_APP_ENABLED: true,
+      NOTIFICATION_RECONCILE_INTERVAL_SECONDS: 10,
+      WAGO_API_KEY: '',
+      WAGO_REQUEST_TIMEOUT_MS: 10_000,
+    });
+    expect(validateEnv(baseEnv).WAGO_BASE_URL).toBeUndefined();
+  });
+
+  it('menerima konfigurasi Wago lengkap tanpa feature flag', () => {
     expect(
       validateEnv({
         ...baseEnv,
-        WHATSAPP_ENABLED: 'false',
-        WHAAPI_TOKEN: '',
-        WHAAPI_CHANNEL_ID: '',
+        WAGO_BASE_URL: 'https://wago.example.test',
+        WAGO_API_KEY: 'wa_test_key',
       }),
-    ).toMatchObject({ WHATSAPP_ENABLED: false });
+    ).toMatchObject({
+      WAGO_BASE_URL: 'https://wago.example.test',
+      WAGO_API_KEY: 'wa_test_key',
+      WAGO_REQUEST_TIMEOUT_MS: 10_000,
+    });
   });
 
-  it('mewajibkan token dan channel ketika WhatsApp aktif', () => {
+  it('menolak URL Wago tanpa API key', () => {
     expect(() =>
       validateEnv({
         ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
-        WHAAPI_TOKEN: '',
-        WHAAPI_CHANNEL_ID: '',
+        WAGO_BASE_URL: 'https://wago.example.test',
+        WAGO_API_KEY: '',
       }),
-    ).toThrow(/WHAAPI_TOKEN/);
+    ).toThrow(/WAGO_API_KEY/);
   });
 
-  it('menerima konfigurasi WhatsApp lengkap ketika aktif', () => {
-    expect(
+  it('menolak API key Wago tanpa URL', () => {
+    expect(() =>
       validateEnv({
         ...baseEnv,
-        WHATSAPP_ENABLED: 'true',
-        WHAAPI_TOKEN: 'test-token',
-        WHAAPI_CHANNEL_ID: 'test-channel',
+        WAGO_BASE_URL: '',
+        WAGO_API_KEY: 'wa_test_key',
       }),
-    ).toMatchObject({
-      WHATSAPP_ENABLED: true,
-      WHAAPI_TOKEN: 'test-token',
-      WHAAPI_CHANNEL_ID: 'test-channel',
-    });
+    ).toThrow(/WAGO_BASE_URL/);
   });
 
   it('menerima PDF signing nonaktif tanpa P12 global server', () => {

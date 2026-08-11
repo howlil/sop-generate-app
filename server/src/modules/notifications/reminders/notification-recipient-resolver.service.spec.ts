@@ -1,6 +1,9 @@
 import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import { NotificationRecipientResolverService } from './notification-recipient-resolver.service';
-import type { ActionablePengajuan, ActiveNotificationRecipient } from './notification-reminder.types';
+import type {
+  ActionablePengajuan,
+  ActiveNotificationRecipient,
+} from './notification-reminder.types';
 
 const basePengajuan: ActionablePengajuan = {
   pengajuanEvaluasiId: 'pengajuan-1',
@@ -16,7 +19,14 @@ function recipient(
   peran: PeranPengguna,
   opdId = 'opd-1',
 ): ActiveNotificationRecipient {
-  return { penggunaId, peran, opdId, email: `${penggunaId}@example.test`, nama: penggunaId, nohp: `628123456789` };
+  return {
+    penggunaId,
+    peran,
+    opdId,
+    email: `${penggunaId}@example.test`,
+    nama: penggunaId,
+    nohp: `628123456789`,
+  };
 }
 
 describe('NotificationRecipientResolverService', () => {
@@ -30,16 +40,13 @@ describe('NotificationRecipientResolverService', () => {
     expect(actual.map((row) => row.penggunaId)).toEqual(['eval-1', 'eval-2']);
   });
 
-  it('menggunakan email penerima sebagai tujuan legacy reminder', () => {
+  it('menggunakan nomor HP penerima sebagai tujuan reminder WhatsApp', () => {
     const service = new NotificationRecipientResolverService();
     const actual = service.resolve(basePengajuan, [
       recipient('eval-1', PeranPengguna.EVALUATOR),
       recipient('eval-2', PeranPengguna.EVALUATOR),
     ]);
-    expect(actual.map((row) => row.destination)).toEqual([
-      '628123456789',
-      '628123456789',
-    ]);
+    expect(actual.map((row) => row.destination)).toEqual(['628123456789', '628123456789']);
   });
 
   it('melakukan deduplikasi penerima berdasarkan pengguna', () => {
@@ -95,5 +102,4 @@ describe('NotificationRecipientResolverService', () => {
     );
     expect(actual.map((row) => row.penggunaId)).toEqual(['kepala']);
   });
-
 });

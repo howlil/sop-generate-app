@@ -1,9 +1,5 @@
 import * as crypto from 'crypto';
-import {
-  decryptP12Passphrase,
-  encryptP12Passphrase,
-  isLegacyP12PassphraseCiphertext,
-} from './tte-crypto.util';
+import { decryptP12Passphrase, encryptP12Passphrase } from './tte-crypto.util';
 
 const TEST_SECRET = 'test-tte-encryption-secret-that-is-long-enough-123456';
 
@@ -27,7 +23,6 @@ describe('tte-crypto.util', () => {
     const encrypted = encryptP12Passphrase('p12-secret-passphrase', '123456');
 
     expect(encrypted.startsWith('v2:')).toBe(true);
-    expect(isLegacyP12PassphraseCiphertext(encrypted)).toBe(false);
     expect(decryptP12Passphrase(encrypted, '123456')).toBe('p12-secret-passphrase');
   });
 
@@ -44,11 +39,10 @@ describe('tte-crypto.util', () => {
     expect(() => decryptP12Passphrase(encrypted, '123456')).toThrow();
   });
 
-  it('tetap dapat membaca ciphertext legacy agar kredensial lama bisa dimigrasikan', () => {
+  it('menolak ciphertext legacy yang tidak memiliki versi v2', () => {
     const legacy = legacyEncrypt('legacy-passphrase', '123456');
 
-    expect(isLegacyP12PassphraseCiphertext(legacy)).toBe(true);
-    expect(decryptP12Passphrase(legacy, '123456')).toBe('legacy-passphrase');
+    expect(() => decryptP12Passphrase(legacy, '123456')).toThrow(/Invalid encrypted data format/);
   });
 });
 

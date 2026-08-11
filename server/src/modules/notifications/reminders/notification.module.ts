@@ -10,7 +10,7 @@ import { NotificationReminderReconcilerService } from './notification-reminder-r
 import { NotificationReminderRepository } from './notification-reminder.repository';
 import { NotificationReminderSchedulerService } from './notification-reminder-scheduler.service';
 import { NOTIFICATION_CHANNEL } from './providers/notification-channel.interface';
-import { WhaApiProvider } from './providers/whaapi.provider';
+import { WagoProvider } from './providers/wago.provider';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -24,8 +24,8 @@ import { WhaApiProvider } from './providers/whaapi.provider';
     PushReminderWorkerService,
     InAppNotificationService,
     NotificationReminderSchedulerService,
-    WhaApiProvider,
-    { provide: NOTIFICATION_CHANNEL, useExisting: WhaApiProvider },
+    WagoProvider,
+    { provide: NOTIFICATION_CHANNEL, useExisting: WagoProvider },
   ],
 })
 export class NotificationModule {}

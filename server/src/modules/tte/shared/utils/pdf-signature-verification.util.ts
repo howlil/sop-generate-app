@@ -434,11 +434,48 @@ function computeDocumentDigest(
 }
 
 function trimPkcs7Buffer(buffer: Buffer): Buffer {
+  const derLength = resolveDerEncodedLength(buffer);
+  if (derLength !== null) {
+    return buffer.subarray(0, derLength);
+  }
+
   let end = buffer.length;
   while (end > 0 && buffer[end - 1] === 0) {
     end -= 1;
   }
   return buffer.subarray(0, end);
+}
+
+function resolveDerEncodedLength(buffer: Buffer): number | null {
+  if (buffer.length < 2 || buffer[0] !== 0x30) {
+    return null;
+  }
+
+  const firstLengthByte = buffer[1];
+  if (firstLengthByte === undefined) {
+    return null;
+  }
+  if ((firstLengthByte & 0x80) === 0) {
+    const totalLength = 2 + firstLengthByte;
+    return totalLength <= buffer.length ? totalLength : null;
+  }
+
+  const lengthBytes = firstLengthByte & 0x7f;
+  if (lengthBytes === 0 || lengthBytes > 4 || buffer.length < 2 + lengthBytes) {
+    return null;
+  }
+
+  let contentLength = 0;
+  for (let index = 0; index < lengthBytes; index += 1) {
+    const byte = buffer[2 + index];
+    if (byte === undefined) {
+      return null;
+    }
+    contentLength = contentLength * 256 + byte;
+  }
+
+  const totalLength = 2 + lengthBytes + contentLength;
+  return totalLength <= buffer.length ? totalLength : null;
 }
 
 function isCertificateValidAt(cert: forge.pki.Certificate, at: Date): boolean {

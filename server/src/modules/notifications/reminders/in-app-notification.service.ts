@@ -17,12 +17,15 @@ export class InAppNotificationService {
   }
 
   async findMine(penggunaId: string, limit: number): Promise<InAppReminderNotification[]> {
-    const rows = await this.repository.findInAppNotifications(penggunaId, this.normalizeLimit(limit));
+    const rows = await this.repository.findInAppNotifications(
+      penggunaId,
+      this.normalizeLimit(limit),
+    );
     return rows.map((row) => {
       const message = this.messageFactory.build({
-        ...row,
-        consecutiveFailures: 0,
-        lockToken: null,
+        kind: row.kind,
+        pengajuanEvaluasi: row.pengajuanEvaluasi,
+        pengguna: row.pengguna,
       });
       return {
         id: row.notificationReminderId,

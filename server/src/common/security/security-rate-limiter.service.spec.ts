@@ -2,6 +2,7 @@ import { HttpException } from '@nestjs/common';
 import {
   SecurityRateLimiterService,
   resolveSecurityRateLimitPolicy,
+  shouldApplySecurityRateLimit,
 } from './security-rate-limiter.service';
 
 describe('SecurityRateLimiterService', () => {
@@ -16,6 +17,13 @@ describe('SecurityRateLimiterService', () => {
       'tte-public-pdf-verify',
     );
     expect(resolveSecurityRateLimitPolicy('GET', '/api/v1/auth/me')).toBeNull();
+  });
+
+  it('hanya melewati limiter pada critical E2E test', () => {
+    expect(shouldApplySecurityRateLimit('test', true)).toBe(false);
+    expect(shouldApplySecurityRateLimit('test', false)).toBe(true);
+    expect(shouldApplySecurityRateLimit('development', true)).toBe(true);
+    expect(shouldApplySecurityRateLimit('production', true)).toBe(true);
   });
 
   it('menolak request setelah limit tercapai dalam window yang sama', () => {
