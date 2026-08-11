@@ -486,7 +486,7 @@ model DokumenTte {
   pdfGeneratedAt      DateTime?
   pdfPublishedAt      DateTime?
   pdfRevokedAt        DateTime?
-  pdfStatus           String?              @db.VarChar(9)
+  pdfStatus           String?              @db.VarChar(32)
   detailSopId         String?              @db.Char(36)
   pengajuanEvaluasiId String?              @db.Char(36)
   createdAt           DateTime             @default(now())
