@@ -1,158 +1,112 @@
-# Dokumentasi Lanjutan: Detail Workflow dan Spesifikasi Teknis TTE
+# Detail Workflow dan Teknis TTE SOPFlow
 
-Dokumen ini merupakan penjabaran mendalam (Deep-Dive) dari proses bisnis operasional (Workflow) dan implementasi teknis tingkat rendah (Spesifikasi API, payload JSON, topologi, dan siklus hidup) untuk membangun/mengintegrasikan sistem Tanda Tangan Elektronik dengan Certificate Authority (CA).
+Dokumen ini menjelaskan implementasi tanda tangan elektronik (TTE) yang benar-benar ada pada SOPFlow saat ini. TTE pada aplikasi ini adalah mekanisme internal untuk kebutuhan sistem/tugas akhir, bukan integrasi dengan PSrE pemerintah seperti BSrE.
 
----
+## 1. Posisi TTE dalam workflow
 
-## 1. Detail Workflow (Siklus Hidup Dokumen)
+TTE digunakan setelah evaluasi SOP selesai dan berita acara siap ditandatangani. Urutan utamanya:
 
-Sistem TTE yang handal harus mengelola "State" (status) dari setiap dokumen secara ketat. Berikut adalah pemetaan siklus hidup dari sebuah dokumen sejak diunggah hingga diverifikasi.
+1. PJ Evaluator menandatangani berita acara.
+2. PJ Penyusun menandatangani berita acara.
+3. Kepala OPD melakukan pengesahan akhir SOP.
+4. Sistem menghasilkan/menyimpan artefak PDF yang telah ditandatangani dan metadata verifikasinya.
+5. Dokumen final dapat diverifikasi melalui mekanisme verifikasi PDF/QR internal.
 
-### A. State Diagram Dokumen
-```mermaid
-stateDiagram-v2
-    [*] --> DRAFT : Dokumen Diunggah
-    DRAFT --> PENDING_SIGN : Assign Signers (Routing diatur)
-    PENDING_SIGN --> IN_PROGRESS : Sebagian telah TTD (Sistem Paralel/Sekuensial)
-    IN_PROGRESS --> PENDING_SIGN : Menunggu Signer Berikutnya
-    PENDING_SIGN --> COMPLETED : Semua Signer Selesai (Finalisasi PDF)
-    PENDING_SIGN --> EXPIRED : Batas Waktu TTD Habis
-    PENDING_SIGN --> REJECTED : Ditolak oleh salah satu Signer
-    COMPLETED --> VERIFIED : Diverifikasi oleh Pihak Ketiga/Penerima
-    VERIFIED --> [*]
-```
+TTE tidak menggantikan proses evaluasi, revisi, maupun pengesahan bisnis; ia hanya menjadi mekanisme pembuktian kriptografis pada tahap tanda tangan/pengesahan.
 
-### B. Penjelasan Workflow Operasional
-1.  **Preparation (DRAFT):** Pengguna sebagai *Uploader/Initiator* mengunggah file PDF. Pada tahap ini, *Initiator* memetakan letak visual tanda tangan (mengatur koordinat X, Y, dan halaman) serta menentukan urutan/alur (misal: "Sekretaris harus TTD dahulu, baru Direktur Utama").
-2.  **Notification (PENDING_SIGN):** Sistem mengirimkan notifikasi (Email / Push Notification App) yang berisi *Deep Link* aman ke masing-masing pihak (Signer).
-3.  **Authentication & Consent:**
-    *   Signer membuka tautan dan melakukan login.
-    *   Sistem secara sinkronus melakukan pengecekan ke CA (via API) untuk memvalidasi apakah sertifikat elektronik Signer tersebut aktif (belum dicabut / *Revoked*).
-    *   Signer menekan tombol **"Tanda Tangani"** dan aplikasi memunculkan prompt untuk memasukkan *Faktor Autentikasi Ke-2 (2FA)*, seperti PIN 6 digit atau OTP. 
-    *   **Catatan Hukum:** Pemasukan OTP/PIN ini berfungsi sebagai bukti *Consent* (Persetujuan sadar/Niat hukum) bahwa individu tersebut bermaksud menyetujui isi dokumen.
-4.  **Signing Execution:** Aplikasi mengambil *Hash* dokumen dan mengeksekusi API Sign ke CA. (Penjelasan payload API ada di Bab 2).
-5.  **Completion (COMPLETED):** Setelah seluruh pihak menandatangani, aplikasi mengunci struktur PDF dengan menyuntikkan *Time Stamp Token* (TSA) agar waktu terverifikasi. Dokumen *Signed PDF* kemudian siap diunduh (atau dikirim otomatis via email).
+## 2. Kredensial TTE per pengguna
 
----
+Kredensial TTE tidak disimpan sebagai satu sertifikat global server. Setiap pengguna yang berhak menandatangani mempunyai kredensial personal.
 
-## 2. Spesifikasi Teknis & Interaksi API (Low-Level)
+Data utama yang disimpan pada pengguna meliputi:
 
-Untuk membangun sistem ini, Backend Aplikasi Anda (*App Server*) harus berkomunikasi dengan API milik Penyelenggara Sertifikasi Elektronik (CA / PSrE). Berikut adalah gambaran payload teknisnya.
+- hash PIN TTE;
+- PKCS#12/P12 personal dalam representasi Base64;
+- passphrase P12 yang telah dienkripsi.
 
-### A. API Registration & e-KYC (Penerbitan Sertifikat)
-Ini adalah proses mendaftarkan identitas digital (X.509) untuk pertama kali. 
+Base64 bukan mekanisme enkripsi. Proteksi private key berasal dari password PKCS#12, sedangkan passphrase P12 tersebut dilindungi kembali oleh aplikasi sebelum disimpan.
 
-**1. Request Payload (App Server -> API CA):**
-```json
-POST /api/v1/ca/register
-Content-Type: application/json
-Authorization: Bearer {API_KEY_PERUSAHAAN}
+## 3. Setup kredensial
 
-{
-  "user": {
-    "nik": "3171234567890123",
-    "fullName": "Budi Santoso",
-    "email": "budi.santoso@perusahaan.com",
-    "phone": "+628123456789",
-    "biometricData": "base64_encoded_liveness_video_or_selfie...",
-    "idCardImage": "base64_encoded_ktp_image..."
-  },
-  "certificateProfile": "Class 3 - Individual"
-}
-```
+SOPFlow mendukung dua pola setup:
 
-**2. Response Payload (CA -> App Server):**
-```json
-{
-  "status": "SUCCESS",
-  "certificateId": "CERT-2023-99881122",
-  "validFrom": "2023-10-01T00:00:00Z",
-  "validTo": "2024-10-01T00:00:00Z",
-  "message": "Identity verified via Dukcapil. KeyPair generated safely in HSM."
-}
-```
-*Catatan:* Pada tahap ini, *Private Key* tidak pernah dikembalikan ke App Server, melainkan diamankan dalam ruang tertutup di dalam HSM (Hardware Security Module) milik CA.
+### Generate internal
 
-### B. API Signing (Proses Kriptografi)
-Demi privasi data, **dokumen asli (PDF) DILARANG keras dikirim ke CA**. Aplikasi hanya mengirimkan jejak digital/sidik jari (*Hash Value*) dari dokumen tersebut.
+Aplikasi dapat membuat pasangan key/certificate internal untuk pengguna. Private key dan certificate dikemas sebagai PKCS#12 dengan passphrase acak yang kuat.
 
-**1. Persiapan Hashing oleh App Server (Lokal):**
-```python
-# Pseudo-code Hashing menggunakan Python
-import hashlib
+### Upload P12
 
-file_bytes = read_file_as_bytes("kontrak_kerja.pdf")
-hash_value = hashlib.sha256(file_bytes).digest()
-hash_hex = hash_value.hex()
-# Hasil contoh: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-```
+Pengguna dapat memasukkan P12 yang valid beserta passphrase-nya. Sistem melakukan validasi sebelum kredensial disimpan.
 
-**2. Request Payload (App Server -> API Sign CA):**
-```json
-POST /api/v1/ca/sign
-Content-Type: application/json
+Pada kedua pola, PIN pengguna tidak disimpan dalam bentuk plaintext.
 
-{
-  "certificateId": "CERT-2023-99881122",
-  "passphraseOrOTP": "908172", 
-  "hashAlgorithm": "SHA-256",
-  "documentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-}
-```
+## 4. Proteksi passphrase P12
 
-**3. Eksekusi Kritis di Dalam HSM CA:**
-*   API CA memvalidasi nilai OTP/PIN (`908172`). Jika benar, CA memberikan mandat ke HSM.
-*   HSM memanggil *Private Key* yang terhubung dengan identitas `CERT-2023-99881122`.
-*   HSM melakukan operasi matematika enkripsi (algoritma RSA 2048-bit atau ECDSA) terhadap nilai `documentHash`. Hasilnya disebut *Cipher Text* / *Digital Signature*.
+Passphrase P12 dienkripsi menggunakan AES-256-GCM. Key enkripsi diturunkan dari dua komponen:
 
-**4. Response Payload (CA -> App Server):**
-```json
-{
-  "status": "SUCCESS",
-  "digitalSignature": "Base64_Encoded_Encrypted_Hash_Block...",
-  "timestampToken": "Base64_RFC3161_Token_From_NTP_Server..." 
-}
-```
+- PIN TTE pengguna; dan
+- `TTE_ENCRYPTION_SECRET` milik server.
 
-**5. Penggabungan/Pembentukan PDF Akhir (PAdES):**
-App Server menerima respons di atas, dan menggunakan modul manipulasi PDF (contoh: iText, PDFBox) untuk menyuntikkan (inject) data ke metadata file PDF asli.
-*   Ke dalam file PDF tersebut dimasukkan *Cryptographic Message Syntax* (CMS/PKCS#7) yang berisi 3 hal utama:
-    1. The `digitalSignature` (Data yang dari CA).
-    2. Sertifikat X.509 Publik milik penandatangan (Agar nanti Adobe Reader bisa memverifikasi).
-    3. The `timestampToken` (Sebagai pengesahan waktu).
+Ciphertext yang didukung saat ini menggunakan format versioned `v2`. Format legacy tanpa versi tidak lagi didukung setelah aggressive legacy cleanup. Environment yang masih mempunyai kredensial format lama harus meminta pengguna melakukan setup/upload TTE ulang.
 
-### C. Protokol Verifikasi Teknis (OCSP - Online Certificate Status Protocol)
-Saat pihak penerima membuka file PDF menggunakan **Adobe Acrobat Reader**, Adobe tidak sekadar mengecek struktur matematis, tetapi akan diam-diam menembak API milik CA (secara background) untuk mengecek legalitas sertifikat.
-1.  **OCSP Request:** Adobe mengekstrak Sertifikat X.509 dari PDF, mencari URL OCSP di dalamnya, lalu menembak: *"Apakah Sertifikat dengan Serial 0x12345ABC ini masih hidup?"*
-2.  **OCSP Response:** Server CA merespons secara real-time. 
-    *   Jika respons `status: good`, Adobe menampilkan **Tanda Centang Hijau** (Signature Valid).
-    *   Jika respons `status: revoked` (karena user melaporkan HP/akunnya diretas sehingga CA mencabut sertifikatnya), Adobe menampilkan **Silang Merah** (Signature Invalid).
+`TTE_ENCRYPTION_SECRET` wajib diperlakukan sebagai secret deployment dan harus berbeda dari secret JWT.
 
----
+## 5. Penandatanganan PDF
 
-## 3. Topologi Infrastruktur dan Keamanan
+Saat pengguna melakukan tanda tangan/pengesahan:
 
-Bagaimana arsitektur jaringan secara fisik (atau Cloud) agar sistem TTE diakui keamanannya?
+1. backend memvalidasi hak akses dan state workflow;
+2. PIN pengguna diverifikasi terhadap hash yang tersimpan;
+3. passphrase P12 didekripsi menggunakan PIN + secret server;
+4. PKCS#12 personal dibuka;
+5. PDF ditandatangani secara kriptografis;
+6. artefak PDF final disimpan pada storage persisten;
+7. metadata signature dan keterkaitannya dengan riwayat TTE disimpan di database.
 
-```mermaid
-graph TD
-    UserClient[Web Browser / Mobile App] -- HTTPS (TLS 1.3) --> AppGateway(API Gateway Perusahaan)
-    AppGateway --> AppService(Document Signing Service)
-    
-    subgraph Internal Network (Perusahaan Anda)
-        AppService -- Local / VPC --> Database[(PostgreSQL - Meta Dokumen & Audit Trail)]
-        AppService -- Local / VPC --> ObjectStorage[(S3 / MinIO - Encrypted PDF)]
-    end
-    
-    subgraph CA / PSrE Network (Highly Secured Zone)
-        AppService -- mTLS / IPSEC VPN --> CA_API[CA Endpoint API]
-        CA_API --> KMS_HSM[Hardware Security Module - FIPS 140-2 Level 3]
-        CA_API --> CA_DB[(CA Directory & Revocation DB)]
-        CA_API --> TSA[Time Stamping Server (NTP Sync Nasional)]
-    end
-```
+Pembuatan signature baru dapat dikendalikan oleh `PDF_SIGNING_ENABLED`. Ketika dinonaktifkan, endpoint verifikasi dokumen yang sudah ada tetap dapat digunakan.
 
-### Analisis Komponen Topologi:
-1.  **Jalur Koneksi Perusahaan <-> CA (mTLS / VPN):** Komunikasi antara App Service dan API CA sangat rentan. Oleh karena itu, koneksi ini biasanya tidak hanya dilindungi TLS biasa, melainkan **Mutual TLS (mTLS)** di mana server perusahaan dan server CA saling memberikan sertifikat SSL khusus untuk membuktikan identitas masing-masing sebelum terhubung, atau dipisahkan lewat jalur *Leased Line/IPSec VPN*.
-2.  **KMS/HSM (Hardware Security Module):** HSM bukan server biasa. Ini adalah perangkat keras baja tebal standar militer (*FIPS 140-2 Level 3/4*). Jika ada orang mencoba membongkar cangkang HSM secara fisik atau memanipulasi tegangannya untuk mencuri *Private Key*, sensor internal (tamper-response) akan secara otomatis **menghanguskan/menghapus secara permanen (Zeroization)** seluruh data di dalamnya.
-3.  **Audit Trail Database:** Semua aktivitas di App Service (Jam berapa user akses, IP address berapa, perangkat apa, OTP dikirim kemana) wajib dicatat dalam *Immutable Audit Log* sebagai pendukung bukti validitas niat TTE (*Intention to Sign*) di pengadilan.
+## 6. Penyimpanan
+
+### MariaDB
+
+MariaDB menyimpan data domain serta data kredensial/metadata TTE yang dibutuhkan aplikasi, termasuk referensi signature, certificate metadata, hash dokumen, dan status workflow.
+
+### Persistent PDF storage
+
+Artefak PDF disimpan pada filesystem backend di `SOP_PDF_STORAGE_DIR`, dengan default `/app/storage/sop-pdf`. Pada Docker Compose path ini dipersistenkan menggunakan volume `sop_pdf_data`.
+
+PDF tidak disimpan di S3/MinIO pada implementasi saat ini.
+
+## 7. Verifikasi
+
+Sistem menyediakan verifikasi PDF yang memeriksa signature pada dokumen dan mencocokkannya dengan data TTE yang tersimpan. QR pada dokumen digunakan untuk membawa pengguna ke jalur verifikasi internal yang sesuai.
+
+Informasi verifikasi difokuskan pada hal yang dapat dibuktikan aplikasi, seperti validitas signature, identitas certificate, waktu tanda tangan bila tersedia, dan kecocokan dengan riwayat TTE SOPFlow.
+
+## 8. Certificate Authority internal
+
+Certificate yang dihasilkan aplikasi menggunakan CA internal SOPFlow untuk kebutuhan demonstrasi/internal. Ini tidak boleh disebut sebagai sertifikat elektronik tersertifikasi pemerintah.
+
+Untuk deployment pemerintahan yang membutuhkan kekuatan hukum/operasional sesuai kebijakan instansi, desain production sebaiknya menggunakan PSrE yang diakui dan tidak membuat aplikasi memegang private key penandatangan secara langsung. Integrasi tersebut berada di luar scope implementasi tugas akhir saat ini.
+
+## 9. Batas keamanan dan operasional
+
+- Backup database dan volume PDF harus dijaga bersama karena keduanya membentuk rekam dokumen sistem.
+- `TTE_ENCRYPTION_SECRET` tidak boleh disimpan di repository.
+- PIN pengguna tidak boleh dicatat di log.
+- P12/passphrase tidak boleh dikirim ke frontend selain pada alur yang memang dibutuhkan untuk setup.
+- Perubahan secret TTE tanpa strategi migrasi akan membuat passphrase tersimpan tidak dapat didekripsi.
+- Format ciphertext legacy sebelum `v2` tidak lagi mempunyai fallback decryption.
+
+## 10. Yang tidak diimplementasikan
+
+Implementasi saat ini tidak mengklaim adanya:
+
+- HSM/KMS production;
+- OCSP/CRL online;
+- TSA eksternal;
+- S3/MinIO untuk arsip PDF;
+- integrasi BSrE/PSrE;
+- certificate lifecycle management setara CA production.
+
+Komponen tersebut dapat menjadi pengembangan lanjutan, tetapi tidak boleh digambarkan sebagai arsitektur SOPFlow yang sedang berjalan.

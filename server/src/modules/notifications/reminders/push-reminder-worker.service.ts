@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { isReminderStillEligible } from './reminder-eligibility.util';
 import { ReminderMessageFactory } from './reminder-message.factory';
 import { NotificationReminderRepository } from './notification-reminder.repository';
+import type { ClaimedNotificationReminder } from './notification-reminder.types';
 import {
   NOTIFICATION_CHANNEL,
   NotificationChannelError,
@@ -28,8 +29,7 @@ export class PushReminderWorkerService {
   ) {
     this.maxConcurrency = config.get<number>('WHATSAPP_MAX_CONCURRENCY', 3);
     this.leaseMs = config.get<number>('WHATSAPP_LOCK_LEASE_SECONDS', 60) * 1_000;
-    this.reminderIntervalMs =
-      config.get<number>('WHATSAPP_REMINDER_INTERVAL_MINUTES', 1) * 60_000;
+    this.reminderIntervalMs = config.get<number>('WHATSAPP_REMINDER_INTERVAL_MINUTES', 1) * 60_000;
   }
 
   async processDue(now = new Date()): Promise<{ candidates: number; processed: number }> {
@@ -81,7 +81,9 @@ export class PushReminderWorkerService {
 
     try {
       const message = this.messageFactory.build(reminder);
-      await this.channel.send(reminder.destination, message.body);
+      await this.channel.send(reminder.destination, message.body, {
+        idempotencyKey: this.buildIdempotencyKey(reminder),
+      });
       const sentAt = new Date();
       await this.repository.markSuccess(
         notificationReminderId,
@@ -112,6 +114,11 @@ export class PushReminderWorkerService {
     }
   }
 
+  private buildIdempotencyKey(reminder: ClaimedNotificationReminder): string {
+    const occurrence = reminder.lastSentAt?.getTime().toString() ?? 'initial';
+    return `sopflow-reminder:${reminder.notificationReminderId}:${occurrence}`;
+  }
+
   private normalizeError(error: unknown): NotificationChannelError {
     if (error instanceof NotificationChannelError) return error;
     return new NotificationChannelError(
@@ -120,11 +127,7 @@ export class PushReminderWorkerService {
     );
   }
 
-  private nextAttemptAt(
-    error: NotificationChannelError,
-    failures: number,
-    now: Date,
-  ): Date {
+  private nextAttemptAt(error: NotificationChannelError, failures: number, now: Date): Date {
     if (error.kind === 'BAD_RECIPIENT') {
       return new Date(now.getTime() + this.reminderIntervalMs);
     }

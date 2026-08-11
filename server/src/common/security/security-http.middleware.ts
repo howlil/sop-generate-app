@@ -61,6 +61,7 @@ export function installSecurityHttpMiddleware(
   app: NestExpressApplication,
   csrfProtection: CsrfProtectionService,
   rateLimiter: SecurityRateLimiterService,
+  applyRateLimit = true,
 ): void {
   app.use((req: Request, _res: unknown, next: NextFunction) => {
     try {
@@ -71,6 +72,10 @@ export function installSecurityHttpMiddleware(
     }
   });
   app.use((req: Request, _res: unknown, next: NextFunction) => {
+    if (!applyRateLimit) {
+      next();
+      return;
+    }
     const policy = resolveSecurityRateLimitPolicy(req.method, req.path);
     if (policy === null) {
       next();

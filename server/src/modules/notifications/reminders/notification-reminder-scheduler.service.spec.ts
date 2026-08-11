@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/unbound-method */
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { PushReminderWorkerService } from './push-reminder-worker.service';
 import { NotificationReminderReconcilerService } from './notification-reminder-reconciler.service';
 import { NotificationReminderSchedulerService } from './notification-reminder-scheduler.service';
 
-function build(inAppEnabled: boolean, whatsappEnabled = false) {
+function build(inAppEnabled: boolean, whatsappConfigured = false) {
   const schedulerRegistry = {
     addInterval: jest.fn(),
     doesExist: jest.fn().mockReturnValue(true),
@@ -21,7 +20,8 @@ function build(inAppEnabled: boolean, whatsappEnabled = false) {
   const config = {
     get: jest.fn((key: string, fallback: unknown) => {
       if (key === 'NOTIFICATION_IN_APP_ENABLED') return inAppEnabled;
-      if (key === 'WHATSAPP_ENABLED') return whatsappEnabled;
+      if (key === 'WAGO_BASE_URL') return whatsappConfigured ? 'https://wago.example.test' : '';
+      if (key === 'WAGO_API_KEY') return whatsappConfigured ? 'wa_test_key' : '';
       if (key === 'NOTIFICATION_RECONCILE_INTERVAL_SECONDS') return 10;
       return fallback;
     }),
@@ -42,7 +42,7 @@ function build(inAppEnabled: boolean, whatsappEnabled = false) {
 describe('NotificationReminderSchedulerService', () => {
   afterEach(() => jest.useRealTimers());
 
-  it('tidak membuat interval atau menjalankan pekerjaan ketika fitur nonaktif', async () => {
+  it('tidak membuat interval atau menjalankan pekerjaan ketika seluruh channel nonaktif', async () => {
     const { service, schedulerRegistry, reconciler, pushWorker } = build(false, false);
     service.onModuleInit();
     await service.tick();
@@ -95,11 +95,11 @@ describe('NotificationReminderSchedulerService', () => {
     expect(pushWorker.processDue).toHaveBeenCalledTimes(1);
   });
 
-  it('menjalankan worker push hanya ketika whatsapp notification aktif', async () => {
-    const enabled = build(false, true);
-    await enabled.service.tick();
-    expect(enabled.reconciler.reconcile).toHaveBeenCalledTimes(1);
-    expect(enabled.pushWorker.processDue).toHaveBeenCalledTimes(1);
+  it('menjalankan worker push hanya ketika pasangan konfigurasi Wago tersedia', async () => {
+    const configured = build(false, true);
+    await configured.service.tick();
+    expect(configured.reconciler.reconcile).toHaveBeenCalledTimes(1);
+    expect(configured.pushWorker.processDue).toHaveBeenCalledTimes(1);
 
     const inAppOnly = build(true, false);
     await inAppOnly.service.tick();

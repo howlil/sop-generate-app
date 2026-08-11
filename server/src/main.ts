@@ -14,7 +14,10 @@ import { JSON_BODY_LIMIT, URLENCODED_BODY_LIMIT } from './common/http/request-bo
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { CsrfProtectionService } from './common/security/csrf-protection.service';
 import { installSecurityHttpMiddleware } from './common/security/security-http.middleware';
-import { SecurityRateLimiterService } from './common/security/security-rate-limiter.service';
+import {
+  SecurityRateLimiterService,
+  shouldApplySecurityRateLimit,
+} from './common/security/security-rate-limiter.service';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_NAME,
@@ -40,6 +43,8 @@ async function bootstrap() {
     bodyParser: false,
   });
   const configService = app.get(ConfigService);
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  const e2eCritical = configService.get<boolean>('E2E_CRITICAL', false);
 
   app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
   app.useBodyParser('urlencoded', { extended: true, limit: URLENCODED_BODY_LIMIT });
@@ -49,6 +54,7 @@ async function bootstrap() {
     app,
     app.get(CsrfProtectionService),
     app.get(SecurityRateLimiterService),
+    shouldApplySecurityRateLimit(nodeEnv, e2eCritical),
   );
   installFatalProcessErrorHandlers(logger);
 
@@ -60,7 +66,6 @@ async function bootstrap() {
   app.useGlobalPipes(createDefaultValidationPipe());
   app.enableCors(buildCorsOptions(configService));
 
-  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   const swaggerEnabled = configService.get<boolean>('SWAGGER_ENABLED', nodeEnv !== 'production');
   if (swaggerEnabled) {
     const config = new DocumentBuilder()

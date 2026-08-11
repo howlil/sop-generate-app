@@ -1,165 +1,72 @@
-# Analisis Komprehensif Tanda Tangan Elektronik (TTE) dan Certificate Authority (CA)
+# Tanda Tangan Elektronik dan Certificate Authority pada SOPFlow
 
-## 1. Pendahuluan
-Tanda Tangan Elektronik (TTE) adalah tanda tangan yang terdiri atas informasi elektronik yang dilekatkan, terasosiasi, atau terkait dengan informasi elektronik lainnya yang digunakan sebagai alat verifikasi dan autentikasi. Untuk memastikan keabsahan, integritas, dan tingkat kepercayaan yang tinggi (TTE Tersertifikasi), diperlukan pihak ketiga yang objektif dan terpercaya, yaitu **Certificate Authority (CA)** atau di Indonesia dikenal sebagai **Penyelenggara Sertifikasi Elektronik (PSrE)**.
+Dokumen ini memisahkan dengan tegas antara **fitur yang diimplementasikan SOPFlow** dan **arsitektur yang direkomendasikan untuk production pemerintahan**.
 
-Dokumen ini menjelaskan secara komprehensif mekanisme dasar TTE, peran CA, serta merincikan alur bisnis dan alur teknis penerapannya dalam sebuah sistem.
+## Implementasi SOPFlow saat ini
 
----
+SOPFlow menggunakan TTE internal untuk mendukung demonstrasi alur tanda tangan dan pengesahan dokumen SOP. Implementasi ini tidak terhubung ke BSrE atau PSrE eksternal.
 
-## 2. Konsep Dasar Kriptografi Kunci Asimetris (PKI)
-Mekanisme TTE didasarkan pada teknologi *Public Key Infrastructure* (PKI) yang menggunakan kriptografi asimetris.
-*   **Key Pair (Sepasang Kunci):** Setiap pengguna memiliki sepasang kunci kriptografi yang saling terkait secara matematis, namun mustahil diturunkan dari satu ke yang lain.
-    *   **Private Key (Kunci Privat):** Bersifat rahasia dan hanya dikuasai oleh pemilik identitas. Digunakan semata-mata untuk **membuat** tanda tangan elektronik (enkripsi hash).
-    *   **Public Key (Kunci Publik):** Bersifat terbuka dan dapat dibagikan kepada siapa saja. Digunakan untuk **memverifikasi** tanda tangan elektronik (dekripsi signature).
-*   **Fungsi Hash (Hashing):** Algoritma kriptografi satu arah (contoh: SHA-256) yang merangkum data (dokumen PDF berukuran berapapun) menjadi deretan karakter dengan ukuran tetap (*hash value* / *digest*). Perubahan sekecil 1 bit pada dokumen akan menghasilkan nilai hash yang sama sekali berbeda, sehingga sangat andal untuk mendeteksi perubahan/tampering.
+### Certificate personal
 
----
+Pengguna penandatangan memiliki PKCS#12/P12 personal. P12 dapat dibuat oleh aplikasi atau diunggah melalui profil TTE. Kredensial disimpan per pengguna di MariaDB.
 
-## 3. Mekanisme Tanda Tangan Elektronik
-TTE tidak berarti menempelkan "gambar" tanda tangan basah ke dalam dokumen PDF. TTE adalah sebuah proses kriptografi yang mengikat identitas ke sebuah dokumen.
+PIN TTE di-hash. Passphrase P12 disimpan dalam bentuk terenkripsi menggunakan AES-256-GCM dengan key yang diturunkan dari PIN pengguna dan `TTE_ENCRYPTION_SECRET` server. Format ciphertext aktif adalah `v2`.
 
-### A. Proses Pembuatan (Signing Process)
-1.  **Hashing Dokumen:** Aplikasi menghitung nilai hash dari dokumen asli yang akan ditandatangani. Menghasilkan *Hash Value*.
-2.  **Enkripsi Hash (Signing):** *Hash Value* tersebut kemudian dienkripsi menggunakan **Private Key** milik penandatangan. Hasil proses enkripsi inilah yang secara teknis disebut sebagai **Digital Signature** (Tanda Tangan Digital).
-3.  **Penggabungan (Packaging):** *Digital Signature* yang dihasilkan, disisipkan ke dalam dokumen asli bersama dengan Sertifikat Elektronik penandatangan (yang mengandung *Public Key*). Pada file PDF, metadata ini disimpan dalam blok khusus.
+### CA internal
 
-### B. Proses Verifikasi (Verification Process)
-1.  **Ekstraksi Data:** Sistem penerima (misal Adobe Acrobat atau sistem verifikator internal) mengekstrak dokumen asli, *Digital Signature*, dan Sertifikat dari file tersebut.
-2.  **Dekripsi Signature:** Sistem menggunakan **Public Key** penandatangan (dari dalam Sertifikat) untuk mendekripsi *Digital Signature*. Hasil dekripsinya adalah **Hash Value Asli** (milik dokumen sebelum ditandatangani).
-3.  **Hashing Ulang:** Sistem melakukan proses hashing ulang terhadap dokumen asli yang diekstrak untuk menghasilkan **Hash Value Baru**.
-4.  **Perbandingan:**
-    *   Jika *Hash Value Asli* **SAMA DENGAN** *Hash Value Baru*, maka dokumen dinyatakan **TIDAK BERUBAH (INTEGRITAS TERJAGA)**.
-    *   Jika berbeda, maka dipastikan dokumen telah dimodifikasi (tampered) setelah ditandatangani.
+Certificate yang dibuat oleh aplikasi ditandatangani oleh CA internal SOPFlow. Tujuan CA internal ini adalah menghasilkan chain certificate yang konsisten untuk simulasi dan verifikasi internal.
 
----
+CA internal SOPFlow:
 
-## 4. Peran Certificate Authority (CA)
-Dalam sistem PKI, timbul satu pertanyaan krusial: *"Bagaimana pihak verifikator bisa yakin bahwa Public Key (dan Private Key pasangannya) tersebut benar-benar milik Tuan A, dan bukan milik peretas (impostor)?"*
+- bukan PSrE tersertifikasi;
+- bukan pengganti BSrE;
+- tidak dimaksudkan untuk menyatakan status hukum sertifikat elektronik di luar konteks sistem;
+- tidak menggunakan HSM production pada implementasi saat ini.
 
-Di sinilah Certificate Authority (CA) berfungsi.
-*   **Otoritas Terpercaya:** CA adalah pihak ketiga yang ditunjuk oleh negara (seperti Kominfo untuk PSrE) untuk memvalidasi identitas seseorang secara fisik/elektronik.
-*   **Sertifikat Elektronik (X.509):** Setelah memvalidasi identitas Tuan A (misal mengecek KTP, NIK, dan Biometrik ke Dukcapil), CA menerbitkan **Sertifikat Elektronik**. Sertifikat ini adalah file digital (standar X.509) yang bertindak layaknya KTP digital, yang secara kriptografis mengikat *"Nama dan NIK Tuan A"* dengan *"Public Key milik Tuan A"*. Sertifikat ini ditandatangani secara digital oleh CA itu sendiri (menggunakan private key milik CA).
-*   **Manajemen Siklus Hidup Kunci:** CA bertugas melakukan penerbitan (issuance), perpanjangan (renewal), dan pencabutan (revocation) sertifikat jika perangkat pengguna hilang atau kunci diretas.
-*   **Pengecekan Status:** CA menyediakan protokol seperti **CRL (Certificate Revocation List)** dan **OCSP (Online Certificate Status Protocol)** agar sistem publik dapat mengecek apakah sertifikat milik Tuan A masih berlaku atau sudah dicabut (revoked) secara *real-time*.
+### PDF signing
 
----
+Backend membuka P12 personal setelah verifikasi PIN, menandatangani PDF, lalu menyimpan artefak hasil signing pada persistent storage. Metadata signature/certificate dan keterkaitannya dengan riwayat TTE disimpan di database.
 
-## 5. Alur Bisnis (Business Flow)
+Default storage PDF pada container adalah `/app/storage/sop-pdf`, dipersistenkan oleh volume Docker `sop_pdf_data`.
 
-Alur bisnis mencakup perjalanan end-to-end (User Journey) bagi pemangku kepentingan saat berinteraksi dengan sistem TTE.
+### Verifikasi
 
-### Flow 1: Registrasi dan Penerbitan Sertifikat (User Onboarding)
-1.  **Input Data Identitas:** Pengguna mengisi formulir pendaftaran di portal aplikasi (Nama Lengkap, NIK, Email, No HP).
-2.  **e-KYC (Know Your Customer):** Pengguna diminta melakukan *Liveness Detection* (verifikasi wajah/selfie) dan mengunggah foto KTP. Sistem mengirim data ini ke CA.
-3.  **Verifikasi CA:** CA memvalidasi biometrik dan data demografi ke sumber otoritatif (contoh: Database Dukcapil Kemendagri).
-4.  **Persetujuan Pengguna:** Jika valid, CA mengirim tautan atau notifikasi untuk meminta persetujuan pengguna terkait pembuatan *Key Pair*.
-5.  **Penerbitan:** Sertifikat Elektronik terbit. Pengguna menerima notifikasi bahwa akun Tanda Tangan Elektroniknya telah aktif dan diminta mengatur PIN/Passphrase.
+Halaman/API verifikasi PDF memeriksa signature yang ada di PDF dan mencocokkannya dengan riwayat TTE SOPFlow. QR digunakan sebagai jalur menuju verifikasi internal.
 
-### Flow 2: Penandatanganan Dokumen (Document Signing)
-1.  **Unggah & Inisiasi:** Pembuat dokumen mengunggah file PDF ke dalam sistem dan menunjuk siapa saja pihak yang harus menandatangani (Signer Routing).
-2.  **Notifikasi:** Penandatangan mendapat email/notifikasi bahwa ada dokumen yang menunggu (Pending for Signature).
-3.  **Review Dokumen:** Penandatangan membuka dokumen dan meninjau isi PDF tersebut secara visual di portal.
-4.  **Penempatan Tanda Tangan (Opsional):** Penandatangan dapat menempatkan kotak stempel / gambar tanda tangan basah di halaman tertentu (sebagai *Visual Appearance*).
-5.  **Autentikasi (Intent to Sign):** Sistem menuntut pengguna memasukkan PIN, OTP via SMS/Email, atau otentikasi biometrik. Ini adalah proses hukum untuk membuktikan niat (*intent*) penandatanganan.
-6.  **Eksekusi:** Setelah otentikasi berhasil, sistem memproses kriptografi (menarik *Private Key* secara aman) dan menghasilkan dokumen PDF baru yang telah dibubuhi *Digital Signature*.
+## Perubahan compatibility ciphertext
 
-### Flow 3: Verifikasi Dokumen (Document Verification)
-1.  Pihak ketiga (seperti Auditor, Bank, atau Penerima) menerima file PDF yang telah ditandatangani.
-2.  Penerima dapat membuka file tersebut langsung menggunakan **Adobe Acrobat Reader** atau mengunggahnya ke **Portal Verifikasi Publik** (contoh: portal verifikasi Kominfo).
-3.  Sistem akan menampilkan informasi:
-    *   **Integritas:** "Dokumen belum diubah sejak ditandatangani".
-    *   **Identitas Valid:** "Ditandatangani oleh Tuan A (NIK: 12345), diterbitkan oleh CA XYZ".
-    *   **Waktu:** Waktu penandatanganan yang disahkan oleh server waktu (Time Stamp).
+Aggressive legacy cleanup menghapus fallback decrypt untuk ciphertext P12 passphrase versi lama yang tidak memiliki prefix `v2:`. Data lama tidak dihapus otomatis, tetapi pengguna dengan credential tersebut harus melakukan setup/upload TTE ulang karena aplikasi tidak lagi dapat mendekripsi format lama.
 
----
+Sebelum deployment ke environment yang pernah menggunakan format lama:
 
-## 6. Alur Teknis (Technical Flow)
+1. buat backup database dan volume PDF;
+2. informasikan pengguna penandatangan mengenai kemungkinan setup ulang TTE;
+3. jangan mengganti `TTE_ENCRYPTION_SECRET` secara sembarangan;
+4. verifikasi signing dengan credential baru setelah deployment.
 
-Alur teknis (Architecture & API) untuk model **Remote Signature**, di mana Private Key tidak disimpan di *device* pengguna, melainkan di dalam sistem terpusat bernama **HSM (Hardware Security Module)** yang dikelola oleh CA/PSrE, guna menjamin keamanan ekstrem.
+## Rekomendasi bila menjadi production pemerintah
 
-### A. Flow Teknis - Penerbitan Sertifikat (Certificate Issuance)
-```mermaid
-sequenceDiagram
-    participant User
-    participant AppServer as Core Application
-    participant eKYC as e-KYC Provider (Dukcapil)
-    participant CA_Sys as CA / PSrE API
-    participant HSM as HSM (Key Management)
+Jika sistem dikembangkan menjadi layanan production yang membutuhkan sertifikat elektronik resmi, boundary TTE sebaiknya dipindahkan ke PSrE yang diakui. Aplikasi idealnya meminta proses signing ke penyedia tersebut dan menerima hasil/metadata yang dapat diverifikasi, bukan membuat serta menyimpan private key pengguna sendiri.
 
-    User->>AppServer: Submit KTP & Liveness Video
-    AppServer->>eKYC: Validasi NIK & Face Match
-    eKYC-->>AppServer: Score & Status (Valid)
-    
-    AppServer->>CA_Sys: Request Register (Data Diri)
-    CA_Sys->>HSM: Generate RSA/ECC Key Pair for User
-    HSM-->>CA_Sys: Return Public Key (Private Key stays in HSM)
-    
-    CA_Sys->>CA_Sys: Create Certificate Signing Request (CSR)
-    CA_Sys->>CA_Sys: CA meng-sign X.509 Cert dengan Root/Sub-CA Key
-    CA_Sys-->>AppServer: Return Certificate ID & X.509 (.cer)
-    AppServer->>User: Set PIN for Signing
-```
+Komponen production yang dapat dipertimbangkan antara lain:
 
-### B. Flow Teknis - Proses Penandatanganan (Signing Flow)
-```mermaid
-sequenceDiagram
-    participant User
-    participant AppServer as Signer Application
-    participant TSA as Time Stamping Authority
-    participant CA_Sys as CA / PSrE API (with HSM)
+- integrasi BSrE/PSrE sesuai kebijakan instansi;
+- HSM atau key custody pada penyedia signing;
+- lifecycle certificate dan revocation yang dikelola penyedia;
+- timestamping dan validasi chain sesuai layanan PSrE;
+- audit log dan kontrol akses production yang sesuai kebijakan keamanan instansi.
 
-    User->>AppServer: Klik "Tanda Tangani" & Input PIN/OTP
-    AppServer->>AppServer: Validasi OTP. Menyiapkan Dokumen PDF.
-    
-    AppServer->>AppServer: 1. Hitung Hash (SHA-256) dari file PDF (Hash_Doc)
-    
-    AppServer->>CA_Sys: 2. Request API Sign (Kirim Hash_Doc, Cert ID, PIN)
-    CA_Sys->>CA_Sys: Validasi PIN Pengguna
-    CA_Sys->>HSM: Perintahkan HSM mengenkripsi Hash_Doc dengan Private Key pengguna
-    HSM-->>CA_Sys: Return Enkripsi Hash (Digital Signature / PKCS#1)
-    CA_Sys-->>AppServer: Return Digital Signature Byte
-    
-    AppServer->>TSA: 3. Request TimeStamp Token atas Digital Signature
-    TSA-->>AppServer: Return RFC 3161 TimeStamp Token (TST)
-    
-    AppServer->>AppServer: 4. Inject Digital Signature, Sertifikat X.509 User, <br/>dan TST ke dalam struktur PDF (PAdES / PKCS#7 format)
-    
-    AppServer-->>User: Berikan link download PDF yang telah ter-sign.
-```
+Bagian ini adalah rekomendasi pengembangan, **bukan fitur yang sudah ada di SOPFlow**.
 
-### C. Flow Teknis - Proses Verifikasi (Verification Flow)
-```mermaid
-sequenceDiagram
-    participant VerifierApp as Verifier Application / Adobe
-    participant CA_OCSP as CA OCSP Server (Status Check)
+## Ringkasan batas klaim
 
-    VerifierApp->>VerifierApp: 1. Baca byte struktur PDF (PAdES)
-    VerifierApp->>VerifierApp: 2. Ekstrak X.509 Cert, Digital Signature, dan TST
-    VerifierApp->>VerifierApp: 3. Ekstrak "Public Key" dari X.509 Cert
-    
-    %% Integritas Check %%
-    VerifierApp->>VerifierApp: 4. Hitung ulang Hash dari PDF (Hash_New)
-    VerifierApp->>VerifierApp: 5. Dekripsi "Digital Signature" dengan "Public Key" -> Dapat Hash_Original
-    VerifierApp->>VerifierApp: 6. Bandingkan: Hash_New == Hash_Original
-    
-    %% Revocation Check %%
-    VerifierApp->>CA_OCSP: 7. Request status sertifikat X.509 via OCSP API
-    CA_OCSP-->>VerifierApp: Return Status (Good / Revoked / Unknown)
-    
-    VerifierApp->>VerifierApp: 8. Tampilkan kesimpulan Validasi (Validitas Kriptografi & Status CA)
-```
+| Area | SOPFlow saat ini | Production pemerintah yang direkomendasikan |
+|---|---|---|
+| Certificate | P12 personal internal/upload | Certificate dari PSrE sesuai kebijakan |
+| CA | CA internal SOPFlow | CA/PSrE resmi |
+| Private key custody | Dikelola melalui P12 personal di aplikasi | Sebaiknya di PSrE/HSM |
+| Storage PDF | Persistent Docker volume | Object/document storage sesuai standar instansi |
+| Revocation/OCSP/TSA | Tidak diimplementasikan sebagai layanan eksternal | Ditangani oleh layanan certificate/signing |
+| Kekuatan klaim | Simulasi/internal aplikasi | Mengikuti layanan dan regulasi yang berlaku |
 
----
-
-## 7. Standar Teknis Penting
-
-*   **PAdES (PDF Advanced Electronic Signatures):** Standar ETSI (Eropa) yang diadaptasi secara global untuk mengemas tanda tangan digital ke dalam dokumen PDF. PAdES mendukung beberapa profil.
-*   **PAdES-LTV (Long-Term Validation):** Fitur yang sangat penting. Meng-embed secara permanen informasi rantai sertifikat (Certificate Chain), root sertifikat, beserta respon status OCSP/CRL, ke dalam file PDF itu sendiri. Tujuannya adalah agar dokumen tetap **valid** saat diverifikasi 10 hingga 20 tahun ke depan, meskipun sertifikat penandatangannya sudah *expired* (kedaluwarsa) atau server OCSP milik CA sudah tutup.
-*   **TSA (Time Stamping Authority):** Menyediakan token waktu (RFC 3161) yang tidak dapat dibantah. Menjamin bahwa TTE dilakukan pada detik yang spesifik sesuai waktu standar dunia (NTP server yang tersinkronisasi), bukan mengandalkan waktu lokal dari komputer pengguna.
-
-## 8. Kesimpulan
-Implementasi Tanda Tangan Elektronik Tersertifikasi yang didukung oleh *Certificate Authority* memberikan 3 pilar jaminan keamanan utama (Aspek CIA triad & Hukum):
-1.  **Autentikasi:** Memastikan identitas nyata dari pihak penandatangan telah diverifikasi oleh otoritas.
-2.  **Integritas:** Jaminan mutlak (secara matematis kriptografi) bahwa dokumen elektronik tidak dimodifikasi/diubah satu bit pun paska ditandatangani.
-3.  **Nirsangkal (Non-Repudiation):** Subjek penandatangan tidak dapat secara hukum menyangkal bahwa mereka telah menyetujui dokumen tersebut, karena proses enkripsi hanya bisa dilakukan oleh kunci privat yang ada di bawah kendali tunggal otorisasi mereka (via PIN/OTP/Biometrik).
+Untuk detail alur implementasi lihat `docs/detail_workflow_dan_teknis_tte.md`.

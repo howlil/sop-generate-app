@@ -33,6 +33,7 @@ const optionalTrimmedString = z.preprocess((val) => {
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    E2E_CRITICAL: envBoolean(false),
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     ALLOWED_ORIGINS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
     SWAGGER_ENABLED: envBoolean(true),
@@ -59,17 +60,11 @@ const envSchema = z
     NOTIFICATION_IN_APP_ENABLED: envBoolean(true),
     NOTIFICATION_RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
 
-    /** Outbound WhatsApp benar-benar opsional. */
-    WHATSAPP_ENABLED: envBoolean(false),
-    WHAAPI_BASE_URL: z.preprocess(
-      trimmedEnvironmentString,
-      z.string().url().default('https://whaapi.flobaze.com'),
-    ),
-    WHAAPI_TOKEN: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHAAPI_CHANNEL_ID: z.preprocess(trimmedEnvironmentString, z.string().default('')),
-    WHATSAPP_ALLOWED_RECIPIENTS: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    /** Outbound WhatsApp aktif ketika URL dan API key Wago sama-sama tersedia. */
+    WAGO_BASE_URL: optionalUrl,
+    WAGO_API_KEY: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    WAGO_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
-    WHATSAPP_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),
     WHATSAPP_LOCK_LEASE_SECONDS: z.coerce.number().int().min(10).max(600).default(60),
 
@@ -83,7 +78,7 @@ const envSchema = z
      * P12 signing utama berasal dari kredensial personal pengguna, bukan P12 global server.
      */
     PDF_SIGNING_ENABLED: envBoolean(true),
-    /** Legacy compatibility; tidak lagi diwajibkan untuk signing personal. */
+    /** Legacy global P12 input; tidak diwajibkan untuk signing personal. */
     PDF_SIGNING_P12_BASE64: optionalTrimmedString,
     PDF_SIGNING_P12_PASSPHRASE: z.string().default(''),
     PDF_SIGNING_REASON: z.string().default('Pengesahan dokumen SOP'),
@@ -91,19 +86,22 @@ const envSchema = z
     PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
-    if (data.WHATSAPP_ENABLED && data.WHAAPI_TOKEN === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'WHAAPI_TOKEN wajib diisi ketika WHATSAPP_ENABLED=true',
-        path: ['WHAAPI_TOKEN'],
-      });
-    }
-    if (data.WHATSAPP_ENABLED && data.WHAAPI_CHANNEL_ID === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'WHAAPI_CHANNEL_ID wajib diisi ketika WHATSAPP_ENABLED=true',
-        path: ['WHAAPI_CHANNEL_ID'],
-      });
+    const hasWagoBaseUrl = data.WAGO_BASE_URL !== undefined;
+    const hasWagoApiKey = data.WAGO_API_KEY !== '';
+    if (hasWagoBaseUrl !== hasWagoApiKey) {
+      if (hasWagoBaseUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'WAGO_API_KEY wajib diisi bersama WAGO_BASE_URL',
+          path: ['WAGO_API_KEY'],
+        });
+      } else {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'WAGO_BASE_URL wajib diisi bersama WAGO_API_KEY',
+          path: ['WAGO_BASE_URL'],
+        });
+      }
     }
     if (data.TTE_ENCRYPTION_SECRET === data.JWT_SECRET) {
       ctx.addIssue({
