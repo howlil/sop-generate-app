@@ -1,549 +1,141 @@
 # Code Pattern Cleanup Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Goal:** Merapikan boundary backend/frontend yang sudah diaudit tanpa mengubah fitur bisnis, route publik, schema database, enum/status workflow, atau kontrak HTTP aplikasi.
 
-**Goal:** Merapikan boundary backend/frontend yang sudah diaudit tanpa mengubah fitur bisnis atau kontrak HTTP aplikasi.
+**Architecture target:** Backend tetap `Controller -> Service -> Repository -> Prisma`. Frontend tetap `API client -> TanStack Query hooks -> UI`.
 
-**Architecture:** Backend mempertahankan `Controller -> Service -> Repository -> Prisma`; read repository harus murni, transaksi persistence tidak membocorkan Prisma client ke service, dan controller menggunakan response type konkret. Frontend mempertahankan API/TanStack Query yang sama sambil mengurangi wrapper/cast dan memisahkan query dari mutation pada hook yang bercampur.
+> Verification note: workspace lokal tidak memiliki akses jaringan Git, sehingga siklus RED/GREEN dan regression gate dijalankan pada clean checkout GitHub Actions. Run CI implementasi sebelum sinkronisasi plan: `31464848471` — seluruh job sukses.
 
-**Tech Stack:** NestJS 11, TypeScript 5.7, Prisma 7, MySQL/MariaDB, React 19, TanStack Query 5, Vitest, Jest, Playwright, Docker Compose.
+## Status
 
-## Global Constraints
+- [x] P1 — Hilangkan side effect/write dari repository `find*`.
+- [x] P1 — Hentikan `Prisma.TransactionClient` bocor ke service.
+- [x] P2 — Gunakan concrete API response type untuk pengajuan evaluasi.
+- [x] P2 — Keluarkan generated Prisma client dari Git tracking.
+- [x] P2 — Rapikan bootstrap backend dan Prisma error mapping.
+- [x] P3 — Bersihkan frontend API serializer dan hook query/mutation pattern.
+- [x] Regression gate — typecheck, lint, unit, build, DB invariant, critical E2E J01–J07, dan container build.
+- [ ] Merge PR #18 ke `main` — menunggu instruksi eksplisit pengguna.
 
-- Tidak mengubah route publik, enum/status workflow, struktur database, atau perilaku bisnis yang terlihat user.
-- Tidak menambah dependency baru kecuali tidak ada alternatif yang setara di dependency sekarang.
-- Semua perubahan backend mengikuti `Controller -> Service -> Repository -> Prisma`.
-- Semua repository `find*`/`list*`/`count*` harus bebas side effect database.
-- Service tidak boleh menerima atau memanggil `Prisma.TransactionClient`.
-- Perubahan perilaku harus melalui red-green-refactor dan regression test.
-- CI final wajib lulus server quality, database migration invariants, client quality, critical E2E J01-J07, serta container build.
+## Iteration 1 — P1 Read Repository Harus Murni
 
----
+### Acceptance criteria
 
-### Task 1: P1 — Jadikan read PengajuanEvaluasi benar-benar read-only
+- [x] `PengajuanEvaluasiRepository.findManyFiltered()` hanya melakukan read.
+- [x] `PengajuanEvaluasiRepository.findByIdFull()` hanya melakukan read.
+- [x] Repair/finalization tidak lagi berjalan diam-diam dari GET/read path.
+- [x] Regression test membuktikan read tidak membuka transaction repair.
+- [x] Finalisasi normal tetap dilakukan pada write-side TTE.
 
-**Files:**
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.spec.ts`
-- Verify: `server/src/modules/tte/shared/repository/tte.repository.ts`
+### TDD evidence
 
-**Interfaces:**
-- Consumes: `TteRepository.finalizeSopPengesahanWithArtifacts()` sebagai write-side finalization resmi.
-- Produces: `findManyFiltered()` dan `findByIdFull()` yang tidak melakukan update/transaction repair.
+- [x] RED: CI `31461224330` — 77 suite lama lulus dan 2 regression test baru gagal karena read masih memanggil `$transaction`.
+- [x] GREEN: repair-on-read dan helper mutasinya dihapus; suite backend dan invariant database kembali hijau.
 
-- [ ] **Step 1: Tambahkan regression test bahwa read tidak menjalankan repair/mutation**
+## Iteration 2 — P1 Transaction Boundary
+
+### Acceptance criteria
+
+- [x] `PengajuanEvaluasiService` tidak mengimpor/menerima `Prisma.TransactionClient`.
+- [x] Service tidak memanggil callback `runTransaction()`.
+- [x] Repository memiliki operasi atomik `createPengajuanDenganLock()`.
+- [x] Repository memiliki operasi idempoten `ensurePengajuanRequestOpdDenganLock()`.
+- [x] Row lock `SELECT ... FOR UPDATE` per OPD tetap dipertahankan.
+- [x] Result transaction memakai discriminated result (`ACTIVE_EXISTS`, `DETAIL_NOT_FOUND`, `DETAIL_BAD_STATUS`, `STATUS_DRIFT`).
+- [x] `STATUS_DRIFT` melempar sentinel internal di dalam transaction sehingga write parsial di-rollback.
+- [x] Service tetap memetakan result ke Nest exception/pesan domain yang sama.
+- [x] Integration invariant satu pengajuan aktif per OPD tetap lulus.
 
-```ts
-it('findByIdFull hanya membaca pengajuan tanpa mutation repair', async () => {
-  prisma.pengajuanEvaluasi.findUnique.mockResolvedValue(mockPengajuan);
+### TDD evidence
 
-  await repository.findByIdFull('pengajuan-1');
+- [x] RED: CI `31461629975` — typecheck/lint hijau, unit gagal tepat pada boundary test service.
+- [x] GREEN: CI `31462825156` — server typecheck, lint, unit, build, dan database concurrency invariant lulus.
 
-  expect(prisma.$transaction).not.toHaveBeenCalled();
-  expect(prisma.detailSOP.update).not.toHaveBeenCalled();
-  expect(prisma.pengajuanEvaluasi.update).not.toHaveBeenCalled();
-});
-```
+## Iteration 3 — P2 Concrete Evaluation Responses
 
-Tambahkan test ekuivalen untuk `findManyFiltered()`.
+### Acceptance criteria
 
-- [ ] **Step 2: Jalankan test dan pastikan RED pada implementasi lama**
+- [x] `PengajuanEvaluasiApiPayload` bukan lagi `Record<string, unknown>`.
+- [x] Dibuat `PengajuanEvaluasiResponseDto` konkret sesuai JSON existing.
+- [x] Dibuat `PengajuanEvaluasiRingkasResponseDto` konkret.
+- [x] Controller menggunakan `ApiSuccessResponse<...>` dengan payload konkret.
+- [x] Service pagination menggunakan `PaginatedData<PengajuanEvaluasiRingkasResponseDto>`.
+- [x] Tidak ada rename field atau perubahan JSON runtime.
 
-Run:
+### TDD evidence
 
-```bash
-cd server
-pnpm jest pengajuan-evaluasi.repository.spec.ts --runInBand
-```
+- [x] RED: CI `31462995472` — typecheck/lint hijau, unit gagal tepat pada response boundary test.
+- [x] GREEN: server quality, database invariant, dan client quality kembali hijau setelah DTO konkret diterapkan.
 
-Expected: test read-only gagal karena implementasi lama memanggil repair/mutation path.
+## Iteration 4 — P2 Stop Tracking Generated Prisma
 
-- [ ] **Step 3: Hapus repair-on-read**
+### Acceptance criteria
 
-Ubah:
+- [x] `server/src/generated/prisma/` tidak lagi tracked Git.
+- [x] `.gitignore` tetap mengabaikan generated client.
+- [x] `schema.prisma` tetap generate ke `../src/generated/prisma`.
+- [x] Clean checkout CI menjalankan `Generate Prisma client` sebelum typecheck/build.
+- [x] Server typecheck/build lulus tanpa generated client tersimpan di repository.
 
-```ts
-async findManyFiltered(whereInput: Prisma.PengajuanEvaluasiWhereInput) {
-  return this.prisma.pengajuanEvaluasi.findMany({
-    where: whereInput,
-    include: pengajuanEvaluasiDetailInclude,
-    orderBy: [{ createdAt: 'desc' }],
-  });
-}
+### Implementation evidence
 
-async findByIdFull(pengajuanEvaluasiId: string) {
-  return this.prisma.pengajuanEvaluasi.findUnique({
-    where: { pengajuanEvaluasiId },
-    include: pengajuanEvaluasiDetailInclude,
-  });
-}
-```
+- [x] Tree commit `c4d9c1786f2cc368435bf6c94b161022206c67e0` menghapus generated directory dari Git.
+- [x] Fetch branch pada `server/src/generated` mengembalikan tidak ada path tracked.
+- [x] CI clean checkout berhasil menjalankan Prisma generate + server typecheck/build.
 
-Hapus `repairPengesahanKepalaOpdStatusJikaDokumenSudahSigned`, `repairPengesahanKepalaOpdStatusUntukRows`, dan private helper yang hanya digunakan repair tersebut bila tidak memiliki caller lain.
+## Iteration 5 — P2 Bootstrap dan Error Mapping
 
-- [ ] **Step 4: Jalankan test repository + TTE signing regression**
+### Acceptance criteria
 
-```bash
-cd server
-pnpm jest pengajuan-evaluasi.repository.spec.ts tte-penandatanganan.service.spec.ts tte.repository.spec.ts --runInBand
-```
+- [x] CORS policy dipindah ke `common/http/cors-options.ts`.
+- [x] CSRF/rate-limit HTTP wiring dipindah ke `common/security/security-http.middleware.ts`.
+- [x] Process fatal handler dipindah ke `common/bootstrap/process-error-handlers.ts`.
+- [x] `uncaughtException` dan `unhandledRejection` log lalu terminate non-zero.
+- [x] `main.ts` kembali fokus pada bootstrap/orchestration.
+- [x] Dibuat helper `hasPrismaErrorCode()` dan `isPrismaUniqueConstraintError()`.
+- [x] `PeraturanService`, `PelaksanaService`, dan `SopCatalogService` tidak lagi bergantung pada runtime class Prisma hanya untuk P2002.
+- [x] Pesan Conflict domain tetap sama.
+- [x] Unit test mencakup CORS normalization, identifier security, fatal handler, dan Prisma error helper.
 
-Expected: PASS.
+## Iteration 6 — P3 Frontend Data Access Cleanup
 
-- [ ] **Step 5: Commit**
+### Acceptance criteria
 
-```bash
-git add server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.ts server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.spec.ts
-git commit -m "refactor: make evaluation reads side-effect free"
-```
-
----
-
-### Task 2: P1 — Hilangkan Prisma TransactionClient dari service pengajuan evaluasi
-
-**Files:**
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.spec.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.service.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.service.spec.ts`
-- Verify: `server/test/integration/database-invariants.integration-spec.ts`
-
-**Interfaces:**
-- Produces repository operations:
-  - `createPengajuanDenganLock(params): Promise<CreatePengajuanTransactionResult>`
-  - `ensurePengajuanRequestOpdDenganLock(params): Promise<EnsurePengajuanTransactionResult>`
-- Service tetap menentukan role/access/status constants dan memetakan repository result ke Nest exceptions.
-
-- [ ] **Step 1: Tambahkan service test yang membuktikan service hanya memanggil repository domain operation**
-
-```ts
-it('membuka pengajuan melalui operasi repository atomik tanpa transaction client', async () => {
-  repository.createPengajuanDenganLock.mockResolvedValue({
-    ok: true,
-    pengajuanEvaluasiId: 'pengajuan-1',
-  });
-
-  await service.create(mockPjPenyusun, dto);
-
-  expect(repository.createPengajuanDenganLock).toHaveBeenCalledWith(
-    expect.objectContaining({ opdId: 'opd-1', sopDetailIds: dto.sopDetailIds, jenis: dto.jenis }),
-  );
-});
-```
-
-Tambahkan mapping test untuk `ACTIVE_EXISTS`, `DETAIL_NOT_FOUND`, `DETAIL_BAD_STATUS`, dan `STATUS_DRIFT`.
-
-- [ ] **Step 2: Jalankan service test dan pastikan RED**
-
-```bash
-cd server
-pnpm jest pengajuan-evaluasi.service.spec.ts --runInBand
-```
-
-Expected: FAIL karena method repository baru belum ada dan service masih memakai `runTransaction(tx)`.
-
-- [ ] **Step 3: Implement discriminated transaction result di repository**
-
-Gunakan bentuk result berikut:
-
-```ts
-export type CreatePengajuanTransactionResult =
-  | { ok: true; pengajuanEvaluasiId: string }
-  | { ok: false; error: 'ACTIVE_EXISTS' }
-  | { ok: false; error: 'DETAIL_NOT_FOUND'; detailSopId: string }
-  | { ok: false; error: 'DETAIL_BAD_STATUS'; detailSopId: string; status: StatusSOP }
-  | { ok: false; error: 'STATUS_DRIFT' };
-```
-
-`createPengajuanDenganLock()` harus:
-1. membuka `$transaction`;
-2. `SELECT opdId FROM OPD ... FOR UPDATE`;
-3. cek active submission;
-4. load detail dalam OPD;
-5. create PengajuanEvaluasi + NilaiEvaluasi;
-6. promote `DetailSOP` dengan guarded `updateMany`;
-7. return typed result, bukan Nest exception.
-
-`ensurePengajuanRequestOpdDenganLock()` memakai transaction helper internal yang sama tetapi `ACTIVE_EXISTS` menjadi `{ ok: true, created: false }` agar idempotent.
-
-- [ ] **Step 4: Refactor service agar tidak import `Prisma` dan tidak menerima tx**
-
-Service memanggil repository operation dan memetakan result:
-
-```ts
-const result = await this.pengajuanEvaluasiRepository.createPengajuanDenganLock({
-  opdId: opdIdPengguna,
-  jenis: dto.jenis,
-  sopDetailIds,
-  activeStatuses: STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK,
-  eligibleDetailStatuses: STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI,
-});
-
-if (!result.ok) {
-  this.throwCreateTransactionError(result, 'Anda');
-}
-```
-
-Hapus `assertDetailSopSiapDalamOpd(tx, ...)` dan seluruh `Prisma.TransactionClient` dari service.
-
-- [ ] **Step 5: Jalankan unit + concurrency integration**
-
-```bash
-cd server
-pnpm jest pengajuan-evaluasi.service.spec.ts pengajuan-evaluasi.repository.spec.ts --runInBand
-pnpm test:integration:docker
-```
-
-Expected: unit PASS dan invariant concurrency tetap menghasilkan tepat satu active submission per OPD.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add server/src/modules/evaluation/pengajuan
-server/test/integration/database-invariants.integration-spec.ts
-git commit -m "refactor: encapsulate evaluation transactions in repository"
-```
-
----
-
-### Task 3: P2 — Gunakan response type konkret pada endpoint evaluasi
-
-**Files:**
-- Create: `server/src/modules/evaluation/pengajuan/dto/pengajuan-evaluasi-response.dto.ts`
-- Create: `server/src/modules/evaluation/pengajuan/dto/pengajuan-evaluasi-ringkas-response.dto.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.mapper.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.service.ts`
-- Modify: `server/src/modules/evaluation/pengajuan/pengajuan-evaluasi.controller.ts`
-- Modify: relevant specs if compile expectations change.
-
-**Interfaces:**
-- Produces `PengajuanEvaluasiResponseDto` yang mencakup id, optional OPD fields, jenis/status, SOP list, nilai, timeline, metadata signing/evaluation, version/timestamps.
-- Produces `PengajuanEvaluasiRingkasResponseDto` untuk row pagination ringan.
-
-- [ ] **Step 1: Tambahkan compile-time/controller test yang menggunakan DTO konkret**
-
-Controller test harus mengetik response sebagai:
-
-```ts
-const response: ApiSuccessResponse<PengajuanEvaluasiResponseDto[]> =
-  await controller.findAll(request, query);
-expect(response.data[0]?.id).toBeDefined();
-```
-
-- [ ] **Step 2: Ubah mapper dari `Record<string, unknown>` menjadi DTO konkret**
-
-```ts
-export type PengajuanEvaluasiApiPayload = PengajuanEvaluasiResponseDto;
-```
-
-Mapper tetap menghasilkan JSON yang sama; tidak ada rename property.
-
-- [ ] **Step 3: Ketik payload ringkas secara eksplisit**
-
-Repository `findRingkasPage()` dan service `findAllRingkas()` menggunakan `PengajuanEvaluasiRingkasResponseDto` dan `PaginatedData<PengajuanEvaluasiRingkasResponseDto>`.
-
-- [ ] **Step 4: Ubah signature controller**
-
-Gunakan:
-
-```ts
-Promise<ApiSuccessResponse<PengajuanEvaluasiResponseDto[]>>
-Promise<ApiSuccessResponse<PaginatedData<PengajuanEvaluasiRingkasResponseDto>>>
-Promise<ApiSuccessResponse<PengajuanEvaluasiResponseDto>>
-```
-
-- [ ] **Step 5: Verify**
-
-```bash
-cd server
-pnpm typecheck
-pnpm jest pengajuan-evaluasi.controller.spec.ts pengajuan-evaluasi.service.spec.ts --runInBand
-```
-
-Expected: PASS tanpa perubahan runtime response.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add server/src/modules/evaluation/pengajuan
-git commit -m "refactor: type evaluation API responses"
-```
-
----
-
-### Task 4: P2 — Keluarkan generated Prisma dari Git tracking
-
-**Files:**
-- Delete from Git: `server/src/generated/prisma/**`
-- Verify: `.gitignore`
-- Verify: `server/prisma/schema.prisma`
-- Verify: `.github/workflows/ci.yml`
-- Verify: Dockerfiles/build scripts.
-
-**Interfaces:**
-- Prisma generated output tetap `../src/generated/prisma`.
-- `prisma generate` tetap dijalankan sebelum build/typecheck/test yang membutuhkan generated client.
-
-- [ ] **Step 1: Verifikasi ignore rule dan generate path**
-
-```bash
-git check-ignore server/src/generated/prisma/index.js
-cd server && pnpm prisma generate
-```
-
-Expected: path ignored dan generation berhasil.
-
-- [ ] **Step 2: Hapus generated directory dari Git index, bukan dari source generation contract**
-
-```bash
-git rm -r --cached server/src/generated/prisma
-git status --short
-```
-
-Expected: seluruh tracked generated files staged sebagai deleted; working generation dapat dibuat ulang.
-
-- [ ] **Step 3: Verify clean regeneration + build**
-
-```bash
-cd server
-pnpm prisma generate
-pnpm typecheck
-pnpm build
-```
-
-Expected: PASS.
-
-- [ ] **Step 4: Commit**
-
-```bash
-git commit -m "chore: stop tracking generated prisma client"
-```
-
----
-
-### Task 5: P2 — Rapikan bootstrap dan Prisma error mapping
-
-**Files:**
-- Create: `server/src/common/http/cors-options.ts`
-- Create: `server/src/common/security/security-http.middleware.ts`
-- Create: `server/src/common/bootstrap/process-error-handlers.ts`
-- Create: `server/src/common/prisma/prisma-error.util.ts`
-- Create: corresponding `*.spec.ts` for branching logic.
-- Modify: `server/src/main.ts`
-- Modify: `server/src/modules/core/peraturan/peraturan.service.ts`
-- Modify: other services found by search that directly check `PrismaClientKnownRequestError` solely for P2002.
-
-**Interfaces:**
-- `buildCorsOptions(configService: ConfigService): CorsOptions`
-- `installSecurityHttpMiddleware(app, services): void`
-- `installFatalProcessErrorHandlers(logger): void`
-- `isPrismaUniqueConstraintError(error: unknown): boolean`
-
-- [ ] **Step 1: Test Prisma error helper**
-
-```ts
-it('mengenali P2002 sebagai unique constraint error', () => {
-  expect(isPrismaUniqueConstraintError({ code: 'P2002', name: 'PrismaClientKnownRequestError' })).toBe(true);
-});
-
-it('menolak error non-P2002', () => {
-  expect(isPrismaUniqueConstraintError({ code: 'P2025' })).toBe(false);
-});
-```
-
-Implement helper menggunakan safe structural check atau Prisma type guard internal common; service tidak lagi import Prisma hanya untuk P2002.
-
-- [ ] **Step 2: Test CORS normalization dan production allow-list**
-
-Kasus wajib: development allow all, production menerima origin di `ALLOWED_ORIGINS`/`PUBLIC_APP_ORIGIN`, production menolak origin lain, request tanpa Origin tetap diizinkan.
-
-- [ ] **Step 3: Extract security HTTP middleware dari `main.ts`**
-
-Pindahkan network identifier, cookie identifier, login email resolution, dan wiring `resolveSecurityRateLimitPolicy` ke satu file focused. Pertahankan policy/rate limiter service yang ada.
-
-- [ ] **Step 4: Extract fatal process handler**
-
-Handler melakukan:
-
-```ts
-logger.error('Uncaught Exception:', error);
-process.exitCode = 1;
-```
-
-Lalu proses dihentikan secara deterministik setelah logging. Test handler melalui injected exit callback agar unit test tidak membunuh Jest process.
-
-- [ ] **Step 5: Simplify `main.ts`**
-
-`main.ts` hanya membuat app, body parser/cookie, memasang helper security/CORS, Swagger, shutdown hooks, port check, dan listen.
-
-- [ ] **Step 6: Replace service-level P2002 checks**
-
-Contoh:
-
-```ts
-if (isPrismaUniqueConstraintError(error)) {
-  throw new ConflictException('Nomor dan tahun peraturan sudah terdaftar');
-}
-```
-
-- [ ] **Step 7: Verify**
-
-```bash
-cd server
-pnpm lint
-pnpm typecheck
-pnpm test:core-unit
-```
-
-Expected: PASS.
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add server/src/main.ts server/src/common server/src/modules/core/peraturan
-
-git commit -m "refactor: simplify backend bootstrap boundaries"
-```
-
----
-
-### Task 6: P3 — Bersihkan frontend API serializer dan hook responsibilities
-
-**Files:**
-- Modify: `client/src/lib/api/api-client.ts`
-- Modify/create tests under `client/src/__tests__/` for query serialization.
-- Modify: `client/src/api/sop-client.ts`
-- Modify: `client/src/api/evaluasi-client.ts`
-- Modify: `client/src/api/evaluasi-queries.ts`
-- Modify: `client/src/api/sop-mutations.ts`
-- Modify callers only where required by hook split.
-
-**Interfaces:**
-- `buildQueryString<T extends object>(params?: T): string` mendukung scalar dan array.
-- `useCreatePengajuanEvaluasi()` menjadi mutation hook terpisah.
-- `usePelaksana()` menjadi read hook; mutation hooks: `useCreatePelaksana`, `useUpdatePelaksana`, `useDeletePelaksana`.
-
-- [ ] **Step 1: Tambahkan serializer tests**
-
-```ts
-expect(buildQueryString({ page: 1, search: 'abc' })).toBe('?page=1&search=abc');
-expect(buildQueryString({ statusIn: ['A', 'B'] })).toBe('?statusIn=A&statusIn=B');
-expect(buildQueryString({ search: undefined, statusIn: [] })).toBe('');
-```
-
-- [ ] **Step 2: Implement generic serializer**
-
-Serializer skip `undefined`, `null`, empty array; append setiap array item; scalar dikonversi dengan `String(value)`.
-
-- [ ] **Step 3: Hapus unwrap wrapper satu-baris**
-
-Di `sop-client.ts` dan `evaluasi-client.ts`, gunakan langsung:
-
-```ts
-unwrapApiData(apiClient.get<ApiSuccessResponse<T>>(path))
-```
-
-Hapus `unwrapPelaksanaMaster`, `unwrapSopListEnvelope`, `unwrapSopCreateEnvelope`, `unwrapPenyusunWorkbench`, dan `unwrapEvaluasiEnvelope` jika tidak memberi logic tambahan.
-
-- [ ] **Step 4: Hilangkan custom query builder evaluasi yang sudah dicakup serializer generic**
-
-`findAll`, `findRingkas`, `workspace*`, dan grafik menggunakan satu `buildQueryString` kecuali endpoint memiliki contract khusus yang tidak dapat direpresentasikan serializer.
-
-- [ ] **Step 5: Pisahkan mutation dari list hook**
-
-`useEvaluasi()` hanya query list. Tambahkan:
-
-```ts
-export function useCreatePengajuanEvaluasi() {
-  return useMutationWithToast({
-    mutationFn: evaluasiApi.create,
-    invalidateKeys: SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
-    successMessage: 'Pengajuan evaluasi berhasil dibuat',
-    errorMessagePrefix: 'Gagal membuat pengajuan evaluasi',
-  });
-}
-```
-
-Pisahkan pelaksana mutation dengan pola serupa. Update caller sehingga UX/toast tetap sama.
-
-- [ ] **Step 6: Verify frontend**
-
-```bash
-cd client
-pnpm lint
-pnpm typecheck
-pnpm test
-```
-
-Expected: PASS.
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add client/src
-git commit -m "refactor: simplify frontend data access hooks"
-```
-
----
-
-### Task 7: Regression gate, documentation sync, dan PR
-
-**Files:**
-- Modify: `plan.md` checkbox status.
-- Modify if necessary: `docs/arsitektur-sistem.md` only if implementation wording is stale.
-- Modify if necessary: `.cursor/rules/clean-nestjs-typescript-cursor-rules.mdc` only when a rule contradicts the final pattern.
-
-**Interfaces:**
-- Tidak ada perubahan API atau schema.
-- Branch harus siap review dan merge tanpa known regression.
-
-- [ ] **Step 1: Server full verification**
-
-```bash
-cd server
-pnpm lint
-pnpm typecheck
-pnpm test -- --runInBand
-pnpm test:integration:docker
-pnpm build
-```
-
-- [ ] **Step 2: Client full verification**
-
-```bash
-cd client
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm test:e2e:critical
-```
-
-- [ ] **Step 3: Scan boundary anti-pattern**
-
-```bash
-git grep -n "Prisma.TransactionClient" -- server/src/modules/evaluation/pengajuan
-
-git grep -n "Record<string, unknown>" -- server/src/modules/evaluation/pengajuan
-```
-
-Expected: tidak ada `Prisma.TransactionClient` di service dan tidak ada generic response payload di controller/mapper untuk kontrak yang sudah diketahui.
-
-- [ ] **Step 4: Mark plan completed dan commit docs**
-
-Update semua checkbox yang benar-benar telah diverifikasi menjadi `[x]`.
-
-- [ ] **Step 5: Open PR dan tunggu CI**
-
-PR title:
-
-```text
-refactor: tighten backend and frontend code patterns
-```
-
-PR body harus menjelaskan P1/P2/P3, bahwa tidak ada route/schema change, dan mencantumkan test yang dijalankan.
-
-- [ ] **Step 6: Merge hanya setelah seluruh CI wajib hijau**
-
-Required: server quality, database migration invariants, client quality, critical E2E J01-J07, backend/frontend container builds.
+- [x] `buildQueryString<T extends object>()` generic.
+- [x] Serializer mendukung scalar dan repeated array query parameters.
+- [x] Serializer mengabaikan `undefined`, `null`, dan empty array.
+- [x] Wrapper satu-baris `unwrap*` pada `sop-client.ts` dihapus.
+- [x] Wrapper/custom query builder redundan pada `evaluasi-client.ts` dihapus.
+- [x] `statusIn` tetap dikirim sebagai repeated query params.
+- [x] `useEvaluasi()` menjadi query-only.
+- [x] `useCreatePengajuanEvaluasi()` menjadi mutation hook terpisah dengan toast/invalidation yang sama.
+- [x] Dialog buka pengajuan memakai mutation hook baru tanpa perubahan UX.
+- [x] `usePelaksana()` menjadi query-only.
+- [x] CRUD Pelaksana dipisah menjadi `useCreatePelaksana`, `useUpdatePelaksana`, dan `useDeletePelaksana`.
+- [x] Halaman master Pelaksana diperbarui memakai hook terpisah.
+- [x] Consumer detail SOP yang hanya membaca Pelaksana tetap kompatibel.
+- [x] Client typecheck, lint, unit, dan build lulus.
+
+## Final Regression Gate
+
+CI implementation run `31464848471` pada head `423ccb8ac70cf1a3fdd31ee083727fae8fd453d8`:
+
+- [x] Database migration invariants — PASS.
+- [x] Client typecheck — PASS.
+- [x] Client E2E journey audit — PASS.
+- [x] Client lint — PASS.
+- [x] Client unit tests — PASS.
+- [x] Client build — PASS.
+- [x] Prisma generate dari clean checkout — PASS.
+- [x] Server typecheck — PASS.
+- [x] Server lint — PASS.
+- [x] Server unit tests — PASS.
+- [x] Server build — PASS.
+- [x] Critical E2E business journeys J01–J07 — PASS.
+- [x] Docker Compose validation — PASS.
+- [x] Backend container image build — PASS.
+- [x] Frontend container image build — PASS.
+
+## Remaining Action
+
+Implementasi refactor selesai di branch `refactor-code-pattern-cleanup` dan PR #18 tetap draft/unmerged. Satu-satunya aksi yang sengaja belum dilakukan adalah merge ke `main`, karena perubahan branch utama memerlukan instruksi eksplisit pengguna.
