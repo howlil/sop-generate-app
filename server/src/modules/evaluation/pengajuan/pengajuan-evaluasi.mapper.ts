@@ -7,6 +7,7 @@ import {
 import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import { encodeLogNilaiEvaluasiClientId } from '../nilai/log-nilai-evaluasi-client-id';
 import { buildNilaiEvaluasiClientId } from '../nilai/nilai-evaluasi-client-id';
+import type { PengajuanEvaluasiResponseDto } from './dto/pengajuan-evaluasi-response.dto';
 import type { PengajuanEvaluasiDetailRow } from './pengajuan-evaluasi.repository';
 
 const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
@@ -16,7 +17,7 @@ const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
 ]);
 
 /** Muatan data selaras kebutuhan klien (`PengajuanEvaluasi` di `evaluasi.dto.ts`). */
-export type PengajuanEvaluasiApiPayload = Record<string, unknown>;
+export type PengajuanEvaluasiApiPayload = PengajuanEvaluasiResponseDto;
 
 export function shouldOmitOpdFieldsForViewer(viewerPeran?: string): boolean {
   return viewerPeran === PeranPengguna.PJ_PENYUSUN;
@@ -29,42 +30,42 @@ export function mapPengajuanEvaluasiRow(
   const dokBa = row.dokumenTte[0];
   const nomorBA =
     row.nomorBA ?? (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
-  const sopList = row.nilaiEvaluasi.map((n) => {
-    const statusDisplay = displayStatusSop(n.detailSop.status);
-    const hasilDisplay = displayHasilEvaluasi(n.hasil);
+  const sopList = row.nilaiEvaluasi.map((nilai) => {
+    const statusDisplay = displayStatusSop(nilai.detailSop.status);
+    const hasilDisplay = displayHasilEvaluasi(nilai.hasil);
     return {
-      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
-      sopDetailId: n.detailSopId,
-      judul: n.detailSop.sop.judul,
-      nomor: n.detailSop.nomorSOP,
-      nama: n.detailSop.sop.judul,
-      nomorSOP: n.detailSop.nomorSOP,
+      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, nilai.detailSopId),
+      sopDetailId: nilai.detailSopId,
+      judul: nilai.detailSop.sop.judul,
+      nomor: nilai.detailSop.nomorSOP,
+      nama: nilai.detailSop.sop.judul,
+      nomorSOP: nilai.detailSop.nomorSOP,
       status: statusDisplay.value,
       statusLabel: statusDisplay.label,
       hasil: hasilDisplay.value,
       hasilLabel: hasilDisplay.label,
     };
   });
-  const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => {
-    const tindakDisplay = displayStatusTindakLanjut(n.statusTindakLanjut);
+  const nilaiEvaluasi = row.nilaiEvaluasi.map((nilai) => {
+    const tindakDisplay = displayStatusTindakLanjut(nilai.statusTindakLanjut);
     return {
-      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
+      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, nilai.detailSopId),
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
-      sopDetailId: n.detailSopId,
-      hasil: displayHasilEvaluasi(n.hasil).value,
-      catatan: n.catatan ?? undefined,
+      sopDetailId: nilai.detailSopId,
+      hasil: displayHasilEvaluasi(nilai.hasil).value,
+      catatan: nilai.catatan ?? undefined,
       statusTindakLanjut: tindakDisplay?.value,
       statusTindakLanjutLabel: tindakDisplay?.label,
-      ditindaklanjutiPada: n.ditindaklanjutiPada?.toISOString(),
-      version: n.version,
-      dinilaiOlehId: n.dinilaiOlehId ?? undefined,
+      ditindaklanjutiPada: nilai.ditindaklanjutiPada?.toISOString(),
+      version: nilai.version,
+      dinilaiOlehId: nilai.dinilaiOlehId ?? undefined,
       dinilaiOleh:
-        n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
-          ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
+        nilai.dinilaiOleh !== null && nilai.dinilaiOleh !== undefined
+          ? { id: nilai.dinilaiOleh.penggunaId, nama: nilai.dinilaiOleh.nama }
           : undefined,
-      sopDetail: { id: n.detailSopId },
-      createdAt: n.createdAt.toISOString(),
-      updatedAt: n.updatedAt.toISOString(),
+      sopDetail: { id: nilai.detailSopId },
+      createdAt: nilai.createdAt.toISOString(),
+      updatedAt: nilai.updatedAt.toISOString(),
     };
   });
   const riwayatEvaluasi = row.logNilaiEvaluasi.map((log) => ({
