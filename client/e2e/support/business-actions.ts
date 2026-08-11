@@ -239,6 +239,10 @@ export async function revokeSopViaUi(
   await expect(page.locator('body')).toContainText(/dicabut/i)
 }
 
+function publicArchiveSopItems(page: Page, title: string) {
+  return page.locator('[data-arsip-sop-id]').filter({ hasText: title })
+}
+
 export async function expectPublicArchiveContains(
   page: Page,
   title: string,
@@ -246,7 +250,7 @@ export async function expectPublicArchiveContains(
   await page.goto('/arsip')
   await waitForAppReady(page)
   await searchPageIfAvailable(page, title)
-  await expect(page.getByText(title).first()).toBeVisible({ timeout: 15_000 })
+  await expect(publicArchiveSopItems(page, title).first()).toBeVisible({ timeout: 15_000 })
 }
 
 export async function expectPublicArchiveExcludes(
@@ -256,5 +260,8 @@ export async function expectPublicArchiveExcludes(
   await page.goto('/arsip')
   await waitForAppReady(page)
   await searchPageIfAvailable(page, title)
-  await expect(page.getByText(title)).toHaveCount(0)
+  await expect(page.getByText('Tidak ada SOP ditemukan', { exact: true }).first()).toBeVisible({
+    timeout: 15_000,
+  })
+  await expect(publicArchiveSopItems(page, title)).toHaveCount(0)
 }
