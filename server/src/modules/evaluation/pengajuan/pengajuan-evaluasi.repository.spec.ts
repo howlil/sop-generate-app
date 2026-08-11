@@ -34,7 +34,9 @@ function buildTransactionMock() {
 
 function buildPrismaWithTransaction(tx: ReturnType<typeof buildTransactionMock>) {
   return {
-    $transaction: jest.fn((callback: (client: typeof tx) => unknown) => Promise.resolve(callback(tx))),
+    $transaction: jest.fn((callback: (client: typeof tx) => unknown) =>
+      Promise.resolve(callback(tx)),
+    ),
   };
 }
 
