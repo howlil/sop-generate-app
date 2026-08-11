@@ -1,8 +1,6 @@
 import { resolveApiBaseUrl } from '@/config/env'
 
-export function buildQueryString(
-  params: Record<string, unknown> | undefined,
-): string {
+export function buildQueryString<T extends object>(params?: T): string {
   if (!params) return ''
   const searchParams = new URLSearchParams()
 
