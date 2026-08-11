@@ -1,24 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { sopApi } from "@/api/sop-client";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { useAuthStore } from "@/stores/authStore";
-import { STALE_TIME } from "@/utils/constants";
-import { sopApi } from "@/api/sop-client";
 import { invalidateSopEvaluasiWorkflow } from "@/lib/api/cache-invalidation";
+import { useAuthStore } from "@/stores/authStore";
 import type {
   CreatePelaksanaMutationDto,
   Pelaksana,
   PenyusunWorkbenchData,
   SetSopStatusOverrideMutationDto,
   UpdatePelaksanaMutationDto,
+  UpdateSopDiagramDto,
   UpdateSopHeaderDto,
   UpdateSopProsedurDto,
-  UpdateSopDiagramDto,
 } from "@/types/dto/sop.dto";
-/**
- * useSopStatus hook - TanStack Query
- * Replaces localStorage-based status simulation with real API calls
- */
+import { STALE_TIME } from "@/utils/constants";
 
 async function syncSopWorkbenchAfterStatusChange(
   queryClient: ReturnType<typeof useQueryClient>,
@@ -34,10 +30,7 @@ async function syncSopWorkbenchAfterStatusChange(
   ]);
 }
 
-/**
- * Hook to update SOP status via real API
- * Replaces previous localStorage-based simulation
- */
+/** Hook untuk mengubah status SOP melalui API. */
 export function useSopStatus() {
   const queryClient = useQueryClient();
   const updateStatusMutation = useMutationWithToast({
@@ -51,37 +44,16 @@ export function useSopStatus() {
   });
 
   return {
-    /**
-     * Update SOP status via API
-     * @param sopId - SOP Detail ID
-     * @param status - New status (StatusSOP)
-     */
     setSopStatusOverride: (sopId: string, status: SetSopStatusOverrideMutationDto["status"]) => {
       updateStatusMutation.mutate({ sopId, status });
     },
-
-    /**
-     * Update SOP status via API (async)
-     * @param sopId - SOP Detail ID
-     * @param status - New status (StatusSOP)
-     */
     setSopStatusOverrideAsync: updateStatusMutation.mutateAsync,
-
-    /**
-     * Check if status update is in progress
-     */
     isUpdating: updateStatusMutation.isPending,
-
-    /**
-     * Error from last status update attempt
-     */
     error: updateStatusMutation.error,
   };
 }
 
-/**
- * Hook untuk mencabut SOP BERLAKU (Kepala OPD).
- */
+/** Hook untuk mencabut SOP BERLAKU (Kepala OPD). */
 export function useCabutSop() {
   const queryClient = useQueryClient();
   const mutation = useMutationWithToast({
@@ -100,14 +72,10 @@ export function useCabutSop() {
   };
 }
 
-/**
- * usePelaksana Hook - TanStack Query Implementation
- */
-
+/** Query master Pelaksana untuk OPD aktif. */
 export function usePelaksana(opdId?: string) {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
   const effectiveOpdId = opdId || user?.opdId;
-
   const {
     data: list = [],
     isLoading,
@@ -118,11 +86,19 @@ export function usePelaksana(opdId?: string) {
     enabled: !!effectiveOpdId,
     staleTime: STALE_TIME.MEDIUM,
   });
+  return { list, isLoading, error };
+}
 
-  const createMutation = useMutationWithToast({
+/** Mutation membuat Pelaksana baru. */
+export function useCreatePelaksana(opdId?: string) {
+  const user = useAuthStore((state) => state.user);
+  const effectiveOpdId = opdId || user?.opdId;
+  return useMutationWithToast({
     mutationFn: (data: CreatePelaksanaMutationDto) => {
       const targetOpdId = data.opdId || effectiveOpdId;
-      if (!targetOpdId) throw new Error("opdId is required - Pelaksana harus memiliki OPD");
+      if (!targetOpdId) {
+        throw new Error("opdId is required - Pelaksana harus memiliki OPD");
+      }
       return sopApi.createPelaksana({
         opdId: targetOpdId,
         namaPelaksana: data.namaPelaksana,
@@ -132,30 +108,27 @@ export function usePelaksana(opdId?: string) {
     successMessage: "Pelaksana SOP berhasil ditambahkan",
     errorMessagePrefix: "Gagal menambah pelaksana",
   });
+}
 
-  const updateMutation = useMutationWithToast({
+/** Mutation mengubah nama Pelaksana. */
+export function useUpdatePelaksana() {
+  return useMutationWithToast({
     mutationFn: ({ id, namaPelaksana }: UpdatePelaksanaMutationDto) =>
       sopApi.updatePelaksana(id, namaPelaksana),
     invalidateKeys: [queryKeys.pelaksana, queryKeys.sop, queryKeys.evaluasi],
     successMessage: "Pelaksana SOP berhasil diperbarui",
     errorMessagePrefix: "Gagal memperbarui pelaksana",
   });
+}
 
-  const deleteMutation = useMutationWithToast({
+/** Mutation menghapus Pelaksana. */
+export function useDeletePelaksana() {
+  return useMutationWithToast({
     mutationFn: (id: string) => sopApi.deletePelaksana(id),
     invalidateKeys: [queryKeys.pelaksana, queryKeys.sop, queryKeys.evaluasi],
     successMessage: "Pelaksana SOP berhasil dihapus",
     errorMessagePrefix: "Gagal menghapus pelaksana",
   });
-
-  return {
-    list,
-    isLoading,
-    error,
-    addPelaksana: createMutation.mutateAsync,
-    updatePelaksana: updateMutation.mutateAsync,
-    removePelaksana: deleteMutation.mutateAsync,
-  };
 }
 
 export function useBuatVersiBaru() {
@@ -196,8 +169,7 @@ export function useHapusSopDraftAwal() {
 
 /**
  * Mutation autosave PATCH header SOP. Tidak memunculkan toast (silent autosave),
- * tidak meng-invalidate cache; sebagai gantinya `setQueryData` workbench dengan response
- * agar panel main + side panel tetap sinkron tanpa GET ulang.
+ * tidak meng-invalidate cache; response langsung disimpan ke cache workbench.
  */
 export function useUpdateSopHeader(detailSopId: string) {
   const queryClient = useQueryClient();
@@ -213,11 +185,7 @@ export function useUpdateSopHeader(detailSopId: string) {
   });
 }
 
-/**
- * Mutation autosave PATCH prosedur SOP (swimlane + langkah) — silent, sejajar dengan
- * `useUpdateSopHeader`. Response = workbench terbaru → `setQueryData` agar main panel
- * & side panel sinkron tanpa GET ulang.
- */
+/** Mutation autosave prosedur SOP (swimlane + langkah). */
 export function useUpdateSopProsedur(detailSopId: string) {
   const queryClient = useQueryClient();
   return useMutation({

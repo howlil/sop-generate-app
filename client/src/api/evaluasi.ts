@@ -39,6 +39,7 @@ export {
   type UsePengajuanEvaluasiAktifReturn,
 } from "@/lib/evaluasi/hooks/evaluasi-derived-hooks";
 export {
+  useCreatePengajuanEvaluasi,
   useTandaiTindakLanjutSelesai,
   useTolakPengajuanEvaluasi,
 } from "@/api/evaluasi-mutations";

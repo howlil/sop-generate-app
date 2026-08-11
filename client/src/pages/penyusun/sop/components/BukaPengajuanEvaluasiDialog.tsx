@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { useEvaluasi, useEvaluasiWorkspaceOpdSaya } from "@/api/evaluasi";
+import {
+  useCreatePengajuanEvaluasi,
+  useEvaluasiWorkspaceOpdSaya,
+} from "@/api/evaluasi";
 import type { JenisPengajuanEvaluasi } from "@/types/dto/evaluasi.dto";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { Label } from "@/components/ui/label";
@@ -42,7 +45,7 @@ export function BukaPengajuanEvaluasiDialog({
     () => new Set(),
   );
   const [jenis, setJenis] = useState<JenisPengajuanEvaluasi>("EVALUASI_REQUEST_EVALUATOR");
-  const { create, isCreating } = useEvaluasi({ enabled: false });
+  const { mutateAsync: create, isPending: isCreating } = useCreatePengajuanEvaluasi();
   const {
     data: workspace,
     isLoading: isLoadingWorkspace,
@@ -74,13 +77,7 @@ export function BukaPengajuanEvaluasiDialog({
       });
       onOpenChange(false);
     })();
-  }, [
-    create,
-    hasBlockingPengajuan,
-    jenis,
-    onOpenChange,
-    selectedDetailIds,
-  ]);
+  }, [create, hasBlockingPengajuan, jenis, onOpenChange, selectedDetailIds]);
 
   const confirmDisabled =
     selectedDetailIds.size === 0 ||

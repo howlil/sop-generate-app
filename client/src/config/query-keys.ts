@@ -3,6 +3,16 @@
  * Centralized query key management
  */
 
+type EvaluasiRingkasQueryKeyParams = {
+  page?: number
+  limit?: number
+  opdId?: string
+  status?: string
+  jenis?: string
+  search?: string
+  statusIn?: readonly string[]
+}
+
 export const queryKeys = {
   // Auth
   auth: ['auth'] as const,
@@ -103,7 +113,7 @@ export const queryKeys = {
     pengajuanId: string,
     params?: { detailSopId?: string; expand?: string; riwayatLimit?: number },
   ) => ['evaluasi', 'workspacePengajuan', pengajuanId, params ?? {}] as const,
-  evaluasiRingkas: (params?: Record<string, unknown>) =>
+  evaluasiRingkas: (params?: EvaluasiRingkasQueryKeyParams) =>
     ['evaluasi', 'ringkas', params ?? {}] as const,
   /** Invalidate semua query GET `/evaluasi/ringkas` */
   evaluasiRingkasAll: ['evaluasi', 'ringkas'] as const,

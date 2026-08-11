@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { displayStatusPengajuan } from '../../../common/status/status-display';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { toWibDateOnly } from '../../../common/date/wib-date.util';
 import {
   JenisDokumenTte,
-  PeranPengguna,
+  type JenisPengajuanEvaluasi,
   Prisma,
-  StatusPengajuanEvaluasi,
-  StatusSOP,
+  type StatusPengajuanEvaluasi,
+  StatusPengajuanEvaluasi as StatusPengajuanEvaluasiEnum,
+  type StatusSOP,
+  StatusSOP as StatusSOPEnum,
 } from '../../../generated/prisma';
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
 import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
@@ -50,38 +51,149 @@ export type PengajuanEvaluasiDetailRow = Prisma.PengajuanEvaluasiGetPayload<{
   include: typeof pengajuanEvaluasiDetailInclude;
 }>;
 
-type SignedSopPengesahanRepairDetail = {
-  readonly detailSopId: string;
-  readonly sopId: string;
-  readonly status: StatusSOP;
-  readonly tanggalEfektif: Date | null;
-  readonly signedByUserId: string;
-  readonly signedAt: Date;
-};
+export type PengajuanTransactionFailure =
+  | { readonly error: 'ACTIVE_EXISTS' }
+  | { readonly error: 'DETAIL_NOT_FOUND'; readonly detailSopId: string }
+  | {
+      readonly error: 'DETAIL_BAD_STATUS';
+      readonly detailSopId: string;
+      readonly status: StatusSOP;
+    }
+  | { readonly error: 'STATUS_DRIFT' };
+
+export type CreatePengajuanTransactionResult =
+  | { readonly ok: true; readonly pengajuanEvaluasiId: string }
+  | ({ readonly ok: false } & PengajuanTransactionFailure);
+
+export type EnsurePengajuanTransactionResult =
+  | {
+      readonly ok: true;
+      readonly created: boolean;
+      readonly pengajuanEvaluasiId?: string;
+    }
+  | ({ readonly ok: false } & Exclude<PengajuanTransactionFailure, { error: 'ACTIVE_EXISTS' }>);
+
+type CreatePengajuanTransactionParams = Readonly<{
+  opdId: string;
+  jenis: JenisPengajuanEvaluasi;
+  sopDetailIds: readonly string[];
+  activeStatuses: readonly StatusPengajuanEvaluasi[];
+  eligibleDetailStatuses: readonly StatusSOP[];
+}>;
+
+class PengajuanTransactionAbort extends Error {
+  constructor(readonly failure: PengajuanTransactionFailure) {
+    super(failure.error);
+    this.name = 'PengajuanTransactionAbort';
+  }
+}
 
 @Injectable()
 export class PengajuanEvaluasiRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Menjalankan transaksi Prisma. Jika `lockOpdId` diberikan, baris OPD dikunci
-   * lebih dulu agar pengecekan dan pembuatan pengajuan aktif terserialisasi per OPD.
-   */
-  async runTransaction<T>(
-    fn: (tx: Prisma.TransactionClient) => Promise<T>,
-    lockOpdId?: string,
-  ): Promise<T> {
-    return this.prisma.$transaction(async (tx) => {
-      if (lockOpdId !== undefined) {
+  async createPengajuanDenganLock(
+    params: CreatePengajuanTransactionParams,
+  ): Promise<CreatePengajuanTransactionResult> {
+    return this.executeCreatePengajuanDenganLock(params);
+  }
+
+  async ensurePengajuanRequestOpdDenganLock(
+    params: CreatePengajuanTransactionParams,
+  ): Promise<EnsurePengajuanTransactionResult> {
+    const result = await this.executeCreatePengajuanDenganLock(params);
+    if (!result.ok && result.error === 'ACTIVE_EXISTS') {
+      return { ok: true, created: false };
+    }
+    if (!result.ok) {
+      return result;
+    }
+    return {
+      ok: true,
+      created: true,
+      pengajuanEvaluasiId: result.pengajuanEvaluasiId,
+    };
+  }
+
+  private async executeCreatePengajuanDenganLock(
+    params: CreatePengajuanTransactionParams,
+  ): Promise<CreatePengajuanTransactionResult> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw<Array<{ opdId: string }>>`
           SELECT opdId
           FROM OPD
-          WHERE opdId = ${lockOpdId}
+          WHERE opdId = ${params.opdId}
           FOR UPDATE
         `;
+        const blocking = await tx.pengajuanEvaluasi.findFirst({
+          where: {
+            opdId: params.opdId,
+            status: { in: [...params.activeStatuses] },
+          },
+          select: { pengajuanEvaluasiId: true },
+        });
+        if (blocking !== null) {
+          return { ok: false, error: 'ACTIVE_EXISTS' } as const;
+        }
+        const details = await tx.detailSOP.findMany({
+          where: {
+            detailSopId: { in: [...params.sopDetailIds] },
+            sop: { opdId: params.opdId },
+          },
+          select: { detailSopId: true, status: true },
+        });
+        const detailById = new Map(details.map((detail) => [detail.detailSopId, detail]));
+        const eligibleStatuses = new Set<StatusSOP>(params.eligibleDetailStatuses);
+        for (const detailSopId of params.sopDetailIds) {
+          const detail = detailById.get(detailSopId);
+          if (detail === undefined) {
+            return { ok: false, error: 'DETAIL_NOT_FOUND', detailSopId } as const;
+          }
+          if (!eligibleStatuses.has(detail.status)) {
+            return {
+              ok: false,
+              error: 'DETAIL_BAD_STATUS',
+              detailSopId,
+              status: detail.status,
+            } as const;
+          }
+        }
+        const sekarang = new Date();
+        const dibuat = await tx.pengajuanEvaluasi.create({
+          data: {
+            opdId: params.opdId,
+            jenis: params.jenis,
+            status: StatusPengajuanEvaluasiEnum.SEDANG_DIEVALUASI,
+            tanggalPermintaan: sekarang,
+            tanggalEvaluasi: sekarang,
+            nilaiEvaluasi: {
+              create: params.sopDetailIds.map((detailSopId) => ({ detailSopId })),
+            },
+          },
+          select: { pengajuanEvaluasiId: true },
+        });
+        const promoted = await tx.detailSOP.updateMany({
+          where: {
+            detailSopId: { in: [...params.sopDetailIds] },
+            status: { in: [...params.eligibleDetailStatuses] },
+          },
+          data: { status: StatusSOPEnum.SEDANG_DIEVALUASI },
+        });
+        if (promoted.count !== params.sopDetailIds.length) {
+          throw new PengajuanTransactionAbort({ error: 'STATUS_DRIFT' });
+        }
+        return {
+          ok: true,
+          pengajuanEvaluasiId: dibuat.pengajuanEvaluasiId,
+        } as const;
+      });
+    } catch (error) {
+      if (error instanceof PengajuanTransactionAbort) {
+        return { ok: false, ...error.failure };
       }
-      return fn(tx);
-    });
+      throw error;
+    }
   }
 
   async findOpdIdPengguna(penggunaId: string): Promise<string | null> {
@@ -95,15 +207,6 @@ export class PengajuanEvaluasiRepository {
   async findManyFiltered(
     whereInput: Prisma.PengajuanEvaluasiWhereInput,
   ): Promise<PengajuanEvaluasiDetailRow[]> {
-    const rows = await this.prisma.pengajuanEvaluasi.findMany({
-      where: whereInput,
-      include: pengajuanEvaluasiDetailInclude,
-      orderBy: [{ createdAt: 'desc' }],
-    });
-    const repaired = await this.repairPengesahanKepalaOpdStatusUntukRows(rows);
-    if (!repaired) {
-      return rows;
-    }
     return this.prisma.pengajuanEvaluasi.findMany({
       where: whereInput,
       include: pengajuanEvaluasiDetailInclude,
@@ -112,7 +215,6 @@ export class PengajuanEvaluasiRepository {
   }
 
   async findByIdFull(pengajuanEvaluasiId: string): Promise<PengajuanEvaluasiDetailRow | null> {
-    await this.repairPengesahanKepalaOpdStatusJikaDokumenSudahSigned(pengajuanEvaluasiId);
     return this.prisma.pengajuanEvaluasi.findUnique({
       where: { pengajuanEvaluasiId },
       include: pengajuanEvaluasiDetailInclude,
@@ -162,195 +264,13 @@ export class PengajuanEvaluasiRepository {
     }
     const term = query.search?.trim();
     if (term !== undefined && term.length > 0) {
-      parts.push({
-        opd: { nama: { contains: term } },
-      });
+      parts.push({ opd: { nama: { contains: term } } });
     }
     return parts.length === 0 ? {} : { AND: parts };
   }
 
   async countWhere(where: Prisma.PengajuanEvaluasiWhereInput): Promise<number> {
     return this.prisma.pengajuanEvaluasi.count({ where });
-  }
-
-  /**
-   * Repair idempoten untuk kasus data sudah punya dokumen SOP resmi + TTE Kepala OPD,
-   * tetapi status PengajuanEvaluasi/DetailSOP masih tertinggal di tahap sebelum finalize.
-   */
-  async repairPengesahanKepalaOpdStatusJikaDokumenSudahSigned(
-    pengajuanEvaluasiId: string,
-  ): Promise<boolean> {
-    const pengajuan = await this.prisma.pengajuanEvaluasi.findUnique({
-      where: { pengajuanEvaluasiId },
-      select: {
-        pengajuanEvaluasiId: true,
-        status: true,
-        opdId: true,
-        nilaiEvaluasi: {
-          select: {
-            detailSop: {
-              select: {
-                detailSopId: true,
-                sopId: true,
-                status: true,
-                tanggalEfektif: true,
-                sop: { select: { opdId: true } },
-                dokumenTte: {
-                  where: { jenisDokumen: JenisDokumenTte.SOP_BERLAKU },
-                  take: 1,
-                  select: {
-                    dokumenTteId: true,
-                    pdfPath: true,
-                    pdfSha256: true,
-                    pdfStatus: true,
-                    riwayatTandaTangan: {
-                      where: { peran: PeranPengguna.KEPALA_OPD },
-                      take: 1,
-                      orderBy: { ditandatanganiPada: 'desc' },
-                      select: {
-                        userId: true,
-                        ditandatanganiPada: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-    if (pengajuan === null || pengajuan.nilaiEvaluasi.length === 0) {
-      return false;
-    }
-
-    const signedDetails: SignedSopPengesahanRepairDetail[] = [];
-    for (const nilai of pengajuan.nilaiEvaluasi) {
-      const detail = nilai.detailSop;
-      if (detail.sop.opdId !== pengajuan.opdId) {
-        return false;
-      }
-      const dokumen = detail.dokumenTte[0];
-      const signature = dokumen?.riwayatTandaTangan[0];
-      if (
-        dokumen === undefined ||
-        signature === undefined ||
-        dokumen.pdfPath === null ||
-        dokumen.pdfSha256 === null ||
-        dokumen.pdfStatus !== 'PUBLISHED'
-      ) {
-        return false;
-      }
-      signedDetails.push({
-        detailSopId: detail.detailSopId,
-        sopId: detail.sopId,
-        status: detail.status,
-        tanggalEfektif: detail.tanggalEfektif,
-        signedByUserId: signature.userId,
-        signedAt: signature.ditandatanganiPada,
-      });
-    }
-
-    const perluUpdatePengajuan = pengajuan.status !== StatusPengajuanEvaluasi.SELESAI;
-    const perluUpdateDetail = signedDetails.some(
-      (detail) => detail.status !== StatusSOP.BERLAKU || detail.tanggalEfektif === null,
-    );
-    if (!perluUpdatePengajuan && !perluUpdateDetail) {
-      return false;
-    }
-
-    await this.prisma.$transaction(async (tx) => {
-      for (const detail of signedDetails) {
-        if (detail.status !== StatusSOP.BERLAKU) {
-          const replaced = await tx.detailSOP.findMany({
-            where: {
-              sopId: detail.sopId,
-              detailSopId: { not: detail.detailSopId },
-              status: StatusSOP.BERLAKU,
-            },
-            select: { detailSopId: true },
-          });
-          await this.gantikanVersiBerlakuLain(tx, {
-            sopId: detail.sopId,
-            detailSopId: detail.detailSopId,
-          });
-          await this.updatePdfStatusForDetailIds(
-            tx,
-            replaced.map((row) => row.detailSopId),
-            'SUPERSEDED',
-            detail.signedAt,
-          );
-        }
-        if (detail.status !== StatusSOP.BERLAKU || detail.tanggalEfektif === null) {
-          await tx.detailSOP.update({
-            where: { detailSopId: detail.detailSopId },
-            data: {
-              status: StatusSOP.BERLAKU,
-              terakhirDieditOlehId: detail.signedByUserId,
-              tanggalEfektif: detail.tanggalEfektif ?? toWibDateOnly(detail.signedAt),
-            },
-          });
-        }
-      }
-      if (perluUpdatePengajuan) {
-        await tx.pengajuanEvaluasi.update({
-          where: { pengajuanEvaluasiId },
-          data: {
-            status: StatusPengajuanEvaluasi.SELESAI,
-            version: { increment: 1 },
-          },
-        });
-      }
-    });
-    return true;
-  }
-
-  private async repairPengesahanKepalaOpdStatusUntukRows(
-    rows: readonly PengajuanEvaluasiDetailRow[],
-  ): Promise<boolean> {
-    let repaired = false;
-    for (const row of rows) {
-      if (row.status === StatusPengajuanEvaluasi.SELESAI) {
-        continue;
-      }
-      const ok = await this.repairPengesahanKepalaOpdStatusJikaDokumenSudahSigned(
-        row.pengajuanEvaluasiId,
-      );
-      repaired = repaired || ok;
-    }
-    return repaired;
-  }
-
-  private async gantikanVersiBerlakuLain(
-    tx: Prisma.TransactionClient,
-    params: { sopId: string; detailSopId: string },
-  ): Promise<void> {
-    await tx.detailSOP.updateMany({
-      where: {
-        sopId: params.sopId,
-        detailSopId: { not: params.detailSopId },
-        status: StatusSOP.BERLAKU,
-      },
-      data: { status: StatusSOP.DIGANTIKAN },
-    });
-  }
-
-  private async updatePdfStatusForDetailIds(
-    tx: Prisma.TransactionClient,
-    detailSopIds: string[],
-    status: 'SUPERSEDED' | 'REVOKED',
-    timestamp: Date,
-  ): Promise<void> {
-    if (detailSopIds.length === 0) {
-      return;
-    }
-    await tx.$executeRaw`
-      UPDATE DokumenTte
-      SET pdfStatus = ${status},
-          pdfRevokedAt = ${timestamp}
-      WHERE detailSopId IN (${Prisma.join(detailSopIds)})
-        AND jenisDokumen = ${JenisDokumenTte.SOP_BERLAKU}
-    `;
   }
 
   async findRingkasPage(
@@ -388,7 +308,7 @@ export class PengajuanEvaluasiRepository {
         opd: { select: { nama: true } },
       },
     });
-    const ids = rows.map((r) => r.pengajuanEvaluasiId);
+    const ids = rows.map((row) => row.pengajuanEvaluasiId);
     if (ids.length === 0) {
       return [];
     }
@@ -407,22 +327,22 @@ export class PengajuanEvaluasiRepository {
         _count: { _all: true },
       }),
     ]);
-    const totalMap = new Map(totals.map((t) => [t.pengajuanEvaluasiId, t._count._all]));
-    const filledMap = new Map(filled.map((t) => [t.pengajuanEvaluasiId, t._count._all]));
-    return rows.map((r) => {
-      const statusDisplay = displayStatusPengajuan(r.status);
+    const totalMap = new Map(totals.map((total) => [total.pengajuanEvaluasiId, total._count._all]));
+    const filledMap = new Map(filled.map((item) => [item.pengajuanEvaluasiId, item._count._all]));
+    return rows.map((row) => {
+      const statusDisplay = displayStatusPengajuan(row.status);
       return {
-        pengajuanEvaluasiId: r.pengajuanEvaluasiId,
-        opdId: r.opdId,
-        opdNama: r.opd.nama,
-        jenis: String(r.jenis),
+        pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+        opdId: row.opdId,
+        opdNama: row.opd.nama,
+        jenis: String(row.jenis),
         status: statusDisplay.value,
         statusLabel: statusDisplay.label,
-        tanggalEvaluasi: r.tanggalEvaluasi?.toISOString(),
-        createdAt: r.createdAt.toISOString(),
-        nilaiOPD: r.nilaiOPD ?? undefined,
-        jumlahSop: totalMap.get(r.pengajuanEvaluasiId) ?? 0,
-        jumlahSudahDinilai: filledMap.get(r.pengajuanEvaluasiId) ?? 0,
+        tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),
+        createdAt: row.createdAt.toISOString(),
+        nilaiOPD: row.nilaiOPD ?? undefined,
+        jumlahSop: totalMap.get(row.pengajuanEvaluasiId) ?? 0,
+        jumlahSudahDinilai: filledMap.get(row.pengajuanEvaluasiId) ?? 0,
       };
     });
   }

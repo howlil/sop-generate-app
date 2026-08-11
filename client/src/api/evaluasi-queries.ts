@@ -1,20 +1,16 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/config/query-keys";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { evaluasiApi } from "@/api/evaluasi-client";
+import { queryKeys } from "@/config/query-keys";
+import { SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS } from "@/lib/api/cache-invalidation";
 import { mapEvaluasiShellToPengajuan } from "@/lib/evaluasi/evaluasi-mappers";
-import {
-  SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
-  SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
-} from "@/lib/api/cache-invalidation";
 import type {
-  CreatePengajuanEvaluasiDto,
   EvaluasiGrafikTahunanQueryParams,
   EvaluasiListQueryParams,
   EvaluasiRingkasQueryParams,
   EvaluasiWorkspaceQueryParams,
 } from "@/types/dto/evaluasi.dto";
+
 /** Umpan balik evaluasi aktif untuk panel penyusun (alur revisi). */
 export function useUmpanBalikEvaluasi(detailSopId: string | undefined, enabled = true) {
   return useQuery({
@@ -31,17 +27,15 @@ export function useEvaluasi(params?: EvaluasiListQueryParams & { enabled?: boole
   const listParams: EvaluasiListQueryParams | undefined =
     params === undefined
       ? undefined
-      : (Object.fromEntries(
-          Object.entries({
-            opdId: params.opdId,
-            status: params.status,
-            jenis: params.jenis,
-            statusIn:
-              params.statusIn !== undefined && params.statusIn.length > 0
-                ? [...params.statusIn]
-                : undefined,
-          }).filter(([, v]) => v !== undefined),
-        ) as EvaluasiListQueryParams);
+      : {
+          opdId: params.opdId,
+          status: params.status,
+          jenis: params.jenis,
+          statusIn:
+            params.statusIn !== undefined && params.statusIn.length > 0
+              ? [...params.statusIn]
+              : undefined,
+        };
   const {
     data: list = [],
     isLoading,
@@ -53,21 +47,7 @@ export function useEvaluasi(params?: EvaluasiListQueryParams & { enabled?: boole
     enabled,
   });
 
-  const createMutation = useMutationWithToast({
-    mutationFn: (payload: CreatePengajuanEvaluasiDto) =>
-      evaluasiApi.create(payload),
-    invalidateKeys: SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
-    successMessage: "Pengajuan evaluasi berhasil dibuat",
-    errorMessagePrefix: "Gagal membuat pengajuan evaluasi",
-  });
-
-  return {
-    list,
-    isLoading,
-    error,
-    create: createMutation.mutateAsync,
-    isCreating: createMutation.isPending,
-  };
+  return { list, isLoading, error };
 }
 
 /** Workspace OPD pengguna (GET `/evaluasi/workspace/opd-saya`) — dialog buka pengajuan PJ Penyusun. */
@@ -152,7 +132,7 @@ export function usePengajuanEvaluasiRingkas(
     statusIn: params.statusIn,
   };
   return useQuery({
-    queryKey: queryKeys.evaluasiRingkas(ringkasParams as Record<string, unknown>),
+    queryKey: queryKeys.evaluasiRingkas(ringkasParams),
     queryFn: () => evaluasiApi.findRingkas(ringkasParams),
     ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
     enabled,
@@ -202,8 +182,7 @@ export function usePengajuanSopDokumenWorkbench(
   detailSopId?: string | null,
   opts?: { enabled?: boolean },
 ) {
-  const enabled =
-    !!(pengajuanId && detailSopId) && (opts?.enabled ?? true)
+  const enabled = !!(pengajuanId && detailSopId) && (opts?.enabled ?? true)
   const pid = pengajuanId || ''
   const dsid = detailSopId || ''
   return useQuery({

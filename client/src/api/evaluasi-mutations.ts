@@ -2,6 +2,16 @@ import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { evaluasiApi } from "@/api/evaluasi-client";
 import { SOP_EVALUASI_WORKFLOW_QUERY_KEYS } from "@/lib/api/cache-invalidation";
+import type { CreatePengajuanEvaluasiDto } from "@/types/dto/evaluasi.dto";
+
+export function useCreatePengajuanEvaluasi() {
+  return useMutationWithToast({
+    mutationFn: (payload: CreatePengajuanEvaluasiDto) => evaluasiApi.create(payload),
+    invalidateKeys: SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
+    successMessage: "Pengajuan evaluasi berhasil dibuat",
+    errorMessagePrefix: "Gagal membuat pengajuan evaluasi",
+  });
+}
 
 export function useTandaiTindakLanjutSelesai(detailSopId: string | undefined) {
   return useMutationWithToast({

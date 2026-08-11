@@ -7,27 +7,25 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
-  JenisPengajuanEvaluasi,
-  PeranPengguna,
-  Prisma,
-  StatusPengajuanEvaluasi,
-  StatusSOP,
-} from '../../../generated/prisma';
+  resolvePagination,
+  toPaginatedData,
+  type PaginatedData,
+} from '../../../common/utils/pagination.util';
+import { JenisPengajuanEvaluasi, PeranPengguna, StatusSOP } from '../../../generated/prisma';
+import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
+import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
+import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
+import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
+import type { PengajuanEvaluasiRingkasResponseDto } from './dto/pengajuan-evaluasi-ringkas-response.dto';
+import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
 import {
   mapPengajuanEvaluasiRow,
   type PengajuanEvaluasiApiPayload,
 } from './pengajuan-evaluasi.mapper';
 import {
-  resolvePagination,
-  toPaginatedData,
-  type PaginatedData,
-} from '../../../common/utils/pagination.util';
-import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
-import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
-import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
-import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
-import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
-import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
+  PengajuanEvaluasiRepository,
+  type PengajuanTransactionFailure,
+} from './pengajuan-evaluasi.repository';
 
 /** Detail SOP yang boleh dimasukkan pengajuan evaluasi baru (alur penyusun → evaluator). */
 const STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI: readonly StatusSOP[] = [
@@ -60,14 +58,14 @@ export class PengajuanEvaluasiService {
     const forcedOpdId = await this.resolveForcedOpdFilter(user);
     const whereInput = this.pengajuanEvaluasiRepository.buildWhereFromQuery(query, forcedOpdId);
     const rows = await this.pengajuanEvaluasiRepository.findManyFiltered(whereInput);
-    return rows.map((r) => mapPengajuanEvaluasiRow(r, user.peran));
+    return rows.map((row) => mapPengajuanEvaluasiRow(row, user.peran));
   }
 
   /** Daftar ringkas terpaginasi untuk dashboard evaluator / PJ (performa). */
   async findAllRingkas(
     user: JwtAccessPayload,
     query: PengajuanEvaluasiRingkasQueryDto,
-  ): Promise<PaginatedData<Record<string, unknown>>> {
+  ): Promise<PaginatedData<PengajuanEvaluasiRingkasResponseDto>> {
     const forcedOpdId = await this.resolveForcedOpdFilter(user);
     const whereInput = this.pengajuanEvaluasiRepository.buildWhereRingkasFromQuery(
       query,
@@ -107,54 +105,21 @@ export class PengajuanEvaluasiService {
       'OPD pengguna tidak ditemukan',
     );
     const sopDetailIds = this.uniqueSopDetailIds(dto.sopDetailIds);
-    const idBaru = await this.pengajuanEvaluasiRepository.runTransaction(
-      async (tx: Prisma.TransactionClient) => {
-        const blocking = await tx.pengajuanEvaluasi.findFirst({
-          where: {
-            opdId: opdIdPengguna,
-            status: {
-              in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
-            },
-          },
-          select: { pengajuanEvaluasiId: true },
-        });
-        if (blocking !== null) {
-          throw new ConflictException(
-            'OPD ini masih memiliki pengajuan evaluasi aktif. Selesaikan atau tutup terlebih dahulu.',
-          );
-        }
-        await this.assertDetailSopSiapDalamOpd(tx, sopDetailIds, opdIdPengguna, 'Anda');
-        const sekarang = new Date();
-        const dibuat = await tx.pengajuanEvaluasi.create({
-          data: {
-            opdId: opdIdPengguna,
-            jenis: dto.jenis,
-            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-            tanggalPermintaan: sekarang,
-            tanggalEvaluasi: sekarang,
-            nilaiEvaluasi: {
-              create: sopDetailIds.map((detailSopId) => ({ detailSopId })),
-            },
-          },
-          select: { pengajuanEvaluasiId: true },
-        });
-        const promoted = await tx.detailSOP.updateMany({
-          where: {
-            detailSopId: { in: sopDetailIds },
-            status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
-          },
-          data: { status: StatusSOP.SEDANG_DIEVALUASI },
-        });
-        if (promoted.count !== sopDetailIds.length) {
-          throw new ConflictException(
-            'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang daftar SOP lalu coba lagi.',
-          );
-        }
-        return dibuat.pengajuanEvaluasiId;
-      },
-      opdIdPengguna,
-    );
-    const created = await this.pengajuanEvaluasiRepository.findByIdFull(idBaru);
+    const result = await this.pengajuanEvaluasiRepository.createPengajuanDenganLock({
+      opdId: opdIdPengguna,
+      jenis: dto.jenis,
+      sopDetailIds,
+      activeStatuses: STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK,
+      eligibleDetailStatuses: STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI,
+    });
+    if (!result.ok) {
+      this.throwTransactionFailure(
+        result,
+        'Anda',
+        'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang daftar SOP lalu coba lagi.',
+      );
+    }
+    const created = await this.pengajuanEvaluasiRepository.findByIdFull(result.pengajuanEvaluasiId);
     if (created === null) {
       throw new ConflictException('Gagal memuat pengajuan setelah pembuatan');
     }
@@ -175,52 +140,25 @@ export class PengajuanEvaluasiService {
       return;
     }
     const sopDetailIds = pipelineRows
-      .filter((r) => statusSiapPengajuanEvaluasiSet.has(String(r.statusDetail)))
-      .map((r) => r.detailSopId);
+      .filter((row) => statusSiapPengajuanEvaluasiSet.has(String(row.statusDetail)))
+      .map((row) => row.detailSopId);
     if (sopDetailIds.length === 0) {
       return;
     }
-    await this.pengajuanEvaluasiRepository.runTransaction(async (tx: Prisma.TransactionClient) => {
-      const blocking = await tx.pengajuanEvaluasi.findFirst({
-        where: {
-          opdId,
-          status: {
-            in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
-          },
-        },
-        select: { pengajuanEvaluasiId: true },
-      });
-      if (blocking !== null) {
-        return;
-      }
-      await this.assertDetailSopSiapDalamOpd(tx, sopDetailIds, opdId);
-      const sekarang = new Date();
-      await tx.pengajuanEvaluasi.create({
-        data: {
-          opdId,
-          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
-          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          tanggalPermintaan: sekarang,
-          tanggalEvaluasi: sekarang,
-          nilaiEvaluasi: {
-            create: sopDetailIds.map((detailSopId) => ({ detailSopId })),
-          },
-        },
-        select: { pengajuanEvaluasiId: true },
-      });
-      const promoted = await tx.detailSOP.updateMany({
-        where: {
-          detailSopId: { in: sopDetailIds },
-          status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
-        },
-        data: { status: StatusSOP.SEDANG_DIEVALUASI },
-      });
-      if (promoted.count !== sopDetailIds.length) {
-        throw new ConflictException(
-          'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang halaman lalu coba lagi.',
-        );
-      }
-    }, opdId);
+    const result = await this.pengajuanEvaluasiRepository.ensurePengajuanRequestOpdDenganLock({
+      opdId,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+      sopDetailIds,
+      activeStatuses: STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK,
+      eligibleDetailStatuses: STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI,
+    });
+    if (!result.ok) {
+      this.throwTransactionFailure(
+        result,
+        '',
+        'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang halaman lalu coba lagi.',
+      );
+    }
   }
 
   /** OPD terikat akun PJ Penyusun / Kepala OPD (untuk workspace tanpa param opdId). */
@@ -259,34 +197,28 @@ export class PengajuanEvaluasiService {
     return uniqueIds;
   }
 
-  private async assertDetailSopSiapDalamOpd(
-    tx: Prisma.TransactionClient,
-    detailSopIds: readonly string[],
-    opdId: string,
-    ownerLabel = '',
-  ): Promise<void> {
-    const details = await tx.detailSOP.findMany({
-      where: {
-        detailSopId: { in: [...detailSopIds] },
-        sop: { opdId },
-      },
-      select: { detailSopId: true, status: true },
-    });
-    const byId = new Map(details.map((detail) => [detail.detailSopId, detail]));
-    for (const detailSopId of detailSopIds) {
-      const detail = byId.get(detailSopId);
-      if (detail === undefined) {
-        const suffix = ownerLabel.length > 0 ? ` ${ownerLabel}.` : '.';
-        throw new BadRequestException(
-          `Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD${suffix}`,
-        );
-      }
-      if (!statusSiapPengajuanEvaluasiSet.has(String(detail.status))) {
-        throw new BadRequestException(
-          `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat dimasukkan pengajuan evaluasi.`,
-        );
-      }
+  private throwTransactionFailure(
+    failure: PengajuanTransactionFailure,
+    ownerLabel: string,
+    statusDriftMessage: string,
+  ): never {
+    if (failure.error === 'ACTIVE_EXISTS') {
+      throw new ConflictException(
+        'OPD ini masih memiliki pengajuan evaluasi aktif. Selesaikan atau tutup terlebih dahulu.',
+      );
     }
+    if (failure.error === 'DETAIL_NOT_FOUND') {
+      const suffix = ownerLabel.length > 0 ? ` ${ownerLabel}.` : '.';
+      throw new BadRequestException(
+        `Detail SOP ${failure.detailSopId} tidak ditemukan atau bukan milik OPD${suffix}`,
+      );
+    }
+    if (failure.error === 'DETAIL_BAD_STATUS') {
+      throw new BadRequestException(
+        `Detail SOP ${failure.detailSopId} berstatus ${String(failure.status)} dan tidak dapat dimasukkan pengajuan evaluasi.`,
+      );
+    }
+    throw new ConflictException(statusDriftMessage);
   }
 
   /**

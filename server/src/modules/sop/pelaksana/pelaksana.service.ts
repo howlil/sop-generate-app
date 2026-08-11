@@ -1,10 +1,10 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
-import { Prisma } from '../../../generated/prisma';
-import type { CreatePelaksanaDto } from './dto/create-pelaksana.dto';
-import type { UpdatePelaksanaDto } from './dto/update-pelaksana.dto';
-import type { PelaksanaResponseDto } from './dto/pelaksana-response.dto';
+import { isPrismaUniqueConstraintError } from '../../../common/prisma/prisma-error.util';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
+import type { CreatePelaksanaDto } from './dto/create-pelaksana.dto';
+import type { PelaksanaResponseDto } from './dto/pelaksana-response.dto';
+import type { UpdatePelaksanaDto } from './dto/update-pelaksana.dto';
 import { PelaksanaRepository, type PelaksanaRow } from './pelaksana.repository';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class PelaksanaService {
   async list(user: JwtAccessPayload, queryOpdId?: string): Promise<PelaksanaResponseDto[]> {
     const opdId = await this.resolveOpdIdOrThrow(user, queryOpdId);
     const rows = await this.pelaksanaRepository.findManyByOpdId(opdId);
-    return rows.map((r) => this.mapRow(r));
+    return rows.map((row) => this.mapRow(row));
   }
 
   async create(user: JwtAccessPayload, dto: CreatePelaksanaDto): Promise<PelaksanaResponseDto> {
@@ -42,9 +42,9 @@ export class PelaksanaService {
     try {
       const row = await this.pelaksanaRepository.create(opdId, dto.namaPelaksana);
       return this.mapRow(row);
-    } catch (err) {
-      this.rethrowUniqueNameConflict(err);
-      throw err;
+    } catch (error) {
+      this.rethrowUniqueNameConflict(error);
+      throw error;
     }
   }
 
@@ -61,9 +61,9 @@ export class PelaksanaService {
     try {
       const row = await this.pelaksanaRepository.updateNama(id, dto.namaPelaksana);
       return this.mapRow(row);
-    } catch (err) {
-      this.rethrowUniqueNameConflict(err);
-      throw err;
+    } catch (error) {
+      this.rethrowUniqueNameConflict(error);
+      throw error;
     }
   }
 
@@ -83,8 +83,8 @@ export class PelaksanaService {
     await this.pelaksanaRepository.delete(id);
   }
 
-  private rethrowUniqueNameConflict(err: unknown): void {
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+  private rethrowUniqueNameConflict(error: unknown): void {
+    if (isPrismaUniqueConstraintError(error)) {
       throw new ConflictException('Pelaksana dengan nama tersebut sudah ada di OPD ini');
     }
   }

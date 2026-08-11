@@ -1,46 +1,49 @@
 import { useMemo, useState } from "react";
 import { UserCog, Plus, Edit, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Table } from "@/components/ui/data-table";
-import { SearchToolbar } from "@/components/ui/search-toolbar";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  useCreatePelaksana,
+  useDeletePelaksana,
+  usePelaksana,
+  useUpdatePelaksana,
+} from "@/api/sop";
+import { RowActions } from "@/components/data/row-actions";
 import { SingleTextFieldDialog } from "@/components/forms/single-text-field-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Table } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { RowActions } from "@/components/data/row-actions";
-import type { Pelaksana } from "@/types/dto/sop.dto";
-import { usePelaksana } from "@/api/sop";
-import { useAuthStore } from "@/stores/authStore";
+import { SearchToolbar } from "@/components/ui/search-toolbar";
 import { useToast } from "@/hooks/useToast";
 import { hasRequiredStringFields } from "@/lib/forms/validation";
+import { useAuthStore } from "@/stores/authStore";
+import type { Pelaksana } from "@/types/dto/sop.dto";
 
 const REQUIRED_PELAKSANA_FIELDS = ["namaPelaksana"] as const;
 
 export function PelaksanaSOP() {
   const { showToast } = useToast();
-  const user = useAuthStore((s) => s.user);
-  const { list, addPelaksana, updatePelaksana, removePelaksana } =
-    usePelaksana();
-
-  // Validate user has OPD assigned
+  const user = useAuthStore((state) => state.user);
+  const { list } = usePelaksana();
+  const { mutateAsync: addPelaksana } = useCreatePelaksana();
+  const { mutateAsync: updatePelaksana } = useUpdatePelaksana();
+  const { mutateAsync: removePelaksana } = useDeletePelaksana();
   const userOpdId = user?.opdId;
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Pelaksana | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    namaPelaksana: "",
-  });
+  const [formData, setFormData] = useState({ namaPelaksana: "" });
   const isFormValid = hasRequiredStringFields(formData, REQUIRED_PELAKSANA_FIELDS);
   const [searchQuery, setSearchQuery] = useState("");
   const filteredList = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return list;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return list;
     return list.filter((item) =>
       String(item.namaPelaksana ?? "")
         .toLowerCase()
-        .includes(q),
+        .includes(query),
     );
   }, [list, searchQuery]);
 
@@ -60,18 +63,14 @@ export function PelaksanaSOP() {
     );
   }
 
-  const openEdit = (p: Pelaksana) => {
-    setEditing(p);
-    setFormData({
-      namaPelaksana: p.namaPelaksana ?? "",
-    });
+  const openEdit = (pelaksana: Pelaksana) => {
+    setEditing(pelaksana);
+    setFormData({ namaPelaksana: pelaksana.namaPelaksana ?? "" });
     setIsEditDialogOpen(true);
   };
 
   const resetForm = () => {
-    setFormData({
-      namaPelaksana: "",
-    });
+    setFormData({ namaPelaksana: "" });
     setEditing(null);
   };
 
@@ -88,7 +87,7 @@ export function PelaksanaSOP() {
       setIsCreateDialogOpen(false);
       resetForm();
     } catch {
-      // Toast dari useMutationWithToast (usePelaksana)
+      // Toast ditangani useCreatePelaksana.
     }
   };
 
@@ -106,7 +105,7 @@ export function PelaksanaSOP() {
       setIsEditDialogOpen(false);
       resetForm();
     } catch {
-      // Toast dari useMutationWithToast (usePelaksana)
+      // Toast ditangani useUpdatePelaksana.
     }
   };
 
@@ -116,7 +115,7 @@ export function PelaksanaSOP() {
       await removePelaksana(deleteId);
       setDeleteId(null);
     } catch {
-      // Toast error dari useMutationWithToast
+      // Toast ditangani useDeletePelaksana.
     }
   };
 
@@ -129,7 +128,7 @@ export function PelaksanaSOP() {
         <SearchToolbar
           searchPlaceholder="Cari nama pelaksana..."
           searchValue={searchQuery}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
+          onSearchChange={(event) => setSearchQuery(event.target.value)}
         >
           <Button
             size="sm"
@@ -149,51 +148,49 @@ export function PelaksanaSOP() {
         {(pageData) => (
           <Table.Root>
             <Table.Table>
-            <thead>
-              <Table.HeadRow>
-                <Table.Th>Nama Pelaksana</Table.Th>
-                <Table.ActionTh>Aksi</Table.ActionTh>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {pageData.length === 0 ? (
-                <EmptyState
-                  asTableRow
-                  colSpan={2}
-                  icon={<UserCog className="w-8 h-8" />}
-                  title="Belum ada pelaksana"
-                  description="Tambah pelaksana agar bisa dipilih di edit SOP (prosedur)"
-                />
-              ) : (
-                pageData.map((p) => (
-                  <Table.BodyRow key={p.id}>
-                    <Table.Td>
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-amber-100 rounded-md flex items-center justify-center">
-                          <UserCog className="w-3.5 h-3.5 text-amber-600" />
+              <thead>
+                <Table.HeadRow>
+                  <Table.Th>Nama Pelaksana</Table.Th>
+                  <Table.ActionTh>Aksi</Table.ActionTh>
+                </Table.HeadRow>
+              </thead>
+              <tbody>
+                {pageData.length === 0 ? (
+                  <EmptyState
+                    asTableRow
+                    colSpan={2}
+                    icon={<UserCog className="w-8 h-8" />}
+                    title="Belum ada pelaksana"
+                    description="Tambah pelaksana agar bisa dipilih di edit SOP (prosedur)"
+                  />
+                ) : (
+                  pageData.map((pelaksana) => (
+                    <Table.BodyRow key={pelaksana.id}>
+                      <Table.Td>
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 bg-amber-100 rounded-md flex items-center justify-center">
+                            <UserCog className="w-3.5 h-3.5 text-amber-600" />
+                          </div>
+                          <p className="font-medium text-foreground">{pelaksana.namaPelaksana}</p>
                         </div>
-                        <p className="font-medium text-foreground">
-                          {p.namaPelaksana}
-                        </p>
-                      </div>
-                    </Table.Td>
-                    <Table.ActionTd>
-                      <RowActions
-                        actions={[
-                          { icon: Edit, title: "Edit", onClick: () => openEdit(p) },
-                          {
-                            icon: Trash2,
-                            title: "Hapus",
-                            destructive: true,
-                            onClick: () => setDeleteId(p.id),
-                          },
-                        ]}
-                      />
-                    </Table.ActionTd>
-                  </Table.BodyRow>
-                ))
-              )}
-            </tbody>
+                      </Table.Td>
+                      <Table.ActionTd>
+                        <RowActions
+                          actions={[
+                            { icon: Edit, title: "Edit", onClick: () => openEdit(pelaksana) },
+                            {
+                              icon: Trash2,
+                              title: "Hapus",
+                              destructive: true,
+                              onClick: () => setDeleteId(pelaksana.id),
+                            },
+                          ]}
+                        />
+                      </Table.ActionTd>
+                    </Table.BodyRow>
+                  ))
+                )}
+              </tbody>
             </Table.Table>
           </Table.Root>
         )}

@@ -10,6 +10,7 @@ import {
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
+import type { PaginatedData } from '../../../common/utils/pagination.util';
 import { PeranPengguna } from '../../../generated/prisma';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
@@ -17,8 +18,10 @@ import {
 } from '../../core/auth/helpers/auth.shared';
 import { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
 import { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
+import type { PengajuanEvaluasiResponseDto } from './dto/pengajuan-evaluasi-response.dto';
+import type { PengajuanEvaluasiRingkasResponseDto } from './dto/pengajuan-evaluasi-ringkas-response.dto';
 import { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
-import { PengajuanEvaluasiService } from '../pengajuan/pengajuan-evaluasi.service';
+import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
 
 @ApiTags('Evaluasi')
 @Controller('evaluasi')
@@ -45,7 +48,7 @@ export class PengajuanEvaluasiController {
   async findAll(
     @Req() req: Request & { user: JwtAccessPayload },
     @Query() query: PengajuanEvaluasiListQueryDto,
-  ): Promise<ApiSuccessResponse<Record<string, unknown>[]>> {
+  ): Promise<ApiSuccessResponse<PengajuanEvaluasiResponseDto[]>> {
     const data = await this.pengajuanEvaluasiService.findAll(req.user, query);
     return {
       message: 'Daftar pengajuan evaluasi berhasil diambil',
@@ -73,7 +76,7 @@ export class PengajuanEvaluasiController {
   async findAllRingkas(
     @Req() req: Request & { user: JwtAccessPayload },
     @Query() query: PengajuanEvaluasiRingkasQueryDto,
-  ): Promise<ApiSuccessResponse<Record<string, unknown>>> {
+  ): Promise<ApiSuccessResponse<PaginatedData<PengajuanEvaluasiRingkasResponseDto>>> {
     const data = await this.pengajuanEvaluasiService.findAllRingkas(req.user, query);
     return {
       message: 'Daftar ringkas pengajuan evaluasi berhasil diambil',
@@ -99,7 +102,7 @@ export class PengajuanEvaluasiController {
   async findOne(
     @Req() req: Request & { user: JwtAccessPayload },
     @Param('pengajuanEvaluasiId', ParseUUIDPipe) pengajuanEvaluasiId: string,
-  ): Promise<ApiSuccessResponse<Record<string, unknown>>> {
+  ): Promise<ApiSuccessResponse<PengajuanEvaluasiResponseDto>> {
     const data = await this.pengajuanEvaluasiService.findOne(req.user, pengajuanEvaluasiId);
     return {
       message: 'Detail pengajuan evaluasi berhasil diambil',
@@ -121,7 +124,7 @@ export class PengajuanEvaluasiController {
   async create(
     @Req() req: Request & { user: JwtAccessPayload },
     @Body() dto: CreatePengajuanEvaluasiDto,
-  ): Promise<ApiSuccessResponse<Record<string, unknown>>> {
+  ): Promise<ApiSuccessResponse<PengajuanEvaluasiResponseDto>> {
     const data = await this.pengajuanEvaluasiService.create(req.user, dto);
     return {
       message: 'Pengajuan evaluasi berhasil dibuat',
