@@ -85,9 +85,11 @@ describe('PengajuanEvaluasiService', () => {
   describe('read', () => {
     it('membatasi daftar role OPD-scoped ke OPD pengguna', async () => {
       const getRequiredUserOpdId = jest.fn().mockResolvedValue('opd-a');
+      const buildWhereFromQuery = jest.fn().mockReturnValue({ AND: [{ opdId: 'opd-a' }] });
+      const findManyFiltered = jest.fn().mockResolvedValue([]);
       const repository = {
-        buildWhereFromQuery: jest.fn().mockReturnValue({ AND: [{ opdId: 'opd-a' }] }),
-        findManyFiltered: jest.fn().mockResolvedValue([]),
+        buildWhereFromQuery,
+        findManyFiltered,
       } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository, { getRequiredUserOpdId });
 
@@ -97,7 +99,7 @@ describe('PengajuanEvaluasiService', () => {
       );
 
       expect(getRequiredUserOpdId).toHaveBeenCalledWith('pen-1', 'OPD pengguna tidak ditemukan');
-      expect(repository.buildWhereFromQuery).toHaveBeenCalledWith(expect.any(Object), 'opd-a');
+      expect(buildWhereFromQuery).toHaveBeenCalledWith(expect.any(Object), 'opd-a');
       expect(actual).toEqual([]);
     });
 
@@ -134,22 +136,23 @@ describe('PengajuanEvaluasiService', () => {
     });
 
     it('mengembalikan ringkasan terpaginasi', async () => {
+      const findRingkasPage = jest.fn().mockResolvedValue([
+        {
+          pengajuanEvaluasiId: 'p1',
+          opdId: 'opd-a',
+          opdNama: 'OPD A',
+          jenis: 'EVALUASI_REQUEST_EVALUATOR',
+          status: 'SELESAI_DIEVALUASI',
+          statusLabel: 'Selesai Dievaluasi',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          jumlahSop: 2,
+          jumlahSudahDinilai: 2,
+        },
+      ]);
       const repository = {
         buildWhereRingkasFromQuery: jest.fn().mockReturnValue({}),
         countWhere: jest.fn().mockResolvedValue(25),
-        findRingkasPage: jest.fn().mockResolvedValue([
-          {
-            pengajuanEvaluasiId: 'p1',
-            opdId: 'opd-a',
-            opdNama: 'OPD A',
-            jenis: 'EVALUASI_REQUEST_EVALUATOR',
-            status: 'SELESAI_DIEVALUASI',
-            statusLabel: 'Selesai Dievaluasi',
-            createdAt: '2026-01-01T00:00:00.000Z',
-            jumlahSop: 2,
-            jumlahSudahDinilai: 2,
-          },
-        ]),
+        findRingkasPage,
       } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository);
 
@@ -158,7 +161,7 @@ describe('PengajuanEvaluasiService', () => {
         { page: 2, limit: 10 },
       );
 
-      expect(repository.findRingkasPage).toHaveBeenCalledWith({}, 10, 10);
+      expect(findRingkasPage).toHaveBeenCalledWith({}, 10, 10);
       expect(actual.pagination).toEqual({
         page: 2,
         limit: 10,
@@ -253,9 +256,10 @@ describe('PengajuanEvaluasiService', () => {
         ok: true,
         pengajuanEvaluasiId: 'peng-1',
       });
+      const findByIdFull = jest.fn().mockResolvedValue(buildPengajuanRow({ jenis }));
       const repository = {
         createPengajuanDenganLock,
-        findByIdFull: jest.fn().mockResolvedValue(buildPengajuanRow({ jenis })),
+        findByIdFull,
       } as unknown as PengajuanEvaluasiRepository;
       const service = buildService(repository);
 
@@ -271,7 +275,7 @@ describe('PengajuanEvaluasiService', () => {
         activeStatuses: STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK,
         eligibleDetailStatuses: [StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI],
       });
-      expect(repository.findByIdFull).toHaveBeenCalledWith('peng-1');
+      expect(findByIdFull).toHaveBeenCalledWith('peng-1');
       expect(actual).toMatchObject({ id: 'peng-1', jenis: String(jenis) });
       expect(actual).not.toHaveProperty('opdId');
     });
