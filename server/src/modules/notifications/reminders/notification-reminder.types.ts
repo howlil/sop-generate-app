@@ -42,16 +42,24 @@ export type ClaimedNotificationReminder = Readonly<{
   pengguna: ActiveNotificationRecipient & { deletedAt: Date | null };
 }>;
 
-export type InAppReminderNotification = Readonly<{
-  id: string;
+export type InAppNotificationRecord = Readonly<{
   pengajuanEvaluasiId: string;
+  penggunaId: string;
   kind: NotificationReminderKind;
+  readAt: Date | null;
+  createdAt: Date;
+  pengajuanEvaluasi: ActionablePengajuan;
+  pengguna: ActiveNotificationRecipient & { deletedAt: Date | null };
+}>;
+
+export type InAppReminderNotification = Readonly<{
+  pengajuanEvaluasiId: string;
+  jenis: NotificationReminderKind;
   title: string;
   preview: string;
   body: string;
   readAt: Date | null;
   createdAt: Date;
-  updatedAt: Date;
 }>;
 
 export const ACTIONABLE_REMINDER_STATUSES: readonly StatusPengajuanEvaluasi[] = [
