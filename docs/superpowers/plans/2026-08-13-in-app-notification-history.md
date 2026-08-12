@@ -4,57 +4,47 @@
 
 **Goal:** Preserve in-app notification history across evaluation status changes while keeping WhatsApp reminder state ephemeral and eliminating no-op notification reload events.
 
-**Architecture:** Add a dedicated `NotifikasiInApp` persistence model keyed by `(pengajuanEvaluasiId, penggunaId, jenis)`. Reconciliation creates missing history records but only deletes stale `PengingatWhatsApp` rows. The in-app API moves its reads and read-state mutations to the new table, while SSE events are emitted only for actual in-app mutations.
+**Architecture:** `NotifikasiInApp` is keyed by `(pengajuanEvaluasiId, penggunaId, jenis)`. Reconciliation creates missing history records but only deletes stale `PengingatWhatsApp` rows. The in-app API reads and mutates read state in the history table, while SSE events are emitted only for actual in-app mutations.
 
-**Tech Stack:** NestJS, TypeScript, Prisma, MySQL, Jest, React client consuming the existing notification API.
+**Tech Stack:** NestJS, TypeScript, Prisma, MariaDB/MySQL, Jest, React.
 
 ## Global Constraints
 
 - Work directly on `main` as requested.
-- Preserve the existing notification HTTP response shape used by the client.
 - Do not introduce a surrogate `notifikasiId` column.
 - Use `(pengajuanEvaluasiId, penggunaId, jenis)` as the natural composite primary key.
 - `createdAt` remains a timestamp attribute and is not part of the primary key.
 - Do not delete historical `NotifikasiInApp` rows during reminder reconciliation.
 - Keep `PengingatWhatsApp` focused on active WhatsApp reminder delivery state.
+- `penggunaId` for mark-read comes from the authenticated session, not from the client payload.
 
 ---
 
 ### Task 1: Persist in-app history independently
 
 **Files:**
-- Modify: `server/prisma/schema.prisma`
-- Create: `server/prisma/migrations/20260813014000_separate_in_app_notification_history/migration.sql`
+- Modify: `server/prisma.config.ts`
+- Create: `server/prisma/notifications.prisma`
+- Create: `server/prisma/migrations/20260813015000_separate_in_app_notification_history/migration.sql`
 - Modify: `server/src/modules/notifications/reminders/notification-reminder.repository.ts`
+- Test: `server/src/modules/notifications/reminders/notification-reminder.repository.spec.ts`
 - Test: `server/src/modules/notifications/reminders/notification-reminder-reconciler.service.spec.ts`
 
-**Interfaces:**
-- Produces repository methods `createInAppNotificationIfMissing(...)`, `countUnreadInApp(...)`, `findInAppNotifications(...)`, `markInAppRead(...)`, and `markAllInAppRead(...)` backed by `NotifikasiInApp`.
-- Existing WhatsApp reminder repository methods keep their current contract.
+- [x] **Step 1: Write failing reconciliation tests**
 
-- [ ] **Step 1: Write failing reconciliation/repository tests**
+RED was confirmed in CI after lint/typecheck: the reconciler tests failed because `createInAppNotificationIfMissing` did not yet exist.
 
-Add cases proving that a desired reminder creates one history row, repeated reconciliation does not duplicate it, and stale WhatsApp reminder deletion does not remove history.
+- [x] **Step 2: Add Prisma model and migration**
 
-- [ ] **Step 2: Run focused tests and confirm RED**
+Prisma now loads the `prisma` schema directory. `NotifikasiInApp` uses `@@id([pengajuanEvaluasiId, penggunaId, jenis])`. The SQL migration creates database foreign keys to `PengajuanEvaluasi` and `Pengguna` and backfills current reminder rows, preserving `inAppReadAt` as `readAt`.
 
-Run: `npm test -- notification-reminder-reconciler.service.spec.ts --runInBand`
+- [x] **Step 3: Implement repository persistence**
 
-Expected: FAIL because persistent in-app history methods do not exist yet.
+History creation uses `createMany(..., skipDuplicates: true)` so the natural key provides idempotency. In-app list/count/read/read-all now use `NotifikasiInApp`.
 
-- [ ] **Step 3: Add Prisma model and migration**
+- [x] **Step 4: Add persistence regression tests**
 
-Add `NotifikasiInApp` with fields `pengajuanEvaluasiId`, `penggunaId`, `jenis`, `readAt`, and `createdAt`, relations to `PengajuanEvaluasi` and `Pengguna`, and `@@id([pengajuanEvaluasiId, penggunaId, jenis])`. Migration creates/backfills the table from current reminders, then removes `inAppReadAt` and its old index from `PengingatWhatsApp`.
-
-- [ ] **Step 4: Implement repository persistence**
-
-Use idempotent `upsert`/create semantics for history creation and point all in-app list/count/read methods at `NotifikasiInApp`.
-
-- [ ] **Step 5: Run focused tests and confirm GREEN**
-
-Run: `npm test -- notification-reminder-reconciler.service.spec.ts --runInBand`
-
-Expected: PASS.
+Repository tests assert natural-key creation, duplicate handling, unread counting, and mark-read behavior against `notifikasiInApp`.
 
 ### Task 2: Emit SSE only for real in-app changes
 
@@ -62,89 +52,56 @@ Expected: PASS.
 - Modify: `server/src/modules/notifications/reminders/notification-reminder-reconciler.service.ts`
 - Modify: `server/src/modules/notifications/reminders/notification-reminder-reconciler.service.spec.ts`
 
-**Interfaces:**
-- `reconcile()` continues returning `{ desired, deleted }` for compatibility.
-- `notifications.changed` is emitted only for users whose in-app history gained a row, plus explicit read/read-all mutations handled by `InAppNotificationService`.
+- [x] **Step 1: Add no-op/stale-cleanup event tests**
 
-- [ ] **Step 1: Add failing no-op event test**
+Tests require that repeated reconciliation and stale WhatsApp cleanup do not emit in-app change events.
 
-Prove that a reconcile where all desired history already exists emits no `notifications.changed` event.
+- [x] **Step 2: Implement mutation-aware event emission**
 
-- [ ] **Step 2: Run focused test and confirm RED**
+The reconciler emits `notifications.changed` only for users whose history gained a new row. Deleting stale WhatsApp reminder state does not emit an in-app event and never deletes history.
 
-Run: `npm test -- notification-reminder-reconciler.service.spec.ts --runInBand`
-
-Expected: FAIL because current code emits for every desired reminder on every cycle.
-
-- [ ] **Step 3: Implement mutation-aware event emission**
-
-Have history creation return whether a row was newly created, collect only affected user IDs, and emit events only for those users. Stale WhatsApp reminder deletion alone must not erase or recreate history.
-
-- [ ] **Step 4: Run focused test and confirm GREEN**
-
-Run: `npm test -- notification-reminder-reconciler.service.spec.ts --runInBand`
-
-Expected: PASS.
-
-### Task 3: Preserve the existing in-app API contract
+### Task 3: Use the natural key through the API and client
 
 **Files:**
 - Modify: `server/src/modules/notifications/reminders/in-app-notification.service.ts`
 - Modify: `server/src/modules/notifications/reminders/notification-reminder.types.ts`
 - Modify: `server/src/modules/notifications/reminders/in-app-notification.service.spec.ts`
-- Modify if needed: `server/src/modules/notifications/reminders/in-app-notification.controller.ts`
+- Modify: `server/src/modules/notifications/reminders/in-app-notification.controller.ts`
+- Modify: `client/src/types/dto/notifications.dto.ts`
+- Modify: `client/src/api/notifications.ts`
+- Modify: `client/src/hooks/useInAppNotifications.ts`
+- Modify: `client/src/components/layout/NotificationBell.tsx`
 
-**Interfaces:**
-- `findMine()` still returns `InAppReminderNotification[]` with `id`, `pengajuanEvaluasiId`, `kind`, `title`, `preview`, `body`, `readAt`, `createdAt`, and `updatedAt` compatibility where required by the DTO.
-- `markRead()` continues accepting the existing route identifier while resolving it safely to the composite key and enforcing current-session ownership.
+- [x] **Step 1: Add failing service tests for history-backed list/read/read-all**
 
-- [ ] **Step 1: Add failing service tests for list/read/read-all on history rows**
+Tests define the response without a surrogate notification ID and require mark-read to use `(pengajuanEvaluasiId, penggunaId, jenis)`.
 
-Cover unread count, list ordering, single read, read-all, and not-found/ownership behavior.
+- [x] **Step 2: Implement natural-key-backed in-app service and route**
 
-- [ ] **Step 2: Run focused tests and confirm RED**
+`POST /notifications/:pengajuanEvaluasiId/:jenis/read` uses `penggunaId` from JWT/session. The list response exposes `pengajuanEvaluasiId` and `jenis` rather than an invented ID.
 
-Run: `npm test -- in-app-notification.service.spec.ts --runInBand`
+- [x] **Step 3: Update frontend identity and reload behavior**
 
-Expected: FAIL against the old reminder-backed implementation.
-
-- [ ] **Step 3: Implement composite-key-backed in-app service**
-
-Keep the client-facing API stable while all persistence goes through `NotifikasiInApp`. If the existing `:notificationId` route cannot represent the natural key without a surrogate ID, encode/decode the composite business key deterministically rather than adding a database ID.
-
-- [ ] **Step 4: Run focused tests and confirm GREEN**
-
-Run: `npm test -- in-app-notification.service.spec.ts --runInBand`
-
-Expected: PASS.
+React uses `${pengajuanEvaluasiId}:${jenis}` as the item key. Mark-read passes the natural key. Read/read-all update local state immediately instead of performing a second explicit reload on top of the SSE event.
 
 ### Task 4: Regression verification
 
 **Files:**
-- Verify: notification reminder tests, notification service tests, Prisma schema/migration, and server build.
+- Modify: `server/test/integration/helpers/integration-database.util.ts`
+- Verify: server/client quality, Prisma schema/migrations, MariaDB invariants, E2E journeys, container build.
 
-**Interfaces:**
-- No new public frontend contract.
-- WhatsApp worker behavior remains unchanged.
+- [x] **Step 1: Include `NotifikasiInApp` in integration database reset**
 
-- [ ] **Step 1: Run notification test suite**
+This prevents historical rows from leaking between integration scenarios.
 
-Run: `npm test -- notifications --runInBand`
+- [x] **Step 2: Validate Prisma schema and production migration chain**
 
-Expected: PASS.
+CI has already demonstrated successful Prisma generation, schema validation, and application of the migration chain against MariaDB on an implementation commit.
 
-- [ ] **Step 2: Validate Prisma schema**
+- [x] **Step 3: Run server and client quality gates**
 
-Run: `npx prisma validate`
+A complete implementation CI run passed server typecheck/lint/unit/build and client typecheck/lint/unit/build. The final run after documentation/tests must still finish before completion is claimed.
 
-Expected: schema valid.
+- [ ] **Step 4: Complete final CI run**
 
-- [ ] **Step 3: Build server**
-
-Run: `npm run build`
-
-Expected: PASS with no TypeScript errors.
-
-- [ ] **Step 4: Review the final diff for scope**
-
-Confirm no unrelated refactors, no surrogate in-app notification ID, history survives stale reminder cleanup, and no-op reconcile does not emit notification-change SSE events.
+Required final evidence: database invariants, critical E2E journeys, and container build all succeed on the final `main` commit.
