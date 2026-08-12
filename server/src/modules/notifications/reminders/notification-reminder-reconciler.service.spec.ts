@@ -82,9 +82,9 @@ describe('NotificationReminderReconcilerService', () => {
     const repository = {
       findActionablePengajuan: jest.fn().mockResolvedValue([{ pengajuanEvaluasiId: 'p-1' }]),
       findActiveRecipients: jest.fn().mockResolvedValue([{ penggunaId: 'u-1' }]),
-      findExistingReminders: jest.fn().mockResolvedValue([
-        { notificationReminderId: 'keep', ...desired },
-      ]),
+      findExistingReminders: jest
+        .fn()
+        .mockResolvedValue([{ notificationReminderId: 'keep', ...desired }]),
       upsertDesiredReminder: jest.fn().mockResolvedValue(undefined),
       createInAppNotificationIfMissing: jest.fn().mockResolvedValue(false),
       deleteReminderIds: jest.fn().mockResolvedValue(0),
