@@ -28,18 +28,24 @@ export class NotificationReminderReconcilerService {
       .filter((reminder) => !desiredKeys.has(reminderIdentity(reminder)))
       .map((reminder) => reminder.notificationReminderId);
 
+    const changedUsers = new Set<string>();
     await Promise.all(
-      desired.map((reminder) => this.repository.upsertDesiredReminder(reminder, now)),
+      desired.map(async (reminder) => {
+        const [, createdInApp] = await Promise.all([
+          this.repository.upsertDesiredReminder(reminder, now),
+          this.repository.createInAppNotificationIfMissing(reminder, now),
+        ]);
+        if (createdInApp) {
+          changedUsers.add(reminder.penggunaId);
+        }
+      }),
     );
+
     const deleted = await this.repository.deleteReminderIds(staleIds);
-    if (desired.length > 0) {
-      for (const penggunaId of new Set(desired.map((reminder) => reminder.penggunaId))) {
-        this.notificationEvents.emitChanged(penggunaId);
-      }
+    for (const penggunaId of changedUsers) {
+      this.notificationEvents.emitChanged(penggunaId);
     }
-    if (deleted > 0) {
-      this.notificationEvents.emitChanged();
-    }
+
     if (desired.length > 0 || deleted > 0) {
       this.logger.debug(`Reconcile reminder selesai desired=${desired.length} deleted=${deleted}`);
     }
