@@ -4,6 +4,7 @@ import {
   Get,
   MessageEvent,
   Param,
+  ParseEnumPipe,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
@@ -15,7 +16,7 @@ import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import type { Request } from 'express';
 import { filter, interval, map, merge, Observable, of } from 'rxjs';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
-import { PeranPengguna } from '../../../generated/prisma';
+import { JenisPengingatWhatsApp, PeranPengguna } from '../../../generated/prisma';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   type JwtAccessPayload,
@@ -98,18 +99,19 @@ export class InAppNotificationController {
     return merge(initial$, changed$, heartbeat$);
   }
 
-  @Post(':notificationId/read')
+  @Post(':pengajuanEvaluasiId/:jenis/read')
   @Roles(...ALL_AUTHENTICATED_ROLES)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({ summary: 'Tandai satu notifikasi sebagai dibaca' })
   async markRead(
     @Req() req: Request & { user: JwtAccessPayload },
-    @Param('notificationId', ParseUUIDPipe) notificationId: string,
+    @Param('pengajuanEvaluasiId', ParseUUIDPipe) pengajuanEvaluasiId: string,
+    @Param('jenis', new ParseEnumPipe(JenisPengingatWhatsApp)) jenis: JenisPengingatWhatsApp,
   ): Promise<ApiSuccessResponse<{ unreadCount: number }>> {
     return {
       message: 'Notifikasi berhasil ditandai dibaca',
       success: true,
-      data: await this.service.markRead(req.user.sub, notificationId),
+      data: await this.service.markRead(req.user.sub, pengajuanEvaluasiId, jenis),
     };
   }
 
