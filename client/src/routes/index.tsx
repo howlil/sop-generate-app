@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import { zodSearchValidator } from '@tanstack/router-zod-adapter'
 import { RouteErrorPage } from '@/components/ui/route-error'
 import { getRoleDefaultLandingPath } from '@/utils/role-routing'
 import { getRole, ensureAuthHydrated, syncAuthFromCookie } from '@/stores/authStore'
@@ -30,7 +29,7 @@ function HomeRoutePage() {
 }
 
 export const Route = createFileRoute('/')({
-  validateSearch: zodSearchValidator(homeSearchSchema),
+  validateSearch: homeSearchSchema,
   beforeLoad: async () => {
     await ensureAuthHydrated()
     if (!getRole()) {
