@@ -1,6 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import { zodSearchValidator } from '@tanstack/router-zod-adapter'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { RouteErrorPage } from '@/components/ui/route-error'
 import { useAuthStore, ensureAuthHydrated, syncAuthFromCookie } from '@/stores/authStore'
@@ -11,7 +10,7 @@ const loginSearchSchema = z.object({
 })
 
 export const Route = createFileRoute('/login/')({
-  validateSearch: zodSearchValidator(loginSearchSchema),
+  validateSearch: loginSearchSchema,
   beforeLoad: async ({ search }) => {
     if (typeof window === 'undefined') {
       return;
