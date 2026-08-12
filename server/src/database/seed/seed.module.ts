@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../../common/prisma/prisma.module';
 import { validateEnv } from '../../config/env.validation';
+import { InitialSeedService } from './initial-seed.service';
 import { SeedService } from './seed.service';
 
 /**
- * Modul ringkas untuk menjalankan seed via {@link SeedService} di luar HTTP server.
+ * Modul ringkas untuk menjalankan seed di luar HTTP server.
  */
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { SeedService } from './seed.service';
     }),
     PrismaModule,
   ],
-  providers: [SeedService],
+  providers: [SeedService, InitialSeedService],
 })
 export class SeedModule {}
