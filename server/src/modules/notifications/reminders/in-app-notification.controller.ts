@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { filter, interval, map, merge, Observable, of } from 'rxjs';
+import { filter, interval, map, merge, Observable } from 'rxjs';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
 import { JenisPengingatWhatsApp, PeranPengguna } from '../../../generated/prisma';
 import {
@@ -86,17 +86,13 @@ export class InAppNotificationController {
         data: event,
       })),
     );
-    const initial$ = of({
-      type: 'notifications.changed',
-      data: { penggunaId, type: 'changed', at: new Date().toISOString() },
-    });
     const heartbeat$ = interval(30_000).pipe(
       map(() => ({
         type: 'notifications.heartbeat',
         data: { penggunaId, type: 'heartbeat', at: new Date().toISOString() },
       })),
     );
-    return merge(initial$, changed$, heartbeat$);
+    return merge(changed$, heartbeat$);
   }
 
   @Post(':pengajuanEvaluasiId/:jenis/read')
