@@ -63,15 +63,17 @@ export function NotificationBell() {
           ) : items.length === 0 ? (
             <div className="flex min-h-24 flex-col items-center justify-center gap-2 px-4 text-center text-sm text-muted-foreground">
               <Inbox className="h-5 w-5" strokeWidth={1.5} />
-              <span>Tidak ada notifikasi aktif</span>
+              <span>Tidak ada notifikasi</span>
             </div>
           ) : (
             items.map((item) => (
               <DropdownMenuItem
-                key={item.id}
+                key={`${item.pengajuanEvaluasiId}:${item.jenis}`}
                 className="items-start gap-2 px-2 py-2"
                 onSelect={() => {
-                  if (!item.readAt) void markRead(item.id)
+                  if (!item.readAt) {
+                    void markRead(item.pengajuanEvaluasiId, item.jenis)
+                  }
                 }}
               >
                 <span
