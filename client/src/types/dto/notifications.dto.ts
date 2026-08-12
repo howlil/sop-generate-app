@@ -5,7 +5,6 @@ export type NotificationKind =
   | 'TTD_SOP_KEPALA_OPD'
 
 export type InAppNotificationDto = {
-  id: string
   pengajuanEvaluasiId: string
   jenis: NotificationKind
   title: string
@@ -13,7 +12,6 @@ export type InAppNotificationDto = {
   body: string
   readAt: string | null
   createdAt: string
-  updatedAt: string
 }
 
 export type NotificationSummaryDto = {
