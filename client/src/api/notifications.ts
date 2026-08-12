@@ -4,6 +4,7 @@ import { unwrapApiData } from '@/lib/api/response'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   InAppNotificationDto,
+  NotificationKind,
   NotificationSummaryDto,
 } from '@/types/dto/notifications.dto'
 
@@ -20,10 +21,10 @@ export const notificationApi = {
       ),
     ),
 
-  markRead: (id: string) =>
+  markRead: (pengajuanEvaluasiId: string, jenis: NotificationKind) =>
     unwrapApiData(
       apiClient.post<ApiSuccessResponse<NotificationSummaryDto>>(
-        `/notifications/${id}/read`,
+        `/notifications/${encodeURIComponent(pengajuanEvaluasiId)}/${encodeURIComponent(jenis)}/read`,
       ),
     ),
 
