@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { JenisPengingatWhatsApp as NotificationReminderKind } from '../../../generated/prisma';
 import { NotificationEventsService } from './notification-events.service';
 import { ReminderMessageFactory } from './reminder-message.factory';
 import { NotificationReminderRepository } from './notification-reminder.repository';
@@ -28,21 +29,28 @@ export class InAppNotificationService {
         pengguna: row.pengguna,
       });
       return {
-        id: row.notificationReminderId,
         pengajuanEvaluasiId: row.pengajuanEvaluasiId,
-        kind: row.kind,
+        jenis: row.kind,
         title: message.title,
         preview: message.preview,
         body: message.body,
-        readAt: row.inAppReadAt,
+        readAt: row.readAt,
         createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
       };
     });
   }
 
-  async markRead(penggunaId: string, notificationId: string): Promise<{ unreadCount: number }> {
-    const updated = await this.repository.markInAppRead(penggunaId, notificationId, new Date());
+  async markRead(
+    penggunaId: string,
+    pengajuanEvaluasiId: string,
+    kind: NotificationReminderKind,
+  ): Promise<{ unreadCount: number }> {
+    const updated = await this.repository.markInAppRead(
+      penggunaId,
+      pengajuanEvaluasiId,
+      kind,
+      new Date(),
+    );
     if (!updated) {
       throw new NotFoundException('Notifikasi tidak ditemukan');
     }
