@@ -6,6 +6,7 @@ import type {
   ActiveNotificationRecipient,
   ClaimedNotificationReminder,
   DesiredNotificationReminder,
+  InAppNotificationRecord,
 } from './notification-reminder.types';
 import { ACTIONABLE_REMINDER_STATUSES } from './notification-reminder.types';
 
@@ -93,6 +94,24 @@ export class NotificationReminderRepository {
       },
       update: { nomorTujuan: reminder.destination },
     });
+  }
+
+  async createInAppNotificationIfMissing(
+    reminder: DesiredNotificationReminder,
+    now: Date,
+  ): Promise<boolean> {
+    const result = await this.prisma.notifikasiInApp.createMany({
+      data: [
+        {
+          pengajuanEvaluasiId: reminder.pengajuanEvaluasiId,
+          penggunaId: reminder.penggunaId,
+          jenis: reminder.kind,
+          createdAt: now,
+        },
+      ],
+      skipDuplicates: true,
+    });
+    return result.count === 1;
   }
 
   async deleteReminderIds(ids: readonly string[]): Promise<number> {
@@ -252,92 +271,105 @@ export class NotificationReminderRepository {
   }
 
   async countUnreadInApp(penggunaId: string): Promise<number> {
-    return this.prisma.pengingatWhatsApp.count({
-      where: { penggunaId, inAppReadAt: null },
+    return this.prisma.notifikasiInApp.count({
+      where: { penggunaId, readAt: null },
     });
   }
 
   async findInAppNotifications(
     penggunaId: string,
     take: number,
-  ): Promise<
-    Array<
-      Omit<ClaimedNotificationReminder, 'consecutiveFailures' | 'lockToken' | 'lastSentAt'> & {
-        inAppReadAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-      }
-    >
-  > {
-    const rows = await this.prisma.pengingatWhatsApp.findMany({
+  ): Promise<InAppNotificationRecord[]> {
+    const rows = await this.prisma.notifikasiInApp.findMany({
       where: { penggunaId },
-      select: {
-        pengingatWhatsAppId: true,
-        pengajuanEvaluasiId: true,
-        penggunaId: true,
-        jenis: true,
-        nomorTujuan: true,
-        inAppReadAt: true,
-        createdAt: true,
-        updatedAt: true,
-        pengajuanEvaluasi: {
-          select: {
-            pengajuanEvaluasiId: true,
-            opdId: true,
-            nomorBA: true,
-            status: true,
-            opd: { select: { nama: true } },
-            _count: { select: { nilaiEvaluasi: true } },
-          },
-        },
-        pengguna: {
-          select: {
-            penggunaId: true,
-            opdId: true,
-            email: true,
-            nama: true,
-            peran: true,
-            nohp: true,
-            deletedAt: true,
-          },
-        },
-      },
-      orderBy: [{ inAppReadAt: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ readAt: 'asc' }, { createdAt: 'desc' }],
       take,
     });
-    return rows.map((row) => ({
-      notificationReminderId: row.pengingatWhatsAppId,
-      pengajuanEvaluasiId: row.pengajuanEvaluasiId,
-      penggunaId: row.penggunaId,
-      kind: row.jenis,
-      destination: row.nomorTujuan,
-      inAppReadAt: row.inAppReadAt,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      pengajuanEvaluasi: {
-        pengajuanEvaluasiId: row.pengajuanEvaluasi.pengajuanEvaluasiId,
-        opdId: row.pengajuanEvaluasi.opdId,
-        opdNama: row.pengajuanEvaluasi.opd.nama,
-        nomorBA: row.pengajuanEvaluasi.nomorBA,
-        status: row.pengajuanEvaluasi.status,
-        jumlahSop: row.pengajuanEvaluasi._count.nilaiEvaluasi,
-      },
-      pengguna: row.pengguna,
-    }));
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const pengajuanIds = [...new Set(rows.map((row) => row.pengajuanEvaluasiId))];
+    const [pengajuanRows, pengguna] = await Promise.all([
+      this.prisma.pengajuanEvaluasi.findMany({
+        where: { pengajuanEvaluasiId: { in: pengajuanIds } },
+        select: {
+          pengajuanEvaluasiId: true,
+          opdId: true,
+          nomorBA: true,
+          status: true,
+          opd: { select: { nama: true } },
+          _count: { select: { nilaiEvaluasi: true } },
+        },
+      }),
+      this.prisma.pengguna.findUnique({
+        where: { penggunaId },
+        select: {
+          penggunaId: true,
+          opdId: true,
+          email: true,
+          nama: true,
+          peran: true,
+          nohp: true,
+          deletedAt: true,
+        },
+      }),
+    ]);
+
+    if (pengguna === null) {
+      return [];
+    }
+
+    const pengajuanById = new Map(
+      pengajuanRows.map((row) => [
+        row.pengajuanEvaluasiId,
+        {
+          pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+          opdId: row.opdId,
+          opdNama: row.opd.nama,
+          nomorBA: row.nomorBA,
+          status: row.status,
+          jumlahSop: row._count.nilaiEvaluasi,
+        },
+      ]),
+    );
+
+    const notifications: InAppNotificationRecord[] = [];
+    for (const row of rows) {
+      const pengajuanEvaluasi = pengajuanById.get(row.pengajuanEvaluasiId);
+      if (pengajuanEvaluasi === undefined) {
+        continue;
+      }
+      notifications.push({
+        pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+        penggunaId: row.penggunaId,
+        kind: row.jenis,
+        readAt: row.readAt,
+        createdAt: row.createdAt,
+        pengajuanEvaluasi,
+        pengguna,
+      });
+    }
+    return notifications;
   }
 
-  async markInAppRead(penggunaId: string, notificationId: string, readAt: Date): Promise<boolean> {
-    const result = await this.prisma.pengingatWhatsApp.updateMany({
-      where: { pengingatWhatsAppId: notificationId, penggunaId },
-      data: { inAppReadAt: readAt },
+  async markInAppRead(
+    penggunaId: string,
+    pengajuanEvaluasiId: string,
+    kind: DesiredNotificationReminder['kind'],
+    readAt: Date,
+  ): Promise<boolean> {
+    const result = await this.prisma.notifikasiInApp.updateMany({
+      where: { penggunaId, pengajuanEvaluasiId, jenis: kind },
+      data: { readAt },
     });
     return result.count === 1;
   }
 
   async markAllInAppRead(penggunaId: string, readAt: Date): Promise<number> {
-    const result = await this.prisma.pengingatWhatsApp.updateMany({
-      where: { penggunaId, inAppReadAt: null },
-      data: { inAppReadAt: readAt },
+    const result = await this.prisma.notifikasiInApp.updateMany({
+      where: { penggunaId, readAt: null },
+      data: { readAt },
     });
     return result.count;
   }
