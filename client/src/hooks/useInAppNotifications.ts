@@ -4,7 +4,10 @@ import {
   resolveNotificationStreamUrl,
 } from '@/api/notifications'
 import { useAuthStore } from '@/stores/authStore'
-import type { InAppNotificationDto } from '@/types/dto/notifications.dto'
+import type {
+  InAppNotificationDto,
+  NotificationKind,
+} from '@/types/dto/notifications.dto'
 
 type NotificationState = {
   items: InAppNotificationDto[]
@@ -68,18 +71,29 @@ export function useInAppNotifications(limit = 10) {
     return () => window.removeEventListener('focus', handleFocus)
   }, [reload, userId])
 
-  const markRead = useCallback(
-    async (id: string) => {
-      await notificationApi.markRead(id)
-      await reload()
-    },
-    [reload],
-  )
+  const markRead = useCallback(async (pengajuanEvaluasiId: string, jenis: NotificationKind) => {
+    const summary = await notificationApi.markRead(pengajuanEvaluasiId, jenis)
+    const readAt = new Date().toISOString()
+    setState((current) => ({
+      ...current,
+      unreadCount: summary.unreadCount,
+      items: current.items.map((item) =>
+        item.pengajuanEvaluasiId === pengajuanEvaluasiId && item.jenis === jenis
+          ? { ...item, readAt: item.readAt ?? readAt }
+          : item,
+      ),
+    }))
+  }, [])
 
   const markAllRead = useCallback(async () => {
-    await notificationApi.markAllRead()
-    await reload()
-  }, [reload])
+    const summary = await notificationApi.markAllRead()
+    const readAt = new Date().toISOString()
+    setState((current) => ({
+      ...current,
+      unreadCount: summary.unreadCount,
+      items: current.items.map((item) => ({ ...item, readAt: item.readAt ?? readAt })),
+    }))
+  }, [])
 
   return {
     ...state,
