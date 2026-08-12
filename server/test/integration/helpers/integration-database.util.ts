@@ -35,6 +35,7 @@ export async function resetIntegrationDatabase(prisma: PrismaService): Promise<v
     'LogEditSOP',
     'RiwayatTandaTangan',
     'DokumenTte',
+    'NotifikasiInApp',
     'PengingatWhatsApp',
     'LogNilaiEvaluasi',
     'NilaiEvaluasi',
