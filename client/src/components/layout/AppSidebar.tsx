@@ -47,9 +47,7 @@ export function AppSidebar({
       data-state={collapsed ? 'collapsed' : 'expanded'}
       className={cn(
         'relative hidden flex-shrink-0 flex-col border-r border-border bg-surface transition-[width] duration-200 motion-reduce:transition-none lg:flex',
-        collapsed
-          ? 'w-[var(--sidebar-width)]'
-          : 'w-[var(--sidebar-width-expanded)]',
+        collapsed ? 'w-[var(--sidebar-width)]' : 'w-[248px]',
       )}
     >
       <div
