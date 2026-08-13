@@ -87,7 +87,11 @@ it('recovers a durable unprocessed duplicate from the persisted inbox record', a
     id: 'webhook-1',
     event: 'message.rejected',
     createdAt: new Date('2026-08-13T08:20:00.000Z'),
-    data: { messageId: 'different-untrusted-retry-id', status: 'rejected', error: 'REACHOUT_RESTRICTED' },
+    data: {
+      messageId: 'different-untrusted-retry-id',
+      status: 'rejected',
+      error: 'REACHOUT_RESTRICTED',
+    },
   };
 
   await expect(service.ingest(retryBody, new Date('2026-08-13T08:20:01.000Z'))).resolves.toBe(
