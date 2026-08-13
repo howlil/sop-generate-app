@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import type { PrismaService } from '../../../../common/prisma/prisma.service';
 import type { TrustedWagoWebhookEvent } from './wago-webhook.types';
 import { WagoWebhookRepository } from './wago-webhook.repository';
