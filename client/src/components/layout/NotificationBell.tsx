@@ -25,7 +25,7 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative rounded-full bg-surface-muted p-0 text-primary transition-colors hover:bg-border"
+          className="relative rounded-control bg-surface-muted p-0 text-primary transition-colors hover:bg-border"
           aria-label={
             unreadCount > 0
               ? `${unreadCount} notifikasi belum dibaca`

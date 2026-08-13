@@ -152,7 +152,7 @@ export function DashboardLayout() {
   };
 
   return (
-    <div suppressHydrationWarning className="flex h-[100dvh] flex-col md:flex-row md:h-screen">
+    <div suppressHydrationWarning className="flex h-[100dvh] flex-col lg:h-screen lg:flex-row">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[60] focus:rounded-control focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-raised focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
@@ -163,17 +163,17 @@ export function DashboardLayout() {
       {/* Mobile nav */}
       <nav
         data-print-hide
-        className="shrink-0 border-b border-border bg-surface md:hidden"
+        className="shrink-0 border-b border-border bg-surface lg:hidden"
         aria-label="Navigasi utama"
       >
-        <div className="flex min-h-14 items-center gap-3 px-3">
-          <img src={logoSvg} alt={APP_DISPLAY_NAME} className="h-9 w-9 shrink-0" />
+        <div className="flex min-h-[var(--header-height)] items-center gap-3 px-4 md:px-5">
+          <img src={logoSvg} alt={APP_DISPLAY_NAME} className="h-8 w-8 shrink-0" />
           <span className="min-w-0 flex-1 text-ui-body font-semibold text-foreground">
             {activeItem?.label ?? APP_DISPLAY_NAME}
           </span>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-control text-secondary-foreground hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-control text-secondary-foreground hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={isMobileNavOpen ? "Tutup navigasi" : "Buka navigasi"}
             aria-expanded={isMobileNavOpen}
             aria-controls="mobile-main-navigation"
@@ -182,28 +182,56 @@ export function DashboardLayout() {
             {isMobileNavOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
           </button>
         </div>
-        <div
-          id="mobile-main-navigation"
-          className={cn("grid gap-1 border-t border-border p-2", !isMobileNavOpen && "hidden")}
-        >
-          {sidebarItems.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              aria-current={isActivePath(pathname, to) ? "page" : undefined}
-              className={cn(
-                "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-ui-body transition-colors",
-                isActivePath(pathname, to)
-                  ? "bg-primary-subtle font-semibold text-primary"
-                  : "text-secondary-foreground hover:bg-surface-muted",
-              )}
-            >
-              <Icon className="h-5 w-5 shrink-0 opacity-80" aria-hidden />
-              {label}
-            </Link>
-          ))}
-        </div>
       </nav>
+      {isMobileNavOpen ? (
+        <div className="fixed inset-0 z-overlay lg:hidden" data-print-hide>
+          <button
+            type="button"
+            className="absolute inset-0 bg-gray-950/40"
+            aria-label="Tutup navigasi"
+            onClick={() => setIsMobileNavOpen(false)}
+          />
+          <div
+            id="mobile-main-navigation"
+            className="relative flex h-full w-[248px] flex-col border-r border-border bg-surface shadow-overlay"
+          >
+            <div className="flex h-[var(--header-height)] shrink-0 items-center gap-2.5 border-b border-border px-3">
+              <img src={logoSvg} alt="" aria-hidden className="h-8 w-8 shrink-0" />
+              <span className="min-w-0 flex-1 text-ui-body font-semibold text-foreground">
+                {APP_DISPLAY_NAME}
+              </span>
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-control text-secondary-foreground hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Tutup navigasi"
+                onClick={() => setIsMobileNavOpen(false)}
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-2">
+              <div className="grid gap-1">
+                {sidebarItems.map(({ to, label, icon: Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    aria-current={isActivePath(pathname, to) ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-10 items-center gap-2.5 rounded-control px-3 py-2 text-ui-body transition-colors",
+                      isActivePath(pathname, to)
+                        ? "bg-primary-subtle font-semibold text-primary"
+                        : "text-secondary-foreground hover:bg-surface-muted",
+                    )}
+                  >
+                    <Icon className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <AppSidebar
         items={sidebarItems}
@@ -220,8 +248,8 @@ export function DashboardLayout() {
             id="main-content"
             className="relative flex-1 overflow-auto bg-background scrollbar-hide"
           >
-            <div data-scroll-content className="min-h-full p-3 sm:p-4 md:p-page">
-              <div data-app-content className="mx-auto w-full max-w-app">
+            <div data-scroll-content className="min-h-full p-4 md:p-5 lg:p-6">
+              <div data-app-content className="w-full">
                 <Outlet />
               </div>
             </div>

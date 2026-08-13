@@ -38,7 +38,7 @@ export function HeaderBar() {
   return (
     <header
       data-print-hide
-      className="flex min-h-[var(--header-height)] flex-shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-3 py-1.5 shadow-surface sm:px-4 md:px-page"
+      className="flex min-h-[var(--header-height)] flex-shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-1.5 md:px-5 lg:px-6"
     >
       <div suppressHydrationWarning className="order-1 flex min-w-0 flex-1 items-center gap-2">
         {headerContent ? (
@@ -67,7 +67,7 @@ export function HeaderBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full bg-surface-muted p-0 text-primary transition-colors hover:bg-border"
+              className="rounded-control bg-surface-muted p-0 text-primary transition-colors hover:bg-border"
               aria-label="Profil"
             >
               <CircleUserRound className="w-4 h-4" strokeWidth={1.5} />

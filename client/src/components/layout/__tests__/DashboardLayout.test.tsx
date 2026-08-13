@@ -88,13 +88,13 @@ describe('DashboardLayout desktop sidebar', () => {
     expect(screen.queryByText('Tutup sidebar')).not.toBeInTheDocument()
   })
 
-  it('menaruh padding di dalam scroll container agar header sticky menutup area atas', () => {
+  it('menaruh gutter fluid di dalam scroll container agar header sticky menutup area atas', () => {
     render(<DashboardLayout />)
 
     const main = document.querySelector('#main-content')
     const scrollContent = document.querySelector('[data-scroll-content]')
 
-    expect(main).not.toHaveClass('p-3', 'sm:p-4', 'md:p-page')
-    expect(scrollContent).toHaveClass('p-3', 'sm:p-4', 'md:p-page')
+    expect(main).not.toHaveClass('p-4', 'md:p-5', 'lg:p-6')
+    expect(scrollContent).toHaveClass('p-4', 'md:p-5', 'lg:p-6')
   })
 })

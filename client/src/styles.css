@@ -5,7 +5,7 @@
 @theme {
   /* Layout — pixel-accurate from Figma */
   --sidebar-width: 56px;
-  --sidebar-width-expanded: 256px;
+  --sidebar-width-expanded: 196px;
   --header-height: 56px;
   --content-padding: 24px;
   --card-padding: 16px;
@@ -18,8 +18,8 @@
   --container-content: 80rem;
   --container-form: 48rem;
   /* Shape roles */
-  --radius-control: 8px;
-  --radius-surface: 12px;
+  --radius-control: 6px;
+  --radius-surface: 8px;
   --radius-overlay: 12px;
   /* Radius — from Figma */
   --radius-sm: 2px;
@@ -31,7 +31,7 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-  --shadow-surface: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-surface: none;
   --shadow-raised: 0 4px 12px rgb(15 23 42 / 0.08);
   --shadow-overlay: 0 20px 32px rgb(15 23 42 / 0.16);
   /* Z-index */

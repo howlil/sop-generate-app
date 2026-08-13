@@ -102,8 +102,8 @@ describe('regresi aksesibilitas komponen UI', () => {
       'rounded-surface',
       'border-border',
       'bg-surface',
-      'shadow-surface',
     )
+    expect(screen.getByText('Ringkasan')).not.toHaveClass('shadow-surface')
   })
 
   it('memberi affordance scroll dan header sticky pada tabel data', () => {

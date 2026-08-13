@@ -30,7 +30,7 @@ function RailTooltip({ children }: { children: string }) {
 
 /**
  * Sidebar global aplikasi.
- * Expanded: 256px untuk label menu. Collapsed: navigation rail 56px sesuai design token.
+ * Expanded: 196px untuk label menu. Collapsed: navigation rail 56px sesuai design token.
  */
 export function AppSidebar({
   items,
@@ -46,7 +46,7 @@ export function AppSidebar({
       data-print-hide
       data-state={collapsed ? 'collapsed' : 'expanded'}
       className={cn(
-        'relative hidden flex-shrink-0 flex-col bg-surface transition-[width] duration-200 motion-reduce:transition-none md:flex',
+        'relative hidden flex-shrink-0 flex-col bg-surface transition-[width] duration-200 motion-reduce:transition-none lg:flex',
         collapsed
           ? 'w-[var(--sidebar-width)]'
           : 'w-[var(--sidebar-width-expanded)]',
@@ -61,7 +61,7 @@ export function AppSidebar({
         {collapsed ? (
           <button
             type="button"
-            className="group relative inline-flex h-9 w-9 items-center justify-center rounded-control text-secondary-foreground transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="group relative inline-flex h-10 w-10 items-center justify-center rounded-control text-secondary-foreground transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Perluas navigasi"
             aria-expanded={false}
             aria-controls="desktop-sidebar"
@@ -80,7 +80,7 @@ export function AppSidebar({
             </div>
             <button
               type="button"
-              className="group relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-secondary-foreground transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="group relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-secondary-foreground transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Ciutkan navigasi"
               aria-expanded={true}
               aria-controls="desktop-sidebar"
