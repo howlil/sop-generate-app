@@ -19,10 +19,7 @@ export interface PaginationProps {
   className?: string
 }
 
-/**
- * Pagination compact: info "X–Y dari Z" + tombol Sebelumnya / nomor halaman / Selanjutnya.
- * Default-nya hanya render jika totalItems > pageSize; gunakan showSinglePageSummary untuk ringkasan satu halaman.
- */
+/** Pagination compact: info item + tombol Sebelumnya / halaman aktif / Selanjutnya. */
 export function Pagination({
   totalItems,
   currentPage,
@@ -42,7 +39,7 @@ export function Pagination({
     if (!showSinglePageSummary) return null
 
     return (
-      <p className={cn('text-center text-sm text-muted-foreground', className)} aria-live="polite">
+      <p className={cn('text-center text-ui-body text-muted-foreground', className)} aria-live="polite">
         {totalItems}
         {labelText}
       </p>
@@ -52,8 +49,6 @@ export function Pagination({
   const canPrev = safePage > 1
   const canNext = safePage < totalPages
 
-  const pageNumbers = getPageNumbers(safePage, totalPages)
-
   return (
     <nav
       aria-label={`Navigasi halaman${labelText}`}
@@ -62,7 +57,7 @@ export function Pagination({
         className
       )}
     >
-      <p className="text-center text-sm text-secondary-foreground sm:text-left" aria-live="polite" aria-atomic="true">
+      <p className="text-center text-ui-body text-secondary-foreground sm:text-left" aria-live="polite" aria-atomic="true">
         {start}–{end} dari {totalItems}
         {labelText}
       </p>
@@ -71,59 +66,30 @@ export function Pagination({
           type="button"
           variant="outline"
           size="sm"
-          className="h-10 w-10 p-0 sm:h-8 sm:w-8"
+          className="h-9 px-3"
           disabled={!canPrev}
           onClick={() => onPageChange(safePage - 1)}
           aria-label="Sebelumnya"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="h-4 w-4" aria-hidden />
+          <span className="hidden sm:inline">Sebelumnya</span>
         </Button>
-        <span className="min-w-0 flex-1 text-center text-sm font-medium text-foreground sm:hidden" aria-current="page">
+        <span className="min-w-[7rem] flex-1 text-center text-ui-body font-medium text-foreground sm:flex-none" aria-current="page">
           Halaman {safePage} dari {totalPages}
         </span>
-        <div className="hidden items-center gap-1 sm:flex">
-          {pageNumbers.map((p, i) =>
-            p === '…' ? (
-              <span key={`ellipsis-${i}`} className="px-2 text-sm text-muted-foreground" aria-hidden>
-                …
-              </span>
-            ) : (
-              <Button
-                type="button"
-                key={p}
-                variant={p === safePage ? 'default' : 'outline'}
-                size="sm"
-                className={cn('h-10 min-w-10 px-2 text-sm sm:h-8 sm:min-w-8', p === safePage && 'bg-primary hover:bg-primary-hover')}
-                onClick={() => onPageChange(p)}
-                aria-label={`Halaman ${p}`}
-                aria-current={p === safePage ? 'page' : undefined}
-              >
-                {p}
-              </Button>
-            )
-          )}
-        </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="h-10 w-10 p-0 sm:h-8 sm:w-8"
+          className="h-9 px-3"
           disabled={!canNext}
           onClick={() => onPageChange(safePage + 1)}
           aria-label="Selanjutnya"
         >
-          <ChevronRight className="w-4 h-4" />
+          <span className="hidden sm:inline">Selanjutnya</span>
+          <ChevronRight className="h-4 w-4" aria-hidden />
         </Button>
       </div>
     </nav>
   )
-}
-
-function getPageNumbers(current: number, total: number): (number | '…')[] {
-  if (total <= 6) {
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }
-  if (current <= 3) return [1, 2, 3, '…', total]
-  if (current >= total - 2) return [1, '…', total - 2, total - 1, total]
-  return [1, '…', current - 1, current, current + 1, '…', total]
 }
