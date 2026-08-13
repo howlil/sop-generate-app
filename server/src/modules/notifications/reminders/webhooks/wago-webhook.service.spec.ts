@@ -75,6 +75,17 @@ function rejectedEvent(error?: string): TrustedWagoWebhookEvent {
 function build() {
   const inbox = {
     insertIfNew: jest.fn().mockResolvedValue('inserted'),
+    findByWebhookId: jest.fn().mockResolvedValue({
+      webhookId: 'existing-webhook',
+      transportMessageId: 'wamid-1',
+      event: 'message.rejected',
+      status: 'rejected',
+      errorCode: 'MESSAGE_REJECTED',
+      sourceCreatedAt: now,
+      receivedAt: now,
+      processedAt: now,
+      createdAt: now,
+    }),
     findUnprocessedByTransportMessageId: jest.fn().mockResolvedValue([]),
     markProcessed: jest.fn().mockResolvedValue(true),
   } as unknown as WagoWebhookRepository;
@@ -153,12 +164,13 @@ describe('WagoWebhookService', () => {
     expect(reminders.accelerateNextSendAt).not.toHaveBeenCalled();
   });
 
-  it('returns duplicate without reapplying delivery or schedule mutations', async () => {
+  it('returns a processed duplicate without reapplying delivery or schedule mutations', async () => {
     const { service, inbox, deliveries, reminders } = build();
     (inbox.insertIfNew as jest.Mock).mockResolvedValueOnce('duplicate');
 
     await expect(service.ingest(rejectedEvent('MESSAGE_REJECTED'), now)).resolves.toBe('duplicate');
 
+    expect(inbox.findByWebhookId).toHaveBeenCalled();
     expect(deliveries.findByTransportMessageId).not.toHaveBeenCalled();
     expect(reminders.accelerateNextSendAt).not.toHaveBeenCalled();
   });
