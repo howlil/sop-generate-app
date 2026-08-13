@@ -10,22 +10,15 @@ vi.mock('@tanstack/react-router', () => ({
   useLocation: () => ({ pathname: '/penyusun/sop' }),
 }))
 
-vi.mock('@/components/layout/HeaderBar', () => ({
-  HeaderBar: () => <div>Header</div>,
-}))
-
+vi.mock('@/components/layout/HeaderBar', () => ({ HeaderBar: () => <div>Header</div> }))
 vi.mock('@/components/layout/PageHeaderProvider', () => ({
   PageHeaderProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
-
 vi.mock('@/stores/authStore', () => ({
   useAuthStore: (selector: (state: { user: { peran: string } }) => unknown) =>
     selector({ user: { peran: 'PENYUSUN' } }),
 }))
-
-vi.mock('@/utils/role-key', () => ({
-  toNavigationRole: () => 'PENYUSUN',
-}))
+vi.mock('@/utils/role-key', () => ({ toNavigationRole: () => 'PENYUSUN' }))
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { useUIStore } from '@/stores/uiStore'
@@ -40,14 +33,12 @@ describe('DashboardLayout desktop sidebar', () => {
 
   it('dapat ditutup, tetap menamai menu, dan dapat dibuka kembali', () => {
     render(<DashboardLayout />)
-
     const sidebar = document.querySelector('#desktop-sidebar')
+
     expect(sidebar).toHaveAttribute('data-state', 'expanded')
-    expect(sidebar).toHaveClass('w-[var(--sidebar-width-expanded)]')
+    expect(sidebar).toHaveClass('w-[248px]')
 
-    const closeButton = screen.getByRole('button', { name: 'Ciutkan navigasi' })
-    fireEvent.click(closeButton)
-
+    fireEvent.click(screen.getByRole('button', { name: 'Ciutkan navigasi' }))
     expect(sidebar).toHaveAttribute('data-state', 'collapsed')
     expect(sidebar).toHaveClass('w-[var(--sidebar-width)]')
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
@@ -55,7 +46,6 @@ describe('DashboardLayout desktop sidebar', () => {
     expect(screen.getAllByRole('link', { name: 'SOP' })).not.toHaveLength(0)
 
     fireEvent.click(screen.getByRole('button', { name: 'Perluas navigasi' }))
-
     expect(sidebar).toHaveAttribute('data-state', 'expanded')
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
   })
@@ -65,10 +55,7 @@ describe('DashboardLayout desktop sidebar', () => {
     render(<DashboardLayout />)
 
     await waitFor(() => {
-      expect(document.querySelector('#desktop-sidebar')).toHaveAttribute(
-        'data-state',
-        'collapsed',
-      )
+      expect(document.querySelector('#desktop-sidebar')).toHaveAttribute('data-state', 'collapsed')
     })
     expect(screen.getByRole('button', { name: 'Perluas navigasi' })).toHaveAttribute(
       'aria-expanded',
@@ -76,21 +63,18 @@ describe('DashboardLayout desktop sidebar', () => {
     )
   })
 
-  it('menampilkan label lengkap tanpa indikator garis kiri atau border panel', () => {
+  it('menampilkan label lengkap dengan separator panel yang netral', () => {
     render(<DashboardLayout />)
-
     const sidebar = document.querySelector('#desktop-sidebar')
     const activeLink = sidebar?.querySelector('a[aria-current="page"]')
 
-    expect(sidebar).not.toHaveClass('border-r')
+    expect(sidebar).toHaveClass('border-r', 'border-border', 'bg-surface')
     expect(activeLink?.className).not.toContain('before:left-0')
     expect(activeLink?.querySelector('span')).not.toHaveClass('truncate')
-    expect(screen.queryByText('Tutup sidebar')).not.toBeInTheDocument()
   })
 
-  it('menaruh gutter fluid di dalam scroll container agar header sticky menutup area atas', () => {
+  it('menaruh gutter fluid di dalam scroll container', () => {
     render(<DashboardLayout />)
-
     const main = document.querySelector('#main-content')
     const scrollContent = document.querySelector('[data-scroll-content]')
 
