@@ -30,7 +30,7 @@ function RailTooltip({ children }: { children: string }) {
 
 /**
  * Sidebar global aplikasi.
- * Expanded: 196px untuk label menu. Collapsed: navigation rail 56px sesuai design token.
+ * Expanded: 248px untuk label menu. Collapsed: navigation rail 56px sesuai design token.
  */
 export function AppSidebar({
   items,
@@ -46,7 +46,7 @@ export function AppSidebar({
       data-print-hide
       data-state={collapsed ? 'collapsed' : 'expanded'}
       className={cn(
-        'relative hidden flex-shrink-0 flex-col bg-surface transition-[width] duration-200 motion-reduce:transition-none lg:flex',
+        'relative hidden flex-shrink-0 flex-col border-r border-border bg-surface transition-[width] duration-200 motion-reduce:transition-none lg:flex',
         collapsed
           ? 'w-[var(--sidebar-width)]'
           : 'w-[var(--sidebar-width-expanded)]',
@@ -124,7 +124,6 @@ export function AppSidebar({
           })}
         </div>
       </nav>
-
     </aside>
   )
 }
