@@ -30,9 +30,11 @@ const DataTableBodyRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttribu
 ))
 DataTableBodyRow.displayName = 'DataTableBodyRow'
 
-const DataTableTh = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement> & { align?: 'left' | 'center' | 'right' }>(({ className, align = 'left', ...props }, ref) => (
-  <th ref={ref} scope="col" className={cn('whitespace-nowrap px-3 py-2.5 text-[12px]/[16px] font-medium text-secondary-foreground', align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left', className)} {...props} />
-))
+const DataTableTh = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement> & { align?: 'left' | 'center' | 'right' }>(({ className, align = 'left', ...props }, ref) => {
+  const alignmentClass = align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'
+  const overrideClasses = cn('font-medium text-secondary-foreground', alignmentClass, className)
+  return <th ref={ref} scope="col" className={`whitespace-nowrap px-3 py-2.5 text-[12px]/[16px] text-ui-label ${overrideClasses}`} {...props} />
+})
 DataTableTh.displayName = 'DataTableTh'
 
 const DataTableTd = React.forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(({ className, ...props }, ref) => (
