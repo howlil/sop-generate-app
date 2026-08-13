@@ -134,9 +134,9 @@ describeIntegration('Wago delivery webhook integration', () => {
     expect(acceleratedReminder.nextSendAt).toEqual(new Date(receivedAt.getTime() + 5 * 60_000));
     expect(inbox.processedAt).not.toBeNull();
 
-    await expect(webhookService.ingest(event, new Date(receivedAt.getTime() + 2_000))).resolves.toBe(
-      'duplicate',
-    );
+    await expect(
+      webhookService.ingest(event, new Date(receivedAt.getTime() + 2_000)),
+    ).resolves.toBe('duplicate');
     const afterDuplicate = await prisma.pengingatWhatsApp.findUniqueOrThrow({
       where: { pengingatWhatsAppId: reminder.pengingatWhatsAppId },
     });
