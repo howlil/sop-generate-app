@@ -100,7 +100,7 @@ describe('PushReminderWorkerService idempotency', () => {
       expect.any(Date),
     );
     expect(deliveryService.recordSubmission.mock.invocationCallOrder[0]).toBeLessThan(
-      (repository.markSuccess as jest.Mock).mock.invocationCallOrder[0] as number,
+      (repository.markSuccess as jest.Mock).mock.invocationCallOrder[0],
     );
   });
 
