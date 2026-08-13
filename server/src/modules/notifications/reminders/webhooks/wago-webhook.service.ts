@@ -22,11 +22,7 @@ type WebhookProcessingInput = Readonly<{
 
 type MatchedProcessingResult = 'processed' | 'deferred';
 
-export type WagoWebhookIngestResult =
-  | 'processed'
-  | 'stored-unmatched'
-  | 'duplicate'
-  | 'deferred';
+export type WagoWebhookIngestResult = 'processed' | 'stored-unmatched' | 'duplicate' | 'deferred';
 
 @Injectable()
 export class WagoWebhookService {
@@ -156,7 +152,8 @@ export class WagoWebhookService {
 
     const scheduleCommitPending =
       reminder.lockToken !== null &&
-      (reminder.lastSentAt === null || reminder.lastSentAt.getTime() < delivery.submittedAt.getTime());
+      (reminder.lastSentAt === null ||
+        reminder.lastSentAt.getTime() < delivery.submittedAt.getTime());
     if (scheduleCommitPending) return 'deferred';
 
     await this.reminders.accelerateNextSendAt(
