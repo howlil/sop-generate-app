@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { BadRequestException } from '@nestjs/common';
 import type { RequestWithRawBody } from '../../../../common/http/raw-body';
 import { WagoWebhookController } from './wago-webhook.controller';
@@ -118,13 +117,7 @@ describe('WagoWebhookController', () => {
     const { controller, ingest, request } = build();
 
     await expect(
-      controller.receive(
-        request,
-        'webhook-1',
-        '1786608000',
-        'v1,c2lnbmF0dXJl',
-        'message.rejected',
-      ),
+      controller.receive(request, 'webhook-1', '1786608000', 'v1,c2lnbmF0dXJl', 'message.rejected'),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(ingest).not.toHaveBeenCalled();
   });
