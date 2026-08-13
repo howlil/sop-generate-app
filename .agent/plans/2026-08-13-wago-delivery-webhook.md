@@ -2,62 +2,60 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add durable, signed Wago delivery-webhook ingestion to SOPFlow so every outbound WhatsApp reminder attempt can be correlated to `message.server_accepted` / `message.rejected`, with safe five-minute retry acceleration only for the latest still-actionable `MESSAGE_REJECTED` attempt.
+**Goal:** Add durable signed Wago delivery-webhook ingestion to SOPFlow so every outbound WhatsApp reminder occurrence can be correlated to `message.server_accepted` / `message.rejected`, with safe five-minute retry acceleration only for the latest still-actionable `MESSAGE_REJECTED` attempt.
 
-**Architecture:** Keep `PengingatWhatsApp` as active business reminder state, add a durable delivery-attempt history keyed by transport message ID/idempotency key, and add a durable webhook inbox keyed by `Webhook-Id`. `WagoProvider` returns a provider-agnostic transport receipt; the webhook boundary verifies raw-body HMAC before envelope validation; the application service resolves terminal attempt state and narrowly updates `nextSendAt` without ever calling the worker directly.
+**Architecture:** Keep `PengingatWhatsApp` as active reminder lifecycle state. Add `PengirimanNotifikasiWhatsApp` for transport-attempt history and `WagoWebhookEvent` as a durable inbox keyed by `Webhook-Id`. `WagoProvider` returns a provider-neutral receipt; the webhook boundary authenticates the exact raw request body before parsing/trusting the envelope; the webhook service resolves terminal delivery state and can only shorten `nextSendAt`, never call the worker directly.
 
-**Tech Stack:** NestJS 11, TypeScript 5.7, Prisma 7 + MariaDB/MySQL, Jest 30, Zod, Node `crypto` HMAC/timing-safe comparison, existing `@nestjs/schedule` reminder scheduler.
+**Tech Stack:** NestJS 11, TypeScript 5.7, Prisma 7 schema-folder + MariaDB/MySQL, Jest 30, Zod, Node `crypto`, existing notification scheduler.
 
 ## Global Constraints
 
-- Work only on branch `feat/wago-delivery-webhook`; one task branch only.
-- Use TDD: write/commit RED tests before each production behavior where practical, then GREEN implementation.
-- Keep `NotificationChannel` provider-agnostic; business code uses `transportMessageId`, never `wagoMessageId`.
-- `PengingatWhatsApp` remains active lifecycle state and must not become delivery history.
-- Wago webhook schema version supported: exactly `1`.
-- Supported events: `message.server_accepted` and `message.rejected` only.
-- HMAC signing material: `<Webhook-Id>.<Webhook-Timestamp>.<exact raw JSON body>`.
-- Signature algorithm: HMAC-SHA256, Base64 signature payload, constant-time comparison.
-- Signature timestamp tolerance: ±5 minutes.
-- `MESSAGE_REJECTED`: accelerate only the latest relevant active reminder attempt to `min(existingNextSendAt, now + 5 minutes)`.
-- `REACHOUT_RESTRICTED`: record rejection; do not accelerate.
-- Unknown/empty rejection code: record rejection; do not accelerate.
-- Duplicate `Webhook-Id`: `2xx` no-op.
-- Stale attempt callback: update delivery history only; never modify reminder scheduling.
-- Obsolete/non-actionable reminder: update delivery history only; never recreate reminder state.
-- Do not call `PushReminderWorkerService.processDue()` from webhook code.
-- No Redis, Kafka, new queue, webhook polling, frontend webhook UI, inbound WhatsApp support, or recipient auto-allow.
-- Never hold a DB transaction open across a Wago HTTP request.
-- Webhook receiver remains optional: outbound Wago sending works without `WAGO_WEBHOOK_SECRET`; unsigned callbacks are never accepted.
-- Wago `DUPLICATE_MESSAGE` does not expose the original `messageId`; never invent correlation after a crash window that lost the original receipt.
+- Branch: `feat/wago-delivery-webhook` only.
+- TDD for each behavior: RED test, verify failure, minimal GREEN, verify pass.
+- Business code uses `transportMessageId`, never a Wago-specific message-ID property name.
+- Wago webhook schema: version `1` only.
+- Events: `message.server_accepted`, `message.rejected` only.
+- Signing material: `<Webhook-Id>.<Webhook-Timestamp>.<exact raw JSON body>`.
+- HMAC-SHA256; Base64 signature payload; `timingSafeEqual` only for equal byte lengths.
+- Timestamp tolerance: ±300 seconds.
+- `MESSAGE_REJECTED`: latest + still-eligible attempt may shorten schedule to `min(existingNextSendAt, now + 5 minutes)`.
+- `REACHOUT_RESTRICTED`: history update only; no accelerated retry.
+- Unknown/empty rejection error: history update only; no accelerated retry.
+- Duplicate `Webhook-Id`: `2xx` idempotent no-op.
+- Stale attempt, deleted reminder, or no-longer-actionable reminder: delivery history may update; schedule must not.
+- First terminal state wins: `PENDING -> ACCEPTED|REJECTED`; terminal -> terminal is no-op.
+- No direct `PushReminderWorkerService.processDue()` invocation from webhook code.
+- No Redis/Kafka/new queue/global polling/frontend webhook UI/inbound WhatsApp/recipient auto-allow.
+- Never keep a DB transaction open across the Wago HTTP request.
+- Webhook secret is optional for deployment; outbound Wago still works without it, but callback endpoint never accepts unsigned traffic.
+- Wago `409 DUPLICATE_MESSAGE` does not expose the original `messageId`; do not invent correlation if a crash lost the first receipt.
 
 ---
 
-## File Structure
-
-Create or modify these focused units:
+## Locked File Map
 
 ```text
 server/prisma/schema.prisma
-server/prisma/migrations/20260813xxxxxx_add_wago_delivery_webhook_state/migration.sql
+server/prisma/notifications.prisma
+server/prisma/migrations/20260813090000_add_wago_delivery_webhook_state/migration.sql
 
 server/src/modules/notifications/reminders/
 ├── deliveries/
+│   ├── notification-delivery.types.ts
 │   ├── notification-delivery.repository.ts
 │   ├── notification-delivery.repository.spec.ts
 │   ├── notification-delivery.service.ts
-│   ├── notification-delivery.service.spec.ts
-│   └── notification-delivery.types.ts
+│   └── notification-delivery.service.spec.ts
 ├── webhooks/
-│   ├── wago-webhook.controller.ts
-│   ├── wago-webhook.controller.spec.ts
+│   ├── wago-webhook.types.ts
+│   ├── wago-webhook-signature.service.ts
+│   ├── wago-webhook-signature.service.spec.ts
 │   ├── wago-webhook.repository.ts
 │   ├── wago-webhook.repository.spec.ts
 │   ├── wago-webhook.service.ts
 │   ├── wago-webhook.service.spec.ts
-│   ├── wago-webhook-signature.service.ts
-│   ├── wago-webhook-signature.service.spec.ts
-│   └── wago-webhook.types.ts
+│   ├── wago-webhook.controller.ts
+│   └── wago-webhook.controller.spec.ts
 ├── providers/
 │   ├── notification-channel.interface.ts
 │   ├── wago.provider.ts
@@ -71,136 +69,30 @@ server/src/common/http/raw-body.ts
 server/src/main.ts
 server/src/config/env.validation.ts
 server/src/config/env.validation.spec.ts
+server/test/integration/helpers/integration-database.util.ts
 
 .env.example
 server/.env.test
 compose.yml
 README.md
-.agent/specs/2026-08-13-wago-delivery-webhook-design.md
 ```
 
-If the existing Prisma/client generation requires duplicated notification models in `server/prisma/notifications.prisma`, update that file consistently instead of leaving divergent schemas.
+`schema.prisma` contains the existing `PengingatWhatsApp` model; `notifications.prisma` is the notification-specific schema fragment. The new history/inbox models live in `notifications.prisma`, while `PengingatWhatsApp` receives its inverse relation in `schema.prisma`.
 
 ---
 
-### Task 1: Persist Delivery Attempts and Webhook Inbox
+### Task 1: Database Model and Delivery Repository
 
 **Files:**
 - Modify: `server/prisma/schema.prisma`
-- Modify when required by current project convention: `server/prisma/notifications.prisma`
-- Create: `server/prisma/migrations/20260813xxxxxx_add_wago_delivery_webhook_state/migration.sql`
+- Modify: `server/prisma/notifications.prisma`
+- Create: `server/prisma/migrations/20260813090000_add_wago_delivery_webhook_state/migration.sql`
 - Create: `server/src/modules/notifications/reminders/deliveries/notification-delivery.types.ts`
 - Create: `server/src/modules/notifications/reminders/deliveries/notification-delivery.repository.ts`
 - Create: `server/src/modules/notifications/reminders/deliveries/notification-delivery.repository.spec.ts`
-- Modify: `server/test/integration/helpers/integration-database.util.ts` if it explicitly clears notification tables.
+- Modify: `server/test/integration/helpers/integration-database.util.ts`
 
-**Interfaces:**
-- Produces `NotificationDeliveryRepository.createOrGetPending(...)`, `findByTransportMessageId(...)`, `findLatestForReminderIdentity(...)`, and terminal transition helpers.
-- Produces durable models `PengirimanNotifikasiWhatsApp` and `WagoWebhookEvent` for later tasks.
-
-- [ ] **Step 1: Write RED repository tests for delivery-attempt identity and lifecycle**
-
-Add tests equivalent to:
-
-```ts
-it('creates one pending delivery per idempotency key', async () => {
-  const first = await repository.createOrGetPending({
-    notificationReminderId: 'reminder-1',
-    pengajuanEvaluasiId: 'submission-1',
-    penggunaId: 'user-1',
-    kind: JenisPengingatWhatsApp.EVALUASI_SOP,
-    idempotencyKey: 'sopflow-reminder:reminder-1:initial',
-    transportMessageId: 'wamid-1',
-    submittedAt: new Date('2026-08-13T08:00:00.000Z'),
-  });
-  const duplicate = await repository.createOrGetPending({
-    notificationReminderId: 'reminder-1',
-    pengajuanEvaluasiId: 'submission-1',
-    penggunaId: 'user-1',
-    kind: JenisPengingatWhatsApp.EVALUASI_SOP,
-    idempotencyKey: 'sopflow-reminder:reminder-1:initial',
-    transportMessageId: 'wamid-1',
-    submittedAt: new Date('2026-08-13T08:01:00.000Z'),
-  });
-
-  expect(duplicate.pengirimanNotifikasiWhatsAppId).toBe(first.pengirimanNotifikasiWhatsAppId);
-});
-
-it('keeps historical delivery when active reminder is deleted', async () => {
-  const delivery = await repository.createOrGetPending(/* fixture */);
-  await prisma.pengingatWhatsApp.delete({ where: { pengingatWhatsAppId: 'reminder-1' } });
-
-  const persisted = await prisma.pengirimanNotifikasiWhatsApp.findUnique({
-    where: { pengirimanNotifikasiWhatsAppId: delivery.pengirimanNotifikasiWhatsAppId },
-  });
-  expect(persisted?.pengingatWhatsAppId).toBeNull();
-});
-```
-
-- [ ] **Step 2: Run the focused tests and confirm RED**
-
-Run:
-
-```bash
-cd server
-pnpm jest notification-delivery.repository.spec.ts --runInBand
-```
-
-Expected: fail because delivery models/repository do not exist.
-
-- [ ] **Step 3: Add schema and migration**
-
-Use explicit Prisma enums/models equivalent to:
-
-```prisma
-enum StatusPengirimanNotifikasiWhatsApp {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
-model PengirimanNotifikasiWhatsApp {
-  pengirimanNotifikasiWhatsAppId String                           @id @default(uuid()) @db.Char(36)
-  pengingatWhatsAppId            String?                          @db.Char(36)
-  pengajuanEvaluasiId            String                           @db.Char(36)
-  penggunaId                     String                           @db.Char(36)
-  jenis                          JenisPengingatWhatsApp
-  idempotencyKey                 String                           @unique @db.VarChar(191)
-  transportMessageId             String?                          @unique @db.VarChar(191)
-  status                         StatusPengirimanNotifikasiWhatsApp @default(PENDING)
-  errorCode                      String?                          @db.VarChar(64)
-  submittedAt                    DateTime                         @db.DateTime(3)
-  resolvedAt                     DateTime?                        @db.DateTime(3)
-  createdAt                      DateTime                         @default(now()) @db.DateTime(3)
-  updatedAt                      DateTime                         @updatedAt @db.DateTime(3)
-  pengingatWhatsApp              PengingatWhatsApp?               @relation(fields: [pengingatWhatsAppId], references: [pengingatWhatsAppId], onDelete: SetNull)
-
-  @@index([pengajuanEvaluasiId, penggunaId, jenis, submittedAt], map: "PengirimanNotifikasi_identity_submitted_idx")
-  @@index([pengingatWhatsAppId, submittedAt], map: "PengirimanNotifikasi_reminder_submitted_idx")
-}
-
-model WagoWebhookEvent {
-  webhookId          String   @id @db.VarChar(191)
-  transportMessageId String   @db.VarChar(191)
-  event              String   @db.VarChar(64)
-  status             String   @db.VarChar(16)
-  errorCode          String?  @db.VarChar(64)
-  sourceCreatedAt    DateTime @db.DateTime(3)
-  receivedAt         DateTime @db.DateTime(3)
-  processedAt        DateTime? @db.DateTime(3)
-  createdAt          DateTime @default(now()) @db.DateTime(3)
-
-  @@index([transportMessageId, processedAt], map: "WagoWebhook_message_processed_idx")
-}
-```
-
-Add the inverse `pengirimanNotifikasi` relation on `PengingatWhatsApp`.
-
-Migration must create the enum/table definitions using the repository's existing MariaDB-compatible Prisma migration style, unique constraints, indexes, and `ON DELETE SET NULL` foreign key.
-
-- [ ] **Step 4: Implement the focused repository**
-
-Define a provider-neutral type:
+**Produces:**
 
 ```ts
 export type CreatePendingNotificationDelivery = Readonly<{
@@ -214,11 +106,105 @@ export type CreatePendingNotificationDelivery = Readonly<{
 }>;
 ```
 
-`createOrGetPending` must first query by `idempotencyKey`; create only if absent. Do not create a second row for the same logical occurrence.
+Repository methods:
 
-- [ ] **Step 5: Run repository tests GREEN and validate Prisma**
+```ts
+createOrGetPending(input: CreatePendingNotificationDelivery): Promise<NotificationDeliveryRecord>;
+findByTransportMessageId(messageId: string): Promise<NotificationDeliveryRecord | null>;
+findLatestForIdentity(pengajuanEvaluasiId: string, penggunaId: string, kind: JenisPengingatWhatsApp): Promise<NotificationDeliveryRecord | null>;
+markAccepted(id: string, resolvedAt: Date): Promise<'updated' | 'already-terminal'>;
+markRejected(id: string, errorCode: string | null, resolvedAt: Date): Promise<'updated' | 'already-terminal'>;
+```
 
-Run:
+- [ ] **Step 1: Add RED repository tests**
+
+Use a typed Prisma mock consistent with existing repository specs. Cover:
+
+```ts
+it('reuses the same logical delivery by unique idempotency key', async () => {
+  prisma.pengirimanNotifikasiWhatsApp.findUnique.mockResolvedValueOnce(existingRow);
+
+  const result = await repository.createOrGetPending({
+    notificationReminderId: '11111111-1111-1111-1111-111111111111',
+    pengajuanEvaluasiId: '22222222-2222-2222-2222-222222222222',
+    penggunaId: '33333333-3333-3333-3333-333333333333',
+    kind: JenisPengingatWhatsApp.EVALUASI_SOP,
+    idempotencyKey: 'sopflow-reminder:11111111-1111-1111-1111-111111111111:initial',
+    transportMessageId: 'wamid-1',
+    submittedAt: new Date('2026-08-13T08:00:00.000Z'),
+  });
+
+  expect(result.idempotencyKey).toBe(existingRow.idempotencyKey);
+  expect(prisma.pengirimanNotifikasiWhatsApp.create).not.toHaveBeenCalled();
+});
+```
+
+Also cover create path, lookup by message ID, latest identity ordering, and terminal first-write-wins.
+
+- [ ] **Step 2: Verify RED**
+
+```bash
+cd server
+pnpm jest notification-delivery.repository.spec.ts --runInBand
+```
+
+Expected: module/model/repository missing.
+
+- [ ] **Step 3: Add Prisma schema + migration**
+
+Add:
+
+```prisma
+enum StatusPengirimanNotifikasiWhatsApp {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model PengirimanNotifikasiWhatsApp {
+  pengirimanNotifikasiWhatsAppId String                             @id @default(uuid()) @db.Char(36)
+  pengingatWhatsAppId            String?                            @db.Char(36)
+  pengajuanEvaluasiId            String                             @db.Char(36)
+  penggunaId                     String                             @db.Char(36)
+  jenis                          JenisPengingatWhatsApp
+  idempotencyKey                 String                             @unique @db.VarChar(191)
+  transportMessageId             String?                            @unique @db.VarChar(191)
+  status                         StatusPengirimanNotifikasiWhatsApp @default(PENDING)
+  errorCode                      String?                            @db.VarChar(64)
+  submittedAt                    DateTime                           @db.DateTime(3)
+  resolvedAt                     DateTime?                          @db.DateTime(3)
+  createdAt                      DateTime                           @default(now()) @db.DateTime(3)
+  updatedAt                      DateTime                           @updatedAt @db.DateTime(3)
+  pengingatWhatsApp              PengingatWhatsApp?                 @relation(fields: [pengingatWhatsAppId], references: [pengingatWhatsAppId], onDelete: SetNull)
+
+  @@index([pengajuanEvaluasiId, penggunaId, jenis, submittedAt], map: "PengirimanNotifikasi_identity_submitted_idx")
+  @@index([pengingatWhatsAppId, submittedAt], map: "PengirimanNotifikasi_reminder_submitted_idx")
+}
+
+model WagoWebhookEvent {
+  webhookId           String    @id @db.VarChar(191)
+  transportMessageId  String    @db.VarChar(191)
+  event               String    @db.VarChar(64)
+  status              String    @db.VarChar(16)
+  errorCode           String?   @db.VarChar(64)
+  sourceCreatedAt     DateTime  @db.DateTime(3)
+  receivedAt          DateTime  @db.DateTime(3)
+  processedAt         DateTime? @db.DateTime(3)
+  createdAt           DateTime  @default(now()) @db.DateTime(3)
+
+  @@index([transportMessageId, processedAt], map: "WagoWebhook_message_processed_idx")
+}
+```
+
+Add `pengirimanNotifikasiWhatsApp PengirimanNotifikasiWhatsApp[]` to `PengingatWhatsApp`.
+
+Migration must create the two tables, enum representation generated for MySQL/MariaDB, unique indexes on `idempotencyKey` and nullable `transportMessageId`, lookup indexes, and FK `PengirimanNotifikasiWhatsApp.pengingatWhatsAppId -> PengingatWhatsApp.pengingatWhatsAppId ON DELETE SET NULL`.
+
+- [ ] **Step 4: Implement repository minimally**
+
+`createOrGetPending` queries by `idempotencyKey` first and creates only if absent. Terminal updates use `updateMany({ where: { id, status: PENDING } })`; if count is zero, return `already-terminal`.
+
+- [ ] **Step 5: Validate GREEN**
 
 ```bash
 cd server
@@ -227,9 +213,7 @@ pnpm prisma generate
 pnpm jest notification-delivery.repository.spec.ts --runInBand
 ```
 
-Expected: all pass.
-
-- [ ] **Step 6: Commit Task 1**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add server/prisma server/src/modules/notifications/reminders/deliveries server/test/integration/helpers/integration-database.util.ts
@@ -238,15 +222,14 @@ git commit -m "feat: persist notification delivery attempts"
 
 ---
 
-### Task 2: Return Transport Receipts from the Wago Provider
+### Task 2: Provider-neutral Transport Receipt
 
 **Files:**
 - Modify: `server/src/modules/notifications/reminders/providers/notification-channel.interface.ts`
 - Modify: `server/src/modules/notifications/reminders/providers/wago.provider.ts`
 - Modify: `server/src/modules/notifications/reminders/providers/wago.provider.spec.ts`
 
-**Interfaces:**
-- Produces:
+**Produces:**
 
 ```ts
 export type NotificationSendReceipt = Readonly<{
@@ -255,51 +238,34 @@ export type NotificationSendReceipt = Readonly<{
 }>;
 ```
 
-- `NotificationChannel.send(...)` returns `Promise<NotificationSendReceipt>`.
+`NotificationChannel.send(...)` returns `Promise<NotificationSendReceipt>`.
 
-- [ ] **Step 1: Write RED Wago provider receipt tests**
+- [ ] **Step 1: RED tests**
 
-Change the successful-send test to assert:
+Assert HTTP `202 { messageId: 'm1', status: 'pending' }` resolves to:
 
 ```ts
-await expect(
-  provider.send('085373945490', 'Pesan uji', {
-    idempotencyKey: 'sopflow-reminder:r1:initial',
-  }),
-).resolves.toEqual({ transportMessageId: 'm1', status: 'pending' });
+{ transportMessageId: 'm1', status: 'pending' }
 ```
 
-Add a successful `202` test with missing/null `messageId` that returns:
+Add a `202` with absent/non-string `messageId` returning null correlation. Update the existing `409 DUPLICATE_MESSAGE` test to resolve logical success as:
 
 ```ts
 { transportMessageId: null, status: 'pending' }
 ```
 
-Keep `DUPLICATE_MESSAGE` as logical success but return a receipt with `transportMessageId: null`; do not invent the original ID.
-
-- [ ] **Step 2: Run provider test RED**
+- [ ] **Step 2: Verify RED**
 
 ```bash
 cd server
 pnpm jest wago.provider.spec.ts --runInBand
 ```
 
-Expected: current provider resolves `undefined`.
+- [ ] **Step 3: GREEN implementation**
 
-- [ ] **Step 3: Implement receipt parsing**
+On `response.ok`, parse JSON safely and normalize only `messageId`; do not require a message ID to consider Wago submission successful. Keep all existing error mappings unchanged.
 
-Parse only the successful response fields needed:
-
-```ts
-type WagoSuccessBody = Readonly<{
-  messageId?: unknown;
-  status?: unknown;
-}>;
-```
-
-Return a normalized receipt on `2xx`, and keep all current error mappings unchanged.
-
-- [ ] **Step 4: Run provider tests GREEN**
+- [ ] **Step 4: Verify GREEN**
 
 ```bash
 cd server
@@ -307,7 +273,7 @@ pnpm jest wago.provider.spec.ts --runInBand
 pnpm typecheck
 ```
 
-- [ ] **Step 5: Commit Task 2**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add server/src/modules/notifications/reminders/providers
@@ -316,82 +282,67 @@ git commit -m "refactor: return transport receipts from notification channels"
 
 ---
 
-### Task 3: Persist the Receipt in the Reminder Worker
+### Task 3: Record Delivery Receipt in Reminder Worker
 
 **Files:**
+- Create: `server/src/modules/notifications/reminders/deliveries/notification-delivery.service.ts`
+- Create: `server/src/modules/notifications/reminders/deliveries/notification-delivery.service.spec.ts`
 - Modify: `server/src/modules/notifications/reminders/push-reminder-worker.service.ts`
 - Modify: `server/src/modules/notifications/reminders/push-reminder-worker.service.spec.ts`
-- Create/modify: `server/src/modules/notifications/reminders/deliveries/notification-delivery.service.ts`
-- Create/modify: `server/src/modules/notifications/reminders/deliveries/notification-delivery.service.spec.ts`
 - Modify: `server/src/modules/notifications/reminders/notification.module.ts`
 
-**Interfaces:**
-- Consumes `NotificationSendReceipt` and `NotificationDeliveryRepository.createOrGetPending`.
-- Produces `NotificationDeliveryService.recordSubmission(reminder, idempotencyKey, receipt, submittedAt)` for the worker and later webhook reconciliation.
-
-- [ ] **Step 1: Write RED worker tests**
-
-Cover:
+**Produces:**
 
 ```ts
-expect(channel.send).toHaveBeenCalledWith(destination, body, {
-  idempotencyKey: 'sopflow-reminder:r1:initial',
-});
-expect(deliveryService.recordSubmission).toHaveBeenCalledWith(
-  expect.objectContaining({ notificationReminderId: 'r1' }),
-  'sopflow-reminder:r1:initial',
-  { transportMessageId: 'wamid-1', status: 'pending' },
-  expect.any(Date),
-);
+recordSubmission(
+  reminder: ClaimedNotificationReminder,
+  idempotencyKey: string,
+  receipt: NotificationSendReceipt,
+  submittedAt: Date,
+): Promise<NotificationDeliveryRecord>;
 ```
 
-Also assert that `markSuccess` happens after `recordSubmission` resolves, and that duplicate logical success does not create a second delivery occurrence.
+- [ ] **Step 1: RED worker/service tests**
 
-- [ ] **Step 2: Run worker tests RED**
+Mock channel success:
+
+```ts
+channel.send.mockResolvedValue({ transportMessageId: 'wamid-1', status: 'pending' });
+```
+
+Assert `recordSubmission` receives reminder snapshot + exact idempotency key before `markSuccess`. Assert an existing idempotency-key row is reused rather than duplicated.
+
+- [ ] **Step 2: Verify RED**
 
 ```bash
 cd server
 pnpm jest push-reminder-worker.service.spec.ts notification-delivery.service.spec.ts --runInBand
 ```
 
-- [ ] **Step 3: Implement `NotificationDeliveryService.recordSubmission`**
+- [ ] **Step 3: Implement delivery service**
 
-The service should:
+At this task the service only persists through `NotificationDeliveryRepository`. Race reconciliation is attached in Task 6 after the webhook service exists; do not introduce a placeholder callback or circular dependency now.
 
-```ts
-async recordSubmission(
-  reminder: ClaimedNotificationReminder,
-  idempotencyKey: string,
-  receipt: NotificationSendReceipt,
-  submittedAt: Date,
-): Promise<NotificationDeliveryRecord>
-```
+- [ ] **Step 4: Update worker**
 
-It must persist snapshot identity + receipt and then reconcile any already-stored unmatched webhook events for `transportMessageId` when non-null.
-
-Initially inject a reconciliation collaborator/interface that can be implemented in Task 6; avoid a circular module import. A small callback/service boundary is acceptable, but do not create a generic event bus.
-
-- [ ] **Step 4: Update the worker**
-
-Replace:
-
-```ts
-await this.channel.send(...);
-```
-
-with:
+Use one stable local key:
 
 ```ts
 const idempotencyKey = this.buildIdempotencyKey(reminder);
 const receipt = await this.channel.send(reminder.destination, message.body, { idempotencyKey });
 const sentAt = new Date();
 await this.deliveryService.recordSubmission(reminder, idempotencyKey, receipt, sentAt);
-await this.repository.markSuccess(...);
+await this.repository.markSuccess(
+  notificationReminderId,
+  lockToken,
+  sentAt,
+  new Date(sentAt.getTime() + this.reminderIntervalMs),
+);
 ```
 
-Do not alter existing transient/configuration failure backoff behavior.
+Do not alter failure/backoff semantics.
 
-- [ ] **Step 5: Run tests GREEN**
+- [ ] **Step 5: Verify GREEN**
 
 ```bash
 cd server
@@ -399,7 +350,7 @@ pnpm jest push-reminder-worker.service.spec.ts notification-delivery.service.spe
 pnpm typecheck
 ```
 
-- [ ] **Step 6: Commit Task 3**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add server/src/modules/notifications/reminders
@@ -408,67 +359,65 @@ git commit -m "feat: record Wago reminder delivery attempts"
 
 ---
 
-### Task 4: Retain Raw JSON Body and Verify Wago Signatures
+### Task 4: Raw-body Capture, Secret Validation, Signature Verification
 
 **Files:**
 - Create: `server/src/common/http/raw-body.ts`
 - Modify: `server/src/main.ts`
+- Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.types.ts`
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook-signature.service.ts`
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook-signature.service.spec.ts`
-- Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.types.ts`
 - Modify: `server/src/config/env.validation.ts`
 - Modify: `server/src/config/env.validation.spec.ts`
 
-**Interfaces:**
-- Produces a typed raw-body accessor for the controller.
-- Produces `WagoWebhookSignatureService.verify(input): void` with deterministic clock injection/test seam if needed.
-
-- [ ] **Step 1: Write RED signature tests**
-
-Cover valid signature, tampered body, multiple rotation signatures, malformed Base64/signature entries, missing configured secret, and timestamp beyond ±300 seconds.
-
-Example signing fixture:
+**Produces:**
 
 ```ts
-const body = '{"version":"1","id":"delivery-1","event":"message.server_accepted","createdAt":"2026-08-13T08:00:00.000Z","data":{"messageId":"wamid-1","status":"accepted"}}';
-const timestamp = '1786608000';
-const signature = createHmac('sha256', secret)
-  .update(`delivery-1.${timestamp}.${body}`)
-  .digest('base64');
+export type WagoSignatureInput = Readonly<{
+  webhookId: string;
+  timestamp: string;
+  signatureHeader: string;
+  rawBody: Buffer;
+}>;
 
-expect(() =>
-  service.verify({
-    webhookId: 'delivery-1',
-    timestamp,
-    signatureHeader: `v1,${signature}`,
-    rawBody: Buffer.from(body),
-    now: new Date(Number(timestamp) * 1000),
-  }),
-).not.toThrow();
+verify(input: WagoSignatureInput, now?: Date): void;
 ```
 
-- [ ] **Step 2: Write RED env tests**
+- [ ] **Step 1: RED signature tests**
 
-Add cases proving:
-- empty `WAGO_WEBHOOK_SECRET` is accepted and treated as disabled receiver configuration;
-- high-entropy secret (minimum 32 characters) is accepted;
-- short non-empty secret is rejected;
-- Wago outbound pair remains independently optional.
+Cover valid HMAC, modified raw body, two space-separated rotation signatures where either may match, malformed entries, stale timestamp (>300s), too-far future timestamp, and secret missing.
 
-- [ ] **Step 3: Run RED tests**
+Signing fixture:
+
+```ts
+const material = `${webhookId}.${timestamp}.${rawBody.toString('utf8')}`;
+const signature = createHmac('sha256', secret).update(material).digest('base64');
+```
+
+- [ ] **Step 2: RED environment tests**
+
+Assert empty `WAGO_WEBHOOK_SECRET` normalizes to absent/disabled, >=32-character non-empty secret succeeds, short non-empty secret fails, and existing `WAGO_BASE_URL`/`WAGO_API_KEY` pairing remains independent.
+
+- [ ] **Step 3: Verify RED**
 
 ```bash
 cd server
 pnpm jest wago-webhook-signature.service.spec.ts env.validation.spec.ts --runInBand
 ```
 
-- [ ] **Step 4: Implement raw-body capture without a second JSON parser**
+- [ ] **Step 4: Capture exact raw bytes**
 
-Use the existing explicit parser hook:
+Create:
 
 ```ts
-export type RequestWithRawBody = Request & { rawBody?: Buffer };
+import type { Request } from 'express';
 
+export type RequestWithRawBody = Request & { rawBody?: Buffer };
+```
+
+Change only the current JSON parser setup:
+
+```ts
 app.useBodyParser('json', {
   limit: JSON_BODY_LIMIT,
   verify: (req, _res, buffer) => {
@@ -477,20 +426,13 @@ app.useBodyParser('json', {
 });
 ```
 
-Keep urlencoded parsing unchanged.
+Do not add another JSON parser.
 
-- [ ] **Step 5: Implement signature verification**
+- [ ] **Step 5: Implement verifier**
 
-Rules:
-- configured secret required to accept requests;
-- parse Unix seconds strictly;
-- `Math.abs(nowSeconds - timestampSeconds) <= 300`;
-- parse all space-separated `v1,<base64>` candidates;
-- calculate `createHmac('sha256', secret).update(material).digest()`;
-- Base64-decode candidate and call `timingSafeEqual` only for equal byte lengths;
-- do not log secrets/body/signatures.
+Rules: strict integer Unix seconds, `abs(nowSec - timestampSec) <= 300`, parse space-separated `v1,<base64>`, HMAC raw UTF-8 material, decode candidate, compare only equal lengths with `timingSafeEqual`.
 
-- [ ] **Step 6: Run tests GREEN**
+- [ ] **Step 6: Verify GREEN**
 
 ```bash
 cd server
@@ -498,52 +440,52 @@ pnpm jest wago-webhook-signature.service.spec.ts env.validation.spec.ts --runInB
 pnpm typecheck
 ```
 
-- [ ] **Step 7: Commit Task 4**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add server/src/common/http/raw-body.ts server/src/main.ts server/src/config server/src/modules/notifications/reminders/webhooks/wago-webhook-signature.service* server/src/modules/notifications/reminders/webhooks/wago-webhook.types.ts
+git add server/src/common/http/raw-body.ts server/src/main.ts server/src/config server/src/modules/notifications/reminders/webhooks
 git commit -m "feat: verify signed Wago webhook requests"
 ```
 
 ---
 
-### Task 5: Implement Durable Webhook Inbox and Deduplication
+### Task 5: Durable Webhook Inbox
 
 **Files:**
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.repository.ts`
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.repository.spec.ts`
 
-**Interfaces:**
-- Produces `insertIfNew(event, receivedAt): Promise<'inserted' | 'duplicate'>`.
-- Produces `findUnprocessedByTransportMessageId(messageId)` and `markProcessed(webhookId, processedAt)`.
+**Produces:**
 
-- [ ] **Step 1: Write RED inbox tests**
+```ts
+insertIfNew(event: TrustedWagoWebhookEvent, receivedAt: Date): Promise<'inserted' | 'duplicate'>;
+findUnprocessedByTransportMessageId(messageId: string): Promise<WagoWebhookInboxRecord[]>;
+markProcessed(webhookId: string, processedAt: Date): Promise<boolean>;
+```
 
-Cover:
-- first insert persists exact sanitized event fields;
-- second insert with same `webhookId` returns duplicate without overwriting first row;
-- unmatched callback remains with `processedAt = null`;
-- query by `transportMessageId` returns only unprocessed events in source/received deterministic order.
+- [ ] **Step 1: RED repository tests**
 
-- [ ] **Step 2: Run RED tests**
+Cover first insert, duplicate `Webhook-Id`, unmatched remains `processedAt=null`, and deterministic unprocessed lookup by `transportMessageId` ordered by `sourceCreatedAt`, then `receivedAt`, then `webhookId`.
+
+- [ ] **Step 2: Verify RED**
 
 ```bash
 cd server
 pnpm jest wago-webhook.repository.spec.ts --runInBand
 ```
 
-- [ ] **Step 3: Implement repository using database uniqueness for idempotency**
+- [ ] **Step 3: Implement DB-backed dedup**
 
-Do not implement dedup using an in-memory Set. Prefer a create/createMany `skipDuplicates` or unique-violation-safe insert consistent with Prisma/MariaDB behavior.
+Use the `webhookId` primary key and Prisma `createMany({ skipDuplicates: true })` or an equivalent unique-safe insertion. Do not use process memory for idempotency.
 
-- [ ] **Step 4: Run GREEN tests**
+- [ ] **Step 4: Verify GREEN**
 
 ```bash
 cd server
 pnpm jest wago-webhook.repository.spec.ts --runInBand
 ```
 
-- [ ] **Step 5: Commit Task 5**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add server/src/modules/notifications/reminders/webhooks/wago-webhook.repository*
@@ -552,108 +494,89 @@ git commit -m "feat: persist and deduplicate Wago webhook events"
 
 ---
 
-### Task 6: Resolve Webhook Events and Apply Safe Retry Acceleration
+### Task 6: Webhook Resolution and Safe Retry Acceleration
 
 **Files:**
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.service.ts`
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.service.spec.ts`
 - Modify: `server/src/modules/notifications/reminders/deliveries/notification-delivery.repository.ts`
 - Modify: `server/src/modules/notifications/reminders/deliveries/notification-delivery.service.ts`
+- Modify: `server/src/modules/notifications/reminders/deliveries/notification-delivery.service.spec.ts`
 - Modify: `server/src/modules/notifications/reminders/notification-reminder.repository.ts`
-- Modify/add focused tests for touched repositories/services.
 
-**Interfaces:**
-- Produces `WagoWebhookService.ingest(trustedEvent, receivedAt)`.
-- Produces `WagoWebhookService.reconcileTransportMessage(messageId)` for post-send race reconciliation.
-- Adds a repository method to accelerate an existing active reminder only when the currently persisted `nextSendAt` is later than the target.
-
-- [ ] **Step 1: Write RED service tests for all scheduling branches**
-
-Required cases:
+**Produces:**
 
 ```ts
-it('accelerates latest eligible MESSAGE_REJECTED attempt by five minutes', async () => {
-  await service.ingest(rejectedEvent('MESSAGE_REJECTED'), now);
-  expect(reminderRepository.accelerateNextSendAt).toHaveBeenCalledWith(
-    'reminder-1',
-    new Date(now.getTime() + 5 * 60_000),
-  );
-});
-
-it.each(['REACHOUT_RESTRICTED', undefined, 'SOMETHING_NEW'])(
-  'does not accelerate for %s',
-  async (errorCode) => {
-    await service.ingest(rejectedEvent(errorCode), now);
-    expect(reminderRepository.accelerateNextSendAt).not.toHaveBeenCalled();
-  },
-);
-
-it('does not accelerate a stale attempt', async () => { /* newer attempt exists */ });
-it('does not accelerate when active reminder no longer exists', async () => { /* history only */ });
-it('does not accelerate when reminder is no longer eligible', async () => { /* workflow changed */ });
-it('does not reapply duplicate webhook id', async () => { /* inbox duplicate */ });
-it('stores unmatched event and later reconciles it by transportMessageId', async () => { /* race */ });
-it('keeps first terminal state when contradictory callback arrives', async () => { /* accepted then rejected */ });
+ingest(event: TrustedWagoWebhookEvent, receivedAt: Date): Promise<'processed' | 'stored-unmatched' | 'duplicate'>;
+reconcileTransportMessage(transportMessageId: string): Promise<void>;
 ```
 
-- [ ] **Step 2: Run RED tests**
+- [ ] **Step 1: RED policy tests**
+
+Cover all branches:
+
+```ts
+it('shortens only the latest eligible MESSAGE_REJECTED attempt by five minutes', async () => {
+  await service.ingest(rejectedEvent('MESSAGE_REJECTED'), now);
+  expect(reminderRepository.accelerateNextSendAt).toHaveBeenCalledWith(
+    '11111111-1111-1111-1111-111111111111',
+    new Date(now.getTime() + 300_000),
+  );
+});
+```
+
+Also cover `REACHOUT_RESTRICTED`, empty error, unknown error, stale delivery, deleted reminder, no-longer-eligible reminder, duplicate webhook ID, unmatched event, later reconciliation, and accepted->rejected / rejected->accepted contradiction.
+
+- [ ] **Step 2: Verify RED**
 
 ```bash
 cd server
 pnpm jest wago-webhook.service.spec.ts notification-delivery.service.spec.ts --runInBand
 ```
 
-- [ ] **Step 3: Add reminder query/update support without duplicating eligibility rules**
+- [ ] **Step 3: Add active-reminder lookup + atomic shortening**
 
-Add a repository method that loads the active reminder in a shape compatible with `ClaimedNotificationReminder` or extract a shared eligibility input type so `isReminderStillEligible` remains the one rule implementation.
-
-Add:
+Add repository methods:
 
 ```ts
-async accelerateNextSendAt(notificationReminderId: string, candidate: Date): Promise<boolean> {
-  const result = await this.prisma.pengingatWhatsApp.updateMany({
-    where: {
-      pengingatWhatsAppId: notificationReminderId,
-      nextSendAt: { gt: candidate },
-    },
-    data: { nextSendAt: candidate },
-  });
-  return result.count === 1;
-}
+findByIdentity(pengajuanEvaluasiId: string, penggunaId: string, kind: JenisPengingatWhatsApp): Promise<ClaimedNotificationReminder | null>;
+accelerateNextSendAt(notificationReminderId: string, candidate: Date): Promise<boolean>;
 ```
 
-Do not change lock state or call the worker.
+`findByIdentity` returns the same domain shape used by `isReminderStillEligible`; do not duplicate the status/role/OPD eligibility rule.
 
-- [ ] **Step 4: Implement terminal-state transition rules**
+`accelerateNextSendAt` uses:
 
-Delivery repository/service must enforce:
+```ts
+where: { pengingatWhatsAppId: notificationReminderId, nextSendAt: { gt: candidate } }
+data: { nextSendAt: candidate }
+```
+
+It does not touch locks/failure counters.
+
+- [ ] **Step 4: Implement terminal + latest-attempt guards**
+
+1. Match by `transportMessageId`.
+2. Resolve delivery terminal state only if current state is `PENDING`.
+3. Find latest delivery by snapshot identity.
+4. Scheduling side effect is allowed only when matched delivery ID equals latest delivery ID.
+5. Load current active reminder by natural identity and call `isReminderStillEligible`.
+6. Only `MESSAGE_REJECTED` calls `accelerateNextSendAt(..., now+300000)`.
+7. Mark inbox processed after matched event handling succeeds.
+
+- [ ] **Step 5: Attach race reconciliation without circular dependency**
+
+`WagoWebhookService` depends directly on `NotificationDeliveryRepository`, not `NotificationDeliveryService`.
+
+`NotificationDeliveryService` depends on `WagoWebhookService` solely to call `reconcileTransportMessage()` after a non-null message ID is persisted. Dependency direction is one-way:
 
 ```text
-PENDING -> ACCEPTED
-PENDING -> REJECTED
-ACCEPTED -> no-op
-REJECTED -> no-op
+NotificationDeliveryService -> WagoWebhookService -> NotificationDeliveryRepository
 ```
 
-First terminal state wins. A contradictory later event is processed as a no-op anomaly and may be logged without body/secret data.
+No reverse service dependency exists.
 
-- [ ] **Step 5: Implement latest-attempt guard**
-
-Compare the matched delivery with the newest persisted delivery for the same reminder identity. Only identical latest attempt may affect scheduling.
-
-When `pengingatWhatsAppId` has become null after lifecycle deletion, find active reminder only by the snapshot natural identity (`pengajuanEvaluasiId`, `penggunaId`, `jenis`) if one currently exists; do not recreate it.
-
-- [ ] **Step 6: Implement race reconciliation**
-
-When `recordSubmission` stores a non-null transport message ID, call:
-
-```ts
-await webhookService.reconcileTransportMessage(receipt.transportMessageId);
-```
-
-The reconciliation reads only unprocessed inbox events for that message ID. No global polling loop.
-
-- [ ] **Step 7: Run GREEN tests**
+- [ ] **Step 6: Verify GREEN**
 
 ```bash
 cd server
@@ -661,7 +584,7 @@ pnpm jest wago-webhook.service.spec.ts notification-delivery.service.spec.ts pus
 pnpm typecheck
 ```
 
-- [ ] **Step 8: Commit Task 6**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add server/src/modules/notifications/reminders
@@ -670,42 +593,29 @@ git commit -m "feat: reconcile Wago delivery webhooks with reminder retries"
 
 ---
 
-### Task 7: Add the HTTP Webhook Boundary
+### Task 7: HTTP Webhook Controller and Module Wiring
 
 **Files:**
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.controller.ts`
 - Create: `server/src/modules/notifications/reminders/webhooks/wago-webhook.controller.spec.ts`
 - Modify: `server/src/modules/notifications/reminders/notification.module.ts`
 
-**Interfaces:**
-- Exposes `POST /api/v1/webhooks/wago`.
-- Consumes raw body + signature verifier + `WagoWebhookService`.
+**Endpoint:** `POST /api/v1/webhooks/wago`
 
-- [ ] **Step 1: Write RED controller tests**
+- [ ] **Step 1: RED controller tests**
 
-Test with Nest testing module/supertest or focused controller invocation according to existing repository patterns:
-- valid signed accepted event -> `2xx`;
-- valid duplicate -> `2xx`;
-- valid signed unmatched event -> `2xx` because it was durably stored;
-- missing raw body -> reject;
-- missing required header -> reject;
-- bad signature -> reject;
-- body `id` != `Webhook-Id` -> `400`;
-- body `event` != `X-Wago-Event` -> `400`;
-- unsupported `version` / event / status pair -> `400`;
-- no configured secret -> `503`;
-- repository/service failure before durable storage -> `5xx`.
+Cover: valid accepted event, valid rejected event, duplicate event (`2xx`), durably stored unmatched event (`2xx`), missing raw body, missing required headers, bad signature, header/body ID mismatch, `X-Wago-Event` mismatch, unsupported version, invalid event/status pair, missing receiver secret (`503`), and service persistence failure (`5xx`).
 
-- [ ] **Step 2: Run controller tests RED**
+- [ ] **Step 2: Verify RED**
 
 ```bash
 cd server
 pnpm jest wago-webhook.controller.spec.ts --runInBand
 ```
 
-- [ ] **Step 3: Implement strict envelope validation**
+- [ ] **Step 3: Implement strict post-auth envelope parsing**
 
-Use a small Zod schema or DTO-local parser only after HMAC verification:
+After signature verification, validate with:
 
 ```ts
 const envelopeSchema = z.discriminatedUnion('event', [
@@ -714,10 +624,7 @@ const envelopeSchema = z.discriminatedUnion('event', [
     id: z.string().min(1),
     event: z.literal('message.server_accepted'),
     createdAt: z.string().datetime(),
-    data: z.object({
-      messageId: z.string().min(1),
-      status: z.literal('accepted'),
-    }),
+    data: z.object({ messageId: z.string().min(1), status: z.literal('accepted') }),
   }),
   z.object({
     version: z.literal('1'),
@@ -733,13 +640,13 @@ const envelopeSchema = z.discriminatedUnion('event', [
 ]);
 ```
 
-Do not trust parsed body before the signature has been verified against raw bytes.
+Require body `id === Webhook-Id` and body `event === X-Wago-Event`.
 
-- [ ] **Step 4: Wire providers/controller in `NotificationModule`**
+- [ ] **Step 4: Wire controller/services**
 
-Register only concrete services required; avoid a second module unless Nest circularity requires it. Keep `NOTIFICATION_CHANNEL -> WagoProvider` unchanged.
+Register controller, signature service, inbox repository, webhook service, delivery repository/service, and keep `NOTIFICATION_CHANNEL -> WagoProvider` unchanged.
 
-- [ ] **Step 5: Run controller/module tests GREEN**
+- [ ] **Step 5: Verify GREEN**
 
 ```bash
 cd server
@@ -747,73 +654,62 @@ pnpm jest wago-webhook.controller.spec.ts notification-module-boundaries.spec.ts
 pnpm typecheck
 ```
 
-- [ ] **Step 6: Commit Task 7**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add server/src/modules/notifications/reminders/webhooks server/src/modules/notifications/reminders/notification.module.ts
+git add server/src/modules/notifications/reminders
 git commit -m "feat: expose signed Wago delivery webhook endpoint"
 ```
 
 ---
 
-### Task 8: Configuration, Deployment Documentation, and Integration Coverage
+### Task 8: Deployment Config, Integration Coverage, Documentation
 
 **Files:**
 - Modify: `.env.example`
 - Modify: `server/.env.test`
 - Modify: `compose.yml`
 - Modify: `README.md`
-- Modify or create focused integration test under `server/test/integration/` if current DB integration harness supports direct webhook HTTP testing.
-- Modify: `.agent/specs/2026-08-13-wago-delivery-webhook-design.md` only if implementation discovers a necessary clarified invariant; do not silently diverge.
+- Modify/create database-backed integration coverage under `server/test/integration/`
 
-**Interfaces:**
-- Deployment operator configures callback URL in Wago dashboard and copies the same signing secret into `WAGO_WEBHOOK_SECRET` for SOPFlow.
+- [ ] **Step 1: Document optional webhook secret**
 
-- [ ] **Step 1: Add configuration docs**
-
-`.env.example` Wago section becomes:
+Use:
 
 ```env
-# WhatsApp outbound opsional melalui Wago self-hosted.
 WAGO_BASE_URL=
 WAGO_API_KEY=
-
-# Opsional: aktifkan receiver delivery webhook Wago.
-# Gunakan signing secret yang sama dengan Wago Settings -> Webhook Integration.
 WAGO_WEBHOOK_SECRET=
 ```
 
-Document callback URL:
+Document Wago dashboard callback URL:
 
 ```text
 https://<sopflow-host>/api/v1/webhooks/wago
 ```
 
-State explicitly that `message.server_accepted` is server acknowledgement, not device delivery/read.
+Document that `message.server_accepted` means WhatsApp server acknowledgement only, not device delivery/read.
 
-- [ ] **Step 2: Add integration/persistence test for the critical path**
+- [ ] **Step 2: Add critical-path DB integration test**
 
-Minimum database-backed scenario:
-1. create actionable reminder fixture;
-2. create pending delivery with `transportMessageId`;
-3. ingest signed/persisted `MESSAGE_REJECTED` event;
-4. assert delivery `REJECTED`;
-5. assert `nextSendAt` is advanced to +5 minutes only when it was later;
-6. ingest same `Webhook-Id` again;
-7. assert schedule did not mutate again;
-8. create newer attempt and ingest stale old event;
-9. assert no schedule acceleration from the old attempt.
+Scenario:
+1. create current actionable reminder;
+2. create pending delivery with message ID;
+3. persist/process `MESSAGE_REJECTED` callback;
+4. assert delivery becomes `REJECTED`;
+5. assert later `nextSendAt` shortens to exactly +5 minutes;
+6. submit same `Webhook-Id` again and assert no second schedule mutation;
+7. create newer delivery then process old delivery callback and assert old callback cannot shorten schedule;
+8. delete active reminder and verify delivery history survives FK `SET NULL`.
 
-- [ ] **Step 3: Run focused integration tests**
+- [ ] **Step 3: Run integration suite**
 
 ```bash
 cd server
 pnpm test:integration:docker
 ```
 
-Expected: existing integration suite plus new webhook persistence case passes.
-
-- [ ] **Step 4: Run repository-wide server verification**
+- [ ] **Step 4: Run full server verification**
 
 ```bash
 cd server
@@ -825,55 +721,47 @@ pnpm test -- --runInBand
 pnpm build
 ```
 
-Do not weaken tests/coverage to make the change pass.
-
-- [ ] **Step 5: Commit Task 8**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add .env.example server/.env.test compose.yml README.md server/test .agent/specs/2026-08-13-wago-delivery-webhook-design.md
+git add .env.example server/.env.test compose.yml README.md server/test
 git commit -m "docs: document Wago delivery webhook integration"
 ```
 
 ---
 
-### Task 9: Final Verification, PR Review, and Squash Merge
-
-**Files:**
-- No new production behavior unless a verification failure proves a defect.
+### Task 9: Exact-head Verification and Integration
 
 - [ ] **Step 1: Static scope sweep**
 
-Search for accidental coupling/secrets/placeholders:
-
 ```bash
-git grep -nE 'wagoMessageId|TODO|TBD|Webhook-Signature.*log|WAGO_WEBHOOK_SECRET.*log'
+git grep -n 'wagoMessageId' -- server/src || true
 git diff main...HEAD --check
 ```
 
-Expected: no business-layer `wagoMessageId`, no unresolved placeholders, no secret/signature logging, no whitespace errors.
+Expected: no Wago-specific message-ID name in business code and no whitespace errors.
 
-- [ ] **Step 2: Full exact-head verification**
+- [ ] **Step 2: Open one PR from `feat/wago-delivery-webhook` to `main`**
 
-Run the same mandatory local gates available in the repository and push exact HEAD. Open one PR from `feat/wago-delivery-webhook` to `main`.
+PR summary must state DB migration, transport receipt change, raw-body HMAC security, durable inbox, first-terminal-state rule, stale/latest guard, and five-minute generic rejection policy.
 
-- [ ] **Step 3: Review the PR against the design**
+- [ ] **Step 3: Review exact diff against spec**
 
-Check explicitly:
-- raw-body verification before payload trust;
-- database-backed dedup;
-- no transaction around network calls;
-- first terminal state wins;
-- latest-attempt guard;
-- eligibility guard;
-- five-minute acceleration uses `min(existing, candidate)` semantics;
+Explicitly verify:
+- raw bytes authenticated before body trust;
+- DB-backed webhook dedup;
+- no network request inside DB transaction;
 - no direct worker invocation;
-- no invented message ID for duplicate sends;
-- docs match actual config.
+- first terminal state wins;
+- latest-attempt and eligibility guards;
+- shortening uses `nextSendAt > candidate`, so webhook can never delay an earlier retry;
+- no invented original message ID on duplicate send;
+- logs never expose secret/signature/full callback body.
 
-- [ ] **Step 4: Wait for mandatory CI/checks on exact HEAD**
+- [ ] **Step 4: Wait for exact-head required CI**
 
-Do not merge while required checks are pending or failing. Fix only demonstrated failures on this same branch.
+Fix only demonstrated failures on this same branch. Do not merge while required checks are pending or failing.
 
-- [ ] **Step 5: Squash merge and verify `main`**
+- [ ] **Step 5: Squash merge and verify resulting `main` commit**
 
-Use squash merge once all required checks are green, then verify the resulting main commit checks. Delete the task branch if the available GitHub tooling supports it.
+After required checks pass, squash merge, verify checks on the new main SHA, and delete `feat/wago-delivery-webhook` if the available GitHub connector exposes branch deletion.
