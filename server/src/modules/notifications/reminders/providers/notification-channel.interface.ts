@@ -24,7 +24,16 @@ export type NotificationSendOptions = Readonly<{
   idempotencyKey?: string;
 }>;
 
+export type NotificationSendReceipt = Readonly<{
+  transportMessageId: string | null;
+  status: 'pending';
+}>;
+
 export interface NotificationChannel {
-  /** Kirim pesan ke tujuan (nomor HP, device token, dsb). */
-  send(destination: string, message: string, options?: NotificationSendOptions): Promise<void>;
+  /** Kirim pesan ke tujuan dan kembalikan identitas transport bila tersedia. */
+  send(
+    destination: string,
+    message: string,
+    options?: NotificationSendOptions,
+  ): Promise<NotificationSendReceipt>;
 }
