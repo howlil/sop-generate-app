@@ -30,10 +30,7 @@ export class WagoWebhookService {
     private readonly reminders: NotificationReminderRepository,
   ) {}
 
-  async ingest(
-    event: TrustedWagoWebhookEvent,
-    receivedAt: Date,
-  ): Promise<WagoWebhookIngestResult> {
+  async ingest(event: TrustedWagoWebhookEvent, receivedAt: Date): Promise<WagoWebhookIngestResult> {
     const inserted = await this.inbox.insertIfNew(event, receivedAt);
     if (inserted === 'duplicate') return 'duplicate';
 
@@ -44,7 +41,10 @@ export class WagoWebhookService {
     return 'processed';
   }
 
-  async reconcileTransportMessage(transportMessageId: string, processedAt = new Date()): Promise<void> {
+  async reconcileTransportMessage(
+    transportMessageId: string,
+    processedAt = new Date(),
+  ): Promise<void> {
     const events = await this.inbox.findUnprocessedByTransportMessageId(transportMessageId);
     if (events.length === 0) return;
 
@@ -71,7 +71,10 @@ export class WagoWebhookService {
     if (initialDelivery.status === StatusPengirimanNotifikasiWhatsApp.PENDING) {
       const transition =
         input.status === 'accepted'
-          ? await this.deliveries.markAccepted(initialDelivery.pengirimanNotifikasiWhatsAppId, processedAt)
+          ? await this.deliveries.markAccepted(
+              initialDelivery.pengirimanNotifikasiWhatsAppId,
+              processedAt,
+            )
           : await this.deliveries.markRejected(
               initialDelivery.pengirimanNotifikasiWhatsAppId,
               input.errorCode,
