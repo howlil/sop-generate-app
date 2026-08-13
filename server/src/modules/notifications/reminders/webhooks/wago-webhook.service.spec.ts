@@ -120,6 +120,7 @@ describe('WagoWebhookService', () => {
     (reminders.findByIdentity as jest.Mock).mockResolvedValueOnce({
       ...activeReminder,
       lastSentAt: null,
+      lockToken: 'claim-in-flight',
     });
 
     await expect(service.ingest(rejectedEvent('MESSAGE_REJECTED'), now)).resolves.toBe('deferred');

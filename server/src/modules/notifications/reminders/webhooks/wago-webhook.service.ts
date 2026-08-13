@@ -20,7 +20,13 @@ type WebhookProcessingInput = Readonly<{
   receivedAt: Date;
 }>;
 
-export type WagoWebhookIngestResult = 'processed' | 'stored-unmatched' | 'duplicate';
+type MatchedProcessingResult = 'processed' | 'deferred';
+
+export type WagoWebhookIngestResult =
+  | 'processed'
+  | 'stored-unmatched'
+  | 'duplicate'
+  | 'deferred';
 
 @Injectable()
 export class WagoWebhookService {
@@ -43,8 +49,7 @@ export class WagoWebhookService {
     const delivery = await this.deliveries.findByTransportMessageId(event.data.messageId);
     if (delivery === null) return 'stored-unmatched';
 
-    await this.processMatched(this.fromTrustedEvent(event, receivedAt), delivery, receivedAt);
-    return 'processed';
+    return this.processMatched(this.fromTrustedEvent(event, receivedAt), delivery, receivedAt);
   }
 
   async reconcileTransportMessage(
@@ -71,7 +76,7 @@ export class WagoWebhookService {
     input: WebhookProcessingInput,
     initialDelivery: NotificationDeliveryRecord,
     processedAt: Date,
-  ): Promise<void> {
+  ): Promise<MatchedProcessingResult> {
     let effectiveDelivery = initialDelivery;
 
     if (initialDelivery.status === StatusPengirimanNotifikasiWhatsApp.PENDING) {
@@ -109,16 +114,21 @@ export class WagoWebhookService {
       effectiveDelivery.status === StatusPengirimanNotifikasiWhatsApp.REJECTED &&
       effectiveDelivery.errorCode === 'MESSAGE_REJECTED'
     ) {
-      await this.accelerateIfLatestAndEligible(effectiveDelivery, input.receivedAt);
+      const acceleration = await this.accelerateIfLatestAndEligible(
+        effectiveDelivery,
+        input.receivedAt,
+      );
+      if (acceleration === 'deferred') return 'deferred';
     }
 
     await this.inbox.markProcessed(input.webhookId, processedAt);
+    return 'processed';
   }
 
   private async accelerateIfLatestAndEligible(
     delivery: NotificationDeliveryRecord,
     receivedAt: Date,
-  ): Promise<void> {
+  ): Promise<'done' | 'deferred'> {
     const latest = await this.deliveries.findLatestForIdentity(
       delivery.pengajuanEvaluasiId,
       delivery.penggunaId,
@@ -128,7 +138,7 @@ export class WagoWebhookService {
       latest === null ||
       latest.pengirimanNotifikasiWhatsAppId !== delivery.pengirimanNotifikasiWhatsAppId
     ) {
-      return;
+      return 'done';
     }
 
     const reminder = await this.reminders.findByIdentity(
@@ -141,13 +151,19 @@ export class WagoWebhookService {
       reminder.notificationReminderId !== delivery.pengingatWhatsAppId ||
       !isReminderStillEligible(reminder)
     ) {
-      return;
+      return 'done';
     }
+
+    const scheduleCommitPending =
+      reminder.lockToken !== null &&
+      (reminder.lastSentAt === null || reminder.lastSentAt.getTime() < delivery.submittedAt.getTime());
+    if (scheduleCommitPending) return 'deferred';
 
     await this.reminders.accelerateNextSendAt(
       reminder.notificationReminderId,
       new Date(receivedAt.getTime() + GENERIC_REJECTION_RETRY_DELAY_MS),
     );
+    return 'done';
   }
 
   private fromTrustedEvent(
