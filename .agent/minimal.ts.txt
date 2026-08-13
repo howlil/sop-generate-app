@@ -1,3 +1,0 @@
-export function ready(value: boolean): boolean {
-  return value;
-}
