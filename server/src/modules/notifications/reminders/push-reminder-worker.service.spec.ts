@@ -58,10 +58,13 @@ function build(lastSentAt: Date | null = null) {
   const channel = {
     send: jest.fn().mockResolvedValue(receipt),
   } as unknown as NotificationChannel;
+  const delivery = {
+    pengirimanNotifikasiWhatsAppId: 'delivery-1',
+    transportMessageId: 'wamid-1',
+  };
   const deliveryService = {
-    recordSubmission: jest.fn().mockResolvedValue({
-      pengirimanNotifikasiWhatsAppId: 'delivery-1',
-    }),
+    recordSubmission: jest.fn().mockResolvedValue(delivery),
+    reconcileSubmission: jest.fn().mockResolvedValue(undefined),
   };
   const config = {
     get: jest.fn((key: string, fallback: unknown) => {
@@ -80,12 +83,12 @@ function build(lastSentAt: Date | null = null) {
     deliveryService,
   ]) as PushReminderWorkerService;
 
-  return { reminder, repository, channel, deliveryService, receipt, service };
+  return { reminder, repository, channel, delivery, deliveryService, receipt, service };
 }
 
 describe('PushReminderWorkerService idempotency', () => {
-  it('menggunakan key initial dan menyimpan transport receipt sebelum markSuccess', async () => {
-    const { service, reminder, repository, channel, deliveryService, receipt } = build();
+  it('persists the transport receipt before markSuccess and reconciles only after the schedule commit', async () => {
+    const { service, reminder, repository, channel, delivery, deliveryService, receipt } = build();
 
     await service.processDue(new Date('2026-08-11T00:00:00.000Z'));
 
@@ -99,8 +102,12 @@ describe('PushReminderWorkerService idempotency', () => {
       receipt,
       expect.any(Date),
     );
+    expect(deliveryService.reconcileSubmission).toHaveBeenCalledWith(delivery);
     expect(deliveryService.recordSubmission.mock.invocationCallOrder[0]).toBeLessThan(
       (repository.markSuccess as jest.Mock).mock.invocationCallOrder[0],
+    );
+    expect((repository.markSuccess as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(
+      deliveryService.reconcileSubmission.mock.invocationCallOrder[0],
     );
   });
 
