@@ -14,6 +14,7 @@ describe('WagoWebhookRepository', () => {
   const prismaMock = {
     wagoWebhookEvent: {
       createMany: jest.fn(),
+      findUnique: jest.fn(),
       findMany: jest.fn(),
       updateMany: jest.fn(),
     },
@@ -49,6 +50,26 @@ describe('WagoWebhookRepository', () => {
     prismaMock.wagoWebhookEvent.createMany.mockResolvedValueOnce({ count: 0 });
 
     await expect(repository.insertIfNew(acceptedEvent, new Date())).resolves.toBe('duplicate');
+  });
+
+  it('loads the durable inbox row by webhook id for crash recovery', async () => {
+    const persisted = {
+      webhookId: 'delivery-1',
+      transportMessageId: 'wamid-1',
+      event: 'message.server_accepted',
+      status: 'accepted',
+      errorCode: null,
+      sourceCreatedAt: acceptedEvent.createdAt,
+      receivedAt: new Date('2026-08-13T08:00:01.000Z'),
+      processedAt: null,
+      createdAt: new Date('2026-08-13T08:00:01.000Z'),
+    };
+    prismaMock.wagoWebhookEvent.findUnique.mockResolvedValueOnce(persisted);
+
+    await expect(repository.findByWebhookId('delivery-1')).resolves.toEqual(persisted);
+    expect(prismaMock.wagoWebhookEvent.findUnique).toHaveBeenCalledWith({
+      where: { webhookId: 'delivery-1' },
+    });
   });
 
   it('finds only unprocessed events for one transport message in deterministic order', async () => {
