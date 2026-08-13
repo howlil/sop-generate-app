@@ -136,7 +136,7 @@ describe('regresi aksesibilitas komponen UI', () => {
       'border-border',
       'bg-surface-subtle',
     )
-    expect(screen.getByRole('table')).toHaveClass('text-ui-table')
+    expect(screen.getByRole('table')).toHaveClass('text-[13px]/[18px]')
     expect(screen.getByRole('columnheader', { name: 'Jumlah' })).toHaveClass(
       'whitespace-nowrap',
       'text-right',
