@@ -1,176 +1,163 @@
 # Wago Delivery Webhook Integration Design
 
 Date: 2026-08-13
-Status: Approved design
+Status: Approved and implementation-aligned
 Target branch: `feat/wago-delivery-webhook`
 Base branch: `main`
 
 ## Context
 
-SOPFlow already sends WhatsApp reminders through Wago. The existing `WagoProvider` calls `POST /messages/send` with bearer authentication, normalized phone numbers, and an `Idempotency-Key`. The reminder worker currently treats Wago's synchronous HTTP acceptance as transport submission success and schedules the next reminder occurrence.
+SOPFlow already sends WhatsApp reminders through Wago using `POST /messages/send`, bearer authentication, normalized Indonesian mobile numbers, and a stable `Idempotency-Key`. Wago can accept a send synchronously and later report the transport outcome asynchronously through signed webhooks.
 
-Wago also exposes durable signed delivery webhooks for outbound message transitions. The supported events are `message.server_accepted` and `message.rejected`. Delivery is at least once, signed with HMAC-SHA256, durably retried by Wago, and may be manually redelivered with the same webhook delivery ID.
+This integration adds the inbound delivery-feedback path without turning the webhook receiver into a second sender. The existing reminder scheduler remains the only component that executes outbound sends.
 
-This task adds the inbound half of that integration to SOPFlow. It tracks individual transport attempts and lets a narrow class of post-submit rejection accelerate the normal reminder schedule without making the webhook receiver a second reminder executor.
+Supported Wago callback events for this task:
+
+- `message.server_accepted`;
+- `message.rejected`.
+
+`message.server_accepted` is transport/server acknowledgement only. SOPFlow does not claim device delivery or read status.
 
 ## Goals
 
-- Persist one logical delivery record for each successfully submitted reminder occurrence.
-- Retain Wago's `messageId` as provider-agnostic `transportMessageId`.
-- Verify callbacks against the exact raw request body before trusting JSON.
-- Deduplicate callbacks durably with `Webhook-Id`.
-- Track `PENDING`, `ACCEPTED`, and `REJECTED` transport outcomes separately from reminder business state.
-- Accelerate the next reminder retry by five minutes only for the latest eligible attempt rejected with `MESSAGE_REJECTED`.
-- Do not accelerate for `REACHOUT_RESTRICTED`, unknown, or empty rejection codes.
-- Record stale callbacks without allowing them to alter current scheduling.
-- Preserve the existing scheduler/worker as the only executor of sends.
-- Keep the `NotificationChannel` boundary provider-agnostic.
-- Remain pragmatic: no Redis, Kafka, new queue, polling loop, or frontend webhook handling.
+- Persist one logical delivery occurrence for every successfully submitted reminder occurrence.
+- Preserve Wago `messageId` behind the provider-agnostic name `transportMessageId`.
+- Authenticate callbacks against the exact raw HTTP JSON body.
+- Deduplicate callbacks durably using `Webhook-Id`.
+- Keep reminder business state separate from transport delivery history.
+- Track transport state as `PENDING`, `ACCEPTED`, or `REJECTED`.
+- Accelerate a reminder by five minutes only for the latest still-eligible occurrence rejected with `MESSAGE_REJECTED`.
+- Never accelerate `REACHOUT_RESTRICTED`, unknown, or empty rejection codes.
+- Keep stale/obsolete callbacks as history without reviving old workflow state.
+- Handle callback-before-receipt races durably and idempotently.
+- Keep the implementation pragmatic: no Redis, Kafka, event bus, extra queue, polling loop, or frontend webhook handling.
 
 ## Non-goals
 
-- No claim of device delivery/read status; Wago's accepted event is only server acknowledgement.
-- No frontend delivery-history UI in this task.
+- No inbound WhatsApp chat handling.
+- No delivery/read receipt UI.
 - No Wago recipient allow/opt-out management from SOPFlow.
-- No inbound WhatsApp message handling.
-- No generic event bus.
-- No webhook-triggered direct call to `PushReminderWorkerService.processDue()`.
+- No direct webhook call to `PushReminderWorkerService.processDue()`.
 - No redesign of reminder eligibility rules.
-- No retry acceleration for errors returned synchronously by `POST /messages/send`; existing provider/worker retry rules stay authoritative there.
-- No change to Wago's public API contract in this task.
+- No change to synchronous Wago error retry rules already owned by the outbound provider/worker.
+- No change to Wago's API contract.
 
 ## State Boundaries
 
-### 1. Active reminder state
+### Active reminder state
 
-`PengingatWhatsApp` remains the authoritative active reminder state. It answers whether a reminder should exist, who should receive it, when it is next due, and current failure counters.
+`PengingatWhatsApp` remains lifecycle/business state. It answers whether a reminder should currently exist, who receives it, and when it is next due. It is intentionally deletable when workflow state is no longer actionable.
 
-It remains lifecycle state, not delivery history.
+### Delivery history
 
-### 2. Delivery attempt history
+`PengirimanNotifikasiWhatsApp` stores one immutable logical transport occurrence.
 
-Add the final Prisma model `PengirimanNotifikasiWhatsApp`.
-
-Each row represents one logical reminder occurrence that Wago accepted for processing.
-
-Required fields:
+Fields:
 
 - `pengirimanNotifikasiWhatsAppId` UUID primary key;
-- nullable `pengingatWhatsAppId` relation to the currently active reminder;
-- snapshot identity: `pengajuanEvaluasiId`, `penggunaId`, `jenis`;
-- `idempotencyKey` unique;
-- nullable unique `transportMessageId`;
-- `status`: `PENDING | ACCEPTED | REJECTED`;
+- `pengingatWhatsAppId` as an immutable snapshot ID, not a foreign key;
+- `pengajuanEvaluasiId` snapshot;
+- `penggunaId` snapshot;
+- `jenis` snapshot;
+- unique `idempotencyKey`;
+- unique nullable `transportMessageId`;
+- `status = PENDING | ACCEPTED | REJECTED`;
 - nullable bounded `errorCode`;
 - `submittedAt`;
 - nullable `resolvedAt`;
 - `createdAt`, `updatedAt`.
 
-The reminder relation uses `onDelete: SetNull`. Snapshot identity is intentionally retained because active reminder rows are deleted when workflow state changes, while historical delivery callbacks may still arrive later.
+The reminder ID is deliberately not an FK. Historical correlation must remain intact after `PengingatWhatsApp` is deleted.
 
-### 3. Durable webhook inbox
+### Durable webhook inbox
 
-Add the final Prisma model `WagoWebhookEvent`.
+`WagoWebhookEvent` stores the authenticated callback before business processing.
 
-Required fields:
+Fields:
 
 - `webhookId` primary key from `Webhook-Id`;
 - `transportMessageId`;
 - `event`;
 - `status`;
-- nullable `errorCode`;
-- `sourceCreatedAt` from the Wago envelope;
+- nullable bounded `errorCode`;
+- `sourceCreatedAt`;
 - `receivedAt`;
-- nullable `processedAt`.
+- nullable `processedAt`;
+- `createdAt`.
 
-No additional webhook state machine is needed. `processedAt = null` means the event is durably received but not yet correlated/applied. Duplicate webhook IDs do not create a second row.
+`processedAt = null` means the callback has been durably received but still needs correlation/application. Re-delivery of the same webhook never creates a second row.
 
 ## Notification Channel Contract
 
-The existing `NotificationChannel.send()` returns `Promise<void>`, which discards the Wago `messageId` required for callback correlation.
-
-Change the boundary to:
+The notification boundary returns a transport receipt rather than `void`:
 
 ```ts
 export type NotificationSendReceipt = Readonly<{
   transportMessageId: string | null;
   status: 'pending';
 }>;
-
-export interface NotificationChannel {
-  send(
-    destination: string,
-    message: string,
-    options?: NotificationSendOptions,
-  ): Promise<NotificationSendReceipt>;
-}
 ```
 
-Business logic uses `transportMessageId`, never `wagoMessageId`.
+Business code uses `transportMessageId`, never `wagoMessageId`.
 
-For Wago HTTP `202`, parse the response and return its `messageId`. If Wago returns success without a usable ID, return `transportMessageId: null`; log a warning without message text/secrets and do not invent an identifier.
+For Wago `202`, return the response `messageId` when usable. If Wago accepts the request without a usable ID, return `transportMessageId: null` and do not invent correlation.
 
-## Send Flow
+## Race-safe Send Flow
 
-For each claimed reminder occurrence:
+For one claimed reminder occurrence:
 
-1. Re-check existing reminder eligibility.
-2. Build the reminder message and current stable idempotency key.
-3. Call `NotificationChannel.send()`.
-4. Receive `NotificationSendReceipt`.
-5. Upsert/create `PengirimanNotifikasiWhatsApp` by the same `idempotencyKey`, storing `transportMessageId` and `PENDING`.
-6. Reconcile any previously received unmatched webhook with that `transportMessageId`.
-7. Mark the reminder occurrence successful using the existing `markSuccess` behavior.
+1. Re-check current reminder eligibility.
+2. Build the message and stable idempotency key.
+3. Call Wago through `NotificationChannel.send()`.
+4. Receive the transport receipt.
+5. Persist/reuse `PengirimanNotifikasiWhatsApp` by the same idempotency key.
+6. Commit the normal successful reminder schedule using existing `markSuccess`.
+7. Only after that schedule commit succeeds, reconcile any durable unmatched webhook for the persisted `transportMessageId`.
+8. If reconciliation itself fails, keep it best-effort: do not reinterpret the already accepted outbound send as a transport send failure. Durable inbox state remains available for replay/recovery.
 
-No network call occurs inside a database transaction.
+The order in steps 5-7 is a correctness invariant. Reconciliation must not happen before `markSuccess`: a very fast `MESSAGE_REJECTED` callback could otherwise try to shorten an already-due `nextSendAt`, do nothing, become processed, and then be overwritten by the normal success schedule.
 
-### Duplicate-message behavior
+If `markSuccess` cannot commit the owned reminder row, do not reconcile from that worker occurrence. This prevents an unmatched callback from being consumed against an uncommitted schedule.
 
-Wago currently returns `409 DUPLICATE_MESSAGE` without returning the original `messageId`. SOPFlow already treats this as logical success.
+No Wago network call runs inside a database transaction.
 
-Preserve that behavior, with these rules:
+## Duplicate-message behavior
 
-- never create a second delivery-history row for the same `idempotencyKey`;
-- if a row for the idempotency key already exists, reuse it;
-- do not fabricate a transport message ID from a duplicate response.
+Wago `409 DUPLICATE_MESSAGE` is treated as logical submission success. Wago currently does not return the original `messageId` in that response.
 
-There is one unavoidable correlation gap under Wago's current contract: if Wago accepted a send, then SOPFlow crashed after the `202` response but before persisting the returned `messageId`, a later duplicate response cannot recover that original message ID. In that rare window SOPFlow must fail safely: keep any callback durably unmatched, do not guess which reminder it belongs to, and leave normal reminder scheduling unchanged. Eliminating this gap requires a future Wago contract change that exposes the original message ID or a caller correlation ID on duplicate/webhook responses; that is explicitly out of scope here.
+Rules:
+
+- reuse the existing delivery row for the same idempotency key;
+- never create a second logical occurrence for the same key;
+- never fabricate a transport ID.
+
+There is one unavoidable gap in the current Wago contract: if Wago returned `202` and SOPFlow crashed before persisting the returned `messageId`, a later duplicate response cannot recover that ID. SOPFlow degrades safely by leaving callbacks unmatched and never guessing correlation.
 
 ## Webhook Endpoint
-
-Add:
 
 ```text
 POST /api/v1/webhooks/wago
 ```
 
-The endpoint does not use user JWT/cookies. Wago HMAC is its authentication mechanism.
+The endpoint does not use SOPFlow user JWT/cookies. Wago HMAC is the authentication mechanism.
 
-Controller responsibilities are limited to:
+Controller responsibilities:
 
-- obtain required headers and raw JSON body;
-- authenticate the signature;
-- validate the trusted envelope;
-- delegate to `WagoWebhookService`;
-- return success for new persisted events and duplicate webhook IDs;
-- reject malformed/unauthenticated/unsupported requests;
-- never execute reminder sending directly.
+- require the Wago headers and exact raw body;
+- authenticate the signature before trusting body fields;
+- validate the supported envelope;
+- require header/body webhook ID and event consistency;
+- delegate durable processing to `WagoWebhookService`;
+- acknowledge only outcomes that are already durably safe;
+- never send reminders directly.
 
-## Raw-body Requirement
+## Raw-body and Signature Contract
 
-Wago signs exactly:
+Signing material:
 
 ```text
-<webhook-id>.<webhook-timestamp>.<raw-json-request-body>
+<Webhook-Id>.<Webhook-Timestamp>.<exact-raw-json-body>
 ```
-
-SOPFlow must verify this exact received body. Re-serializing parsed JSON with `JSON.stringify()` is not equivalent.
-
-The Nest bootstrap already disables default body parsing and installs explicit parsers. Extend the existing JSON parser configuration to retain the raw bytes/string on the request. Do not register a competing JSON parser.
-
-Expose raw body through a small typed HTTP-boundary helper/decorator/request type; application services must not depend on Express internals.
-
-## Signature Verification
 
 Required headers:
 
@@ -179,62 +166,62 @@ Required headers:
 - `Webhook-Signature`;
 - `X-Wago-Event`.
 
-Verification sequence:
+Verification:
 
-1. Reject missing headers.
+1. Require all headers and the retained raw body.
 2. Parse timestamp as Unix seconds.
-3. Require it within ±5 minutes of server time.
-4. Build signing material from the header webhook ID, the original timestamp string, and exact raw body.
+3. Require timestamp within ±5 minutes of server time.
+4. Build signing material from the original header values and exact raw body.
 5. Parse one or more space-separated `v1,<base64>` signatures.
 6. Compute HMAC-SHA256 with `WAGO_WEBHOOK_SECRET`.
-7. Decode candidates and compare with `timingSafeEqual` only when byte lengths match.
-8. Reject if no candidate matches.
-9. Only then validate/trust the JSON envelope.
+7. Decode candidates and compare with `timingSafeEqual` only for equal byte lengths.
+8. Reject if none match.
+9. Validate and trust the JSON envelope only after signature success.
 
-Never log the secret, signature values, signing material, or full webhook body.
+Never log API keys, signing secrets, signatures, signing material, or the full webhook body.
 
 ## Configuration
 
-Retain:
+Outbound remains:
 
 ```env
 WAGO_BASE_URL=...
 WAGO_API_KEY=...
 ```
 
-Add only:
+Inbound adds only:
 
 ```env
-WAGO_WEBHOOK_SECRET=<high-entropy-secret>
+WAGO_WEBHOOK_SECRET=<high-entropy-secret-at-least-32-characters>
 ```
 
-`WAGO_WEBHOOK_SECRET` is optional for backward compatibility, but when present it must meet the same minimum security posture as Wago's generated secret (at least 32 characters/high entropy). Receiver behavior is independent of whether outbound Wago credentials are configured:
+The webhook receiver and outbound credentials are independently configurable:
 
 - secret present -> signed receiver enabled;
-- secret absent -> endpoint returns service-unavailable/configuration response;
-- outbound Wago sending continues to follow existing `WAGO_BASE_URL` + `WAGO_API_KEY` rules.
+- secret absent -> webhook endpoint reports unavailable/configuration failure;
+- outbound sending still requires the existing URL + API-key pair.
 
-Stable constants remain in code, not env:
+Stable constants remain in code:
 
 - signature tolerance: 5 minutes;
-- generic post-submit rejection acceleration: 5 minutes.
+- generic rejection acceleration: 5 minutes.
 
-Operational callback URL configured in Wago:
+Configure Wago's callback URL as:
 
 ```text
 https://<sopflow-host>/api/v1/webhooks/wago
 ```
 
-The secret configured in Wago and `WAGO_WEBHOOK_SECRET` must match.
+The signing secret configured in Wago and SOPFlow must match.
 
 ## Supported Envelope
 
-Accept schema version `1` only.
+Only schema version `1` is accepted.
 
 Supported combinations:
 
-- `message.server_accepted` + `data.status = accepted`;
-- `message.rejected` + `data.status = rejected` with optional `data.error`.
+- `message.server_accepted` with `data.status = accepted`;
+- `message.rejected` with `data.status = rejected` and optional `data.error`.
 
 Required body fields:
 
@@ -247,257 +234,181 @@ Required body fields:
 
 Invariants:
 
-- body `id` must equal `Webhook-Id`;
-- body `event` must equal `X-Wago-Event`;
-- unsupported version/event/status combinations are rejected with `400`.
+- body `id === Webhook-Id`;
+- body `event === X-Wago-Event`;
+- unsupported version/event/status combinations return a client error.
 
-## Inbox, Deduplication, and Race Handling
+## Inbox, Deduplication, and Recovery
 
-After authentication and envelope validation:
+For a newly authenticated callback:
 
-1. Insert `WagoWebhookEvent` keyed by `Webhook-Id`.
-2. If the key already exists, return `2xx` no-op.
-3. Look up `PengirimanNotifikasiWhatsApp` by `transportMessageId`.
-4. If not found, leave inbox `processedAt = null` and return `2xx` because the event is already durably retained.
-5. If found, resolve the delivery state and mark the inbox row processed in a transaction.
+1. Insert `WagoWebhookEvent` using `Webhook-Id` as the durable idempotency key.
+2. Look up a delivery by `transportMessageId`.
+3. If the delivery does not exist yet, return `2xx` with `processedAt = null`; the callback is safely retained.
+4. If correlated, apply the terminal transition/policy and mark the inbox row processed last.
 
-When a delivery record is later persisted after Wago `202`, query unmatched inbox events for that exact `transportMessageId` and process them immediately. This is bounded reconciliation, not polling and not a new scheduler.
+For a duplicate webhook ID:
+
+- if the persisted inbox row is already processed, return `2xx` no-op;
+- if it is still unprocessed, use the persisted inbox row to attempt reconciliation again;
+- do not trust a duplicate request body as new state.
+
+When a delivery receipt is later persisted, explicit post-schedule reconciliation queries unprocessed inbox rows for that exact transport ID. This is bounded reconciliation, not polling.
+
+Operations intentionally use durable idempotent steps rather than one large cross-table transaction. The recovery invariant is that `processedAt` is written only after the delivery/no-op/schedule work for that inbox event has completed. If the process crashes earlier, replay can safely retry the remaining work.
 
 ## Delivery State Machine
 
-Allowed transitions:
+Allowed terminal transitions:
 
 ```text
 PENDING -> ACCEPTED
 PENDING -> REJECTED
 ```
 
-Terminal states never oscillate. If a contradictory later event arrives:
+Terminal state never oscillates. Contradictory later callbacks are recorded/processed as history-only no-ops and cannot reverse the first terminal outcome.
 
-- preserve the first terminal state;
-- mark/process the webhook as a no-op anomaly;
-- do not change reminder scheduling.
-
-## Retry Acceleration Policy
+## Retry Policy
 
 ### `message.server_accepted`
 
-- mark delivery `ACCEPTED`;
+- transition matching `PENDING` delivery to `ACCEPTED`;
 - set `resolvedAt`;
-- do not alter `nextSendAt`.
+- do not change reminder schedule.
 
 ### `message.rejected` + `MESSAGE_REJECTED`
 
-- mark delivery `REJECTED`;
-- set `errorCode = MESSAGE_REJECTED` and `resolvedAt`;
-- only if this is the latest relevant attempt for the active reminder and that reminder is still eligible:
+- transition matching `PENDING` delivery to `REJECTED`;
+- persist bounded error code and `resolvedAt`;
+- only the latest delivery for the same business identity may affect scheduling;
+- the current active reminder must still exist, match the historical reminder snapshot, and pass `isReminderStillEligible`;
+- then shorten schedule atomically to:
 
 ```text
-nextSendAt = min(existingNextSendAt, now + 5 minutes)
+min(existingNextSendAt, webhookReceivedAt + 5 minutes)
 ```
 
-This can accelerate but never delay an earlier existing retry.
+This may accelerate but never delay an earlier retry.
 
-### `message.rejected` + `REACHOUT_RESTRICTED`
+### `REACHOUT_RESTRICTED`
 
-- mark delivery `REJECTED`;
-- store the error;
-- do not accelerate schedule.
+Persist `REJECTED`; do not accelerate. Wago already applies reach-out cooldown protection.
 
-Wago itself applies a reach-out cooldown, so retrying aggressively would conflict with gateway protections.
+### Unknown or empty rejection code
 
-### Unknown or empty rejection error
+Persist `REJECTED`; do not accelerate. Unknown gateway behavior must not create aggressive retries.
 
-- mark delivery `REJECTED`;
-- persist only a bounded/sanitized external code when present;
-- do not change `nextSendAt`.
+## Stale and Obsolete Callbacks
 
-This is the chosen conservative policy.
+A callback for an older attempt may update that attempt's history but must not alter the current schedule when a newer occurrence exists.
 
-## Latest-attempt Guard
+If the active reminder was deleted or workflow/role/OPD eligibility changed:
 
-If attempt A is older than attempt B, a late webhook for A may update A's history but must not modify the current reminder schedule.
-
-Latestness is determined from persisted attempt order for the reminder identity, not webhook arrival order.
-
-## Eligibility Guard
-
-Before schedule acceleration, use the existing centralized `isReminderStillEligible` rule against the current reminder/workflow state.
-
-If the reminder was deleted or is no longer actionable:
-
-- update delivery history if correlated;
-- do not recreate a reminder;
-- do not change any schedule.
+- preserve correlated delivery history;
+- do not recreate the reminder;
+- do not mutate scheduling.
 
 ## Module Boundaries
 
-Keep changes inside the existing notifications feature unless HTTP bootstrap/config concerns require shared support.
-
-Recommended structure:
-
 ```text
-server/src/modules/notifications/reminders/
+notifications/reminders/
 ├── deliveries/
 │   ├── notification-delivery.repository.ts
 │   ├── notification-delivery.service.ts
 │   └── notification-delivery.types.ts
 ├── webhooks/
 │   ├── wago-webhook.controller.ts
-│   ├── wago-webhook.service.ts
 │   ├── wago-webhook.repository.ts
+│   ├── wago-webhook.service.ts
 │   ├── wago-webhook-signature.service.ts
 │   └── wago-webhook.types.ts
 └── providers/
     └── wago.provider.ts
 ```
 
-Use fewer files if responsibilities stay clear; do not create ceremonial layers.
-
 Responsibilities:
 
-- `WagoProvider`: outbound HTTP adapter;
-- delivery service/repository: attempt persistence and terminal transitions;
-- signature service: pure timestamp/HMAC verification;
-- webhook repository: durable inbox and dedup;
-- webhook service: trusted event processing, reconciliation, latest/eligibility guards;
-- controller: HTTP mapping only.
+- `WagoProvider`: outbound Wago adapter only;
+- delivery repository/service: durable occurrence persistence and explicit post-commit reconciliation entry point;
+- signature service: timestamp/HMAC verification;
+- webhook repository: durable inbox/dedup;
+- webhook service: terminal processing, recovery, latest-attempt and eligibility guards;
+- controller: HTTP mapping only;
+- reminder worker: orchestration order and the only sender execution path.
 
-## Transaction Boundaries
+## HTTP Semantics
 
-Use transactions for state that must change atomically:
-
-- matched webhook inbox processing + delivery terminal transition;
-- generic rejection terminal transition + schedule acceleration;
-- setting `processedAt` together with the corresponding applied/no-op result.
-
-Do not hold transactions around calls to Wago.
-
-## HTTP/Error Semantics
-
-- valid new event processed or durably stored unmatched: `2xx`;
-- duplicate webhook ID: `2xx` no-op;
-- missing/malformed signature inputs: existing project `400/401` convention;
-- invalid signature: existing unauthorized/forbidden convention;
-- timestamp outside tolerance: reject;
-- unsupported/inconsistent envelope: `400`;
+- valid event processed: `2xx`;
+- valid event durably stored unmatched: `2xx`;
+- duplicate already processed: `2xx`;
+- duplicate unprocessed: attempt persisted-row recovery, then `2xx` when durable outcome is safe;
+- malformed envelope/header inputs: client error;
+- invalid/stale signature: authentication/client error according to existing project convention;
 - webhook secret absent: `503`;
-- database failure before durable first insert: `5xx` so Wago retries.
+- DB failure before durable first insert: `5xx` so Wago retries.
 
-Never return `2xx` for a previously unseen valid event that failed before durable inbox persistence.
+Never acknowledge a previously unseen valid callback that failed before durable inbox persistence.
 
-## Logging and Security
+## Database Constraints
 
-- Never log `WAGO_API_KEY` or `WAGO_WEBHOOK_SECRET`.
-- Never log `Webhook-Signature`.
-- Never log reminder message text from webhook handling.
-- Log webhook ID, event, opaque/masked transport ID, processing result, and whether retry acceleration occurred.
-- Bound/sanitize `data.error` before persistence/logging.
-- Keep normal request body limits/security middleware; CORS is irrelevant because this is server-to-server.
-
-## Database Migration
-
-Add a Prisma migration for `PengirimanNotifikasiWhatsApp` and `WagoWebhookEvent`.
-
-Required constraints/indexes:
+`PengirimanNotifikasiWhatsApp`:
 
 - unique `idempotencyKey`;
 - unique nullable `transportMessageId`;
-- index on reminder/business identity plus `submittedAt` for latest-attempt lookup;
-- `WagoWebhookEvent.webhookId` primary key;
-- index on `transportMessageId, processedAt` for reconciliation;
-- nullable reminder FK with `onDelete: SetNull`.
+- identity/submission index for latest-attempt lookup;
+- reminder-snapshot/submission index;
+- no FK to the ephemeral reminder row.
 
-Update `DB-INVARIANTS.md` only if an invariant cannot be expressed clearly by the Prisma schema/application checks.
+`WagoWebhookEvent`:
 
-## Testing Strategy
+- primary key `webhookId`;
+- index on `(transportMessageId, processedAt)`.
 
-All production changes use TDD.
+## Testing Contract
 
-### Provider
+Required regression coverage includes:
 
-- `202` returns `transportMessageId`;
-- success without message ID returns null safely;
-- existing bearer auth, body, phone normalization, timeout, mapping, and idempotency tests remain green;
-- duplicate logical success never invents a message ID.
-
-### Signature verifier
-
-- valid signature;
-- invalid signature;
-- multiple signatures with one match;
-- malformed token/base64;
-- missing headers;
-- stale timestamp;
-- excessively future timestamp;
-- raw-body byte sensitivity;
-- unequal digest lengths handled safely.
-
-### Webhook service
-
-- accepted resolves matching pending attempt;
-- `MESSAGE_REJECTED` accelerates latest eligible reminder by at most five minutes;
-- an already earlier `nextSendAt` is never delayed;
-- `REACHOUT_RESTRICTED` does not accelerate;
-- unknown/empty error does not accelerate;
-- stale attempt does not accelerate;
-- deleted/non-actionable reminder does not accelerate;
-- duplicate webhook is no-op;
-- webhook-before-attempt is persisted then reconciled;
-- contradictory terminal callback cannot oscillate state.
-
-### Repository/integration
-
-- delivery idempotency uniqueness;
-- message-ID correlation;
-- reminder deletion preserves delivery history;
-- inbox deduplication;
-- transactionally consistent schedule acceleration.
-
-### HTTP boundary
-
-- real raw-body verification through Nest/Express;
-- JWT is not required, but unsigned/invalid requests fail;
-- header/body ID mismatch fails;
-- event header/body mismatch fails;
-- supported v1 envelope succeeds;
-- database failure returns retryable server error.
-
-### Regression gate
-
-Run server typecheck, lint, unit tests, integration tests, build, and repository CI. Do not weaken unrelated tests/security middleware.
+- provider returns real `transportMessageId` for Wago `202`;
+- duplicate success never invents a transport ID;
+- raw-body signature acceptance/rejection, multiple signatures, malformed signatures, and ±5 minute window;
+- durable webhook-ID dedup;
+- accepted terminal transition;
+- generic rejection +5 minute acceleration;
+- `REACHOUT_RESTRICTED`/unknown/empty no acceleration;
+- stale and obsolete reminder no scheduling mutation;
+- contradictory terminal callback cannot oscillate state;
+- callback-before-delivery persists unmatched then reconciles;
+- duplicate unprocessed callback can recover after a crash;
+- delivery history survives active reminder deletion;
+- receipt persistence occurs before `markSuccess`, while webhook reconciliation occurs only after successful schedule commit;
+- DB integration exercises real migrations and race-sensitive scheduling semantics;
+- existing critical business E2E and container build remain green.
 
 ## Deployment
 
-1. Deploy SOPFlow with this migration/receiver.
-2. Set `WAGO_WEBHOOK_SECRET` on SOPFlow backend.
-3. In Wago Settings -> Webhook Integration, set callback URL to:
-
-```text
-https://<sopflow-host>/api/v1/webhooks/wago
-```
-
-4. Configure the same signing secret.
+1. Deploy the database migration and SOPFlow backend.
+2. Set `WAGO_WEBHOOK_SECRET` in SOPFlow.
+3. In Wago Settings -> Webhook Integration, set callback URL to `https://<sopflow-host>/api/v1/webhooks/wago`.
+4. Configure the same signing secret in Wago and SOPFlow.
 5. Enable Wago webhook delivery.
-6. Perform a controlled reminder send and verify `PENDING -> ACCEPTED` or `PENDING -> REJECTED` history.
+6. Perform a controlled reminder send and verify delivery history transitions from `PENDING` to `ACCEPTED` or `REJECTED`.
 
-If SOPFlow is temporarily unavailable, Wago's durable webhook outbox retries. If the webhook integration is disabled, SOPFlow's existing normal reminder scheduler continues to operate.
+If Wago webhook delivery is unavailable, the existing normal SOPFlow reminder scheduler remains operational. If SOPFlow is temporarily unavailable, Wago's durable delivery mechanism can retry callbacks.
 
 ## Acceptance Criteria
 
 Complete when:
 
-- successful Wago submissions persist one logical delivery row keyed by reminder occurrence idempotency;
-- Wago message IDs are retained as `transportMessageId` when available;
-- callbacks are authenticated against exact raw body with a five-minute tolerance;
-- webhook IDs are durably deduplicated;
-- callback-before-attempt races are retained and reconciled when correlation becomes available;
+- one durable delivery row represents one logical reminder occurrence;
+- transport IDs are retained only when supplied by Wago;
+- callback authentication uses exact raw body and five-minute replay tolerance;
+- webhook IDs are durably idempotent;
+- callback-before-receipt races are safely retained and reconciled after the normal schedule commit;
 - accepted callbacks update transport history only;
-- latest eligible `MESSAGE_REJECTED` accelerates `nextSendAt` to no later than five minutes from processing;
-- `REACHOUT_RESTRICTED`, unknown, and empty errors do not accelerate;
-- stale attempts and obsolete reminders never mutate current scheduling;
-- duplicate/conflicting callbacks cannot repeatedly or reversibly mutate terminal state;
-- no network call is inside a DB transaction;
-- the rare crash-before-receipt-persistence correlation gap degrades safely without guessing;
-- focused tests and repository quality gates pass;
-- deployment docs describe callback URL and signing-secret setup accurately.
+- latest/current/eligible `MESSAGE_REJECTED` callbacks accelerate retry by five minutes without delaying earlier retries;
+- `REACHOUT_RESTRICTED`, unknown, empty, stale, and obsolete callbacks do not accelerate;
+- terminal delivery states cannot oscillate;
+- no fake correlation is created for Wago duplicate responses;
+- no Wago network call is held inside a DB transaction;
+- deployment docs describe callback URL and signing-secret setup;
+- server quality, DB integration, critical E2E, client quality, and container build all pass.
