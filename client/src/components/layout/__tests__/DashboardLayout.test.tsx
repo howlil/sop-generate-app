@@ -76,13 +76,13 @@ describe('DashboardLayout desktop sidebar', () => {
     )
   })
 
-  it('menampilkan label lengkap tanpa indikator garis kiri atau border panel', () => {
+  it('menampilkan label lengkap dengan separator panel yang netral', () => {
     render(<DashboardLayout />)
 
     const sidebar = document.querySelector('#desktop-sidebar')
     const activeLink = sidebar?.querySelector('a[aria-current="page"]')
 
-    expect(sidebar).not.toHaveClass('border-r')
+    expect(sidebar).toHaveClass('border-r', 'border-border', 'bg-surface')
     expect(activeLink?.className).not.toContain('before:left-0')
     expect(activeLink?.querySelector('span')).not.toHaveClass('truncate')
     expect(screen.queryByText('Tutup sidebar')).not.toBeInTheDocument()
