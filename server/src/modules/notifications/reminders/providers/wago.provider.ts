@@ -5,11 +5,16 @@ import {
   type NotificationChannel,
   type NotificationChannelErrorKind,
   type NotificationSendOptions,
+  type NotificationSendReceipt,
 } from './notification-channel.interface';
 
 type WagoErrorBody = Readonly<{
   error?: unknown;
   message?: unknown;
+}>;
+
+type WagoSuccessBody = Readonly<{
+  messageId?: unknown;
 }>;
 
 @Injectable()
@@ -31,7 +36,7 @@ export class WagoProvider implements NotificationChannel {
     destination: string,
     message: string,
     options?: NotificationSendOptions,
-  ): Promise<void> {
+  ): Promise<NotificationSendReceipt> {
     if (!this.enabled) {
       throw new NotificationChannelError(
         'CONFIGURATION',
@@ -63,8 +68,19 @@ export class WagoProvider implements NotificationChannel {
       });
 
       if (response.ok) {
-        this.logger.log(`Wago menerima pesan ke ${this.maskPhone(phoneNumber)}`);
-        return;
+        const successBody = await this.readSuccessBody(response);
+        const transportMessageId =
+          typeof successBody.messageId === 'string' && successBody.messageId.trim() !== ''
+            ? successBody.messageId
+            : null;
+        if (transportMessageId === null) {
+          this.logger.warn(
+            `Wago menerima pesan tanpa messageId tujuan=${this.maskPhone(phoneNumber)}`,
+          );
+        } else {
+          this.logger.log(`Wago menerima pesan ke ${this.maskPhone(phoneNumber)}`);
+        }
+        return { transportMessageId, status: 'pending' };
       }
 
       const errorBody = await this.readErrorBody(response);
@@ -72,7 +88,7 @@ export class WagoProvider implements NotificationChannel {
 
       if (response.status === 409 && errorCode === 'DUPLICATE_MESSAGE') {
         this.logger.log(`Wago mengenali retry duplikat ke ${this.maskPhone(phoneNumber)}`);
-        return;
+        return { transportMessageId: null, status: 'pending' };
       }
 
       const kind = this.errorToKind(response.status, errorCode);
@@ -96,6 +112,17 @@ export class WagoProvider implements NotificationChannel {
       );
     } finally {
       clearTimeout(timer);
+    }
+  }
+
+  private async readSuccessBody(response: Response): Promise<WagoSuccessBody> {
+    try {
+      const parsed: unknown = await response.json();
+      if (typeof parsed !== 'object' || parsed === null) return {};
+      const record = parsed as Record<string, unknown>;
+      return { messageId: record.messageId };
+    } catch {
+      return {};
     }
   }
 
