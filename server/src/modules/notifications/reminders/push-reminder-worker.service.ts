@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
+import { NotificationDeliveryService } from './deliveries/notification-delivery.service';
 import { isReminderStillEligible } from './reminder-eligibility.util';
 import { ReminderMessageFactory } from './reminder-message.factory';
 import { NotificationReminderRepository } from './notification-reminder.repository';
@@ -26,6 +27,7 @@ export class PushReminderWorkerService {
     private readonly messageFactory: ReminderMessageFactory,
     config: ConfigService,
     @Inject(NOTIFICATION_CHANNEL) private readonly channel: NotificationChannel,
+    private readonly deliveryService: NotificationDeliveryService,
   ) {
     this.maxConcurrency = config.get<number>('WHATSAPP_MAX_CONCURRENCY', 3);
     this.leaseMs = config.get<number>('WHATSAPP_LOCK_LEASE_SECONDS', 60) * 1_000;
@@ -81,10 +83,10 @@ export class PushReminderWorkerService {
 
     try {
       const message = this.messageFactory.build(reminder);
-      await this.channel.send(reminder.destination, message.body, {
-        idempotencyKey: this.buildIdempotencyKey(reminder),
-      });
+      const idempotencyKey = this.buildIdempotencyKey(reminder);
+      const receipt = await this.channel.send(reminder.destination, message.body, { idempotencyKey });
       const sentAt = new Date();
+      await this.deliveryService.recordSubmission(reminder, idempotencyKey, receipt, sentAt);
       await this.repository.markSuccess(
         notificationReminderId,
         lockToken,
