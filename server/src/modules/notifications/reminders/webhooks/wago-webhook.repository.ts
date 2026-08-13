@@ -28,6 +28,12 @@ export class WagoWebhookRepository {
     return result.count === 1 ? 'inserted' : 'duplicate';
   }
 
+  findByWebhookId(webhookId: string): Promise<WagoWebhookEvent | null> {
+    return this.prisma.wagoWebhookEvent.findUnique({
+      where: { webhookId },
+    });
+  }
+
   findUnprocessedByTransportMessageId(messageId: string): Promise<WagoWebhookEvent[]> {
     return this.prisma.wagoWebhookEvent.findMany({
       where: { transportMessageId: messageId, processedAt: null },
