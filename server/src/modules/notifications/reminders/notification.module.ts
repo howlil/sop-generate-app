@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationDeliveryRepository } from './deliveries/notification-delivery.repository';
+import { NotificationDeliveryService } from './deliveries/notification-delivery.service';
 import { PushReminderWorkerService } from './push-reminder-worker.service';
 import { InAppNotificationController } from './in-app-notification.controller';
 import { InAppNotificationService } from './in-app-notification.service';
@@ -21,6 +23,8 @@ import { WagoProvider } from './providers/wago.provider';
     NotificationRecipientResolverService,
     NotificationReminderRepository,
     NotificationReminderReconcilerService,
+    NotificationDeliveryRepository,
+    NotificationDeliveryService,
     PushReminderWorkerService,
     InAppNotificationService,
     NotificationReminderSchedulerService,
