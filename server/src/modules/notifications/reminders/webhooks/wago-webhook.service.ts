@@ -32,7 +32,13 @@ export class WagoWebhookService {
 
   async ingest(event: TrustedWagoWebhookEvent, receivedAt: Date): Promise<WagoWebhookIngestResult> {
     const inserted = await this.inbox.insertIfNew(event, receivedAt);
-    if (inserted === 'duplicate') return 'duplicate';
+    if (inserted === 'duplicate') {
+      const persisted = await this.inbox.findByWebhookId(event.id);
+      if (persisted !== null && persisted.processedAt === null) {
+        await this.reconcileTransportMessage(persisted.transportMessageId);
+      }
+      return 'duplicate';
+    }
 
     const delivery = await this.deliveries.findByTransportMessageId(event.data.messageId);
     if (delivery === null) return 'stored-unmatched';
