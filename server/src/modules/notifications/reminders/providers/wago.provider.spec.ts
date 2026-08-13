@@ -23,7 +23,7 @@ describe('WagoProvider', () => {
     return new WagoProvider(config);
   }
 
-  it('mengirim payload Wago dengan bearer auth, nomor ternormalisasi, dan idempotency key', async () => {
+  it('mengirim payload Wago dan mengembalikan transport receipt', async () => {
     const fetchMock = jest.fn().mockResolvedValue(
       new Response(JSON.stringify({ success: true, messageId: 'm1', status: 'pending' }), {
         status: 202,
@@ -33,9 +33,11 @@ describe('WagoProvider', () => {
     global.fetch = fetchMock as typeof fetch;
     const provider = createProvider();
 
-    await provider.send('085373945490', 'Pesan uji', {
-      idempotencyKey: 'sopflow-reminder:r1:initial',
-    });
+    await expect(
+      provider.send('085373945490', 'Pesan uji', {
+        idempotencyKey: 'sopflow-reminder:r1:initial',
+      }),
+    ).resolves.toEqual({ transportMessageId: 'm1', status: 'pending' });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
@@ -46,6 +48,21 @@ describe('WagoProvider', () => {
     expect(headers.get('Content-Type')).toBe('application/json');
     expect(headers.get('Idempotency-Key')).toBe('sopflow-reminder:r1:initial');
     expect(init.body).toBe(JSON.stringify({ to: '6285373945490', text: 'Pesan uji' }));
+  });
+
+  it('tetap menerima 202 tanpa messageId tanpa mengarang correlation id', async () => {
+    global.fetch = jest.fn().mockResolvedValue(
+      new Response(JSON.stringify({ success: true, status: 'pending' }), {
+        status: 202,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    ) as typeof fetch;
+    const provider = createProvider();
+
+    await expect(provider.send('6285373945490', 'Pesan uji')).resolves.toEqual({
+      transportMessageId: null,
+      status: 'pending',
+    });
   });
 
   it.each([
@@ -80,7 +97,7 @@ describe('WagoProvider', () => {
     }
   });
 
-  it('menganggap DUPLICATE_MESSAGE sebagai logical success', async () => {
+  it('menganggap DUPLICATE_MESSAGE sebagai logical success tanpa mengarang messageId', async () => {
     global.fetch = jest
       .fn()
       .mockResolvedValue(
@@ -91,7 +108,10 @@ describe('WagoProvider', () => {
       ) as typeof fetch;
     const provider = createProvider();
 
-    await expect(provider.send('6285373945490', 'Pesan uji')).resolves.toBeUndefined();
+    await expect(provider.send('6285373945490', 'Pesan uji')).resolves.toEqual({
+      transportMessageId: null,
+      status: 'pending',
+    });
   });
 
   it('memetakan network failure menjadi UNAVAILABLE', async () => {
