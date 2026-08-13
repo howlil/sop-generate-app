@@ -83,7 +83,9 @@ describe('Environment validation', () => {
   });
 
   it('membiarkan receiver webhook Wago nonaktif ketika secret kosong', () => {
-    expect(validateEnv({ ...baseEnv, WAGO_WEBHOOK_SECRET: '   ' }).WAGO_WEBHOOK_SECRET).toBeUndefined();
+    expect(
+      validateEnv({ ...baseEnv, WAGO_WEBHOOK_SECRET: '   ' }).WAGO_WEBHOOK_SECRET,
+    ).toBeUndefined();
   });
 
   it('menerima webhook secret Wago yang cukup kuat secara independen dari outbound config', () => {
