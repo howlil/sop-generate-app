@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Controller,
-  Headers,
-  HttpCode,
-  Post,
-  Req,
-} from '@nestjs/common';
+import { BadRequestException, Controller, Headers, HttpCode, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { RequestWithRawBody } from '../../../../common/http/raw-body';
@@ -57,7 +50,10 @@ export class WagoWebhookController {
   @Post()
   @HttpCode(200)
   @ApiOperation({ summary: 'Terima delivery webhook bertanda tangan dari Wago' })
-  @ApiResponse({ status: 200, description: 'Webhook diproses, dideduplikasi, atau disimpan durable' })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook diproses, dideduplikasi, atau disimpan durable',
+  })
   @ApiResponse({ status: 400, description: 'Header atau envelope webhook tidak valid' })
   @ApiResponse({ status: 401, description: 'Signature atau timestamp webhook tidak valid' })
   @ApiResponse({ status: 503, description: 'Receiver webhook belum dikonfigurasi' })
