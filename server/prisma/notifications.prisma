@@ -10,3 +10,46 @@ model NotifikasiInApp {
   @@id([pengajuanEvaluasiId, penggunaId, jenis])
   @@index([penggunaId, readAt, createdAt], map: "NotifikasiInApp_pengguna_read_created_idx")
 }
+
+/// Histori satu occurrence pengiriman reminder ke transport eksternal.
+/// Semua ID domain disimpan sebagai snapshot, bukan FK ke reminder aktif, agar histori
+/// tetap utuh setelah lifecycle `PengingatWhatsApp` selesai dan barisnya dihapus.
+model PengirimanNotifikasiWhatsApp {
+  pengirimanNotifikasiWhatsAppId String                             @id @default(uuid()) @db.Char(36)
+  pengingatWhatsAppId            String                             @db.Char(36)
+  pengajuanEvaluasiId            String                             @db.Char(36)
+  penggunaId                     String                             @db.Char(36)
+  jenis                          JenisPengingatWhatsApp
+  idempotencyKey                 String                             @unique @db.VarChar(191)
+  transportMessageId             String?                            @unique @db.VarChar(191)
+  status                         StatusPengirimanNotifikasiWhatsApp @default(PENDING)
+  errorCode                      String?                            @db.VarChar(64)
+  submittedAt                    DateTime                           @db.DateTime(3)
+  resolvedAt                     DateTime?                          @db.DateTime(3)
+  createdAt                      DateTime                           @default(now()) @db.DateTime(3)
+  updatedAt                      DateTime                           @updatedAt @db.DateTime(3)
+
+  @@index([pengajuanEvaluasiId, penggunaId, jenis, submittedAt], map: "PengirimanNotifikasi_identity_submitted_idx")
+  @@index([pengingatWhatsAppId, submittedAt], map: "PengirimanNotifikasi_reminder_submitted_idx")
+}
+
+/// Inbox durable untuk callback Wago. `webhookId` adalah idempotency key dari Wago.
+model WagoWebhookEvent {
+  webhookId          String    @id @db.VarChar(191)
+  transportMessageId String    @db.VarChar(191)
+  event              String    @db.VarChar(64)
+  status             String    @db.VarChar(16)
+  errorCode          String?   @db.VarChar(64)
+  sourceCreatedAt    DateTime  @db.DateTime(3)
+  receivedAt         DateTime  @db.DateTime(3)
+  processedAt        DateTime? @db.DateTime(3)
+  createdAt          DateTime  @default(now()) @db.DateTime(3)
+
+  @@index([transportMessageId, processedAt], map: "WagoWebhook_message_processed_idx")
+}
+
+enum StatusPengirimanNotifikasiWhatsApp {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
