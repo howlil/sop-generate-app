@@ -29,12 +29,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           className={cn(
-            'flex h-9 w-full rounded-control border border-border-strong bg-surface px-3 py-1.5 text-sm text-foreground',
+            'flex h-9 w-full rounded-control border border-border bg-surface px-3 py-1.5 text-ui-body text-foreground',
             'placeholder:text-muted-foreground',
             'focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary',
             'disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-50',
             errorMessage && 'border-danger ring-2 ring-danger',
-            className
+            className,
           )}
           ref={ref}
           aria-invalid={!!errorMessage}
@@ -51,7 +51,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ) : null}
       </>
     )
-  }
+  },
 )
 Input.displayName = 'Input'
 
