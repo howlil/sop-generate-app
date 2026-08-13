@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import type { PrismaService } from '../../../../common/prisma/prisma.service';
 import {
   JenisPengingatWhatsApp,
@@ -111,7 +111,9 @@ describe('NotificationDeliveryRepository', () => {
     const resolvedAt = new Date('2026-08-13T08:05:00.000Z');
 
     await expect(repository.markAccepted('delivery-1', resolvedAt)).resolves.toBe('updated');
-    await expect(repository.markAccepted('delivery-1', resolvedAt)).resolves.toBe('already-terminal');
+    await expect(repository.markAccepted('delivery-1', resolvedAt)).resolves.toBe(
+      'already-terminal',
+    );
 
     expect(prismaMock.pengirimanNotifikasiWhatsApp.updateMany).toHaveBeenCalledWith({
       where: {
@@ -130,9 +132,9 @@ describe('NotificationDeliveryRepository', () => {
     prismaMock.pengirimanNotifikasiWhatsApp.updateMany.mockResolvedValueOnce({ count: 1 });
     const resolvedAt = new Date('2026-08-13T08:05:00.000Z');
 
-    await expect(repository.markRejected('delivery-1', 'MESSAGE_REJECTED', resolvedAt)).resolves.toBe(
-      'updated',
-    );
+    await expect(
+      repository.markRejected('delivery-1', 'MESSAGE_REJECTED', resolvedAt),
+    ).resolves.toBe('updated');
 
     expect(prismaMock.pengirimanNotifikasiWhatsApp.updateMany).toHaveBeenCalledWith({
       where: {
