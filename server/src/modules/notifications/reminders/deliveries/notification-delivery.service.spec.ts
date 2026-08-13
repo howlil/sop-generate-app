@@ -8,6 +8,7 @@ import type { ClaimedNotificationReminder } from '../notification-reminder.types
 import { WagoWebhookService } from '../webhooks/wago-webhook.service';
 import { NotificationDeliveryRepository } from './notification-delivery.repository';
 import { NotificationDeliveryService } from './notification-delivery.service';
+import type { NotificationDeliveryRecord } from './notification-delivery.types';
 
 describe('NotificationDeliveryService', () => {
   const reminder: ClaimedNotificationReminder = {
@@ -39,32 +40,47 @@ describe('NotificationDeliveryService', () => {
   };
 
   function build(transportMessageId: string | null) {
+    const delivery = {
+      pengirimanNotifikasiWhatsAppId: 'delivery-1',
+      pengingatWhatsAppId: reminder.notificationReminderId,
+      pengajuanEvaluasiId: reminder.pengajuanEvaluasiId,
+      penggunaId: reminder.penggunaId,
+      jenis: reminder.kind,
+      idempotencyKey: 'sopflow-reminder:reminder-1:initial',
+      transportMessageId,
+      status: 'PENDING',
+      errorCode: null,
+      submittedAt: new Date('2026-08-13T08:00:00.000Z'),
+      resolvedAt: null,
+      createdAt: new Date('2026-08-13T08:00:00.000Z'),
+      updatedAt: new Date('2026-08-13T08:00:00.000Z'),
+    } as unknown as NotificationDeliveryRecord;
     const repository = {
-      createOrGetPending: jest.fn().mockResolvedValue({
-        pengirimanNotifikasiWhatsAppId: 'delivery-1',
-        transportMessageId,
-      }),
+      createOrGetPending: jest.fn().mockResolvedValue(delivery),
     } as unknown as NotificationDeliveryRepository;
     const webhookService = {
       reconcileTransportMessage: jest.fn().mockResolvedValue(undefined),
     } as unknown as WagoWebhookService;
     return {
+      delivery,
       repository,
       webhookService,
       service: new NotificationDeliveryService(repository, webhookService),
     };
   }
 
-  it('maps a claimed reminder and reconciles a correlatable transport receipt', async () => {
-    const { repository, webhookService, service } = build('wamid-1');
+  it('persists a correlatable receipt without reconciling before the reminder schedule is committed', async () => {
+    const { delivery, repository, webhookService, service } = build('wamid-1');
     const submittedAt = new Date('2026-08-13T08:00:00.000Z');
 
-    await service.recordSubmission(
-      reminder,
-      'sopflow-reminder:reminder-1:initial',
-      { transportMessageId: 'wamid-1', status: 'pending' },
-      submittedAt,
-    );
+    await expect(
+      service.recordSubmission(
+        reminder,
+        'sopflow-reminder:reminder-1:initial',
+        { transportMessageId: 'wamid-1', status: 'pending' },
+        submittedAt,
+      ),
+    ).resolves.toBe(delivery);
 
     expect(repository.createOrGetPending).toHaveBeenCalledWith({
       notificationReminderId: 'reminder-1',
@@ -75,11 +91,25 @@ describe('NotificationDeliveryService', () => {
       transportMessageId: 'wamid-1',
       submittedAt,
     });
+    expect(webhookService.reconcileTransportMessage).not.toHaveBeenCalled();
+  });
+
+  it('reconciles a persisted correlatable submission only when explicitly requested', async () => {
+    const { delivery, webhookService, service } = build('wamid-1');
+    const reconciliable = service as NotificationDeliveryService & {
+      reconcileSubmission(value: NotificationDeliveryRecord): Promise<void>;
+    };
+
+    await reconciliable.reconcileSubmission(delivery);
+
     expect(webhookService.reconcileTransportMessage).toHaveBeenCalledWith('wamid-1');
   });
 
   it('does not invent correlation when the persisted logical occurrence has no transport id', async () => {
-    const { webhookService, service } = build(null);
+    const { delivery, webhookService, service } = build(null);
+    const reconciliable = service as NotificationDeliveryService & {
+      reconcileSubmission(value: NotificationDeliveryRecord): Promise<void>;
+    };
 
     await service.recordSubmission(
       reminder,
@@ -87,6 +117,7 @@ describe('NotificationDeliveryService', () => {
       { transportMessageId: null, status: 'pending' },
       new Date('2026-08-13T08:00:00.000Z'),
     );
+    await reconciliable.reconcileSubmission(delivery);
 
     expect(webhookService.reconcileTransportMessage).not.toHaveBeenCalled();
   });
