@@ -34,7 +34,7 @@ const DataTableTable = React.forwardRef<HTMLTableElement, React.HTMLAttributes<H
   ({ className, ...props }, ref) => (
     <table
       ref={ref}
-      className={cn('w-full border-collapse text-ui-table text-foreground', className)}
+      className={cn('w-full border-collapse text-[13px]/[18px] text-foreground', className)}
       {...props}
     />
   ),
@@ -97,11 +97,7 @@ const DataTableActionTh = React.forwardRef<
   HTMLTableCellElement,
   Omit<React.ThHTMLAttributes<HTMLTableCellElement>, 'align'>
 >(({ className, ...props }, ref) => (
-  <DataTableTh
-    ref={ref}
-    className={cn('w-0 whitespace-nowrap text-left', className)}
-    {...props}
-  />
+  <DataTableTh ref={ref} className={cn('w-0 whitespace-nowrap text-left', className)} {...props} />
 ))
 DataTableActionTh.displayName = 'DataTableActionTh'
 
