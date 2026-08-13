@@ -13,6 +13,8 @@ import { NotificationReminderRepository } from './notification-reminder.reposito
 import { NotificationReminderSchedulerService } from './notification-reminder-scheduler.service';
 import { NOTIFICATION_CHANNEL } from './providers/notification-channel.interface';
 import { WagoProvider } from './providers/wago.provider';
+import { WagoWebhookRepository } from './webhooks/wago-webhook.repository';
+import { WagoWebhookService } from './webhooks/wago-webhook.service';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -24,6 +26,8 @@ import { WagoProvider } from './providers/wago.provider';
     NotificationReminderRepository,
     NotificationReminderReconcilerService,
     NotificationDeliveryRepository,
+    WagoWebhookRepository,
+    WagoWebhookService,
     NotificationDeliveryService,
     PushReminderWorkerService,
     InAppNotificationService,
