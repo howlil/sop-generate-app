@@ -84,7 +84,9 @@ export class PushReminderWorkerService {
     try {
       const message = this.messageFactory.build(reminder);
       const idempotencyKey = this.buildIdempotencyKey(reminder);
-      const receipt = await this.channel.send(reminder.destination, message.body, { idempotencyKey });
+      const receipt = await this.channel.send(reminder.destination, message.body, {
+        idempotencyKey,
+      });
       const sentAt = new Date();
       await this.deliveryService.recordSubmission(reminder, idempotencyKey, receipt, sentAt);
       await this.repository.markSuccess(
