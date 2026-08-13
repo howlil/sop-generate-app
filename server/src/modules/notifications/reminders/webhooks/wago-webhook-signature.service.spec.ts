@@ -97,22 +97,25 @@ describe('WagoWebhookSignatureService', () => {
     ).toThrow();
   });
 
-  it.each(['', 'abc', 'v2,abc', 'v1,not-valid-***'])('rejects malformed signature header %p', (header) => {
-    const service = createService();
-    const value = fixture();
+  it.each(['', 'abc', 'v2,abc', 'v1,not-valid-***'])(
+    'rejects malformed signature header %p',
+    (header) => {
+      const service = createService();
+      const value = fixture();
 
-    expect(() =>
-      service.verify(
-        {
-          webhookId: value.webhookId,
-          timestamp: value.timestamp,
-          signatureHeader: header,
-          rawBody: value.rawBody,
-        },
-        value.now,
-      ),
-    ).toThrow();
-  });
+      expect(() =>
+        service.verify(
+          {
+            webhookId: value.webhookId,
+            timestamp: value.timestamp,
+            signatureHeader: header,
+            rawBody: value.rawBody,
+          },
+          value.now,
+        ),
+      ).toThrow();
+    },
+  );
 
   it('rejects callbacks when no webhook secret is configured', () => {
     const service = createService('');
