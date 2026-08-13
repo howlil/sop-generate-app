@@ -79,7 +79,7 @@ describeIntegration('Wago delivery webhook integration', () => {
         nip: '123456789012345678',
         jabatan: 'Evaluator',
         pangkat: 'Penata',
-        nohp: '081234567890',
+        nohp: '6281234567890',
       },
     });
     const pengajuan = await prisma.pengajuanEvaluasi.create({
