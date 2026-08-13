@@ -17,6 +17,7 @@ MariaDB :3306
 
 Backend -> persistent PDF volume /app/storage/sop-pdf
 Backend -> Wago self-hosted (opsional, outbound WhatsApp)
+Backend <- Wago signed delivery webhook (opsional)
 ```
 
 Port `8080`, `3001`, dan `3306` adalah port internal service/container. Pada deployment normal hanya frontend yang menjadi target public ingress.
@@ -92,7 +93,34 @@ Jika keduanya kosong, WhatsApp nonaktif. Jika hanya salah satu yang diisi, backe
 
 Sebelum SOPFlow dapat mengirim ke suatu nomor, nomor receiver tersebut harus di-allow secara manual pada Wago. SOPFlow tidak memanggil endpoint recipient allow/opt-out secara otomatis. Setelah nomor di-allow, reminder yang sebelumnya ditolak dapat berhasil pada jadwal pengiriman berikutnya.
 
-SOPFlow mengirim text reminder ke `POST /messages/send` dengan Bearer API key dan `Idempotency-Key`. Idempotency digunakan agar retry transport dari occurrence reminder yang sama tidak membuat pesan logical yang sama terkirim dua kali.
+SOPFlow mengirim text reminder ke `POST /messages/send` dengan Bearer API key dan `Idempotency-Key`. Idempotency digunakan agar retry transport dari occurrence reminder yang sama tidak membuat pesan logical yang sama terkirim dua kali. Response Wago disimpan sebagai delivery attempt terpisah dari lifecycle reminder agar callback yang datang belakangan dapat dikorelasikan tanpa menjadikan transport state sebagai business state.
+
+### Delivery webhook Wago
+
+Untuk menerima status asynchronous dari Wago, isi signing secret yang sama pada backend SOPFlow:
+
+```dotenv
+WAGO_WEBHOOK_SECRET=replace-with-high-entropy-secret-at-least-32-characters
+```
+
+Lalu pada **Wago → Settings → Webhook Integration**, gunakan callback URL:
+
+```text
+https://<sopflow-host>/api/v1/webhooks/wago
+```
+
+Wago menandatangani callback dengan HMAC-SHA256. SOPFlow memverifikasi `Webhook-Id`, `Webhook-Timestamp`, `Webhook-Signature`, dan raw JSON body sebelum mempercayai payload, menolak timestamp di luar toleransi lima menit, dan mendeduplikasi callback secara durable menggunakan `Webhook-Id`.
+
+SOPFlow menerima dua event Wago schema `version: "1"`:
+
+- `message.server_accepted`: delivery attempt ditandai `ACCEPTED`; jadwal reminder tidak berubah.
+- `message.rejected`: delivery attempt ditandai `REJECTED`. Hanya rejection generic `MESSAGE_REJECTED` dari attempt terbaru yang masih relevan yang dapat mempercepat `nextSendAt` menjadi paling lambat lima menit setelah callback. `REACHOUT_RESTRICTED`, error kosong, dan error yang tidak dikenal tetap mengikuti jadwal normal.
+
+Callback lama tidak boleh mengubah reminder occurrence yang lebih baru. Callback untuk reminder yang sudah tidak actionable tetap dapat menutup histori delivery, tetapi tidak membuat reminder aktif baru. Webhook duplicate merupakan kondisi normal karena delivery Wago bersifat at-least-once dan diproses idempotent.
+
+`message.server_accepted` hanya berarti WhatsApp server acknowledgement. Status ini **bukan** bukti pesan sudah sampai ke perangkat penerima atau sudah dibaca.
+
+Webhook bersifat opsional. `WAGO_BASE_URL` + `WAGO_API_KEY` tetap dapat digunakan tanpa `WAGO_WEBHOOK_SECRET`; dalam kondisi tersebut outbound tetap aktif tetapi endpoint callback tidak menerima request unsigned.
 
 ## TTE dan PDF signing
 

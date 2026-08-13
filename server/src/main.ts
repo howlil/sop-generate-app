@@ -10,6 +10,7 @@ import { AppModule } from './app.module';
 import { createDefaultValidationPipe } from './common';
 import { installFatalProcessErrorHandlers } from './common/bootstrap/process-error-handlers';
 import { buildCorsOptions } from './common/http/cors-options';
+import type { RequestWithRawBody } from './common/http/raw-body';
 import { JSON_BODY_LIMIT, URLENCODED_BODY_LIMIT } from './common/http/request-body-limits';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { CsrfProtectionService } from './common/security/csrf-protection.service';
@@ -46,7 +47,12 @@ async function bootstrap() {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   const e2eCritical = configService.get<boolean>('E2E_CRITICAL', false);
 
-  app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
+  app.useBodyParser('json', {
+    limit: JSON_BODY_LIMIT,
+    verify: (request, _response, buffer) => {
+      (request as RequestWithRawBody).rawBody = Buffer.from(buffer);
+    },
+  });
   app.useBodyParser('urlencoded', { extended: true, limit: URLENCODED_BODY_LIMIT });
   app.use(cookieParser());
 

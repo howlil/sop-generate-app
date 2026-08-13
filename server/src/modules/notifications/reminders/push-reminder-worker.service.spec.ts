@@ -54,9 +54,18 @@ function build(lastSentAt: Date | null = null) {
   const messageFactory = {
     build: jest.fn().mockReturnValue({ body: 'Pesan reminder' }),
   } as unknown as ReminderMessageFactory;
+  const receipt = { transportMessageId: 'wamid-1', status: 'pending' as const };
   const channel = {
-    send: jest.fn().mockResolvedValue(undefined),
+    send: jest.fn().mockResolvedValue(receipt),
   } as unknown as NotificationChannel;
+  const delivery = {
+    pengirimanNotifikasiWhatsAppId: 'delivery-1',
+    transportMessageId: 'wamid-1',
+  };
+  const deliveryService = {
+    recordSubmission: jest.fn().mockResolvedValue(delivery),
+    reconcileSubmission: jest.fn().mockResolvedValue(undefined),
+  };
   const config = {
     get: jest.fn((key: string, fallback: unknown) => {
       if (key === 'WHATSAPP_MAX_CONCURRENCY') return 1;
@@ -66,23 +75,40 @@ function build(lastSentAt: Date | null = null) {
     }),
   } as unknown as ConfigService;
 
-  return {
-    reminder,
+  const service = Reflect.construct(PushReminderWorkerService, [
     repository,
+    messageFactory,
+    config,
     channel,
-    service: new PushReminderWorkerService(repository, messageFactory, config, channel),
-  };
+    deliveryService,
+  ]) as PushReminderWorkerService;
+
+  return { reminder, repository, channel, delivery, deliveryService, receipt, service };
 }
 
 describe('PushReminderWorkerService idempotency', () => {
-  it('menggunakan key initial untuk reminder yang belum pernah berhasil terkirim', async () => {
-    const { service, reminder, channel } = build();
+  it('persists the transport receipt before markSuccess and reconciles only after the schedule commit', async () => {
+    const { service, reminder, repository, channel, delivery, deliveryService, receipt } = build();
 
     await service.processDue(new Date('2026-08-11T00:00:00.000Z'));
 
+    const idempotencyKey = 'sopflow-reminder:reminder-1:initial';
     expect(channel.send).toHaveBeenCalledWith(reminder.destination, 'Pesan reminder', {
-      idempotencyKey: 'sopflow-reminder:reminder-1:initial',
+      idempotencyKey,
     });
+    expect(deliveryService.recordSubmission).toHaveBeenCalledWith(
+      reminder,
+      idempotencyKey,
+      receipt,
+      expect.any(Date),
+    );
+    expect(deliveryService.reconcileSubmission).toHaveBeenCalledWith(delivery);
+    expect(deliveryService.recordSubmission.mock.invocationCallOrder[0]).toBeLessThan(
+      (repository.markSuccess as jest.Mock).mock.invocationCallOrder[0],
+    );
+    expect((repository.markSuccess as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(
+      deliveryService.reconcileSubmission.mock.invocationCallOrder[0],
+    );
   });
 
   it('menggunakan lastSentAt untuk occurrence reminder berikutnya', async () => {

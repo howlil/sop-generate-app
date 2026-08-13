@@ -224,6 +224,86 @@ export class NotificationReminderRepository {
     };
   }
 
+  async findByIdentity(
+    pengajuanEvaluasiId: string,
+    penggunaId: string,
+    kind: DesiredNotificationReminder['kind'],
+  ): Promise<ClaimedNotificationReminder | null> {
+    const row = await this.prisma.pengingatWhatsApp.findUnique({
+      where: {
+        pengajuanEvaluasiId_penggunaId_jenis: {
+          pengajuanEvaluasiId,
+          penggunaId,
+          jenis: kind,
+        },
+      },
+      select: {
+        pengingatWhatsAppId: true,
+        pengajuanEvaluasiId: true,
+        penggunaId: true,
+        jenis: true,
+        nomorTujuan: true,
+        lastSentAt: true,
+        consecutiveFailures: true,
+        lockToken: true,
+        pengajuanEvaluasi: {
+          select: {
+            pengajuanEvaluasiId: true,
+            opdId: true,
+            nomorBA: true,
+            status: true,
+            opd: { select: { nama: true } },
+            _count: { select: { nilaiEvaluasi: true } },
+          },
+        },
+        pengguna: {
+          select: {
+            penggunaId: true,
+            opdId: true,
+            email: true,
+            nama: true,
+            peran: true,
+            nohp: true,
+            deletedAt: true,
+          },
+        },
+      },
+    });
+    if (row === null) {
+      return null;
+    }
+    return {
+      notificationReminderId: row.pengingatWhatsAppId,
+      pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+      penggunaId: row.penggunaId,
+      kind: row.jenis,
+      destination: row.nomorTujuan,
+      lastSentAt: row.lastSentAt,
+      consecutiveFailures: row.consecutiveFailures,
+      lockToken: row.lockToken,
+      pengajuanEvaluasi: {
+        pengajuanEvaluasiId: row.pengajuanEvaluasi.pengajuanEvaluasiId,
+        opdId: row.pengajuanEvaluasi.opdId,
+        opdNama: row.pengajuanEvaluasi.opd.nama,
+        nomorBA: row.pengajuanEvaluasi.nomorBA,
+        status: row.pengajuanEvaluasi.status,
+        jumlahSop: row.pengajuanEvaluasi._count.nilaiEvaluasi,
+      },
+      pengguna: row.pengguna,
+    };
+  }
+
+  async accelerateNextSendAt(notificationReminderId: string, candidate: Date): Promise<boolean> {
+    const result = await this.prisma.pengingatWhatsApp.updateMany({
+      where: {
+        pengingatWhatsAppId: notificationReminderId,
+        nextSendAt: { gt: candidate },
+      },
+      data: { nextSendAt: candidate },
+    });
+    return result.count === 1;
+  }
+
   async markSuccess(
     notificationReminderId: string,
     lockToken: string,

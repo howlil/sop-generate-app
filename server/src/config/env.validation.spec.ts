@@ -82,6 +82,29 @@ describe('Environment validation', () => {
     });
   });
 
+  it('membiarkan receiver webhook Wago nonaktif ketika secret kosong', () => {
+    expect(
+      validateEnv({ ...baseEnv, WAGO_WEBHOOK_SECRET: '   ' }).WAGO_WEBHOOK_SECRET,
+    ).toBeUndefined();
+  });
+
+  it('menerima webhook secret Wago yang cukup kuat secara independen dari outbound config', () => {
+    expect(
+      validateEnv({
+        ...baseEnv,
+        WAGO_WEBHOOK_SECRET: 'wago-webhook-secret-that-is-at-least-32-characters',
+      }),
+    ).toMatchObject({
+      WAGO_WEBHOOK_SECRET: 'wago-webhook-secret-that-is-at-least-32-characters',
+    });
+  });
+
+  it('menolak webhook secret Wago non-empty yang terlalu pendek', () => {
+    expect(() => validateEnv({ ...baseEnv, WAGO_WEBHOOK_SECRET: 'too-short' })).toThrow(
+      /WAGO_WEBHOOK_SECRET/,
+    );
+  });
+
   it('menolak URL Wago tanpa API key', () => {
     expect(() =>
       validateEnv({

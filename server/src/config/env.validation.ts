@@ -34,6 +34,11 @@ const optionalTrimmedString = z.preprocess((val) => {
   return normalized === '' ? undefined : normalized;
 }, z.string().optional());
 
+const optionalSecret = z.preprocess((val) => {
+  const normalized = trimmedEnvironmentString(val);
+  return normalized === '' ? undefined : normalized;
+}, z.string().min(32).optional());
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -70,6 +75,7 @@ const envSchema = z
     /** Outbound WhatsApp aktif ketika URL dan API key Wago sama-sama tersedia. */
     WAGO_BASE_URL: optionalUrl,
     WAGO_API_KEY: z.preprocess(trimmedEnvironmentString, z.string().default('')),
+    WAGO_WEBHOOK_SECRET: optionalSecret,
     WAGO_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
     WHATSAPP_REMINDER_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(43_200).default(1440),
     WHATSAPP_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(20).default(3),

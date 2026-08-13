@@ -235,18 +235,18 @@ jobs:
 
           pnpm prisma migrate status
 
-      - name: Run database invariant integration tests
+      - name: Run database integration tests
         shell: bash
         run: |
           set +e
-          test_output="$(pnpm test:integration:run --no-cache -- database-invariants.integration-spec.ts 2>&1)"
+          test_output="$(pnpm test:integration:run --no-cache -- database-invariants.integration-spec.ts wago-delivery-webhook.integration-spec.ts 2>&1)"
           test_status=$?
           set -e
           printf '%s\n' "$test_output"
 
           if [[ "$test_status" -ne 0 ]]; then
             annotation="$(printf '%s\n' "$test_output" | tail -n 40 | tr '\n' ' ')"
-            echo "::error title=Database invariant tests failed::$annotation"
+            echo "::error title=Database integration tests failed::$annotation"
             exit "$test_status"
           fi
 
