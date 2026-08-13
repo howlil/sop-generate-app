@@ -12,13 +12,13 @@ export class NotificationDeliveryService {
     private readonly webhookService: WagoWebhookService,
   ) {}
 
-  async recordSubmission(
+  recordSubmission(
     reminder: ClaimedNotificationReminder,
     idempotencyKey: string,
     receipt: NotificationSendReceipt,
     submittedAt: Date,
   ): Promise<NotificationDeliveryRecord> {
-    const delivery = await this.repository.createOrGetPending({
+    return this.repository.createOrGetPending({
       notificationReminderId: reminder.notificationReminderId,
       pengajuanEvaluasiId: reminder.pengajuanEvaluasiId,
       penggunaId: reminder.penggunaId,
@@ -27,10 +27,10 @@ export class NotificationDeliveryService {
       transportMessageId: receipt.transportMessageId,
       submittedAt,
     });
+  }
 
-    if (delivery.transportMessageId !== null) {
-      await this.webhookService.reconcileTransportMessage(delivery.transportMessageId);
-    }
-    return delivery;
+  async reconcileSubmission(delivery: NotificationDeliveryRecord): Promise<void> {
+    if (delivery.transportMessageId === null) return;
+    await this.webhookService.reconcileTransportMessage(delivery.transportMessageId);
   }
 }
