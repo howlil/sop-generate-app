@@ -144,7 +144,7 @@ describe('WagoWebhookService', () => {
       ...activeReminder,
       pengajuanEvaluasi: {
         ...activeReminder.pengajuanEvaluasi,
-        status: StatusPengajuanEvaluasi.DIAJUKAN,
+        status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
       },
     });
 
