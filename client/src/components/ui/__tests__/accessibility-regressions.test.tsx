@@ -61,13 +61,16 @@ describe('regresi aksesibilitas komponen UI', () => {
     )
   })
 
-  it('memberi batas kontrol yang terlihat jelas pada input', () => {
+  it('memberi batas kontrol netral yang terlihat jelas pada input', () => {
     render(<Input aria-label="Nama" />)
 
     expect(screen.getByRole('textbox', { name: 'Nama' })).toHaveClass(
-      'border-border-strong',
+      'rounded-control',
+      'border-border',
+      'bg-surface',
       'focus:ring-primary',
     )
+    expect(screen.getByRole('textbox', { name: 'Nama' })).not.toHaveClass('shadow-sm')
   })
 
   it('mempertahankan tinggi minimum badge penting sebesar 24 piksel', () => {
@@ -100,13 +103,14 @@ describe('regresi aksesibilitas komponen UI', () => {
 
     expect(screen.getByText('Ringkasan')).toHaveClass(
       'rounded-surface',
+      'border',
       'border-border',
       'bg-surface',
     )
     expect(screen.getByText('Ringkasan')).not.toHaveClass('shadow-surface')
   })
 
-  it('memberi affordance scroll dan header sticky pada tabel data', () => {
+  it('memberi affordance scroll dan header sticky netral pada tabel data', () => {
     render(
       <DataTableRoot aria-label="Daftar pengguna">
         <DataTableTable>
@@ -125,20 +129,29 @@ describe('regresi aksesibilitas komponen UI', () => {
     expect(screen.getByRole('region', { name: 'Daftar pengguna' })).not.toHaveClass(
       '[scrollbar-gutter:stable]',
     )
-    expect(screen.getByRole('row')).toHaveClass('sticky', 'top-0')
-    expect(screen.getByRole('table')).toHaveClass('text-[13px]/[18px]')
+    expect(screen.getByRole('row')).toHaveClass(
+      'sticky',
+      'top-0',
+      'border-b',
+      'border-border',
+      'bg-surface-subtle',
+    )
+    expect(screen.getByRole('table')).toHaveClass('text-ui-table')
     expect(screen.getByRole('columnheader', { name: 'Jumlah' })).toHaveClass(
       'whitespace-nowrap',
       'text-right',
       'font-medium',
-      'py-2',
+      'text-ui-label',
+      'text-secondary-foreground',
+      'px-3',
+      'py-2.5',
     )
     expect(screen.getByRole('columnheader', { name: 'Jumlah' })).not.toHaveClass(
       'font-semibold',
     )
   })
 
-  it('memakai shell tabel yang sama dan memotong header tepat di sudut kartu', () => {
+  it('memakai shell tabel flat yang sama dan memotong header tepat di sudut kartu', () => {
     const { rerender } = render(
       <DataTableCard data-testid="table-card">
         <DataTableRoot>
@@ -151,7 +164,11 @@ describe('regresi aksesibilitas komponen UI', () => {
       'isolate',
       'overflow-clip',
       'rounded-surface',
+      'border',
+      'border-border',
+      'bg-surface',
     )
+    expect(screen.getByTestId('table-card')).not.toHaveClass('shadow-surface')
 
     rerender(
       <PaginatedTable data={[1]} label="contoh">
@@ -163,6 +180,12 @@ describe('regresi aksesibilitas komponen UI', () => {
       'isolate',
       'overflow-clip',
       'rounded-surface',
+      'border',
+      'border-border',
+      'bg-surface',
+    )
+    expect(screen.getByRole('table', { name: 'Tabel paginasi' }).parentElement).not.toHaveClass(
+      'shadow-surface',
     )
   })
 
@@ -297,16 +320,21 @@ describe('regresi aksesibilitas komponen UI', () => {
     expect(screen.getByRole('listitem', { current: 'step' })).toBeInTheDocument()
   })
 
-  it('menandai halaman pagination yang sedang aktif', () => {
+  it('menandai halaman pagination yang sedang aktif dan dapat berpindah halaman', () => {
+    const onPageChange = vi.fn()
     render(
-      <Pagination totalItems={40} currentPage={2} pageSize={10} onPageChange={vi.fn()} label="SOP" />,
+      <Pagination totalItems={40} currentPage={2} pageSize={10} onPageChange={onPageChange} label="SOP" />,
     )
 
     expect(screen.getByRole('navigation', { name: 'Navigasi halaman SOP' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Halaman 2' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
+    expect(screen.getByText('11–20 dari 40 SOP')).toBeInTheDocument()
+    expect(screen.getByText('Halaman 2 dari 4')).toHaveAttribute('aria-current', 'page')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sebelumnya' }))
+    expect(onPageChange).toHaveBeenCalledWith(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Selanjutnya' }))
+    expect(onPageChange).toHaveBeenCalledWith(3)
   })
 
   it('menyediakan tombol tutup bawaan pada dialog', () => {
