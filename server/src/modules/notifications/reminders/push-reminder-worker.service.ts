@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { NotificationDeliveryService } from './deliveries/notification-delivery.service';
+import type { NotificationDeliveryRecord } from './deliveries/notification-delivery.types';
 import { isReminderStillEligible } from './reminder-eligibility.util';
 import { ReminderMessageFactory } from './reminder-message.factory';
 import { NotificationReminderRepository } from './notification-reminder.repository';
@@ -88,13 +89,26 @@ export class PushReminderWorkerService {
         idempotencyKey,
       });
       const sentAt = new Date();
-      await this.deliveryService.recordSubmission(reminder, idempotencyKey, receipt, sentAt);
-      await this.repository.markSuccess(
+      const delivery = await this.deliveryService.recordSubmission(
+        reminder,
+        idempotencyKey,
+        receipt,
+        sentAt,
+      );
+      const scheduleCommitted = await this.repository.markSuccess(
         notificationReminderId,
         lockToken,
         sentAt,
         new Date(sentAt.getTime() + this.reminderIntervalMs),
       );
+      if (scheduleCommitted) {
+        await this.reconcileDeliveryBestEffort(delivery, notificationReminderId);
+      } else {
+        this.logger.warn(
+          `Push reminder schedule commit tidak diterapkan id=${notificationReminderId}; ` +
+            'rekonsiliasi webhook ditunda',
+        );
+      }
       this.logger.log(
         `Push reminder terkirim id=${notificationReminderId} kind=${String(reminder.kind)} ` +
           `tujuan=${this.maskDestination(reminder.destination)}`,
@@ -115,6 +129,21 @@ export class PushReminderWorkerService {
           `retryAt=${nextSendAt.toISOString()}`,
       );
       return true;
+    }
+  }
+
+  private async reconcileDeliveryBestEffort(
+    delivery: NotificationDeliveryRecord,
+    notificationReminderId: string,
+  ): Promise<void> {
+    try {
+      await this.deliveryService.reconcileSubmission(delivery);
+    } catch (error) {
+      this.logger.warn(
+        `Rekonsiliasi webhook ditunda id=${notificationReminderId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
