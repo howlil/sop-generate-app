@@ -115,6 +115,20 @@ describe('WagoWebhookService', () => {
     );
   });
 
+  it('defers a correlated MESSAGE_REJECTED until the occurrence schedule commit is visible', async () => {
+    const { service, inbox, deliveries, reminders } = build();
+    (reminders.findByIdentity as jest.Mock).mockResolvedValueOnce({
+      ...activeReminder,
+      lastSentAt: null,
+    });
+
+    await expect(service.ingest(rejectedEvent('MESSAGE_REJECTED'), now)).resolves.toBe('deferred');
+
+    expect(deliveries.markRejected).toHaveBeenCalled();
+    expect(reminders.accelerateNextSendAt).not.toHaveBeenCalled();
+    expect(inbox.markProcessed).not.toHaveBeenCalled();
+  });
+
   it.each(['REACHOUT_RESTRICTED', 'SOMETHING_NEW', undefined])(
     'records rejection without accelerating for %s',
     async (errorCode) => {
