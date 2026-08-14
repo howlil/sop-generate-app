@@ -132,13 +132,13 @@ export async function reviseAndCompleteFollowUpViaUi(
   await expect(page.getByText(params.note, { exact: true })).toBeVisible()
 
   // Perubahan kecil membuktikan bahwa versi revisi benar-benar editable dari UI.
-  const editTab = page.getByRole('tab', { name: /^edit$/i })
-  await expect(editTab).toBeVisible()
-  await editTab.click()
+  const propertiesTab = page.getByRole('tab', { name: /^properti$/i })
+  await expect(propertiesTab).toBeVisible()
+  await propertiesTab.click()
   const titleInput = page.getByPlaceholder('Judul SOP')
   await expect(titleInput).toBeVisible()
   await titleInput.fill(params.revisedTitle)
-  const autosaveStatus = page.getByRole('status', { name: 'Status autosave header SOP' })
+  const autosaveStatus = page.getByRole('status', { name: /status autosave sop/i })
   await expect(autosaveStatus).toContainText(/tersimpan/i, { timeout: 15_000 })
 
   await commentsTab.click()
@@ -207,7 +207,12 @@ export async function createVersionViaUi(
 ): Promise<string> {
   await page.goto(`/penyusun/sop/${detailSopId}`)
   await expectMainContent(page)
-  await page.getByRole('button', { name: /^buat versi baru$/i }).first().click()
+
+  await page.getByRole('button', { name: 'Aksi dokumen lainnya' }).click()
+  const createVersionItem = page.getByRole('menuitem', { name: /^buat versi baru$/i })
+  await expect(createVersionItem).toBeVisible()
+  await createVersionItem.click()
+
   const dialog = page.getByRole('dialog', { name: /buat versi baru/i })
   await expect(dialog).toBeVisible()
 
