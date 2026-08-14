@@ -16,7 +16,6 @@ import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { RowActions } from "@/components/data/row-actions";
 import { ExpandableGroupedTable } from "@/components/data/expandable-grouped-table";
 import {
-  PersonMonoCell,
   PersonNameCell,
   PersonStatusCell,
   PersonTextCell,
@@ -230,11 +229,9 @@ export function ManajemenPenyusun() {
                 <Table.Table>
                   <thead>
                     <Table.HeadRow>
-                      <Table.Th>OPD / Penyusun</Table.Th>
-                      <Table.Th>NIP</Table.Th>
+                      <Table.Th>Penyusun</Table.Th>
                       <Table.Th>Jabatan</Table.Th>
-                      <Table.Th>Email</Table.Th>
-                      <Table.Th>No. HP</Table.Th>
+                      <Table.Th>Kontak</Table.Th>
                       <Table.Th>Status</Table.Th>
                       <Table.ActionTh>Aksi</Table.ActionTh>
                     </Table.HeadRow>
@@ -244,33 +241,45 @@ export function ManajemenPenyusun() {
                       const row: PenyusunBaris = { ...p, opdId: g.opdId };
                       return (
                         <Table.BodyRow key={p.id}>
-                          <Table.Td>
+                          <Table.Td className="min-w-[15rem]">
                             <PersonNameCell name={p.nama} avatarText={p.nama[0]}>
-                              <Badge variant="outline" className="text-[10px] w-fit">
-                                {p.peran === "PJ_PENYUSUN"
-                                  ? "PJ Penyusun"
-                                  : "Penyusun"}
-                              </Badge>
+                              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                                <Badge variant="outline" className="h-5 w-fit px-1.5 text-[10px]">
+                                  {p.peran === "PJ_PENYUSUN"
+                                    ? "PJ Penyusun"
+                                    : "Penyusun"}
+                                </Badge>
+                                <span className="font-mono text-[10px] text-muted-foreground">
+                                  {p.nip}
+                                </span>
+                              </div>
                             </PersonNameCell>
                           </Table.Td>
-                          <Table.Td>
-                            <PersonMonoCell value={p.nip} />
-                          </Table.Td>
-                          <Table.Td>
+                          <Table.Td className="min-w-[12rem] max-w-[18rem]">
                             <PersonTextCell value={p.jabatan} />
                           </Table.Td>
-                          <Table.Td>
-                            <PersonTextCell value={p.email} />
-                          </Table.Td>
-                          <Table.Td>
-                            <PersonTextCell value={p.nohp} />
+                          <Table.Td className="min-w-[15rem] max-w-[20rem]">
+                            <div className="min-w-0 space-y-0.5">
+                              <p
+                                className="truncate text-secondary-foreground"
+                                title={p.email}
+                              >
+                                {p.email}
+                              </p>
+                              <p
+                                className="truncate font-mono text-[11px] text-muted-foreground"
+                                title={p.nohp}
+                              >
+                                {p.nohp}
+                              </p>
+                            </div>
                           </Table.Td>
                           <Table.Td>
                             <PersonStatusCell status={p.status} />
                           </Table.Td>
                           <Table.ActionTd>
                             <RowActions
-                              wrap
+                              align="end"
                               actions={[
                                 {
                                   icon: History,
