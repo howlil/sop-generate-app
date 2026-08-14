@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { cn } from '@/utils/cn'
-import { BackButton } from '@/components/ui/back-button'
 import { SetPageHeader } from '@/components/layout/PageHeaderProvider'
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 
@@ -66,9 +65,11 @@ export interface DetailPageLayoutProps {
   title: string
   /** @deprecated Deskripsi tidak lagi dirender di global shell. */
   description?: string
-  backTo: string
+  /** @deprecated Navigasi balik detail sekarang hanya melalui breadcrumb. */
+  backTo?: string
+  /** @deprecated Navigasi balik detail sekarang hanya melalui breadcrumb. */
   backSize?: 'default' | 'icon'
-  /** Aksi lokal halaman detail; dirender bersama tombol kembali, bukan di HeaderBar. */
+  /** @deprecated Aksi detail harus hidup di workspace header/page-local command region. */
   actions?: React.ReactNode
   header?: React.ReactNode
   main?: React.ReactNode
@@ -82,9 +83,6 @@ export interface DetailPageLayoutProps {
 export function DetailPageLayout({
   breadcrumb,
   title,
-  backTo,
-  backSize = 'icon',
-  actions,
   header,
   main,
   children,
@@ -101,20 +99,6 @@ export function DetailPageLayout({
       className={className ?? 'flex h-[calc(100vh-5rem)] min-h-0 flex-col gap-3 sm:gap-4'}
     >
       <SetPageHeader breadcrumb={breadcrumb ?? []} title={title} />
-      <div
-        suppressHydrationWarning
-        data-print-hide
-        className="flex min-h-8 shrink-0 items-center justify-between gap-2"
-      >
-        {backSize === 'icon' ? (
-          <BackButton size="icon" to={backTo} />
-        ) : (
-          <BackButton to={backTo} />
-        )}
-        {actions ? (
-          <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>
-        ) : null}
-      </div>
       <DetailWorkspace
         className={workspaceClassName}
         header={header}
