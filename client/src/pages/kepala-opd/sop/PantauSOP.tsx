@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, Ban, FileText } from "lucide-react";
+import { Ban, Eye, FileText } from "lucide-react";
 import { ActiveFilterChips } from "@/components/data/active-filter-chips";
 import { DataSurface } from "@/components/data/data-surface";
 import { Table } from "@/components/ui/data-table";
@@ -8,7 +8,7 @@ import { SOPStatusFilterSelect } from "@/components/sop/sop-status-filter-select
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CabutSopDialog } from "@/components/sop/CabutSopDialog";
-import { RowActions } from "@/components/data/row-actions";
+import { Button } from "@/components/ui/button";
 import {
   SopDateCell,
   SopNumberCell,
@@ -49,6 +49,7 @@ export function PantauSOP() {
   )?.label;
   const hasStatusFilter = filterStatus !== "all";
   const hasSearch = searchQuery.trim().length > 0;
+  const resultLabel = `${filteredList.length} dokumen`;
 
   async function handleConfirmCabutFromList() {
     if (cabutTarget == null) return;
@@ -59,23 +60,33 @@ export function PantauSOP() {
   return (
     <>
       <ListPageLayout
-        breadcrumb={[{ label: "SOP" }]}
-        title="SOP"
+        breadcrumb={[{ label: "Pantau SOP" }]}
+        title="Pantau SOP"
       >
         <DataSurface.Root>
           <DataSurface.Header>
+            <div className="space-y-1 px-card pt-4">
+              <p className="text-sm text-secondary-foreground">
+                Lihat status SOP yang sedang dinilai, berlaku, draft, atau perlu tindakan.
+              </p>
+            </div>
             <DataSurface.Toolbar>
-              <SearchInput
-                placeholder="Cari judul atau nomor SOP..."
-                aria-label="Cari judul atau nomor SOP..."
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-              />
-              <SOPStatusFilterSelect
-                value={filterStatus}
-                onValueChange={setFilterStatus}
-                className="h-9 w-full sm:w-[200px]"
-              />
+              <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                <SearchInput
+                  placeholder="Cari judul atau nomor SOP..."
+                  aria-label="Cari judul atau nomor SOP..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+                <SOPStatusFilterSelect
+                  value={filterStatus}
+                  onValueChange={setFilterStatus}
+                  className="h-9 w-full sm:w-[200px]"
+                />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground" aria-live="polite">
+                {resultLabel}
+              </div>
             </DataSurface.Toolbar>
             {hasStatusFilter ? (
               <DataSurface.FilterRow>
@@ -149,29 +160,32 @@ export function PantauSOP() {
                               />
                             </Table.Td>
                             <Table.ActionTd>
-                              <RowActions
-                                align="start"
-                                actions={[
-                                  {
-                                    icon: Eye,
-                                    to: ROUTES.KEPALA_OPD.DETAIL_SOP,
-                                    params: { id: sop.id },
-                                    title: "Lihat detail",
-                                  },
-                                  ...(showCabut
-                                    ? [
-                                        {
-                                          icon: Ban,
-                                          title: cabutBlockReason ?? "Cabut SOP",
-                                          disabled: isCabutPending || cabutBlockReason != null,
-                                          onClick: () => setCabutTarget(sop),
-                                          className:
-                                            "text-rose-700 hover:text-rose-800 hover:bg-rose-50",
-                                        },
-                                      ]
-                                    : []),
-                                ]}
-                              />
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  asChild
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 gap-1.5 px-2 text-xs"
+                                >
+                                  <a href={ROUTES.KEPALA_OPD.DETAIL_SOP.replace('$id', sop.id)}>
+                                    <Eye className="h-3.5 w-3.5" />
+                                    Lihat
+                                  </a>
+                                </Button>
+                                {showCabut ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 gap-1.5 px-2 text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                                    disabled={isCabutPending || cabutBlockReason != null}
+                                    title={cabutBlockReason ?? "Cabut SOP"}
+                                    onClick={() => setCabutTarget(sop)}
+                                  >
+                                    <Ban className="h-3.5 w-3.5" />
+                                    Cabut
+                                  </Button>
+                                ) : null}
+                              </div>
                             </Table.ActionTd>
                           </Table.BodyRow>
                         );
