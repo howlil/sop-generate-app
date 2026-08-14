@@ -49,9 +49,11 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
       await expect(spreadsheet.getByRole('columnheader', { name: 'Kegiatan' })).toBeVisible()
       await expect(spreadsheet.getByRole('columnheader', { name: 'Waktu' })).toBeVisible()
 
-      const diagramButton = page.getByRole('button', { name: 'Diagram' })
-      await expect(diagramButton).toHaveAttribute('aria-pressed', 'true')
-      await diagramButton.click()
+      await page.getByRole('button', { name: 'Selesai edit' }).click()
+      await expect(page.getByRole('button', { name: 'Langkah' })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      )
     })
 
     await test.step('Precondition membawa versi baru ke tahap pengesahan tanpa menduplikasi J01/J02', async () => {
