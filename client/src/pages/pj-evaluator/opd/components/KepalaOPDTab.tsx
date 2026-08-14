@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Edit, History, Trash2, MoreVertical } from 'lucide-react'
+import { forwardRef, useImperativeHandle, useState } from 'react'
+import { Edit, History, MoreVertical, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -59,6 +59,10 @@ function emptyTambahForm(defaultOpdId: string): FormTambahKepalaState {
   }
 }
 
+export interface KepalaOPDTabHandle {
+  openCreateDialog: () => void
+}
+
 export interface KepalaOPDTabProps {
   opdList: OPD[]
   kepalaRows: KepalaOpdDto[]
@@ -78,7 +82,7 @@ export interface KepalaOPDTabProps {
   canDeleteKepala: (k: KepalaOpdDto) => boolean
 }
 
-export function KepalaOPDTab({
+export const KepalaOPDTab = forwardRef<KepalaOPDTabHandle, KepalaOPDTabProps>(function KepalaOPDTab({
   opdList,
   kepalaRows,
   isLoading,
@@ -87,7 +91,7 @@ export function KepalaOPDTab({
   onPindah,
   onDeleteRequest,
   canDeleteKepala,
-}: KepalaOPDTabProps) {
+}: KepalaOPDTabProps, ref) {
   const [manageDialogOpen, setManageDialogOpen] = useState(false)
   const [manageTab, setManageTab] = useState<'edit' | 'pindah'>('edit')
   const [tambahKepalaOpen, setTambahKepalaOpen] = useState(false)
@@ -105,6 +109,13 @@ export function KepalaOPDTab({
     setManageTab('edit')
     setPindahForm({ opdId: '' })
   }
+
+  const openCreateDialog = () => {
+    setFormTambahKepala(emptyTambahForm(opdList[0]?.id ?? ''))
+    setTambahKepalaOpen(true)
+  }
+
+  useImperativeHandle(ref, () => ({ openCreateDialog }), [opdList])
 
   const handleManageOpenChange = (open: boolean) => {
     setManageDialogOpen(open)
@@ -171,18 +182,6 @@ export function KepalaOPDTab({
 
   return (
     <>
-      <div className="flex justify-end border-b border-border px-card py-2">
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs shrink-0"
-          onClick={() => {
-            setFormTambahKepala(emptyTambahForm(opdList[0]?.id ?? ''))
-            setTambahKepalaOpen(true)
-          }}
-        >
-          Tambah Kepala OPD
-        </Button>
-      </div>
       <Table.Paginated
         data={kepalaRows}
         label="kepala"
@@ -196,20 +195,19 @@ export function KepalaOPDTab({
                 <Table.HeadRow>
                   <Table.Th>Nama</Table.Th>
                   <Table.Th>NIP</Table.Th>
-                  <Table.Th>Email</Table.Th>
-                  <Table.Th>OPD</Table.Th>
-                  <Table.Th>Jabatan</Table.Th>
+                  <Table.Th>Jabatan / OPD</Table.Th>
+                  <Table.Th>Kontak</Table.Th>
                   <Table.Th align="center">Status</Table.Th>
                   <Table.ActionTh>Aksi</Table.ActionTh>
                 </Table.HeadRow>
               </thead>
               <tbody>
                 {isLoading ? (
-                  <LoadingTableRow colSpan={7} message="Memuat data Kepala OPD…" />
+                  <LoadingTableRow colSpan={6} message="Memuat data Kepala OPD…" />
                 ) : pageData.length === 0 ? (
                   <EmptyState
                     asTableRow
-                    colSpan={7}
+                    colSpan={6}
                     title="Belum ada Kepala OPD"
                     description="Gunakan tombol Tambah Kepala OPD untuk membuat akun baru."
                   />
@@ -223,24 +221,37 @@ export function KepalaOPDTab({
                         <PersonMonoCell value={k.nip} />
                       </Table.Td>
                       <Table.Td>
-                        <PersonTextCell value={k.email} />
+                        <div className="max-w-[220px] space-y-0.5">
+                          <PersonTextCell value={k.jabatan} />
+                          <p className="truncate text-xs text-muted-foreground" title={k.namaOpd}>{k.namaOpd}</p>
+                        </div>
                       </Table.Td>
-                      <Table.Td>{k.namaOpd}</Table.Td>
-                      <Table.Td className="max-w-[140px] truncate">
-                        <PersonTextCell value={k.jabatan} />
+                      <Table.Td>
+                        <div className="max-w-[260px] space-y-0.5">
+                          <p className="truncate text-sm text-secondary-foreground" title={k.email ?? undefined}>{k.email ?? '—'}</p>
+                          <p className="truncate text-xs text-muted-foreground" title={k.nohp ?? undefined}>{k.nohp ?? '—'}</p>
+                        </div>
                       </Table.Td>
                       <Table.Td className="text-center">
                         <PersonStatusCell status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                       </Table.Td>
                       <Table.ActionTd>
-                        <div className="flex justify-end">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-xs"
+                            onClick={() => openManageDialog(k)}
+                          >
+                            Ubah
+                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Aksi lainnya untuk ${k.nama}`}>
                                 <MoreVertical className="h-4 w-4 text-secondary-foreground" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuContent align="end" className="w-52">
                               <DropdownMenuItem
                                 onClick={() => {
                                   setRiwayatForId(k.id)
@@ -307,4 +318,4 @@ export function KepalaOPDTab({
       />
     </>
   )
-}
+})
