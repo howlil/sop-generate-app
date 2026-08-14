@@ -16,13 +16,19 @@ vi.mock('@/api/kepala-opd', () => ({
 vi.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a> }))
 
 describe('ManajemenOPD', () => {
-  it('uses compact line tabs and keeps the active create action in the toolbar', () => {
+  it('uses the shared tab treatment and keeps the active create action in the toolbar action slot', () => {
     render(<ManajemenOPD />)
 
     expect(screen.getByText('Kelola OPD dan akun Kepala OPD.')).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'OPD' })).toBeInTheDocument()
+
+    const opdTab = screen.getByRole('tab', { name: 'OPD' })
+    expect(opdTab).toBeInTheDocument()
+    expect(opdTab.className).not.toContain('border-b-2')
     expect(screen.getByRole('tab', { name: 'Kepala OPD' })).toBeInTheDocument()
+
     expect(screen.getByRole('textbox', { name: 'Cari nama OPD...' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Tambah OPD' })).toBeInTheDocument()
+    const createButton = screen.getByRole('button', { name: 'Tambah OPD' })
+    expect(createButton).toBeInTheDocument()
+    expect(createButton.parentElement?.className).toContain('sm:ml-auto')
   })
 })
