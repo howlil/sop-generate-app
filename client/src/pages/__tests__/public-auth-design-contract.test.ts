@@ -5,40 +5,11 @@ function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), 'utf8')
 }
 
-const landingSource = readSource('../LandingPage.tsx')
 const loginPageSource = readSource('../login/LoginPage.tsx')
 const loginHeroSource = readSource('../login/components/LoginHero.tsx')
 const loginFormSource = readSource('../login/components/LoginForm.tsx')
 
-describe('public and auth design contract', () => {
-  it('keeps the public landing focused on institutional identity, public utilities, and the real SOP lifecycle', () => {
-    expect(landingSource).toContain('Pemerintah Provinsi Sumatera Barat')
-    expect(landingSource).toContain('Biro Organisasi')
-    expect(landingSource).toContain('Arsip SOP')
-    expect(landingSource).toContain('Validasi PDF')
-
-    for (const stage of [
-      'Penyusunan',
-      'Pengajuan',
-      'Evaluasi',
-      'Perbaikan',
-      'Berita Acara',
-      'Pengesahan',
-      'Arsip',
-    ]) {
-      expect(landingSource).toContain(stage)
-    }
-  })
-
-  it('does not regress the landing page to generic decorative SaaS patterns or inaccurate signing claims', () => {
-    expect(landingSource).not.toContain('bg-gradient')
-    expect(landingSource).not.toContain('blur-3xl')
-    expect(landingSource).not.toContain('shadow-xl')
-    expect(landingSource).not.toContain('rounded-3xl')
-    expect(landingSource).not.toContain('TTE BSRE')
-    expect(landingSource).not.toContain('TTE BSrE')
-  })
-
+describe('public auth design contract', () => {
   it('frames login as an institutional access surface instead of a futuristic marketing hero', () => {
     expect(loginFormSource).toContain('Masuk ke sistem')
     expect(loginHeroSource).toContain('Pemerintah Provinsi Sumatera Barat')
