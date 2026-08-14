@@ -9,43 +9,40 @@ Sumber use case: `UC-06` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Tim Evaluator |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 2 |
-| Tujuan | Menjelaskan proses PJ Evaluator mengelola akun evaluator beserta validasi identitas dan status aktif. |
+| Tujuan | Menggambarkan proses PJ Evaluator mengelola anggota tim evaluator. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Mengelola Tim Evaluator
 
 |PJ Evaluator|
 start
-:Membuka halaman tim evaluator;
+:Membuka data tim evaluator;
 
 |Sistem|
-:Memeriksa sesi dan peran PJ Evaluator;
-:Menampilkan daftar evaluator, status akun, identitas, OPD terkait, dan aksi pengelolaan;
+:Menampilkan anggota tim evaluator;
 
 |PJ Evaluator|
-:Memilih tambah, ubah, atau nonaktifkan evaluator;
-
-if (Tambah atau ubah evaluator?) then (Ya)
-  :Mengisi email, nama, NIP, jabatan, pangkat, nomor HP, password awal, dan OPD bila diperlukan;
-else (Nonaktifkan)
-  :Mengonfirmasi penonaktifan akun evaluator;
-endif
-
-:Menyimpan perubahan evaluator;
+:Memilih tambah, ubah, atau nonaktifkan anggota;
+:Mengisi data anggota evaluator;
 
 |Sistem|
-:Memvalidasi peran target evaluator, field wajib, email unik, NIP unik, dan status akun;
+:Memvalidasi data dan perubahan yang dipilih;
 
-if (Data evaluator valid?) then (Ya)
-  :Membuat akun evaluator, memperbarui profil, atau menonaktifkan akun;
-  :Menampilkan daftar evaluator terbaru dan notifikasi berhasil;
+if (Data valid?) then (Ya)
+  :Menyimpan perubahan anggota evaluator;
+  :Menampilkan tim evaluator terbaru;
 else (Tidak)
-  :Menampilkan pesan validasi, konflik identitas, atau akun tidak ditemukan;
+  :Menampilkan informasi yang perlu diperbaiki;
 endif
 
 stop
+
 @enduml
 ```

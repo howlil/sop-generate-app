@@ -9,54 +9,41 @@ Sumber use case: `UC-14` pada [`../usecase.md`](../usecase.md).
 | Use case | Mengajukan Evaluasi SOP |
 | Aktor utama | PJ Penyusun |
 | Nomor kebutuhan fungsional | 12 |
-| Tujuan | Menjelaskan proses PJ Penyusun membuat pengajuan evaluasi dari SOP yang sudah berstatus siap diajukan. |
+| Tujuan | Menggambarkan proses PJ Penyusun mengajukan SOP yang telah siap kepada evaluator. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Mengajukan Evaluasi SOP
 
 |PJ Penyusun|
 start
-:Membuka halaman pengajuan evaluasi OPD sendiri;
+:Membuka menu pengajuan evaluasi;
 
 |Sistem|
-:Memeriksa sesi, peran PJ Penyusun, dan OPD pengguna;
-:Menampilkan daftar SOP OPD yang siap diajukan serta ringkasan pengajuan aktif;
+:Menampilkan SOP pada OPD yang siap diajukan;
 
 |PJ Penyusun|
-if (Ada SOP yang akan diajukan?) then (Ya)
-  :Memilih satu atau beberapa SOP;
-  :Memilih jenis pengajuan evaluasi;
-  :Mengirim pengajuan evaluasi;
-else (Tidak)
-  |Sistem|
-  :Menampilkan informasi bahwa belum ada SOP siap diajukan;
-  stop
-endif
+:Memilih SOP yang akan diajukan;
+:Mengirim pengajuan evaluasi;
 
 |Sistem|
-:Memastikan pengguna berwenang membuat pengajuan untuk OPD sendiri;
-:Memeriksa apakah OPD masih memiliki pengajuan aktif yang belum selesai;
+:Memvalidasi SOP terpilih dan proses evaluasi OPD yang sedang berjalan;
 
-if (Masih ada pengajuan aktif?) then (Ya)
-  :Menolak pengajuan baru dan menampilkan pengajuan yang harus diselesaikan dahulu;
-  stop
+if (Pengajuan memenuhi syarat?) then (Ya)
+  :Mencatat pengajuan evaluasi;
+  :Memindahkan SOP terpilih ke proses evaluasi;
+  :Menampilkan pengajuan berhasil dibuat;
 else (Tidak)
-endif
-
-:Memvalidasi SOP yang dipilih tidak duplikat, milik OPD pengguna, dan berstatus menunggu pengajuan evaluasi;
-
-if (Semua SOP valid?) then (Ya)
-  :Membuat pengajuan evaluasi berstatus sedang dievaluasi;
-  :Membuat daftar nilai evaluasi awal untuk setiap SOP;
-  :Mengubah status setiap SOP menjadi sedang dievaluasi;
-  :Menampilkan notifikasi pengajuan berhasil dan daftar pengajuan terbaru;
-else (Tidak)
-  :Menampilkan daftar SOP yang tidak valid, beda OPD, duplikat, atau belum siap diajukan;
+  :Menampilkan alasan pengajuan belum dapat dibuat;
 endif
 
 stop
+
 @enduml
 ```

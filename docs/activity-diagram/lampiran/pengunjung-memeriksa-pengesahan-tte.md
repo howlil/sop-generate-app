@@ -9,35 +9,32 @@ Sumber use case: `UC-20` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memeriksa Pengesahan TTE |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 23 |
-| Tujuan | Menjelaskan pemeriksaan pengesahan dari QR atau tautan publik berdasarkan pasangan dokumenTteId dan userId. |
+| Tujuan | Menggambarkan proses pengunjung memeriksa informasi pengesahan dokumen melalui tautan atau QR verifikasi. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Memeriksa Pengesahan TTE
 
 |Pengunjung|
 start
-:Memindai QR atau membuka tautan validasi pengesahan;
+:Membuka tautan atau QR verifikasi pengesahan;
 
 |Sistem|
-:Membaca identitas dokumen TTE dan pengguna penandatangan dari tautan;
-:Memvalidasi format identitas dokumen dan penandatangan;
+:Mencari data pengesahan dokumen;
 
-if (Format tautan valid?) then (Ya)
-  :Mencari riwayat tanda tangan yang sesuai;
+if (Data pengesahan ditemukan?) then (Ya)
+  :Menampilkan identitas dokumen, penandatangan, peran, dan waktu pengesahan;
 else (Tidak)
-  :Menampilkan pengesahan tidak valid;
-  stop
-endif
-
-if (Riwayat pengesahan ditemukan?) then (Ya)
-  :Menampilkan status pengesahan, jenis dokumen, nomor dokumen, nama penandatangan, peran, dan waktu tanda tangan;
-else (Tidak)
-  :Menampilkan pengesahan tidak ditemukan atau tidak valid;
+  :Menampilkan informasi bahwa data pengesahan tidak ditemukan;
 endif
 
 stop
+
 @enduml
 ```

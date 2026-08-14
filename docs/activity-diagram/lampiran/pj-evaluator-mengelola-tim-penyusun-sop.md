@@ -9,49 +9,40 @@ Sumber use case: `UC-08` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Tim Penyusun SOP |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 3 |
-| Tujuan | Menjelaskan proses PJ Evaluator mengelola akun PJ Penyusun dan Penyusun, termasuk mutasi OPD dan riwayat penugasan. |
+| Tujuan | Menggambarkan proses PJ Evaluator mengelola PJ Penyusun dan anggota Penyusun pada setiap OPD. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Mengelola Tim Penyusun SOP
 
 |PJ Evaluator|
 start
-:Membuka halaman manajemen penyusun;
+:Membuka data tim penyusun SOP;
 
 |Sistem|
-:Memeriksa sesi dan peran PJ Evaluator;
-:Menampilkan daftar PJ Penyusun dan Penyusun per OPD, status aktif, dan riwayat mutasi;
+:Menampilkan tim penyusun berdasarkan OPD;
 
 |PJ Evaluator|
-:Memilih tambah, ubah profil, pindah OPD, aktifkan, nonaktifkan, atau hapus akun;
-
-if (Tambah atau ubah profil?) then (Ya)
-  :Mengisi identitas, peran, OPD, jabatan, pangkat, kontak, dan kredensial bila diperlukan;
-elseif (Pindah OPD?) then (Ya)
-  :Memilih OPD tujuan dan tanggal mulai penugasan;
-elseif (Aktifkan atau nonaktifkan?) then (Ya)
-  :Mengonfirmasi perubahan status akun;
-else (Hapus)
-  :Mengonfirmasi penghapusan akun;
-endif
-
-:Menyimpan perubahan tim penyusun;
+:Memilih tambah, ubah, pindah OPD, aktifkan, atau nonaktifkan anggota;
+:Mengisi data dan peran anggota;
 
 |Sistem|
-:Memvalidasi identitas akun, peran PJ Penyusun atau Penyusun, OPD aktif, email atau NIP unik, dan aturan satu PJ Penyusun aktif per OPD;
+:Memvalidasi data, OPD, dan penetapan PJ Penyusun;
 
-if (Data dapat disimpan?) then (Ya)
-  :Menyimpan akun atau perubahan profil;
-  :Memperbarui riwayat OPD sehingga hanya penugasan aktif yang berlaku;
-  :Mengaktifkan, menonaktifkan, atau menghapus akun sesuai aksi;
-  :Menampilkan daftar terbaru dan notifikasi berhasil;
+if (Perubahan sesuai aturan?) then (Ya)
+  :Menyimpan perubahan tim penyusun;
+  :Menampilkan data terbaru;
 else (Tidak)
-  :Menampilkan pesan validasi, konflik PJ aktif, identitas duplikat, atau OPD tidak valid;
+  :Menampilkan alasan perubahan tidak dapat dilakukan;
 endif
 
 stop
+
 @enduml
 ```

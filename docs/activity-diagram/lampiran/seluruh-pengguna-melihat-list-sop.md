@@ -9,50 +9,43 @@ Sumber use case: `UC-03` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat List SOP |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | Tidak memiliki nomor tersendiri |
-| Tujuan | Menjelaskan proses pengguna melihat daftar SOP sesuai peran, OPD, filter status, dan akses detail. |
+| Tujuan | Menggambarkan proses pengguna melihat dan memilih SOP sesuai cakupan aksesnya. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Melihat List SOP
 
 |Pengguna|
 start
-:Membuka halaman daftar SOP sesuai peran;
+:Membuka daftar SOP;
 
 |Sistem|
-:Memeriksa sesi dan peran pengguna;
-:Menyiapkan filter awal seperti status, tanggal, OPD, dan kata kunci;
-
-if (Peran PJ Evaluator atau Evaluator?) then (Ya)
-  :Menyiapkan cakupan daftar lintas OPD sesuai kewenangan;
-else (Tidak)
-  :Membatasi daftar pada OPD pengguna;
-endif
-
-:Mengambil daftar SOP versi terbaru sesuai cakupan akses;
-:Menerapkan filter status, rentang tanggal, OPD, dan pencarian;
-:Menentukan label status, versi, nomor SOP, OPD, dan aksi yang boleh dilakukan;
-
-if (Data tersedia?) then (Ya)
-  :Menampilkan tabel atau kartu daftar SOP, badge status, dan aksi sesuai peran;
-else (Tidak)
-  :Menampilkan informasi bahwa belum ada SOP sesuai filter;
-endif
+:Menentukan cakupan SOP sesuai peran dan OPD pengguna;
+:Menampilkan daftar SOP yang dapat diakses;
 
 |Pengguna|
-if (Memilih SOP?) then (Ya)
-  :Membuka detail SOP;
+:Melakukan pencarian atau penyaringan bila diperlukan;
+
+|Sistem|
+:Memperbarui daftar SOP sesuai pilihan pengguna;
+
+|Pengguna|
+if (Memilih salah satu SOP?) then (Ya)
+  :Membuka SOP yang dipilih;
 
   |Sistem|
-  :Memeriksa hak akses pengguna terhadap SOP yang dipilih;
-  :Memuat dokumen, langkah, diagram, riwayat, dan log yang boleh dilihat;
-  :Menampilkan detail atau preview SOP;
+  :Menampilkan informasi dan dokumen SOP;
 else (Tidak)
-  :Tetap di daftar SOP;
+  :Tetap melihat daftar SOP;
 endif
 
 stop
+
 @enduml
 ```

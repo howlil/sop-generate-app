@@ -9,12 +9,16 @@ Sumber use case: `UC-01` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Login |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 7 |
-| Tujuan | Menjelaskan proses pengguna masuk ke sistem, validasi kredensial, pembentukan sesi, pemuatan profil, dan pengarahan halaman berdasarkan peran. |
+| Tujuan | Menggambarkan proses pengguna masuk ke sistem menggunakan akun yang valid dan memperoleh akses sesuai perannya. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Login
 
 |Pengguna|
@@ -26,36 +30,19 @@ start
 
 |Pengguna|
 :Mengisi email dan kata sandi;
-:Mengirim formulir login;
+:Memilih masuk;
 
 |Sistem|
-:Memeriksa kelengkapan format email dan kata sandi;
+:Memvalidasi kredensial pengguna;
 
-if (Input lengkap?) then (Ya)
-  :Mencari akun aktif berdasarkan email;
+if (Kredensial valid?) then (Ya)
+  :Membuka sesi pengguna;
+  :Mengarahkan pengguna ke halaman sesuai perannya;
 else (Tidak)
-  :Menampilkan pesan bahwa email dan kata sandi wajib diisi dengan benar;
-  stop
-endif
-
-if (Akun aktif ditemukan?) then (Ya)
-  :Membandingkan kata sandi dengan data autentikasi pengguna;
-else (Tidak)
-  :Menampilkan pesan login gagal tanpa membuka detail alasan keamanan;
-  stop
-endif
-
-if (Kata sandi sesuai?) then (Ya)
-  :Membentuk sesi login pengguna;
-  :Memuat profil, peran, OPD, dan status kesiapan TTE;
-  :Membersihkan data sesi lama yang tidak relevan;
-  :Menentukan halaman tujuan berdasarkan peran atau halaman asal;
-  :Mengarahkan pengguna ke dashboard yang sesuai;
-else (Tidak)
-  :Menampilkan pesan login gagal tanpa membuka detail alasan keamanan;
-  stop
+  :Menampilkan informasi bahwa login gagal;
 endif
 
 stop
+
 @enduml
 ```

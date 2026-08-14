@@ -9,66 +9,52 @@ Sumber use case: `UC-10` pada [`../usecase.md`](../usecase.md).
 | Use case | Menandatangani Berita Acara |
 | Aktor utama | PJ Evaluator, PJ Penyusun |
 | Nomor kebutuhan fungsional | 17 |
-| Tujuan | Menjelaskan penandatanganan Berita Acara evaluasi secara berurutan oleh PJ Evaluator lalu PJ Penyusun dengan validasi TTE. |
+| Tujuan | Menggambarkan penandatanganan Berita Acara secara berurutan oleh PJ Evaluator dan PJ Penyusun. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Menandatangani Berita Acara
 
 |PJ Evaluator|
 start
-:Membuka daftar pengajuan yang selesai dievaluasi;
+:Membuka pengajuan yang selesai dievaluasi;
+:Meninjau Berita Acara;
+:Memilih tanda tangani dan memasukkan PIN TTE;
 
 |Sistem|
-:Memeriksa sesi dan peran PJ Evaluator;
-:Menampilkan pengajuan selesai evaluasi, nomor Berita Acara, nilai, OPD, dan status TTE;
+:Memvalidasi kewenangan, PIN TTE, dan status pengajuan;
 
-|PJ Evaluator|
-:Membuka detail Berita Acara;
-:Meninjau isi Berita Acara dan hasil evaluasi;
-:Memilih tanda tangani Berita Acara;
-:Memasukkan PIN TTE;
-
-|Sistem|
-:Memvalidasi PIN, profil TTE, sertifikat, status pengajuan, dan kewenangan PJ Evaluator;
-
-if (Validasi PJ Evaluator berhasil?) then (Ya)
-  :Membubuhkan tanda tangan PJ Evaluator pada Berita Acara;
-  :Mencatat riwayat tanda tangan dan metadata verifikasi;
-  :Mengubah status pengajuan menjadi ditandatangani PJ Evaluator;
-  :Menampilkan Berita Acara yang menunggu tanda tangan PJ Penyusun;
+if (Tanda tangan PJ Evaluator valid?) then (Ya)
+  :Mencatat tanda tangan PJ Evaluator;
+  :Menyiapkan Berita Acara untuk PJ Penyusun;
 else (Tidak)
-  :Menampilkan alasan gagal seperti PIN salah, TTE belum siap, atau status tidak sesuai;
+  :Menampilkan alasan penandatanganan gagal;
   stop
 endif
 
 |PJ Penyusun|
-:Membuka pengajuan OPD sendiri yang menunggu tanda tangan PJ Penyusun;
-
-|Sistem|
-:Memeriksa sesi, peran PJ Penyusun, OPD, dan status pengajuan;
-:Menampilkan detail Berita Acara, daftar SOP, tanda tangan PJ Evaluator, dan status TTE PJ Penyusun;
-
-|PJ Penyusun|
+:Membuka Berita Acara yang menunggu tanda tangan;
 :Meninjau Berita Acara;
-:Memilih tanda tangani Berita Acara;
-:Memasukkan PIN TTE;
+:Memilih tanda tangani dan memasukkan PIN TTE;
 
 |Sistem|
-:Memvalidasi PIN, profil TTE, sertifikat, OPD, status pengajuan, dan apakah tanda tangan PJ Penyusun belum ada;
+:Memvalidasi kewenangan, PIN TTE, dan urutan penandatanganan;
 
-if (Validasi PJ Penyusun berhasil?) then (Ya)
-  :Membubuhkan tanda tangan PJ Penyusun pada Berita Acara;
-  :Mencatat riwayat tanda tangan PJ Penyusun;
-  :Mengubah pengajuan menjadi ditandatangani PJ Penyusun;
-  :Menandai SOP dalam pengajuan sebagai diverifikasi PJ Evaluator organisasi;
-  :Menampilkan bahwa SOP siap disahkan Kepala OPD;
+if (Tanda tangan PJ Penyusun valid?) then (Ya)
+  :Mencatat tanda tangan PJ Penyusun;
+  :Menandai Berita Acara selesai ditandatangani;
+  :Menyiapkan SOP untuk pengesahan Kepala OPD;
 else (Tidak)
-  :Menampilkan alasan gagal tanpa mengubah status pengajuan;
+  :Menampilkan alasan penandatanganan gagal;
 endif
 
 stop
+
 @enduml
 ```

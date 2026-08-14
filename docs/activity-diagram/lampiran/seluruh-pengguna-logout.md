@@ -9,12 +9,16 @@ Sumber use case: `UC-02` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Logout |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | Pendukung login |
-| Tujuan | Menjelaskan proses pengguna keluar, pencabutan sesi aktif, pembersihan data login, dan pengalihan ke halaman publik atau login. |
+| Tujuan | Menggambarkan proses pengguna mengakhiri sesi penggunaan sistem. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Logout
 
 |Pengguna|
@@ -22,20 +26,11 @@ start
 :Memilih menu keluar;
 
 |Sistem|
-:Menerima permintaan keluar dari akun aktif;
-:Memeriksa sesi pengguna yang sedang berjalan;
-
-if (Sesi aktif ditemukan?) then (Ya)
-  :Mencabut sesi agar tidak dapat digunakan kembali;
-else (Tidak)
-  :Melanjutkan proses keluar tanpa menampilkan error;
-endif
-
-:Menghapus informasi autentikasi dari perangkat pengguna;
-:Membersihkan data halaman yang terkait akun sebelumnya;
-:Menampilkan status logout berhasil;
-:Mengalihkan pengguna ke halaman publik atau login;
+:Mengakhiri sesi pengguna;
+:Menghapus akses dari sesi yang sedang digunakan;
+:Mengarahkan pengguna ke halaman login atau halaman publik;
 
 stop
+
 @enduml
 ```

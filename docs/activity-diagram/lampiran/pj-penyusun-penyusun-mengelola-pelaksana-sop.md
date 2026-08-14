@@ -9,58 +9,40 @@ Sumber use case: `UC-17` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Pelaksana SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 6 |
-| Tujuan | Menjelaskan pengelolaan master pelaksana OPD dan pemakaiannya pada langkah SOP. |
+| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun mengelola daftar pelaksana SOP pada OPD. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Mengelola Pelaksana SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka halaman pelaksana atau panel pelaksana pada workbench SOP;
+:Membuka data pelaksana SOP;
 
 |Sistem|
-:Memeriksa sesi, peran penyusun, dan akses OPD;
-:Menampilkan daftar pelaksana OPD serta opsi tambah, ubah, hapus, dan tautkan ke SOP;
+:Menampilkan daftar pelaksana pada OPD pengguna;
 
 |PJ Penyusun / Penyusun|
 :Memilih tambah, ubah, atau hapus pelaksana;
-
-if (Tambah atau ubah pelaksana?) then (Ya)
-  :Mengisi atau memperbarui nama pelaksana;
-else (Hapus pelaksana)
-  :Mengonfirmasi penghapusan pelaksana;
-endif
-
-:Menyimpan perubahan pelaksana;
+:Mengisi atau memilih data pelaksana;
 
 |Sistem|
-:Memvalidasi nama tidak kosong, OPD sesuai, dan nama pelaksana tidak duplikat pada OPD;
+:Memvalidasi perubahan data pelaksana;
 
-if (Aksi hapus dan pelaksana masih dipakai?) then (Ya)
-  :Menolak penghapusan karena pelaksana masih digunakan pada SOP;
-  :Menampilkan daftar penggunaan yang menghalangi penghapusan;
-  stop
+if (Perubahan dapat dilakukan?) then (Ya)
+  :Menyimpan perubahan pelaksana;
+  :Menampilkan daftar pelaksana terbaru;
 else (Tidak)
-endif
-
-:Menyimpan master pelaksana atau menghapus bila aman;
-:Menampilkan daftar pelaksana terbaru;
-
-|PJ Penyusun / Penyusun|
-if (Pelaksana dipakai pada SOP?) then (Ya)
-  :Memilih pelaksana untuk langkah prosedur SOP;
-
-  |Sistem|
-  :Memastikan pelaksana berasal dari OPD yang sama dengan SOP;
-  :Menyimpan hubungan pelaksana dengan langkah SOP;
-  :Memperbarui preview langkah prosedur;
-else (Tidak)
-  :Selesai mengelola master pelaksana;
+  :Menampilkan alasan perubahan tidak dapat dilakukan;
 endif
 
 stop
+
 @enduml
 ```

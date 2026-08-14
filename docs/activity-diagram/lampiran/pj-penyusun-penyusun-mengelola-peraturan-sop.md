@@ -9,54 +9,40 @@ Sumber use case: `UC-18` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Peraturan SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 5 |
-| Tujuan | Menjelaskan pengelolaan master peraturan dan penautannya sebagai dasar hukum SOP. |
+| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun mengelola peraturan yang digunakan sebagai dasar hukum SOP. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Diagram Aktivitas - Mengelola Peraturan SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka halaman peraturan atau tab dasar hukum pada workbench;
+:Membuka data peraturan SOP;
 
 |Sistem|
-:Memeriksa sesi dan peran pengguna yang berwenang;
-:Menampilkan daftar peraturan, pencarian, dan aksi tambah, ubah, hapus, atau tautkan;
+:Menampilkan daftar peraturan pada OPD pengguna;
 
 |PJ Penyusun / Penyusun|
-if (Membuat atau mengubah master peraturan?) then (Ya)
-  :Mengisi nama, nomor, tahun, dan tentang peraturan;
-  :Menyimpan peraturan;
+:Memilih tambah, ubah, atau hapus peraturan;
+:Mengisi data peraturan;
 
-  |Sistem|
-  :Memvalidasi field wajib, kombinasi nomor dan tahun, serta hak akses;
+|Sistem|
+:Memvalidasi data dan penggunaan peraturan;
 
-  if (Peraturan valid?) then (Ya)
-    :Menyimpan master peraturan dan pencatat perubahan terakhir;
-    :Menampilkan daftar peraturan terbaru;
-  else (Tidak)
-    :Menampilkan pesan validasi atau duplikasi;
-    stop
-  endif
+if (Perubahan dapat dilakukan?) then (Ya)
+  :Menyimpan perubahan peraturan;
+  :Menampilkan daftar peraturan terbaru;
 else (Tidak)
-endif
-
-|PJ Penyusun / Penyusun|
-if (Menautkan peraturan sebagai dasar hukum SOP?) then (Ya)
-  :Memilih peraturan pada workbench SOP;
-  :Menyimpan dasar hukum SOP;
-
-  |Sistem|
-  :Memastikan SOP masih dapat diedit dan pengguna berhak atas OPD terkait;
-  :Mengganti daftar dasar hukum sesuai pilihan pengguna;
-  :Mencatat riwayat edit bagian header;
-  :Menampilkan dasar hukum terbaru pada preview SOP;
-else (Tidak)
-  :Selesai mengelola daftar peraturan;
+  :Menampilkan alasan perubahan tidak dapat dilakukan;
 endif
 
 stop
+
 @enduml
 ```
