@@ -9,52 +9,38 @@ Sumber use case: `UC-21` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memverifikasi Tanda Tangan Digital |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 24 |
-| Tujuan | Menggambarkan proses pengunjung memeriksa kesiapan layanan, memilih dokumen digital, dan menerima hasil pemeriksaan tanda tangan digital. |
+| Tujuan | Menggambarkan interaksi pengunjung dan sistem saat memeriksa keabsahan tanda tangan digital pada berkas PDF. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Sequence Diagram - Memverifikasi Tanda Tangan Digital
 autonumber
 autoactivate on
 
 actor "Pengunjung" as A
-boundary "Halaman Validasi Dokumen" as B
-control "Pengelola Verifikasi Dokumen" as C
-control "Pemeriksa Tanda Tangan Digital" as D
-entity "Berkas Dokumen" as BerkasDokumen
-entity "Hasil Verifikasi" as HasilVerifikasi
+boundary "Halaman Verifikasi PDF" as B
+control "Pengelola Verifikasi Digital" as C
+entity "Berkas Bertanda Tangan" as D
 
-A -> B : Membuka halaman verifikasi dokumen
-B -> C : Meminta status layanan verifikasi
-C --> B : Mengirim kesiapan layanan verifikasi
-B --> A : Menampilkan status layanan verifikasi
+A -> B : Membuka halaman verifikasi digital
+B --> A : Menampilkan fasilitas verifikasi
+A -> B : Memilih berkas PDF
+B -> C : Meminta verifikasi tanda tangan
+C -> D : Memeriksa tanda tangan dan integritas berkas
+D --> C : Hasil pemeriksaan
 
-A -> B : Memilih dokumen untuk diverifikasi
-B --> A : Menampilkan nama dokumen dan pemeriksaan awal ukuran serta jenis berkas
-B -> BerkasDokumen : Membaca berkas dokumen yang dipilih
-BerkasDokumen --> B : Isi dokumen siap diperiksa
-B --> A : Menampilkan proses verifikasi
-B -> C : Meminta verifikasi tanda tangan digital
-C -> D : Memeriksa keberadaan, keutuhan, penerbit, subjek, dan masa berlaku tanda tangan
-D --> C : Hasil pemeriksaan tanda tangan digital
-alt Dokumen rusak atau tidak dapat dibaca
-  C --> B : Mengirim alasan dokumen tidak dapat diperiksa
-  B --> A : Menampilkan dokumen tidak dapat diverifikasi
-else Dokumen tidak memiliki tanda tangan digital
-  C --> B : Mengirim hasil tidak ada tanda tangan digital
-  B --> A : Menampilkan dokumen tidak memiliki tanda tangan digital
-else Tanda tangan digital valid
-  C -> HasilVerifikasi : Menyusun ringkasan hasil verifikasi valid
-  HasilVerifikasi --> C : Ringkasan hasil valid
-  C --> B : Mengirim hasil tanda tangan valid
-  B --> A : Menampilkan tanda tangan digital valid
-else Tanda tangan digital tidak valid
-  C -> HasilVerifikasi : Menyusun ringkasan hasil verifikasi tidak valid
-  HasilVerifikasi --> C : Ringkasan hasil tidak valid
-  C --> B : Mengirim detail tanda tangan yang bermasalah
-  B --> A : Menampilkan tanda tangan digital tidak valid beserta alasannya
+alt Tanda tangan dapat diverifikasi
+  C --> B : Mengirim hasil verifikasi
+  B --> A : Menampilkan status valid dan informasi penandatangan
+else Tanda tangan tidak dapat diverifikasi
+  C --> B : Mengirim hasil verifikasi gagal
+  B --> A : Menampilkan informasi tanda tangan tidak valid atau tidak dapat diverifikasi
 end
 
 @enduml

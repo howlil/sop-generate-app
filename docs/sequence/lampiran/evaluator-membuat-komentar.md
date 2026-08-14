@@ -9,43 +9,39 @@ Sumber use case: `UC-12` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Membuat Komentar |
 | Aktor utama | Evaluator |
 | Nomor kebutuhan fungsional | 16 |
-| Tujuan | Menggambarkan proses evaluator memberi catatan perbaikan resmi saat SOP belum sesuai dan menerima umpan balik dari sistem. |
+| Tujuan | Menggambarkan interaksi evaluator dan sistem saat memberikan catatan perbaikan pada SOP yang belum sesuai. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Sequence Diagram - Membuat Komentar
 autonumber
 autoactivate on
 
 actor "Evaluator" as A
 boundary "Form Penilaian SOP" as B
-control "Pengelola Catatan Evaluasi" as C
-control "Pemeriksa Catatan Perbaikan" as D
-entity "Nilai Evaluasi" as Nilai
-entity "Detail SOP" as DetailSOP
+control "Pengelola Evaluasi" as C
+entity "Hasil Evaluasi" as D
 
-A -> B : Memilih hasil perlu perbaikan pada SOP
-B --> A : Menampilkan kolom catatan perbaikan
-A -> B : Mengisi komentar atau arahan perbaikan
-B --> A : Menampilkan ringkasan komentar sebelum disimpan
-B -> C : Meminta penyimpanan komentar evaluasi
-C -> D : Memeriksa kewenangan evaluator, isi catatan, keadaan pengajuan, dan perubahan data terakhir
-D --> C : Hasil pemeriksaan komentar
-alt Catatan kosong
-  C --> B : Mengirim alasan komentar belum lengkap
-  B --> A : Menampilkan pesan catatan wajib diisi
-else Data penilaian sudah berubah
-  C --> B : Mengirim alasan data perlu dimuat ulang
-  B --> A : Menampilkan instruksi memuat ulang sebelum menyimpan komentar
-else Komentar dapat disimpan
-  C -> Nilai : Menyimpan komentar sebagai bagian dari penilaian perlu perbaikan
-  Nilai --> C : Komentar tersimpan
-  C -> Nilai : Menandai tindak lanjut penyusun sebagai terbuka
-  Nilai --> C : Tindak lanjut terbuka
-  C --> B : Mengirim komentar dan keadaan tindak lanjut terbaru
-  B --> A : Menampilkan komentar tersimpan dan SOP menunggu perbaikan
+A -> B : Memilih hasil perlu perbaikan
+B --> A : Menampilkan bagian catatan perbaikan
+A -> B : Mengirim catatan perbaikan
+B -> C : Meminta penyimpanan catatan
+C -> D : Memeriksa dan menyimpan catatan
+
+alt Catatan telah diisi
+  D --> C : Catatan tersimpan
+  C --> B : Mengirim hasil evaluasi terbaru
+  B --> A : Menampilkan catatan dan status perlu tindak lanjut
+else Catatan belum memenuhi ketentuan
+  D --> C : Catatan belum dapat disimpan
+  C --> B : Mengirim informasi kekurangan catatan
+  B --> A : Meminta evaluator melengkapi catatan
 end
 
 @enduml

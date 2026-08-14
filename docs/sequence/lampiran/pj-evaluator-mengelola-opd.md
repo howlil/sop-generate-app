@@ -9,43 +9,45 @@ Sumber use case: `UC-05` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 1 |
-| Tujuan | Menggambarkan proses PJ Evaluator melihat, menambah, mengubah, dan menonaktifkan OPD dengan respons balik eksplisit. |
+| Tujuan | Menggambarkan interaksi PJ Evaluator dan sistem saat menambah, mengubah, atau menghapus data OPD. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Sequence Diagram - Mengelola OPD
 autonumber
 autoactivate on
 
 actor "PJ Evaluator" as A
-boundary "Halaman Manajemen OPD" as B
-control "Pengelola Data OPD" as C
-control "Pemeriksa Aturan OPD" as D
-entity "OPD" as OPD
+boundary "Halaman Data OPD" as B
+control "Pengelola OPD" as C
+entity "Data OPD" as D
 
-A -> B : Membuka halaman manajemen OPD
+A -> B : Membuka data OPD
 B -> C : Meminta daftar OPD
-C -> OPD : Mengambil data OPD sesuai filter tampilan
-OPD --> C : Daftar OPD
+C -> D : Mengambil data OPD
+D --> C : Daftar OPD
 C --> B : Mengirim daftar OPD
-B --> A : Menampilkan daftar OPD
+B --> A : Menampilkan data OPD
 
-A -> B : Memilih tambah atau ubah OPD
-B --> A : Menampilkan formulir OPD
-A -> B : Mengisi kode, nama, dan keterangan OPD
-B -> C : Meminta penyimpanan OPD
-C -> D : Memeriksa kelengkapan data, keunikan kode, dan hubungan dengan data lain
-D --> C : Hasil pemeriksaan OPD
-alt Data OPD dapat disimpan
-  C -> OPD : Menyimpan data OPD
-  OPD --> C : Data OPD tersimpan
-  C --> B : Mengirim hasil penyimpanan
-  B --> A : Menampilkan OPD berhasil disimpan
-else Data OPD belum sesuai
-  C --> B : Mengirim alasan data OPD ditolak
-  B --> A : Menampilkan bagian OPD yang perlu diperbaiki
+A -> B : Memilih tambah, ubah, atau hapus OPD
+B -> C : Mengirim perubahan data OPD
+C -> D : Memeriksa aturan perubahan OPD
+D --> C : Hasil pemeriksaan
+
+alt Perubahan dapat dilakukan
+  C -> D : Menyimpan perubahan OPD
+  D --> C : Data OPD terbaru
+  C --> B : Mengirim hasil perubahan
+  B --> A : Menampilkan data OPD terbaru
+else Perubahan tidak dapat dilakukan
+  C --> B : Mengirim alasan penolakan
+  B --> A : Menampilkan informasi perubahan tidak dapat dilakukan
 end
 
 @enduml

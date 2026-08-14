@@ -9,38 +9,31 @@ Sumber use case: `UC-02` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Logout |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | Pendukung login |
-| Tujuan | Menggambarkan proses keluar dari sistem, pengakhiran sesi aktif, dan pembersihan tampilan pengguna. |
+| Tujuan | Menggambarkan interaksi pengguna dan sistem saat mengakhiri sesi penggunaan aplikasi. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Sequence Diagram - Logout
 autonumber
 autoactivate on
 
 actor "Pengguna" as A
-boundary "Menu Profil / Header" as B
+boundary "Antarmuka Sistem" as B
 control "Pengelola Autentikasi" as C
-control "Pengelola Sesi" as D
-entity "Pengguna" as Pengguna
-entity "Sesi Pengguna" as Sesi
+entity "Sesi Pengguna" as D
 
-A -> B : Memilih keluar
-B --> A : Menampilkan proses keluar
-B -> C : Meminta pengakhiran akses pengguna
-C -> D : Memeriksa sesi yang sedang aktif
-D -> Sesi : Mencari catatan sesi pengguna
-Sesi --> D : Informasi sesi
-alt Sesi aktif ditemukan
-  D -> Sesi : Menandai sesi sebagai berakhir
-  Sesi --> D : Sesi berhasil diakhiri
-  D --> C : Pengakhiran sesi berhasil
-else Sesi tidak ditemukan
-  D --> C : Tidak ada sesi yang perlu diakhiri
-end
-C --> B : Mengirim hasil keluar dari sistem
-B --> A : Menampilkan halaman publik atau halaman login
+A -> B : Memilih menu keluar
+B -> C : Meminta pengakhiran sesi
+C -> D : Mengakhiri sesi pengguna
+D --> C : Sesi berakhir
+C --> B : Mengonfirmasi proses keluar
+B --> A : Mengarahkan ke halaman login atau halaman publik
 
 @enduml
 ```

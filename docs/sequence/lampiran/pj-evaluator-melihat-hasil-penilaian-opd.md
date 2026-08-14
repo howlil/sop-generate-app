@@ -9,39 +9,40 @@ Sumber use case: `UC-04` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat Hasil Penilaian OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 20 |
-| Tujuan | Menggambarkan proses melihat grafik evaluasi tahunan OPD dari rekap hasil evaluasi. |
+| Tujuan | Menggambarkan interaksi PJ Evaluator dan sistem saat melihat ringkasan hasil evaluasi OPD. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Sequence Diagram - Melihat Hasil Penilaian OPD
 autonumber
 autoactivate on
 
 actor "PJ Evaluator" as A
-boundary "Halaman Grafik Evaluasi" as B
-control "Pengelola Rekap Evaluasi" as C
-control "Pemeriksa Cakupan Laporan" as D
-entity "Pengajuan Evaluasi" as Pengajuan
-entity "OPD" as OPD
-entity "Nilai OPD" as NilaiOPD
+boundary "Halaman Hasil Penilaian OPD" as B
+control "Pengelola Laporan Evaluasi" as C
+entity "Hasil Evaluasi OPD" as D
 
-A -> B : Membuka halaman grafik evaluasi
-B --> A : Menampilkan pilihan tahun, OPD, dan jenis rekap
-A -> B : Memilih parameter penilaian OPD
-B -> C : Meminta rekap hasil evaluasi OPD
-C -> D : Memeriksa kewenangan PJ Evaluator melihat rekap
-D --> C : Hasil pemeriksaan cakupan laporan
-C -> Pengajuan : Mengambil pengajuan selesai sesuai parameter
-Pengajuan --> C : Pengajuan selesai
-C -> NilaiOPD : Mengambil nilai OPD
-NilaiOPD --> C : Nilai OPD
-C -> OPD : Mengambil identitas OPD
-OPD --> C : Identitas OPD
-C -> C : Menyusun ringkasan, tren, dan peringkat penilaian
-C --> B : Mengirim data grafik dan tabel rekap
-B --> A : Menampilkan grafik hasil penilaian OPD dan ringkasannya
+A -> B : Membuka hasil penilaian OPD
+B -> C : Meminta ringkasan penilaian
+C -> D : Mengambil hasil evaluasi
+D --> C : Data hasil evaluasi
+C --> B : Mengirim ringkasan penilaian
+B --> A : Menampilkan grafik dan ringkasan OPD
+
+opt Memilih periode penilaian
+  A -> B : Menentukan periode
+  B -> C : Meminta hasil sesuai periode
+  C -> D : Mengambil hasil sesuai periode
+  D --> C : Data periode terpilih
+  C --> B : Mengirim hasil penilaian
+  B --> A : Memperbarui tampilan hasil
+end
 
 @enduml
 ```

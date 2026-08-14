@@ -9,45 +9,37 @@ Sumber use case: `UC-20` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memeriksa Pengesahan TTE |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 23 |
-| Tujuan | Menggambarkan proses pengunjung memeriksa keabsahan pengesahan dokumen melalui penanda pengesahan publik. |
+| Tujuan | Menggambarkan interaksi pengunjung dan sistem saat memeriksa informasi pengesahan dokumen melalui tautan atau QR verifikasi. |
 
 ## PlantUML
 
 ```plantuml
 @startuml
+skinparam defaultFontSize 20
+skinparam titleFontSize 24
+skinparam dpi 160
+
 title Sequence Diagram - Memeriksa Pengesahan TTE
 autonumber
 autoactivate on
 
 actor "Pengunjung" as A
-boundary "Halaman Validasi Pengesahan" as B
-control "Pengelola Validasi Pengesahan" as C
-control "Pemeriksa Riwayat Tanda Tangan" as D
-entity "Dokumen TTE" as DokumenTTE
-entity "Riwayat Tanda Tangan" as RiwayatTandaTangan
+boundary "Halaman Verifikasi Pengesahan" as B
+control "Pengelola Verifikasi TTE" as C
+entity "Riwayat Pengesahan" as D
 
-A -> B : Membuka halaman validasi pengesahan
-B --> A : Menampilkan formulir kode atau penanda pengesahan
-A -> B : Memasukkan kode pengesahan dari dokumen
-B --> A : Menampilkan proses pemeriksaan pengesahan
-B -> C : Meminta pemeriksaan pengesahan dokumen
-C -> D : Memeriksa format kode dan kelengkapan penanda pengesahan
-D --> C : Hasil pemeriksaan awal
-alt Kode pengesahan dapat diperiksa
-  C -> DokumenTTE : Mencari dokumen berdasarkan kode pengesahan
-  DokumenTTE --> C : Data dokumen atau tidak ditemukan
-  C -> RiwayatTandaTangan : Mencari riwayat tanda tangan dokumen
-  RiwayatTandaTangan --> C : Riwayat tanda tangan atau tidak ditemukan
-  alt Pengesahan ditemukan
-    C --> B : Mengirim identitas dokumen, penandatangan, waktu pengesahan, dan keadaan dokumen
-    B --> A : Menampilkan pengesahan valid dan informasi dokumen
-  else Pengesahan tidak ditemukan
-    C --> B : Mengirim alasan pengesahan tidak ditemukan
-    B --> A : Menampilkan pengesahan tidak dapat diverifikasi
-  end
-else Kode pengesahan tidak sesuai
-  C --> B : Mengirim alasan kode tidak dapat diperiksa
-  B --> A : Menampilkan petunjuk memperbaiki kode pengesahan
+A -> B : Membuka tautan atau QR verifikasi
+B -> C : Meminta informasi pengesahan
+C -> D : Mencari riwayat pengesahan
+
+alt Data pengesahan ditemukan
+  D --> C : Informasi dokumen dan penandatangan
+  C --> B : Mengirim hasil pengesahan
+  B --> A : Menampilkan dokumen, penandatangan, peran, dan waktu pengesahan
+else Data pengesahan tidak ditemukan
+  D --> C : Data tidak tersedia
+  C --> B : Mengirim informasi tidak ditemukan
+  B --> A : Menampilkan informasi pengesahan tidak ditemukan
 end
 
 @enduml
