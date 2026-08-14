@@ -10,6 +10,7 @@ import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 export interface PageHeaderContent {
   breadcrumb: BreadcrumbItem[]
   title: string
+  description?: string
   leading?: ReactNode
   actions?: ReactNode
 }
@@ -37,6 +38,7 @@ interface PageHeaderContextValue {
  * <SetPageHeader
  *   breadcrumb={[{ label: 'Home' }]}
  *   title="Dashboard"
+ *   description="Ringkasan aktivitas terbaru"
  *   actions={<Button>Action</Button>}
  * />
  * ```
@@ -90,6 +92,8 @@ export interface SetPageHeaderProps {
   breadcrumb: BreadcrumbItem[]
   /** Judul halaman */
   title: string
+  /** Deskripsi ringkas di bawah judul */
+  description?: string
   /** Konten di kiri (sebelah kiri judul), mis. tombol kembali */
   leading?: ReactNode
   /** Konten tambahan di kanan (tombol aksi, dll.) */
@@ -100,18 +104,19 @@ export interface SetPageHeaderProps {
 /**
  * SetPageHeader - Declarative header content setter
  *
- * Sets header content (breadcrumb, title, actions) via PageHeaderProvider.
+ * Sets header content (breadcrumb, title, description, actions) via PageHeaderProvider.
  * Renders nothing (null) - only updates context for HeaderBar to display.
  */
 export function SetPageHeader({
   breadcrumb,
   title,
+  description,
   leading,
   actions,
 }: SetPageHeaderProps) {
   const ctx = usePageHeaderContext()
-  const propsRef = useRef({ breadcrumb, title, leading, actions })
-  propsRef.current = { breadcrumb, title, leading, actions }
+  const propsRef = useRef({ breadcrumb, title, description, leading, actions })
+  propsRef.current = { breadcrumb, title, description, leading, actions }
 
   const breadcrumbKey = JSON.stringify(breadcrumb)
   const setHeader = ctx?.setHeaderContent
@@ -124,7 +129,7 @@ export function SetPageHeader({
     return () => {
       setHeaderRef.current?.(null)
     }
-  }, [breadcrumbKey, title])
+  }, [breadcrumbKey, title, description])
 
   return null
 }

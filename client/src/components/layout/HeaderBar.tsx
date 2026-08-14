@@ -3,6 +3,7 @@ import { CircleUserRound, LogOut } from "lucide-react";
 import { ROUTES } from "@/utils/constants";
 import { getMeRoute } from "@/utils/role-routing";
 import { Button } from "@/components/ui/button";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,17 +39,30 @@ export function HeaderBar() {
   return (
     <header
       data-print-hide
-      className="flex min-h-[var(--header-height)] flex-shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-1.5 md:px-5 lg:px-6"
+      className="flex min-h-[var(--header-height)] flex-shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-2 md:px-5 lg:px-6"
     >
-      <div suppressHydrationWarning className="order-1 flex min-w-0 flex-1 items-center gap-2">
+      <div suppressHydrationWarning className="order-1 flex min-w-0 flex-1 items-start gap-2">
         {headerContent ? (
           <>
-            {headerContent.leading && (
-              <div className="flex-shrink-0">{headerContent.leading}</div>
-            )}
-            <h1 className="min-w-0 truncate text-ui-title font-semibold text-foreground">
-              {headerContent.title}
-            </h1>
+            {headerContent.leading ? (
+              <div className="mt-5 flex-shrink-0">{headerContent.leading}</div>
+            ) : null}
+            <div className="min-w-0 flex-1">
+              {headerContent.breadcrumb.length > 0 ? (
+                <Breadcrumb
+                  items={headerContent.breadcrumb}
+                  className="mb-0.5 min-w-0 overflow-hidden whitespace-nowrap text-muted-foreground"
+                />
+              ) : null}
+              <h1 className="min-w-0 truncate text-ui-title font-semibold text-foreground">
+                {headerContent.title}
+              </h1>
+              {headerContent.description ? (
+                <p className="mt-0.5 max-w-3xl text-[13px]/[18px] text-muted-foreground">
+                  {headerContent.description}
+                </p>
+              ) : null}
+            </div>
           </>
         ) : null}
       </div>
