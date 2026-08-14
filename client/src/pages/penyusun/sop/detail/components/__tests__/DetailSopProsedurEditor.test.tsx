@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { ProsedurRow } from '@/types/ui/sop'
 
@@ -73,7 +73,8 @@ describe('DetailSOPProsedurEditor', () => {
   it('mempertahankan semua kolom dalam satu desktop spreadsheet scroll region', () => {
     renderEditor()
 
-    expect(screen.getByTestId('procedure-editor-scroll')).toBeInTheDocument()
+    const desktopScroll = screen.getByTestId('procedure-editor-scroll')
+    expect(desktopScroll).toBeInTheDocument()
     for (const column of [
       'No',
       'Kegiatan',
@@ -85,9 +86,9 @@ describe('DetailSOPProsedurEditor', () => {
       'Keterangan',
       'Aksi',
     ]) {
-      expect(screen.getByRole('columnheader', { name: column })).toBeInTheDocument()
+      expect(within(desktopScroll).getByRole('columnheader', { name: column })).toBeInTheDocument()
     }
-    expect(screen.getByRole('button', { name: 'Aksi langkah 1' })).toBeInTheDocument()
+    expect(within(desktopScroll).getByRole('button', { name: 'Aksi langkah 1' })).toBeInTheDocument()
   })
 
   it('mempertahankan aksi tambah langkah dan selesai edit', () => {
