@@ -31,7 +31,30 @@ describe('SOPListCard', () => {
     expect(selectedCard).toHaveClass('bg-surface')
     expect(selectedCard).not.toHaveClass('bg-primary-subtle')
     expect(selectedCard).not.toHaveClass('border-primary')
-    expect(screen.getByText('Berlaku')).toHaveClass('bg-surface-muted')
-    expect(screen.getByText('Sesuai')).toHaveClass('border-success-subtle')
+    expect(screen.queryByText('Dokumen')).not.toBeInTheDocument()
+    expect(screen.queryByText('Penilaian')).not.toBeInTheDocument()
+    expect(screen.getByText('Berlaku')).toHaveClass('text-success-foreground')
+    expect(screen.getByText('Sesuai')).toHaveClass('text-success-foreground')
+  })
+
+  it('does not render pending process states as final green chips', () => {
+    render(
+      <SOPListCard
+        selectedId="sop-1"
+        items={[
+          {
+            id: 'sop-1',
+            nama: 'sop barang',
+            nomor: '1234',
+            statusDokumen: 'DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI',
+            statusDokumenLabel: 'Menunggu TTD PJ Evaluator',
+          },
+        ]}
+      />,
+    )
+
+    const status = screen.getByText('Menunggu TTD PJ Evaluator')
+    expect(status).toHaveClass('text-warning-foreground')
+    expect(status).not.toHaveClass('text-success-foreground')
   })
 })

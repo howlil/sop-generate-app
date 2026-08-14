@@ -10,6 +10,7 @@ import type { PenyusunWorkbenchDiagramKonfigurasi } from '@/types/dto/sop.dto'
 import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/ui/loading-state'
+import { cn } from '@/utils/cn'
 
 export interface SopPreviewWorkbenchProps {
   name?: string
@@ -30,6 +31,35 @@ export interface SopDocumentPreviewPaneProps {
   onRetry?: () => void
 }
 
+function DiagramToggleButton({
+  value,
+  activeTab,
+  onSelect,
+  children,
+}: {
+  value: 'flowchart' | 'bpmn'
+  activeTab: 'flowchart' | 'bpmn'
+  onSelect: (value: 'flowchart' | 'bpmn') => void
+  children: string
+}) {
+  const isActive = activeTab === value
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      aria-pressed={isActive}
+      className={cn(
+        'h-7 rounded-md px-3 text-xs text-secondary-foreground hover:bg-surface hover:text-foreground',
+        isActive && 'bg-surface text-foreground shadow-surface ring-1 ring-border/70',
+      )}
+      onClick={() => onSelect(value)}
+    >
+      {children}
+    </Button>
+  )
+}
+
 function SopPreviewWithDiagram({
   previewProps,
   tteSignaturePayload,
@@ -47,20 +77,42 @@ function SopPreviewWithDiagram({
     activeTab,
   )
   return (
-    <SOPPreviewTemplate
-      name={previewProps.name}
-      number={previewProps.number}
-      metadata={previewProps.metadata}
-      prosedurRows={previewProps.prosedurRows}
-      implementers={previewProps.implementers}
-      tteSignaturePayload={tteSignaturePayload}
-      previewOptions={{ editable: false, showScrollbar: true }}
-      diagramState={{
-        activeTab,
-        onActiveTabChange: setActiveTab,
-        ...diagramState,
-      }}
-    />
+    <div className="flex min-h-0 flex-1 flex-col bg-surface-subtle/40">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface px-3 py-2 print:hidden">
+        <div>
+          <p className="text-xs font-medium text-foreground">Pratinjau dokumen SOP</p>
+          <p className="text-[11px] text-muted-foreground">Pilih tampilan diagram yang ingin diperiksa.</p>
+        </div>
+        <div
+          role="toolbar"
+          aria-label="Tampilan diagram SOP"
+          className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-subtle p-1"
+        >
+          <DiagramToggleButton value="flowchart" activeTab={activeTab} onSelect={setActiveTab}>
+            Flowchart
+          </DiagramToggleButton>
+          <DiagramToggleButton value="bpmn" activeTab={activeTab} onSelect={setActiveTab}>
+            BPMN
+          </DiagramToggleButton>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <SOPPreviewTemplate
+          name={previewProps.name}
+          number={previewProps.number}
+          metadata={previewProps.metadata}
+          prosedurRows={previewProps.prosedurRows}
+          implementers={previewProps.implementers}
+          tteSignaturePayload={tteSignaturePayload}
+          previewOptions={{ editable: false, showScrollbar: true, hideDiagramTabs: true }}
+          diagramState={{
+            activeTab,
+            onActiveTabChange: setActiveTab,
+            ...diagramState,
+          }}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -92,21 +144,19 @@ export function SopDocumentPreviewPane({
   }
   if (sopPreviewProps !== null) {
     return (
-      <div>
-        <SopPreviewWithDiagram
-          previewProps={sopPreviewProps}
-          tteSignaturePayload={tteSignaturePayload}
-        />
-      </div>
+      <SopPreviewWithDiagram
+        previewProps={sopPreviewProps}
+        tteSignaturePayload={tteSignaturePayload}
+      />
     )
   }
   return (
-    <div>
+    <div className="min-h-0 flex-1 overflow-hidden bg-surface-subtle/40">
       <SOPPreviewTemplate
         name={selectedSop.nama}
         number={selectedSop.nomor}
         tteSignaturePayload={tteSignaturePayload}
-        previewOptions={{ editable: false, showScrollbar: true }}
+        previewOptions={{ editable: false, showScrollbar: true, hideDiagramTabs: true }}
       />
     </div>
   )

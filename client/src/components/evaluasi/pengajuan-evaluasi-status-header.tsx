@@ -19,10 +19,10 @@ export interface PengajuanEvaluasiStatusHeaderProps {
 }
 
 const BANNER_CLASS = {
-  info: 'border-blue-200 bg-blue-50 text-blue-900',
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-  warning: 'border-amber-200 bg-amber-50 text-amber-900',
-  danger: 'border-red-200 bg-red-50 text-red-900',
+  info: 'border-primary/20 bg-primary-subtle/60 text-primary-hover',
+  success: 'border-success-subtle bg-success-subtle/70 text-success-foreground',
+  warning: 'border-warning/30 bg-warning/10 text-warning-foreground',
+  danger: 'border-danger/30 bg-danger/10 text-danger',
 } as const
 
 export function PengajuanEvaluasiStatusHeader({
@@ -39,12 +39,15 @@ export function PengajuanEvaluasiStatusHeader({
   return (
     <div className={cn('space-y-2', className)}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <PengajuanStatusBadge status={status} label={statusLabel} />
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-secondary-foreground">Alur pengajuan evaluasi</span>
+          <PengajuanStatusBadge status={status} label={statusLabel} showDomain={false} />
+        </div>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 shrink-0 gap-1 px-2 text-xs text-secondary-foreground"
+          className="h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
           aria-expanded={expanded}
           aria-controls={panelId}
           onClick={() => setExpanded((prev) => !prev)}
@@ -52,18 +55,18 @@ export function PengajuanEvaluasiStatusHeader({
           {expanded ? (
             <>
               <ChevronUp className="h-3.5 w-3.5" aria-hidden />
-              Sembunyikan alur
+              Sembunyikan
             </>
           ) : (
             <>
               <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-              Alur pengajuan evaluasi
+              Tampilkan alur
             </>
           )}
         </Button>
       </div>
       {expanded ? (
-        <div id={panelId} className="space-y-3 border-t border-border pt-3">
+        <div id={panelId} className="space-y-2.5 border-t border-border pt-2.5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <EvaluasiWorkflowStepper status={status} className="flex-1 min-w-[200px]" />
             {showLegend ? <EvaluasiStatusLegend /> : null}
@@ -71,7 +74,7 @@ export function PengajuanEvaluasiStatusHeader({
           {banner ? (
             <div
               className={cn(
-                'rounded-md border px-3 py-2 text-xs',
+                'rounded-md border px-3 py-2 text-xs leading-relaxed',
                 BANNER_CLASS[banner.variant],
               )}
             >
