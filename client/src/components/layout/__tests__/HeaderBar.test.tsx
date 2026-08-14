@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
@@ -38,9 +38,9 @@ describe('HeaderBar', () => {
       </PageHeaderProvider>,
     )
 
-    expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument()
-    expect(screen.getByText('Penyusun')).toBeInTheDocument()
-    expect(screen.getByText('Manajemen SOP')).toHaveAttribute('aria-current', 'page')
+    const breadcrumb = await screen.findByRole('navigation', { name: 'Breadcrumb' })
+    expect(within(breadcrumb).getByText('Penyusun')).toBeInTheDocument()
+    expect(within(breadcrumb).getByText('Manajemen SOP')).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('heading', { name: 'Manajemen SOP' })).toHaveClass('sr-only')
     expect(screen.queryByText('Deskripsi yang tidak boleh terlihat di header.')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Buat SOP' })).not.toBeInTheDocument()
