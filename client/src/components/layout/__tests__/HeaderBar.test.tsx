@@ -22,36 +22,32 @@ import { HeaderBar } from '@/components/layout/HeaderBar'
 import {
   PageHeaderProvider,
   SetPageHeader,
-  type SetPageHeaderProps,
 } from '@/components/layout/PageHeaderProvider'
 
 describe('HeaderBar', () => {
-  it('menampilkan breadcrumb, judul, dan deskripsi halaman dalam hierarki yang sama', async () => {
-    const headerProps = {
-      breadcrumb: [{ label: 'PJ Penyusun' }, { label: 'Berita Acara' }],
-      title: 'Berita Acara Evaluasi',
-      description: 'Kelola berita acara hasil evaluasi SOP.',
-    } as SetPageHeaderProps & { description: string }
-
+  it('menampilkan breadcrumb sebagai identitas visual dan menjaga judul hanya untuk pembaca layar', async () => {
     render(
       <PageHeaderProvider>
         <HeaderBar />
-        <SetPageHeader {...headerProps} />
+        <SetPageHeader
+          breadcrumb={[{ label: 'Penyusun' }, { label: 'Manajemen SOP' }]}
+          title="Manajemen SOP"
+          description="Deskripsi yang tidak boleh terlihat di header."
+          actions={<button type="button">Buat SOP</button>}
+        />
       </PageHeaderProvider>,
     )
 
     expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument()
-    expect(screen.getByText('PJ Penyusun')).toBeInTheDocument()
-    expect(screen.getByText('Berita Acara')).toHaveAttribute('aria-current', 'page')
-    expect(
-      screen.getByRole('heading', { name: 'Berita Acara Evaluasi' }),
-    ).toHaveClass('text-ui-title')
-    expect(screen.getByText('Kelola berita acara hasil evaluasi SOP.')).toHaveClass(
-      'text-muted-foreground',
-    )
+    expect(screen.getByText('Penyusun')).toBeInTheDocument()
+    expect(screen.getByText('Manajemen SOP')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('heading', { name: 'Manajemen SOP' })).toHaveClass('sr-only')
+    expect(screen.queryByText('Deskripsi yang tidak boleh terlihat di header.')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Buat SOP' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
   })
 
-  it('tidak membuat breadcrumb kosong ketika breadcrumb tidak diberikan', async () => {
+  it('tidak membuat breadcrumb kosong dan tetap menyediakan judul semantik', async () => {
     render(
       <PageHeaderProvider>
         <HeaderBar />
@@ -59,7 +55,8 @@ describe('HeaderBar', () => {
       </PageHeaderProvider>,
     )
 
-    expect(await screen.findByRole('heading', { name: 'Ringkasan' })).toBeInTheDocument()
+    const heading = await screen.findByRole('heading', { name: 'Ringkasan' })
+    expect(heading).toHaveClass('sr-only')
     expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).not.toBeInTheDocument()
   })
 })
