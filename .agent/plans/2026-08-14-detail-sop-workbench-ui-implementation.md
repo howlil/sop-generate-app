@@ -42,7 +42,6 @@
 ### SOP command bar and workbench composition
 
 - Modify: `client/src/pages/penyusun/sop/detail/components/DetailSopPenyusunHeader.tsx`
-- Modify: `client/src/pages/penyusun/sop/detail/components/DetailSopPenyusunMain.tsx`
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunHeader.test.tsx`
 
 ### Property inspector
@@ -60,9 +59,14 @@
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/ProsedurEditorCells.test.tsx`
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopProsedurEditor.test.tsx`
 
-### E2E / regression
+### Preview/edit toolbar
 
-- Modify: the existing Playwright SOP-detail/editor journey if present after repository search; otherwise create `client/e2e/detail-sop-workbench-ui.spec.ts`.
+- Modify: `client/src/pages/penyusun/sop/detail/components/DetailSopPenyusunMain.tsx`
+- Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunMain.test.tsx`
+
+### E2E
+
+- Create: `client/e2e/detail-sop-workbench-ui.spec.ts`
 
 ---
 
@@ -71,17 +75,16 @@
 **Files:**
 - Modify: `client/src/components/layout/DetailPageLayout.tsx`
 - Modify: `client/src/components/layout/__tests__/DetailPageLayout.test.tsx`
-- Modify all six production consumers listed in the File map.
+- Modify all six production consumers listed under Shared detail shell.
 
 **Interfaces:**
 
-Final `DetailPageLayoutProps`:
+Final contract:
 
 ```ts
 export interface DetailPageLayoutProps {
   breadcrumb?: BreadcrumbItem[] | null
   title: string
-  description?: string
   header?: React.ReactNode
   main?: React.ReactNode
   children?: React.ReactNode
@@ -92,11 +95,11 @@ export interface DetailPageLayoutProps {
 }
 ```
 
-`backTo`, `backSize`, and generic page-level `actions` are removed from this component contract.
+`description`, `backTo`, `backSize`, and generic page-level `actions` are removed from the public contract.
 
-- [ ] **Step 1: Replace the old layout test with a failing breadcrumb-only contract test**
+- [ ] **Step 1: Write the failing breadcrumb-only layout test**
 
-Use `client/src/components/layout/__tests__/DetailPageLayout.test.tsx`:
+Replace `client/src/components/layout/__tests__/DetailPageLayout.test.tsx` with:
 
 ```tsx
 import type { ReactNode } from 'react'
@@ -105,6 +108,10 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
+}))
+
+vi.mock('@/components/layout/NotificationBell', () => ({
+  NotificationBell: () => <button type="button">Notifikasi</button>,
 }))
 
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
@@ -146,11 +153,11 @@ cd client
 pnpm test -- src/components/layout/__tests__/DetailPageLayout.test.tsx
 ```
 
-Expected: FAIL because the current layout still renders `BackButton` and still requires `backTo`.
+Expected: FAIL because current `DetailPageLayout` still requires/renders `BackButton`.
 
 - [ ] **Step 3: Simplify `DetailPageLayout`**
 
-Remove the `BackButton` import and delete the local toolbar row entirely. The component body becomes structurally:
+Delete the `BackButton` import, `description`, `backTo`, `backSize`, `actions`, and the extra local toolbar row. Keep `DetailWorkspace` unchanged. Final render shape:
 
 ```tsx
 export function DetailPageLayout({
@@ -184,11 +191,9 @@ export function DetailPageLayout({
 }
 ```
 
-Do not alter `DetailWorkspace` column/layout behavior in this task.
+- [ ] **Step 4: Migrate Penyusun SOP detail**
 
-- [ ] **Step 4: Migrate `DetailSOPPenyusun`**
-
-Keep the already-correct linked ancestor:
+Keep:
 
 ```tsx
 breadcrumb={[
@@ -197,19 +202,19 @@ breadcrumb={[
 ]}
 ```
 
-Remove:
-
-```tsx
-description={metadata.nama ?? metadata.judul ?? ''}
-backTo={ROUTES.PENYUSUN.SOP}
-backSize="icon"
-```
-
-The document identity will move into the workbench command bar in Task 2.
+Remove `description`, `backTo`, and `backSize` from the call.
 
 - [ ] **Step 5: Migrate Kepala OPD SOP detail**
 
-In `client/src/pages/kepala-opd/sop/DetailSOP.tsx`, keep:
+Change `DetailSOPProps` to:
+
+```ts
+export interface DetailSOPProps {
+  breadcrumb?: { label: string; to?: string }[]
+}
+```
+
+Keep:
 
 ```tsx
 const effectiveBreadcrumb = breadcrumb ?? [
@@ -218,11 +223,11 @@ const effectiveBreadcrumb = breadcrumb ?? [
 ]
 ```
 
-Delete the public `backTo?: string` prop and `effectiveBackTo`; remove `backTo`, `backSize`, `actions={null}`, and `description` from `DetailPageLayout` usage. Preserve the existing workspace header including `Cabut SOP` logic.
+Delete `effectiveBackTo` and remove `description`, `backTo`, `backSize`, and `actions={null}` from the layout call. Preserve `workspaceHeaderToolbar` and Cabut SOP behavior.
 
 - [ ] **Step 6: Migrate Kepala OPD pengajuan detail**
 
-Keep this breadcrumb exactly:
+Keep exactly:
 
 ```tsx
 breadcrumb={[
@@ -231,11 +236,11 @@ breadcrumb={[
 ]}
 ```
 
-Remove only `description`, `backTo`, and `backSize` from the layout call. The existing print/sign controls remain in the page's workspace `header`.
+Remove `description`, `backTo`, and `backSize`. Preserve local print/sign controls.
 
 - [ ] **Step 7: Migrate PJ Evaluator evaluation detail**
 
-Keep:
+Keep exactly:
 
 ```tsx
 breadcrumb={[
@@ -247,11 +252,11 @@ breadcrumb={[
 ]}
 ```
 
-Remove only `description`, `backTo`, and `backSize` from the layout call. Keep TTE/print actions in the existing local workspace header.
+Remove `description`, `backTo`, and `backSize`. Preserve TTE/print controls.
 
 - [ ] **Step 8: Migrate PJ Penyusun Berita Acara detail**
 
-Use a current crumb after the linked collection crumb so the final breadcrumb item is not an ancestor link:
+Change the breadcrumb to:
 
 ```tsx
 breadcrumb={[
@@ -261,11 +266,11 @@ breadcrumb={[
 ]}
 ```
 
-Remove `description`, `backTo`, and `backSize`. Preserve all current BA/TTE actions in the local workspace header.
+Remove `description`, `backTo`, and `backSize`. Preserve BA/TTE controls.
 
 - [ ] **Step 9: Migrate Evaluator workspace**
 
-At its `DetailPageLayout` call, use the existing `listHref` as the linked parent breadcrumb target:
+At its `DetailPageLayout` call use:
 
 ```tsx
 breadcrumb={[
@@ -274,25 +279,23 @@ breadcrumb={[
 ]}
 ```
 
-Remove `backTo`/`backSize` from the call. Keep submit/reject evaluation controls in their existing local workspace header/panels; do not change evaluator state logic.
+Remove `description`, `backTo`, and `backSize`. Do not change evaluation submit/reject state or handlers.
 
-- [ ] **Step 10: Run the detail-layout test plus typecheck**
+- [ ] **Step 10: Run GREEN and typecheck**
 
 ```bash
 pnpm test -- src/components/layout/__tests__/DetailPageLayout.test.tsx
 pnpm typecheck
 ```
 
-Expected: PASS and no `DetailPageLayout` consumer requires removed props.
-
-- [ ] **Step 11: Stale contract scan**
+- [ ] **Step 11: Scan stale layout props**
 
 ```bash
 rg "backTo=|backSize=" client/src/pages client/src/components/layout
 rg "<DetailPageLayout" client/src/pages
 ```
 
-Expected: `backTo`/`backSize` no longer appear on `DetailPageLayout` calls. `BackButton` may still legitimately exist in not-found/error states; do not remove those.
+`BackButton` may remain in not-found/error states; only `DetailPageLayout` standalone back navigation is removed.
 
 - [ ] **Step 12: Commit**
 
@@ -310,40 +313,64 @@ git commit -m "refactor(client): use breadcrumb for detail navigation"
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunHeader.test.tsx`
 
 **Interfaces:**
-- Keep the existing `DetailSOPPenyusunHeaderProps` fields and callbacks.
-- `metadata`, `currentSopStatus`, `currentSopStatusLabel`, autosave status, print state, version creation state, primary action visibility, blocking reasons, and confirmation behavior remain unchanged.
-- Presentation adds one quiet secondary-action menu when secondary actions exist.
+- Keep `DetailSOPPenyusunHeaderProps` names and callback signatures unchanged.
+- Preserve the same print helper, version-create handler, primary workflow condition, confirmation dialog, blocking reasons, and read-only conditions.
 
-- [ ] **Step 1: Write failing command-bar tests**
+- [ ] **Step 1: Create test helper and failing hierarchy tests**
 
-Mock `usePenyusunWorkbench`, `useSopEditor`, print mapping/helper, and toast. Cover these behaviors:
+In `DetailSopPenyusunHeader.test.tsx`, mock `useSopEditor`, `usePenyusunWorkbench`, `useToast`, print helper, and mapper. Define:
 
 ```tsx
-renderHeader({
-  metadata: { nama: 'SOP Pelayanan Administrasi', version: 2 },
-  currentSopStatus: 'DRAFT',
-  currentSopStatusLabel: 'Draft',
-  primaryActionLabel: 'Selesai',
-  autosaveStatus: 'saved',
+import type { ComponentProps } from 'react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import type { SOPDetailMetadata } from '@/types/ui/sop'
+import { DetailSOPPenyusunHeader } from '../DetailSopPenyusunHeader'
+
+const retry = vi.fn()
+const complete = vi.fn()
+
+function renderHeader(overrides: Partial<ComponentProps<typeof DetailSOPPenyusunHeader>> = {}) {
+  const props: ComponentProps<typeof DetailSOPPenyusunHeader> = {
+    metadata: {
+      nama: 'SOP Pelayanan Administrasi',
+      judul: 'SOP Pelayanan Administrasi',
+      version: 2,
+    } as SOPDetailMetadata,
+    currentSopStatus: 'DRAFT',
+    currentSopStatusLabel: 'Draft',
+    isRevisionFlow: false,
+    primaryActionLabel: 'Selesai',
+    autosaveStatus: 'saved',
+    onRetryAutosave: retry,
+    onComplete: complete,
+    ...overrides,
+  }
+  return render(<DetailSOPPenyusunHeader {...props} />)
+}
+```
+
+Tests:
+
+```tsx
+it('menjadikan identitas SOP sebagai hierarchy utama', () => {
+  renderHeader()
+  expect(screen.getByText('SOP Pelayanan Administrasi')).toBeInTheDocument()
+  expect(screen.getByText('v2')).toBeInTheDocument()
+  expect(screen.getByText('Draft')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Selesai' })).toBeVisible()
+  expect(screen.getByRole('status')).toHaveTextContent('Tersimpan')
+  expect(screen.queryByText('Dokumen SOP')).not.toBeInTheDocument()
 })
 
-expect(screen.getByText('SOP Pelayanan Administrasi')).toBeInTheDocument()
-expect(screen.getByText('v2')).toBeInTheDocument()
-expect(screen.getByText('Draft')).toBeInTheDocument()
-expect(screen.getByRole('button', { name: 'Selesai' })).toBeVisible()
-expect(screen.getByRole('status')).toHaveTextContent('Tersimpan')
-expect(screen.queryByText('Dokumen SOP')).not.toBeInTheDocument()
+it('mempertahankan retry saat autosave gagal', () => {
+  renderHeader({ autosaveStatus: 'error' })
+  fireEvent.click(screen.getByRole('button', { name: 'Coba lagi' }))
+  expect(retry).toHaveBeenCalledTimes(1)
+})
 ```
 
-Add an error case:
-
-```tsx
-renderHeader({ autosaveStatus: 'error', onRetryAutosave: retry })
-fireEvent.click(screen.getByRole('button', { name: 'Coba lagi' }))
-expect(retry).toHaveBeenCalledTimes(1)
-```
-
-Add a secondary-actions case with `currentSopStatus="BERLAKU"` and `canBuatVersiBaru={true}` and assert both `Cetak PDF` and `Buat versi baru` are reachable from the menu while the primary workflow button is not duplicated.
+Add a third test with `currentSopStatus="BERLAKU"`, `canBuatVersiBaru={true}`, and `onBuatVersiBaru={vi.fn()}`; open `Aksi dokumen lainnya` and assert menu items `Cetak PDF` and `Buat versi baru` exist.
 
 - [ ] **Step 2: Run RED**
 
@@ -351,35 +378,23 @@ Add a secondary-actions case with `currentSopStatus="BERLAKU"` and `canBuatVersi
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunHeader.test.tsx
 ```
 
-Expected: FAIL because the current header uses generic `Dokumen SOP`, colored autosave badges, equally weighted secondary buttons, and horizontal-scroll behavior.
+- [ ] **Step 3: Make autosave indicator semantic and compact**
 
-- [ ] **Step 3: Replace colored autosave badge mapping with semantic appearance**
-
-Keep `autosaveAppearance`, but make it return semantic tone classes:
+Keep `autosaveAppearance`, but map status to text emphasis rather than colored bordered badges:
 
 ```ts
-interface AutosaveAppearance {
-  Icon: typeof Save
-  label: string
-  className: string
-}
-```
-
-Use:
-
-```ts
-saved   -> 'text-muted-foreground'
-saving  -> 'text-secondary-foreground'
-pending -> 'text-secondary-foreground'
-error   -> 'text-danger'
+saved   -> className: 'text-muted-foreground'
+saving  -> className: 'text-secondary-foreground'
+pending -> className: 'text-secondary-foreground'
+error   -> className: 'text-danger'
 idle    -> null
 ```
 
-Render the status as compact inline text with `role="status" aria-live="polite"`, not a bordered color badge. Preserve retry only for `error`.
+Render `role="status" aria-live="polite"` as inline icon + text. Preserve `Coba lagi` only for `error`.
 
-- [ ] **Step 4: Build the command hierarchy**
+- [ ] **Step 4: Replace scrollable header with wrapping command bar**
 
-Replace the horizontal-scroll wrapper and wheel handler with:
+Delete `overflow-x-auto`, hidden-scrollbar classes, and `onWheel`. Use:
 
 ```tsx
 <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -390,10 +405,14 @@ Replace the horizontal-scroll wrapper and wheel handler with:
     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <span>v{metadata.version || 1}</span>
       {metadata.revisiDariVersi != null ? <span>Revisi dari v{metadata.revisiDariVersi}</span> : null}
-      <SopStatusBadge ... />
+      <SopStatusBadge
+        status={currentSopStatus}
+        label={currentSopStatusLabel}
+        showDomain={false}
+        className="text-xs"
+      />
     </div>
   </div>
-
   <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
     {autosaveIndicator}
     {retryButton}
@@ -403,11 +422,11 @@ Replace the horizontal-scroll wrapper and wheel handler with:
 </div>
 ```
 
-Do not reintroduce `overflow-x-auto` or an `onWheel` handler.
+Implement the four JSX variables locally or inline them; do not create a new global abstraction.
 
-- [ ] **Step 5: Move print/version actions into one quiet menu**
+- [ ] **Step 5: Put print/version under one secondary menu**
 
-Use the existing dropdown primitives already used elsewhere in the project. Trigger:
+Import the existing dropdown primitives and `MoreHorizontal`. Trigger:
 
 ```tsx
 <Button
@@ -421,45 +440,37 @@ Use the existing dropdown primitives already used elsewhere in the project. Trig
 </Button>
 ```
 
-Menu items:
+Menu rules:
+- `Cetak PDF` only when `currentSopStatus === 'BERLAKU'`;
+- disable print using `isWorkbenchLoading || isPrinting`;
+- `Buat versi baru` only when `canBuatVersiBaru && onBuatVersiBaru`;
+- preserve `isBuatVersiBaruPending` and `buatVersiBaruBlockingReason`;
+- omit the menu trigger if neither action is available.
 
-```text
-Cetak PDF
-Buat versi baru
-```
+- [ ] **Step 6: Keep the primary workflow action behavior exactly**
 
-Rules:
-- render `Cetak PDF` only under the same `currentSopStatus === 'BERLAKU'` condition;
-- preserve `isWorkbenchLoading || isPrinting` disabling behavior;
-- preserve `canBuatVersiBaru`, `isBuatVersiBaruPending`, and `buatVersiBaruBlockingReason` behavior;
-- call the same existing `handlePrintSop` and `onBuatVersiBaru` handlers.
-
-If no secondary action is available, omit the menu trigger.
-
-- [ ] **Step 6: Keep the primary workflow button unchanged behaviorally**
-
-Retain:
+Preserve:
 
 ```tsx
 !isReadOnly && (!isRevisionFlow || canShowKirimUlangAction)
 ```
 
-and the existing blocking/pending/confirm-dialog behavior. Only use the normal primary button token styling; do not hard-code new workflow colors.
+and current pending/blocking/confirmation behavior. Only simplify styling to the normal primary button contract.
 
 - [ ] **Step 7: Flatten revision guidance**
 
-Keep the same role-dependent text, but use a compact contextual notice:
+Keep the existing three text branches unchanged. Replace the rounded warning card with a compact top-divider notice:
 
 ```tsx
 <div className="mt-2 flex gap-2 border-t border-border pt-2 text-xs text-secondary-foreground">
-  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
-  <p>{/* existing branch text as real JSX, unchanged */}</p>
+  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700" aria-hidden />
+  <p>{revisionMessage}</p>
 </div>
 ```
 
-Use the project's available semantic warning token; if the theme has no `text-warning`, retain the current amber text token rather than inventing a new token in this task.
+`revisionMessage` must use the same existing role/blocking branches; no domain copy is removed.
 
-- [ ] **Step 8: Run GREEN and typecheck**
+- [ ] **Step 8: Run GREEN**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunHeader.test.tsx
@@ -481,34 +492,41 @@ git commit -m "refactor(client): simplify SOP document command bar"
 - Modify: `client/src/pages/penyusun/sop/detail/components/DetailSopPenyusunSidePanel.tsx`
 - Modify: `client/src/pages/penyusun/sop/detail/components/DetailSopMetadataPanel.tsx`
 - Modify: `client/src/pages/penyusun/sop/detail/components/SOPHeaderSection.tsx`
+- Modify: `client/src/pages/penyusun/sop/detail/DetailSOPPenyusun.tsx`
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunSidePanel.test.tsx`
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/SOPHeaderSection.test.tsx`
 
 **Interfaces:**
-- Keep internal tab id `edit`; change its visible editable-mode label to `Properti`.
-- Read-only mode may keep `Informasi`.
-- Keep all current metadata keys, `handleMetadataChange` calls, add/remove dialogs, implementer handling, and read-only restrictions.
+- Keep internal tab id `edit`.
+- Editable visible label becomes `Properti`; read-only visible label remains `Informasi`.
+- Preserve all metadata keys and handlers.
 
-- [ ] **Step 1: Write the side-panel label test**
+- [ ] **Step 1: Write failing side-panel label test**
 
-Render `DetailSOPPenyusunSidePanel` with `rightPanelTab="edit"`, `collapsed={false}`, and mocked child panels. Assert:
+Mock `DetailSOPMetadataPanel`, `UmpanBalikEvaluasiPanel`, `RiwayatVersiPanel`, and `RiwayatStatusPanel` to small `<div>` probes. Render:
 
 ```tsx
-expect(screen.getByText('Properti')).toBeInTheDocument()
-expect(screen.getByText('Komentar evaluasi')).toBeInTheDocument()
-expect(screen.getByText('Versi')).toBeInTheDocument()
-expect(screen.getByText('Aktivitas')).toBeInTheDocument()
+<DetailSOPPenyusunSidePanel
+  collapsed={false}
+  onCollapsedChange={vi.fn()}
+  rightPanelTab="edit"
+  onTabChange={vi.fn()}
+  auditEntries={[]}
+  isReadOnly={false}
+  detailSopId="detail-1"
+  sopId="sop-1"
+/>
 ```
 
-Render with `isReadOnly={true}` and assert the first label is `Informasi`.
+Assert `Properti`, `Komentar evaluasi`, `Versi`, and `Aktivitas` are present. Render again with `isReadOnly` and assert `Informasi` replaces `Properti`.
 
-- [ ] **Step 2: Run RED for side-panel label**
+- [ ] **Step 2: Run RED**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunSidePanel.test.tsx
 ```
 
-- [ ] **Step 3: Make side-panel labeling domain-neutral**
+- [ ] **Step 3: Simplify first-tab labeling**
 
 Remove `editTabLabel` from `DetailSOPPenyusunSidePanelProps`. Derive:
 
@@ -516,21 +534,22 @@ Remove `editTabLabel` from `DetailSOPPenyusunSidePanelProps`. Derive:
 const propertyTabLabel = isReadOnly ? 'Informasi' : 'Properti'
 ```
 
-Keep tab ids unchanged:
+Keep IDs:
 
 ```ts
 'edit' | 'komentar' | 'versi' | 'aktivitas'
 ```
 
-Update `DetailSOPPenyusun.tsx` to stop passing `editTabLabel`.
+Stop passing `editTabLabel` from `DetailSOPPenyusun.tsx`.
 
-- [ ] **Step 4: Write failing property-inspector behavior tests**
+- [ ] **Step 4: Write property-inspector regression test**
 
-Mock `useSopEditor` with metadata containing at least:
+Mock `useSopEditor` with:
 
 ```ts
-{
+metadata: {
   nama: 'SOP Uji',
+  judul: 'SOP Uji',
   nomorSOP: '001/SOP/2026',
   institutionLines: ['Pemprov Sumbar', 'Sekretariat Daerah'],
   lawBasis: ['PermenPANRB 35/2012'],
@@ -541,27 +560,30 @@ Mock `useSopEditor` with metadata containing at least:
   implementQualification: ['Memahami administrasi'],
   equipment: ['Komputer'],
   recordData: ['Buku agenda'],
-}
+},
+implementers: [{ id: 'impl-1', name: 'Staf' }],
+setImplementers: vi.fn(),
+handleMetadataChange: vi.fn(),
+isReadOnly: false,
 ```
 
-Assert visible section headings and critical fields:
+Render `SOPHeaderSection` with three `vi.fn()` dialog openers. Assert:
+- headings `Identitas lembaga`, `Identitas SOP`, `Dasar hukum`, `Keterkaitan dengan SOP`, `Peringatan`, `Kualifikasi pelaksanaan`, `Peralatan dan perlengkapan`, `Pencatatan dan pendataan`;
+- input values `SOP Uji` and `001/SOP/2026`;
+- existing law/related items;
+- add buttons `Tambah dasar hukum` and `Tambah keterkaitan SOP`.
 
-```tsx
-expect(screen.getByText('Identitas lembaga')).toBeInTheDocument()
-expect(screen.getByText('Identitas SOP')).toBeInTheDocument()
-expect(screen.getByText('Dasar hukum')).toBeInTheDocument()
-expect(screen.getByText('Keterkaitan dengan SOP')).toBeInTheDocument()
-expect(screen.getByText('Peringatan')).toBeInTheDocument()
-expect(screen.getByDisplayValue('SOP Uji')).toBeInTheDocument()
-expect(screen.getByDisplayValue('001/SOP/2026')).toBeInTheDocument()
-expect(screen.getByText('PermenPANRB 35/2012')).toBeInTheDocument()
+Render read-only and assert add controls are absent while values remain readable.
+
+- [ ] **Step 5: Run RED for property inspector**
+
+```bash
+pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/SOPHeaderSection.test.tsx
 ```
 
-Also assert add buttons still exist in editable mode and are absent in read-only mode.
+- [ ] **Step 6: Replace `MetadataFieldCard` with `InspectorSection`**
 
-- [ ] **Step 5: Replace `MetadataFieldCard` with a flat local `InspectorSection`**
-
-In `SOPHeaderSection.tsx`, remove decorative icon imports that are no longer used and define:
+In `SOPHeaderSection.tsx`, remove decorative metadata icons and define:
 
 ```tsx
 function InspectorSection({
@@ -587,27 +609,23 @@ function InspectorSection({
 }
 ```
 
-Use sections for every existing metadata group; do not remove any field. Keep current metadata mutation code verbatim inside each section.
+Map the existing metadata groups one-for-one to `InspectorSection`. Do not delete any existing mutation callback or metadata field.
 
-- [ ] **Step 6: Flatten panel/background ownership**
+- [ ] **Step 7: Flatten panel/background ownership**
 
-Change `DetailSOPMetadataPanel` from:
-
-```tsx
-<div className="space-y-3 bg-surface-subtle/80 p-2">
-```
-
-to a single inspector content area:
+Change `DetailSOPMetadataPanel` wrapper to:
 
 ```tsx
 <div className="px-3 pb-3">
+  <SOPHeaderSection ... />
+</div>
 ```
 
-Keep dialogs outside the inspector content and preserve their existing callbacks.
+Keep `LawBasisDialog`, `RelatedPosDialog`, and `PelaksanaDialog` outside the visual inspector wrapper with their existing callbacks.
 
-- [ ] **Step 7: Simplify read-only values**
+- [ ] **Step 8: Make read-only values plain content**
 
-Change `ReadOnlyTextBlock` so it reads like content, not a disabled input:
+Change `ReadOnlyTextBlock` to:
 
 ```tsx
 <div
@@ -620,16 +638,16 @@ Change `ReadOnlyTextBlock` so it reads like content, not a disabled input:
 </div>
 ```
 
-Do not change editable control behavior.
+Do not change editable inputs.
 
-- [ ] **Step 8: Run GREEN**
+- [ ] **Step 9: Run GREEN**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunSidePanel.test.tsx src/pages/penyusun/sop/detail/components/__tests__/SOPHeaderSection.test.tsx
 pnpm typecheck
 ```
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add client/src/pages/penyusun/sop/detail/DetailSOPPenyusun.tsx client/src/pages/penyusun/sop/detail/components/DetailSopPenyusunSidePanel.tsx client/src/pages/penyusun/sop/detail/components/DetailSopMetadataPanel.tsx client/src/pages/penyusun/sop/detail/components/SOPHeaderSection.tsx client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunSidePanel.test.tsx client/src/pages/penyusun/sop/detail/components/__tests__/SOPHeaderSection.test.tsx
@@ -645,46 +663,56 @@ git commit -m "refactor(client): flatten SOP property inspector"
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/ProsedurEditorCells.test.tsx`
 
 **Interfaces:**
-- Keep every existing cell component name and prop signature.
-- Reuse `AutoResizeTextarea` for multiline text cells.
-- Keep `MutuWaktuCell` output contract `onChange(amount, unit)` and current encoded value parsing.
+- Keep all existing cell component prop signatures.
+- Use existing `AutoResizeTextarea`.
+- Keep `MutuWaktuCell.onChange(amount, unit)` and current encoded-value parsing.
 
-- [ ] **Step 1: Write failing compact-field tests**
-
-Render the four multiline cells and assert they are textareas with one-row compact behavior:
+- [ ] **Step 1: Write failing compact multiline tests**
 
 ```tsx
-render(<KegiatanCell value="Kegiatan pendek" onChange={vi.fn()} />)
-const kegiatan = screen.getByRole('textbox', { name: 'Kegiatan' })
-expect(kegiatan).toHaveAttribute('rows', '1')
-expect(kegiatan).toHaveClass('min-h-9')
-```
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  KegiatanCell,
+  MutuKelengkapanCell,
+  OutputCell,
+  KeteranganCell,
+  MutuWaktuCell,
+} from '../ProsedurEditorCells'
 
-Repeat for `Kelengkapan`, `Output`, and `Keterangan`.
-
-Add interaction:
-
-```tsx
-fireEvent.change(kegiatan, { target: { value: 'Baris 1\nBaris 2' } })
-expect(onChange).toHaveBeenCalledWith('Baris 1\nBaris 2')
-```
-
-- [ ] **Step 2: Write compound-time behavior test**
-
-```tsx
-const onChange = vi.fn()
-render(<MutuWaktuCell value="10 menit" onChange={onChange} />)
-
-expect(screen.getByRole('spinbutton', { name: 'Jumlah waktu' })).toHaveValue(10)
-expect(screen.getByRole('combobox', { name: 'Satuan waktu' })).toHaveValue('m')
-
-fireEvent.change(screen.getByRole('spinbutton', { name: 'Jumlah waktu' }), {
-  target: { value: '15' },
+it.each([
+  ['Kegiatan', KegiatanCell],
+  ['Kelengkapan', MutuKelengkapanCell],
+  ['Output', OutputCell],
+  ['Keterangan', KeteranganCell],
+])('%s memakai textarea satu-baris yang dapat auto-grow', (label, Cell) => {
+  const onChange = vi.fn()
+  render(<Cell value="Isi pendek" onChange={onChange} />)
+  const textbox = screen.getByRole('textbox', { name: label })
+  expect(textbox).toHaveAttribute('rows', '1')
+  expect(textbox).toHaveClass('min-h-9')
+  fireEvent.change(textbox, { target: { value: 'Baris 1\nBaris 2' } })
+  expect(onChange).toHaveBeenCalledWith('Baris 1\nBaris 2')
 })
-expect(onChange).toHaveBeenCalledWith('15', 'm')
 ```
 
-Assert both controls share one wrapper using `data-testid="procedure-time-control"` and that inner controls do not introduce independent outer borders.
+- [ ] **Step 2: Write failing compound-time test**
+
+```tsx
+it('menampilkan waktu sebagai satu compound control tanpa mengubah contract value', () => {
+  const onChange = vi.fn()
+  render(<MutuWaktuCell value="10 menit" onChange={onChange} />)
+
+  expect(screen.getByTestId('procedure-time-control')).toBeInTheDocument()
+  expect(screen.getByRole('spinbutton', { name: 'Jumlah waktu' })).toHaveValue(10)
+  expect(screen.getByRole('combobox', { name: 'Satuan waktu' })).toHaveValue('m')
+
+  fireEvent.change(screen.getByRole('spinbutton', { name: 'Jumlah waktu' }), {
+    target: { value: '15' },
+  })
+  expect(onChange).toHaveBeenCalledWith('15', 'm')
+})
+```
 
 - [ ] **Step 3: Run RED**
 
@@ -692,22 +720,9 @@ Assert both controls share one wrapper using `data-testid="procedure-time-contro
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/ProsedurEditorCells.test.tsx
 ```
 
-Expected: FAIL because multiline cells still use the general `Textarea` and the time wrapper has no explicit structural test hook.
+- [ ] **Step 4: Replace multiline cells with `AutoResizeTextarea`**
 
-- [ ] **Step 4: Introduce one procedure control class contract**
-
-At module scope:
-
-```ts
-const procedureControlClass =
-  'min-h-9 rounded-control border border-border-strong bg-surface px-2 py-1.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary'
-```
-
-Use equivalent sizing/padding for native selects. Do not globally modify application `Input`/`Textarea` primitives in this task.
-
-- [ ] **Step 5: Replace multiline `Textarea` cells with `AutoResizeTextarea`**
-
-Example:
+For Kegiatan/Kelengkapan/Output/Keterangan use:
 
 ```tsx
 <AutoResizeTextarea
@@ -720,15 +735,20 @@ Example:
 />
 ```
 
-Apply the same contract to Kelengkapan, Output, and Keterangan. Use `maxRows={5}` to keep a single row from expanding without bound inside the spreadsheet.
+Use the correct aria-label for each cell. Keep `maxRows={5}` for all four.
 
-- [ ] **Step 6: Align Type/Pelaksana selects**
+- [ ] **Step 5: Align Type and Pelaksana selects**
 
-Keep all existing option/normalization logic. Change only classes to the same 36px resting height, padding, radius, border, and focus treatment used by procedure text controls.
+Preserve option/normalization logic. Use:
 
-Decision helper text remains under `TypeCell` and may expand only that row.
+```text
+h-9 w-full rounded-control border border-border-strong bg-surface px-2 text-[13px]
+outline-none focus-visible:ring-2 focus-visible:ring-primary
+```
 
-- [ ] **Step 7: Make `MutuWaktuCell` visually one field**
+Decision helper text stays below Type.
+
+- [ ] **Step 6: Make time one visual field**
 
 Use:
 
@@ -739,16 +759,16 @@ Use:
 >
 ```
 
-Keep the amount input and unit select independently focusable. Remove their individual outer borders/rings; preserve an internal `border-r border-border` divider. Keep their existing aria-labels and parsing logic.
+Keep amount input and unit select separately focusable. Remove their individual outer borders/rings; retain an internal right divider on the amount control.
 
-- [ ] **Step 8: Run GREEN**
+- [ ] **Step 7: Run GREEN**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/ProsedurEditorCells.test.tsx
 pnpm typecheck
 ```
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add client/src/pages/penyusun/sop/detail/components/ProsedurEditorCells.tsx client/src/pages/penyusun/sop/detail/components/__tests__/ProsedurEditorCells.test.tsx
@@ -764,13 +784,12 @@ git commit -m "refactor(client): compact SOP procedure fields"
 - Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopProsedurEditor.test.tsx`
 
 **Interfaces:**
-- Preserve `DetailSOPProsedurEditorProps` and all `useProsedurEditor` handlers.
-- Preserve validation via `validateProsedurRows` + `formatProsedurValidationMessage` before `onDone`.
-- Preserve row menu behaviors and `DecisionStepDialog` data updates.
+- Preserve `DetailSOPProsedurEditorProps`.
+- Preserve all `useProsedurEditor` handlers, `DecisionStepDialog`, row menu actions, and validation-before-done behavior.
 
-- [ ] **Step 1: Write failing editor-structure test**
+- [ ] **Step 1: Write failing spreadsheet-structure test**
 
-Mock `useProsedurEditor` with real no-op handlers or render with one deterministic procedure row. Assert all columns remain:
+Mock `useToast` and render with three valid rows plus one implementer. Assert:
 
 ```tsx
 for (const heading of [
@@ -786,15 +805,13 @@ for (const heading of [
 ]) {
   expect(screen.getByRole('columnheader', { name: heading })).toBeInTheDocument()
 }
-```
-
-Assert desktop scroll region:
-
-```tsx
 expect(screen.getByTestId('procedure-editor-scroll')).toHaveClass('overflow-x-auto')
+expect(screen.getByRole('button', { name: 'Tambah langkah' })).toBeVisible()
+expect(screen.getByRole('button', { name: 'Selesai edit' })).toBeVisible()
+expect(screen.getByRole('button', { name: 'Aksi langkah 1' })).toBeVisible()
 ```
 
-Assert `Tambah langkah`, `Selesai edit`, and row action trigger remain reachable.
+Use row data matching the real `ProsedurRow` shape from existing tests/types; do not add a new model.
 
 - [ ] **Step 2: Run RED**
 
@@ -802,9 +819,9 @@ Assert `Tambah langkah`, `Selesai edit`, and row action trigger remain reachable
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopProsedurEditor.test.tsx
 ```
 
-- [ ] **Step 3: Set intentional intrinsic width and column sizing**
+- [ ] **Step 3: Set deterministic width and a discoverable scroll region**
 
-Use a desktop scroll wrapper:
+Change desktop wrapper/table to:
 
 ```tsx
 <div
@@ -814,7 +831,7 @@ Use a desktop scroll wrapper:
   <Table.Table className="min-w-[1460px] table-fixed">
 ```
 
-Use these starting widths:
+Use header widths:
 
 ```text
 No          48px
@@ -828,9 +845,9 @@ Keterangan  220px
 Aksi        48px
 ```
 
-Implement via `w-[...] min-w-[...]` on the relevant headers. Minor 8–16px tuning is allowed during implementation only if necessary to avoid clipping; do not reduce the table below the specified conceptual widths by compressing all fields.
+Implement with matching `w-[...] min-w-[...]` classes.
 
-- [ ] **Step 4: Make the table header sticky to its real scroll container**
+- [ ] **Step 4: Make header sticky and cell spacing compact**
 
 Use:
 
@@ -838,45 +855,34 @@ Use:
 <thead className="sticky top-0 z-10 border-b border-border bg-surface-subtle">
 ```
 
-Keep row cells vertically aligned at the top for multiline rows; keep No and action cells aligned centrally where appropriate.
+Use `px-1.5 py-1.5` for editable data cells. Keep No/action centered where appropriate. Do not add heavy per-cell borders.
 
-- [ ] **Step 5: Reduce spreadsheet cell chrome**
+- [ ] **Step 5: Preserve the existing row action menu exactly**
 
-Use consistent cell padding such as `px-1.5 py-1.5`. Keep the table's subtle row divider from `Table.BodyRow`; do not add a heavy border around every cell.
-
-Keep action trigger as the existing one `...` menu. Preserve exact menu actions:
-- `Atur cabang decision` for decision rows;
+Keep:
+- `Atur cabang decision` only for decision rows;
 - `Tambah langkah setelah ini`;
-- `Hapus langkah` when more than one row exists.
+- `Hapus langkah` only when more than one row exists.
 
-- [ ] **Step 6: Preserve mobile architecture but remove unnecessary shadow emphasis**
+Do not add always-visible action icons.
 
-Keep the current card-per-step mobile structure. Change only styling to the existing neutral surface vocabulary:
+- [ ] **Step 6: Keep mobile architecture, only reduce card emphasis**
 
-```tsx
-<section className="rounded-surface border border-border bg-surface p-3">
-```
-
-Do not change mobile navigation or field order.
-
-- [ ] **Step 7: Keep editor footer simple**
-
-Retain the two existing actions and callbacks. Use compact control sizing consistent with the workbench:
+Change mobile step wrapper to:
 
 ```tsx
-<Button variant="outline" size="sm" className="h-9" ...>
-  Tambah langkah
-</Button>
-<Button size="sm" className="h-9" ...>
-  Selesai edit
-</Button>
+<section key={row.id} className="rounded-surface border border-border bg-surface p-3">
 ```
 
-Do not add sticky footer behavior in this task.
+Keep field order and per-step editing behavior unchanged.
 
-- [ ] **Step 8: Verify validation behavior remains unchanged**
+- [ ] **Step 7: Keep footer actions but align density**
 
-Add a test with an invalid procedure model. Click `Selesai edit`; assert `showToast` receives `formatProsedurValidationMessage(...)` and `onDone` is not called. Then render valid data and assert `onDone` is called once.
+Use `size="sm" className="h-9"` for both `Tambah langkah` and `Selesai edit`. Keep callbacks unchanged. Do not add sticky footer behavior.
+
+- [ ] **Step 8: Add validation regression**
+
+In the same test file, render invalid rows, click `Selesai edit`, and assert `showToast` is called while `onDone` is not. Render valid rows and assert `onDone` is called once. Use existing `validateProsedurRows` expectations; do not bypass validation.
 
 - [ ] **Step 9: Run GREEN**
 
@@ -898,47 +904,50 @@ git commit -m "refactor(client): refine SOP procedure spreadsheet"
 
 **Files:**
 - Modify: `client/src/pages/penyusun/sop/detail/components/DetailSopPenyusunMain.tsx`
-- Create or extend: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunMain.test.tsx`
+- Create: `client/src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunMain.test.tsx`
 
 **Interfaces:**
-- Keep `activeTab`, `onActiveTabChange`, `isEditingSteps`, `setIsEditingSteps` props unchanged.
+- Keep `activeTab`, `onActiveTabChange`, `isEditingSteps`, and `setIsEditingSteps` props unchanged.
 - Keep `usePenyusunDiagramConfig`, idle diagram mounting, manual path state, reset handlers, and `SOPPreviewTemplate` props unchanged.
 
-- [ ] **Step 1: Write failing toolbar-state test**
+- [ ] **Step 1: Write failing pressed-state test**
 
-Mock diagram/workbench dependencies and assert:
+Mock `useSopEditor`, `usePenyusunWorkbench`, `usePenyusunDiagramConfig`, and `SOPPreviewTemplate` so the supplied toolbar is rendered. Assert editable mode has:
 
 ```tsx
-expect(screen.getByRole('group', { name: 'Kontrol dokumen SOP' })).toBeInTheDocument()
-expect(screen.getByRole('button', { name: /Langkah|Diagram/ })).toBeInTheDocument()
-expect(screen.getByRole('button', { name: 'Edit Manual' })).toBeInTheDocument()
+const langkah = screen.getByRole('button', { name: /Langkah|Diagram/ })
+const manual = screen.getByRole('button', { name: 'Edit Manual' })
+expect(langkah).toHaveAttribute('aria-pressed')
+expect(manual).toHaveAttribute('aria-pressed')
 ```
 
-When manual edit is active, assert `Reset semua path` appears. When read-only, assert editing controls are absent.
+When mocked manual mode is active, assert `Reset semua path` appears. When `isReadOnly=true`, assert edit controls are absent.
 
-- [ ] **Step 2: Run RED only if the test encodes the new active-state contract**
+- [ ] **Step 2: Run RED**
 
-The current behavior may already satisfy presence tests. Add a stable structural contract by asserting the toolbar does not use `shadow-surface` for active modes and instead uses one `aria-pressed` state on mode buttons.
+```bash
+pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunMain.test.tsx
+```
 
 - [ ] **Step 3: Add explicit pressed-state semantics**
 
-For the steps button:
+Add:
 
 ```tsx
 aria-pressed={isEditingSteps}
 ```
 
-For manual path button:
+to the steps-mode button and:
 
 ```tsx
 aria-pressed={diagramConfig.isEditingDiagramPaths}
 ```
 
-Keep existing click handlers.
+to `Edit Manual`.
 
-- [ ] **Step 4: Flatten visual treatment**
+- [ ] **Step 4: Flatten toolbar visuals**
 
-Change the toolbar wrapper to:
+Use:
 
 ```tsx
 <div
@@ -948,9 +957,9 @@ Change the toolbar wrapper to:
 >
 ```
 
-Active buttons use `bg-surface-muted text-foreground`; inactive buttons remain ghost. Remove the active `shadow-surface`/nested ring treatment.
+Active buttons use `bg-surface-muted text-foreground`; inactive buttons stay ghost. Remove active `shadow-surface` and nested ring treatment. Keep all click handlers and diagram state unchanged.
 
-- [ ] **Step 5: Run focused tests**
+- [ ] **Step 5: Run GREEN**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/detail/components/__tests__/DetailSopPenyusunMain.test.tsx
@@ -966,28 +975,42 @@ git commit -m "refactor(client): simplify SOP preview controls"
 
 ---
 
-## Task 7: End-to-end regression, code review, and merge gate
+## Task 7: Add E2E regression and run the full merge gate
 
 **Files:**
-- Modify existing SOP detail/editor Playwright spec if repository search finds one.
-- Otherwise create: `client/e2e/detail-sop-workbench-ui.spec.ts`
+- Create: `client/e2e/detail-sop-workbench-ui.spec.ts`
 
 **Interfaces:**
-- E2E asserts user-visible behavior only; do not assert Tailwind class names.
+- Use existing `users`, `createAuthenticatedApiContext`, `expectBackendAvailable`, `createDraftSopFixture`, and `loginViaUi` helpers.
+- E2E asserts user-visible behavior only.
 
-- [ ] **Step 1: Locate the current SOP detail editor journey**
+- [ ] **Step 1: Create a deterministic draft SOP fixture and open the workbench**
 
-Run:
+Use:
 
-```bash
-rg "penyusun/sop|Edit SOP|Selesai edit|Tambah langkah" client/e2e
+```ts
+import { expect, test } from '@playwright/test'
+import { users } from './fixtures/users'
+import { createAuthenticatedApiContext, expectBackendAvailable } from './support/api'
+import { createDraftSopFixture } from './support/e2e-flow'
+import { loginViaUi } from './support/app'
+
+test.describe('Detail SOP workbench UI', () => {
+  test.beforeEach(async ({ request }) => {
+    await expectBackendAvailable(request)
+  })
+
+  test('breadcrumb, properti, dan inline editor tetap operasional', async ({ page }) => {
+    const api = await createAuthenticatedApiContext(users.penyusun)
+    try {
+      const fixture = await createDraftSopFixture(api, 'WORKBENCH-UI')
+      await loginViaUi(page, users.penyusun)
+      await page.goto(`/penyusun/sop/${fixture.detailSopId}`)
 ```
 
-If an existing spec already covers the editor, extend that exact file. If none exists, create `client/e2e/detail-sop-workbench-ui.spec.ts` using the repository's existing login/fixture helpers.
+Close the `try` with `await api.dispose()` in `finally`, following existing E2E patterns.
 
-- [ ] **Step 2: Add breadcrumb/back regression**
-
-After opening the Penyusun SOP detail page:
+- [ ] **Step 2: Assert breadcrumb replaces standalone back**
 
 ```ts
 await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
@@ -995,17 +1018,27 @@ await expect(page.getByRole('link', { name: 'Manajemen SOP' })).toBeVisible()
 await expect(page.getByTitle('Kembali')).toHaveCount(0)
 ```
 
-- [ ] **Step 3: Add workbench hierarchy regression**
+- [ ] **Step 3: Assert command bar hierarchy**
 
-Assert the SOP name is visible in the workspace command bar and the primary workflow action remains available according to the fixture's status/role. Open `Aksi dokumen lainnya` when present and assert permitted print/version actions remain reachable.
+```ts
+await expect(page.getByText(fixture.title).first()).toBeVisible()
+await expect(page.getByRole('button', { name: 'Selesai' })).toBeVisible()
+```
 
-- [ ] **Step 4: Add property inspector regression**
+Do not require secondary print/version items for a draft fixture because their domain conditions are intentionally false.
 
-Open/select the first panel tab and assert `Properti` is visible in editable mode. Assert `Nama SOP`, `Nomor SOP`, and at least one add action such as `Tambah dasar hukum` remain reachable.
+- [ ] **Step 4: Assert property inspector**
 
-- [ ] **Step 5: Add procedure spreadsheet regression**
+```ts
+await expect(page.getByText('Properti')).toBeVisible()
+await expect(page.getByText('Identitas SOP')).toBeVisible()
+await expect(page.getByDisplayValue(fixture.title)).toBeVisible()
+await expect(page.getByDisplayValue(fixture.number)).toBeVisible()
+```
 
-Enter `Langkah` editing mode. Assert:
+- [ ] **Step 5: Assert inline procedure editor remains the interaction model**
+
+Click the workbench button whose accessible name is `Langkah`, then:
 
 ```ts
 await expect(page.getByRole('columnheader', { name: 'Kegiatan' })).toBeVisible()
@@ -1014,30 +1047,27 @@ await expect(page.getByRole('button', { name: 'Tambah langkah' })).toBeVisible()
 await expect(page.getByRole('button', { name: 'Selesai edit' })).toBeVisible()
 ```
 
-Update one existing row field and verify the field remains in-place; do not change fixture business status merely to test styling.
+Do not submit `Selesai edit` in this E2E fixture if the draft has incomplete procedure data; unit tests own validation behavior.
 
 - [ ] **Step 6: Run focused client verification**
 
-From `client/`:
-
 ```bash
+cd client
 pnpm typecheck
 pnpm lint
 pnpm test
 pnpm build
 ```
 
-All four commands must exit successfully.
+All four commands must pass.
 
-- [ ] **Step 7: Run relevant Playwright coverage when local prerequisites are available**
-
-Run the existing extended spec or:
+- [ ] **Step 7: Run the new Playwright spec when local prerequisites are available**
 
 ```bash
 pnpm exec playwright test e2e/detail-sop-workbench-ui.spec.ts
 ```
 
-If local infrastructure is unavailable, record the exact blocker in the PR body and rely on mandatory repository CI for the E2E gate; do not claim local E2E success.
+If local infrastructure is unavailable, record the exact blocker in the PR body and rely on mandatory repository CI; do not claim local E2E success.
 
 - [ ] **Step 8: Final stale-pattern scans**
 
@@ -1052,23 +1082,23 @@ rg "overflow-x-auto" client/src/pages/penyusun/sop/detail/components/DetailSopPe
 Expected:
 - no `DetailPageLayout` back props;
 - no `MetadataFieldCard` helper;
-- no generic dominant `Dokumen SOP` label in the SOP command bar;
-- no wheel-remapped/horizontal-scroll command bar.
+- no generic dominant `Dokumen SOP` heading in the command bar;
+- no wheel-remapped or horizontally scrolling command bar.
 
-`overflow-x-auto` remains expected in the procedure editor itself.
+`overflow-x-auto` remains expected in `DetailSopProsedurEditor.tsx`.
 
-- [ ] **Step 9: Request code review against the spec**
+- [ ] **Step 9: Request code review against the approved spec**
 
-Review the branch for:
-- accidental business/API changes;
+Review for:
+- accidental API/business changes;
 - lost metadata fields or handlers;
-- permission/role regressions;
+- role/permission regressions;
 - autosave/live-region regressions;
 - procedure validation regressions;
-- mobile editor behavior changes beyond styling;
-- unnecessary new abstractions/dependencies.
+- mobile architecture changes beyond styling;
+- new dependencies or abstractions without necessity.
 
-Fix critical/important findings before PR completion.
+Fix all critical/important findings before PR completion.
 
 - [ ] **Step 10: Open PR**
 
@@ -1078,9 +1108,11 @@ Title:
 refactor(client): redesign detail SOP workbench
 ```
 
-Body summary:
+Body:
 
 ```text
+Implements `.agent/specs/2026-08-14-detail-sop-workbench-ui-design.md` via `.agent/plans/2026-08-14-detail-sop-workbench-ui-implementation.md`.
+
 - use clickable breadcrumbs as the only visible back navigation on authenticated detail workspaces;
 - simplify the Penyusun SOP command bar around document identity, autosave, one primary workflow action, and secondary document actions;
 - convert the SOP metadata panel from nested cards into a compact property inspector;
@@ -1088,15 +1120,13 @@ Body summary:
 - simplify preview/edit controls without changing diagram state or business workflow.
 ```
 
-Mention the approved design and implementation-plan paths.
-
 - [ ] **Step 11: Require full repository CI success**
 
-Fetch the PR workflow run for the exact head SHA. Require overall success for the repository's mandatory jobs, including client quality, server quality, database migration invariants, minimal production config, critical E2E business journeys, and container builds when those jobs are part of the normal PR workflow.
+Fetch the PR workflow run for the exact head SHA and require normal mandatory jobs to succeed: client quality, server quality, database migration invariants, minimal production config, critical E2E business journeys, and container builds when present in the PR workflow.
 
-- [ ] **Step 12: Squash merge only after CI success and no unresolved blocker**
+- [ ] **Step 12: Squash merge and verify**
 
-Use squash merge. Verify the PR afterward and require:
+Squash merge only after CI success and no unresolved blocker. Fetch PR metadata afterward and require:
 
 ```text
 state = closed
@@ -1112,7 +1142,7 @@ Then fetch `main` and report the resulting squash commit SHA.
 
 - Authenticated detail pages do not render a standalone back button above the workspace.
 - Every migrated detail page has a deterministic clickable ancestor breadcrumb.
-- `DetailPageLayout` no longer exposes `backTo`, `backSize`, or generic local `actions` ownership.
+- `DetailPageLayout` no longer exposes `description`, `backTo`, `backSize`, or generic local `actions` ownership.
 - Penyusun SOP command bar uses the SOP identity rather than a dominant generic `Dokumen SOP` label.
 - Command bar has no horizontal scrolling or vertical-wheel-to-horizontal remapping.
 - Autosave remains announced via live-region semantics; saved is subtle, error exposes retry.
@@ -1125,9 +1155,9 @@ Then fetch `main` and report the resulting squash commit SHA.
 - Procedure editor remains an inline desktop table and preserves the existing mobile structure.
 - Kegiatan, Kelengkapan, Output, and Keterangan start compact and auto-grow.
 - Tipe/Pelaksana/select controls share the same resting height and focus treatment.
-- Waktu remains two independently focusable inputs but reads visually as one compound control.
+- Waktu remains two independently focusable controls but reads visually as one compound field.
 - Procedure columns use intentional widths and the desktop editor has discoverable horizontal scrolling.
-- Procedure table header remains visible while scrolling through long data.
+- Procedure table header remains visible while scrolling long data.
 - Row menu, decision configuration, add/delete row behavior, and validation-before-done remain unchanged.
 - Preview/manual-path controls expose clear pressed-state semantics and retain all existing diagram behavior.
-- Client typecheck, lint, unit tests, production build, relevant Playwright coverage, and mandatory repository CI pass before squash merge.
+- Client typecheck, lint, unit tests, production build, the new detail-workbench E2E, and mandatory repository CI pass before squash merge.
