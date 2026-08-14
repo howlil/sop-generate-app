@@ -6,9 +6,10 @@ import {
   Trash2,
   History,
 } from "lucide-react";
+import { DataSurface } from "@/components/data/data-surface";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
-import { SearchToolbar } from "@/components/ui/search-toolbar";
+import { SearchInput } from "@/components/ui/search-input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
@@ -29,7 +30,6 @@ import { Badge } from "@/components/ui/badge";
 import { ROUTES } from "@/utils/constants";
 import type { PenyusunPublikItem, TimPenyusunOpdGrup } from "@/types/dto/tim.dto";
 
-/** Baris tabel: item API + OPD induk */
 type PenyusunBaris = PenyusunPublikItem & { opdId: string };
 
 function flattenGrup(grup: TimPenyusunOpdGrup[]): PenyusunBaris[] {
@@ -187,120 +187,128 @@ export function ManajemenPenyusun() {
         },
       ]}
       title="Manajemen penyusun"
-      description="Kelola pengguna peran Penyusun dan PJ Penyusun per OPD. Satu PJ Penyusun aktif per OPD."
-      actions={
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() => {
-            setFormData(emptyForm());
-            setCreateOpdId(undefined);
-            setIsCreateOpen(true);
-          }}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Tambah Penyusun
-        </Button>
-      }
-      toolbar={
-        <SearchToolbar
-          searchPlaceholder="Cari nama, NIP, atau email..."
-          searchValue={searchQuery}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
-        />
-      }
     >
-      {isLoading ? (
-        <LoadingState message="Memuat data penyusun…" />
-      ) : (
-        <>
-          <ExpandableGroupedTable
-            groups={grup}
-            getGroupId={(g) => g.opdId}
-            renderGroupTitle={(g) => g.namaOpd}
-            renderGroupMeta={(g) => `${g.penyusun.length} penyusun`}
-            renderRows={(g) => (
-              <Table.Table>
-                <thead>
-                  <Table.HeadRow>
-                    <Table.Th>OPD / Penyusun</Table.Th>
-                    <Table.Th>NIP</Table.Th>
-                    <Table.Th>Jabatan</Table.Th>
-                    <Table.Th>Email</Table.Th>
-                    <Table.Th>No. HP</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                    <Table.ActionTh>Aksi</Table.ActionTh>
-                  </Table.HeadRow>
-                </thead>
-                <tbody>
-                  {g.penyusun.map((p) => {
-                    const row: PenyusunBaris = { ...p, opdId: g.opdId };
-                    return (
-                      <Table.BodyRow key={p.id}>
-                        <Table.Td>
-                          <PersonNameCell name={p.nama} avatarText={p.nama[0]}>
-                            <Badge variant="outline" className="text-[10px] w-fit">
-                              {p.peran === "PJ_PENYUSUN"
-                                ? "PJ Penyusun"
-                                : "Penyusun"}
-                            </Badge>
-                          </PersonNameCell>
-                        </Table.Td>
-                        <Table.Td>
-                          <PersonMonoCell value={p.nip} />
-                        </Table.Td>
-                        <Table.Td>
-                          <PersonTextCell value={p.jabatan} />
-                        </Table.Td>
-                        <Table.Td>
-                          <PersonTextCell value={p.email} />
-                        </Table.Td>
-                        <Table.Td>
-                          <PersonTextCell value={p.nohp} />
-                        </Table.Td>
-                        <Table.Td>
-                          <PersonStatusCell status={p.status} />
-                        </Table.Td>
-                        <Table.ActionTd>
-                          <RowActions
-                            wrap
-                            actions={[
-                              {
-                                icon: History,
-                                title: "Riwayat OPD",
-                                onClick: () => setRiwayatFor(row),
-                              },
-                              {
-                                icon: Edit,
-                                title: "Edit",
-                                onClick: () => openEdit(row),
-                              },
-                              {
-                                icon: Trash2,
-                                title: "Hapus permanen",
-                                destructive: true,
-                                onClick: () => setHapusPermanenId(p.id),
-                              },
-                            ]}
-                          />
-                        </Table.ActionTd>
-                      </Table.BodyRow>
-                    );
-                  })}
-                </tbody>
-              </Table.Table>
-            )}
-          />
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Toolbar>
+            <SearchInput
+              placeholder="Cari nama, NIP, atau email..."
+              aria-label="Cari nama, NIP, atau email..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <DataSurface.Actions>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={() => {
+                  setFormData(emptyForm());
+                  setCreateOpdId(undefined);
+                  setIsCreateOpen(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Tambah Penyusun
+              </Button>
+            </DataSurface.Actions>
+          </DataSurface.Toolbar>
+        </DataSurface.Header>
 
-          {barisFlat.length === 0 && (
-            <div className="py-8 text-center text-muted-foreground text-sm">
-              {searchQuery.trim()
-                ? "Tidak ada penyusun yang cocok dengan pencarian."
-                : "Belum ada data penyusun. Klik Tambah Penyusun untuk menambah."}
-            </div>
-          )}
-        </>
-      )}
+        {isLoading ? (
+          <div className="p-card">
+            <LoadingState message="Memuat data penyusun…" />
+          </div>
+        ) : (
+          <>
+            <ExpandableGroupedTable
+              groups={grup}
+              getGroupId={(g) => g.opdId}
+              renderGroupTitle={(g) => g.namaOpd}
+              renderGroupMeta={(g) => `${g.penyusun.length} penyusun`}
+              surfaceMode="embedded"
+              renderRows={(g) => (
+                <Table.Table>
+                  <thead>
+                    <Table.HeadRow>
+                      <Table.Th>OPD / Penyusun</Table.Th>
+                      <Table.Th>NIP</Table.Th>
+                      <Table.Th>Jabatan</Table.Th>
+                      <Table.Th>Email</Table.Th>
+                      <Table.Th>No. HP</Table.Th>
+                      <Table.Th>Status</Table.Th>
+                      <Table.ActionTh>Aksi</Table.ActionTh>
+                    </Table.HeadRow>
+                  </thead>
+                  <tbody>
+                    {g.penyusun.map((p) => {
+                      const row: PenyusunBaris = { ...p, opdId: g.opdId };
+                      return (
+                        <Table.BodyRow key={p.id}>
+                          <Table.Td>
+                            <PersonNameCell name={p.nama} avatarText={p.nama[0]}>
+                              <Badge variant="outline" className="text-[10px] w-fit">
+                                {p.peran === "PJ_PENYUSUN"
+                                  ? "PJ Penyusun"
+                                  : "Penyusun"}
+                              </Badge>
+                            </PersonNameCell>
+                          </Table.Td>
+                          <Table.Td>
+                            <PersonMonoCell value={p.nip} />
+                          </Table.Td>
+                          <Table.Td>
+                            <PersonTextCell value={p.jabatan} />
+                          </Table.Td>
+                          <Table.Td>
+                            <PersonTextCell value={p.email} />
+                          </Table.Td>
+                          <Table.Td>
+                            <PersonTextCell value={p.nohp} />
+                          </Table.Td>
+                          <Table.Td>
+                            <PersonStatusCell status={p.status} />
+                          </Table.Td>
+                          <Table.ActionTd>
+                            <RowActions
+                              wrap
+                              actions={[
+                                {
+                                  icon: History,
+                                  title: "Riwayat OPD",
+                                  onClick: () => setRiwayatFor(row),
+                                },
+                                {
+                                  icon: Edit,
+                                  title: "Edit",
+                                  onClick: () => openEdit(row),
+                                },
+                                {
+                                  icon: Trash2,
+                                  title: "Hapus permanen",
+                                  destructive: true,
+                                  onClick: () => setHapusPermanenId(p.id),
+                                },
+                              ]}
+                            />
+                          </Table.ActionTd>
+                        </Table.BodyRow>
+                      );
+                    })}
+                  </tbody>
+                </Table.Table>
+              )}
+            />
+
+            {barisFlat.length === 0 ? (
+              <div className="px-card py-8 text-center text-sm text-muted-foreground">
+                {searchQuery.trim()
+                  ? `Tidak ada penyusun yang cocok dengan “${searchQuery.trim()}”.`
+                  : "Belum ada data penyusun. Klik Tambah Penyusun untuk menambah."}
+              </div>
+            ) : null}
+          </>
+        )}
+      </DataSurface.Root>
 
       <PenyusunFormDialog
         mode="create"

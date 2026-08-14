@@ -21,7 +21,6 @@ export function BeritaAcaraKoordinatorPage() {
     <ListPageLayout
       breadcrumb={[{ label: 'PJ Penyusun' }, { label: 'Berita Acara' }]}
       title="Berita Acara Evaluasi"
-      description="Kelola tanda tangan Berita Acara dan akses arsip pengajuan evaluasi yang sudah selesai."
     >
       <div className="space-y-4">
         {error && (

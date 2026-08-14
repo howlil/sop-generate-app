@@ -9,10 +9,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
-import { SearchToolbar } from "@/components/ui/search-toolbar";
+import { SearchInput } from "@/components/ui/search-input";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
+import { ActiveFilterChips } from "@/components/data/active-filter-chips";
+import { DataSurface } from "@/components/data/data-surface";
 import { FilterDropdownButton } from "@/components/data/filter-dropdown-button";
 import { DateRangeFilterFields } from "@/pages/penyusun/sop/components/date-range-filter-fields";
 import { RowActions } from "@/components/data/row-actions";
@@ -26,6 +28,7 @@ import {
 import { ROUTES } from "@/utils/constants";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import { SOPStatusFilterSelect } from "@/components/sop/sop-status-filter-select";
+import { SOP_STATUS_FILTER_OPTIONS } from "@/lib/status/sop-status.config";
 import { BuatSOPDialog } from "@/pages/penyusun/sop/components/BuatSOPDialog";
 import { BukaPengajuanEvaluasiDialog } from "@/pages/penyusun/sop/components/BukaPengajuanEvaluasiDialog";
 import {
@@ -41,6 +44,13 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { SopDaftarRow } from "@/types/dto/sop.dto";
 import { canHapusSopDraftAwal, useHapusSopDraftAwal } from "@/api/sop";
+
+const formatFilterDate = (value: string) =>
+  new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
 
 export function ManajemenSOP() {
   useDocumentTitle("Manajemen SOP — Penyusun");
@@ -73,171 +83,229 @@ export function ManajemenSOP() {
   const [sopDraftToDelete, setSopDraftToDelete] = useState<SopDaftarRow | null>(null);
   const hapusSopDraft = useHapusSopDraftAwal();
 
+  const statusLabel = filters.filterStatus
+    ? SOP_STATUS_FILTER_OPTIONS.find((option) => option.value === filters.filterStatus)?.label ??
+      filters.filterStatus
+    : null;
+  const activeFilterItems = [
+    ...(filters.filterStatus && filters.filterStatus !== "all"
+      ? [
+          {
+            id: "status",
+            label: `Status: ${statusLabel}`,
+            onRemove: () => filters.setStatusFilter(null),
+          },
+        ]
+      : []),
+    ...(filters.filterTanggalDari
+      ? [
+          {
+            id: "tanggal-dari",
+            label: `Dari: ${formatFilterDate(filters.filterTanggalDari)}`,
+            onRemove: () => filters.setFilterTanggalDari(null),
+          },
+        ]
+      : []),
+    ...(filters.filterTanggalSampai
+      ? [
+          {
+            id: "tanggal-sampai",
+            label: `Sampai: ${formatFilterDate(filters.filterTanggalSampai)}`,
+            onRemove: () => filters.setFilterTanggalSampai(null),
+          },
+        ]
+      : []),
+  ];
+  const hasSearch = filters.searchQuery.trim().length > 0;
+  const hasAdvancedFilters = filters.activeFilterCount > 0;
+
   return (
     <ListPageLayout
       breadcrumb={[{ label: "Manajemen SOP" }]}
       title="Manajemen SOP"
-      description="Daftar SOP yang Anda kelola. Penyusun menyelesaikan penyusunan lewat tombol Selesai di editor (status Menunggu pengajuan evaluasi). PJ Penyusun membuka pengajuan evaluasi ke Biro lewat tombol di halaman ini. Klik baris untuk melihat atau mengedit detail SOP."
-      actions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {canPjPenyusunRunCoordinatorActions(role ?? "") ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs"
-              onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
-            >
-              <Send className="h-3.5 w-3.5" />
-              Ajukan evaluasi SOP
-            </Button>
-          ) : null}
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => setIsBuatSOPDialogOpen(true)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Buat SOP Baru
-          </Button>
-        </div>
-      }
-      toolbar={
-        <SearchToolbar
-          searchPlaceholder="Cari judul atau nomor SOP..."
-          searchValue={filters.searchQuery}
-          onSearchChange={(e) => filters.setSearchQuery(e.target.value)}
-        >
-          <FilterDropdownButton
-            open={filters.isFilterOpen}
-            onOpenChange={filters.setIsFilterOpen}
-            activeCount={filters.activeFilterCount}
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-foreground">
-                  Filter SOP
-                </p>
-                {filters.activeFilterCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs text-blue-600"
-                    onClick={filters.clearFilters}
-                  >
-                    Reset
-                  </Button>
-                )}
-              </div>
-              <FormField label="Status" htmlFor={filterStatusId}>
-                <SOPStatusFilterSelect
-                  id={filterStatusId}
-                  value={filters.filterStatus ?? "all"}
-                  onValueChange={filters.setStatusFilter}
-                />
-              </FormField>
-              <FormField label="Terakhir diperbarui">
-                <DateRangeFilterFields
-                  fromId={filterTanggalDariId}
-                  toId={filterTanggalSampaiId}
-                  fromValue={filters.filterTanggalDari ?? ""}
-                  toValue={filters.filterTanggalSampai ?? ""}
-                  onFromChange={filters.setFilterTanggalDari}
-                  onToChange={filters.setFilterTanggalSampai}
-                />
-              </FormField>
-            </div>
-          </FilterDropdownButton>
-        </SearchToolbar>
-      }
     >
-      <Table.Paginated data={filteredList} label="SOP">
-        {(pageData) => (
-          <Table.Root>
-            <Table.Table>
-              <thead>
-                <Table.HeadRow>
-                  <Table.Th>Judul SOP</Table.Th>
-                  <Table.Th>Nomor SOP</Table.Th>
-                  <Table.Th>Versi</Table.Th>
-                  <Table.Th>Pembuat</Table.Th>
-                  <Table.Th>Terakhir diedit</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.ActionTh>Aksi</Table.ActionTh>
-                </Table.HeadRow>
-              </thead>
-              <tbody>
-                {pageData.length === 0 ? (
-                  <EmptyState
-                    asTableRow
-                    colSpan={7}
-                    icon={<FileText />}
-                    title="Tidak ada SOP ditemukan"
-                    description="Coba ubah filter atau kata kunci pencarian"
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Toolbar>
+            <SearchInput
+              placeholder="Cari judul atau nomor SOP..."
+              aria-label="Cari judul atau nomor SOP..."
+              value={filters.searchQuery}
+              onChange={(event) => filters.setSearchQuery(event.target.value)}
+            />
+            <FilterDropdownButton
+              open={filters.isFilterOpen}
+              onOpenChange={filters.setIsFilterOpen}
+              activeCount={filters.activeFilterCount}
+            >
+              <div className="space-y-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-foreground">
+                    Filter SOP
+                  </p>
+                  {filters.activeFilterCount > 0 ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={filters.clearFilters}
+                    >
+                      Reset
+                    </Button>
+                  ) : null}
+                </div>
+                <FormField label="Status" htmlFor={filterStatusId}>
+                  <SOPStatusFilterSelect
+                    id={filterStatusId}
+                    value={filters.filterStatus ?? "all"}
+                    onValueChange={filters.setStatusFilter}
                   />
-                ) : (
-                  pageData.map((sop) => (
-                    <Table.BodyRow key={sop.id}>
-                      <Table.Td>
-                        <SopPrimaryCell title={sop.judul} />
-                      </Table.Td>
-                      <Table.Td>
-                        <SopNumberCell value={sop.nomorSop} />
-                      </Table.Td>
-                      <Table.Td>
-                        <SopVersionCell value={sop.versi} />
-                      </Table.Td>
-                      <Table.Td>
-                        <p className="text-secondary-foreground">{sop.pembuat ?? "—"}</p>
-                      </Table.Td>
-                      <Table.Td>
-                        <SopUpdatedByCell
-                          name={sop.terakhirDiedit.nama}
-                          date={sop.terakhirDiedit.waktu}
-                        />
-                      </Table.Td>
-                      <Table.Td>
-                        <SopStatusCell
-                          status={sop.status}
-                          label={sop.statusLabel}
-                        />
-                      </Table.Td>
-                      <Table.ActionTd>
-                        <RowActions
-                          actions={[
-                            sop.status && canEditSop(sop.status as StatusSOP)
-                              ? {
-                                  icon: Edit,
-                                  to: ROUTES.PENYUSUN.DETAIL_SOP,
-                                  params: { id: sop.detailSopId ?? sop.id },
-                                  title: "Edit",
-                                }
-                              : {
-                                  icon: Eye,
-                                  to: ROUTES.PENYUSUN.DETAIL_SOP,
-                                  params: { id: sop.detailSopId ?? sop.id },
-                                  title: "Lihat",
-                                },
-                            ...(canHapusSopDraftAwal(sop)
-                              ? [
-                                  {
-                                    icon: Trash2,
-                                    title: "Hapus draft SOP",
-                                    destructive: true,
-                                    onClick: () => setSopDraftToDelete(sop),
+                </FormField>
+                <FormField label="Terakhir diperbarui">
+                  <DateRangeFilterFields
+                    fromId={filterTanggalDariId}
+                    toId={filterTanggalSampaiId}
+                    fromValue={filters.filterTanggalDari ?? ""}
+                    toValue={filters.filterTanggalSampai ?? ""}
+                    onFromChange={filters.setFilterTanggalDari}
+                    onToChange={filters.setFilterTanggalSampai}
+                  />
+                </FormField>
+              </div>
+            </FilterDropdownButton>
+            <DataSurface.Actions>
+              {canPjPenyusunRunCoordinatorActions(role ?? "") ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  Ajukan evaluasi SOP
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={() => setIsBuatSOPDialogOpen(true)}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Buat SOP Baru
+              </Button>
+            </DataSurface.Actions>
+          </DataSurface.Toolbar>
+          {activeFilterItems.length > 0 ? (
+            <DataSurface.FilterRow>
+              <ActiveFilterChips
+                items={activeFilterItems}
+                onClearAll={filters.clearFilters}
+              />
+            </DataSurface.FilterRow>
+          ) : null}
+        </DataSurface.Header>
+
+        <Table.Paginated data={filteredList} label="SOP" surfaceMode="embedded">
+          {(pageData) => (
+            <Table.Root>
+              <Table.Table>
+                <thead>
+                  <Table.HeadRow>
+                    <Table.Th>Judul SOP</Table.Th>
+                    <Table.Th>Nomor SOP</Table.Th>
+                    <Table.Th>Versi</Table.Th>
+                    <Table.Th>Pembuat</Table.Th>
+                    <Table.Th>Terakhir diedit</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.ActionTh>Aksi</Table.ActionTh>
+                  </Table.HeadRow>
+                </thead>
+                <tbody>
+                  {pageData.length === 0 ? (
+                    <EmptyState
+                      asTableRow
+                      colSpan={7}
+                      icon={<FileText />}
+                      title={
+                        hasSearch
+                          ? `Tidak ada SOP yang cocok dengan “${filters.searchQuery.trim()}”`
+                          : hasAdvancedFilters
+                            ? "Tidak ada SOP dengan filter yang dipilih"
+                            : "Belum ada SOP"
+                      }
+                      description={
+                        hasSearch
+                          ? "Ubah atau hapus kata kunci pencarian."
+                          : hasAdvancedFilters
+                            ? "Hapus atau ubah filter untuk memperluas hasil."
+                            : "Buat SOP baru untuk mulai menyusun dokumen."
+                      }
+                    />
+                  ) : (
+                    pageData.map((sop) => (
+                      <Table.BodyRow key={sop.id}>
+                        <Table.Td>
+                          <SopPrimaryCell title={sop.judul} />
+                        </Table.Td>
+                        <Table.Td>
+                          <SopNumberCell value={sop.nomorSop} />
+                        </Table.Td>
+                        <Table.Td>
+                          <SopVersionCell value={sop.versi} />
+                        </Table.Td>
+                        <Table.Td>
+                          <p className="text-secondary-foreground">{sop.pembuat ?? "—"}</p>
+                        </Table.Td>
+                        <Table.Td>
+                          <SopUpdatedByCell
+                            name={sop.terakhirDiedit.nama}
+                            date={sop.terakhirDiedit.waktu}
+                          />
+                        </Table.Td>
+                        <Table.Td>
+                          <SopStatusCell
+                            status={sop.status}
+                            label={sop.statusLabel}
+                          />
+                        </Table.Td>
+                        <Table.ActionTd>
+                          <RowActions
+                            actions={[
+                              sop.status && canEditSop(sop.status as StatusSOP)
+                                ? {
+                                    icon: Edit,
+                                    to: ROUTES.PENYUSUN.DETAIL_SOP,
+                                    params: { id: sop.detailSopId ?? sop.id },
+                                    title: "Edit",
+                                  }
+                                : {
+                                    icon: Eye,
+                                    to: ROUTES.PENYUSUN.DETAIL_SOP,
+                                    params: { id: sop.detailSopId ?? sop.id },
+                                    title: "Lihat",
                                   },
-                                ]
-                              : []),
-                          ]}
-                        />
-                      </Table.ActionTd>
-                    </Table.BodyRow>
-                  ))
-                )}
-              </tbody>
-            </Table.Table>
-          </Table.Root>
-        )}
-      </Table.Paginated>
+                              ...(canHapusSopDraftAwal(sop)
+                                ? [
+                                    {
+                                      icon: Trash2,
+                                      title: "Hapus draft SOP",
+                                      destructive: true,
+                                      onClick: () => setSopDraftToDelete(sop),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </Table.ActionTd>
+                      </Table.BodyRow>
+                    ))
+                  )}
+                </tbody>
+              </Table.Table>
+            </Table.Root>
+          )}
+        </Table.Paginated>
+      </DataSurface.Root>
 
       <BukaPengajuanEvaluasiDialog
         open={isBukaPengajuanEvaluasiDialogOpen}

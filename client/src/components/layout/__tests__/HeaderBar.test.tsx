@@ -1,57 +1,32 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-
-vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
-vi.mock('@/hooks/useAppRole', () => ({
-  useAppRole: () => ({
-    role: 'PJ_PENYUSUN',
-    getRoleLabel: () => 'PJ Penyusun',
-    getRoleNip: () => '',
-    getRoleDisplayName: () => 'Pengguna Uji',
-  }),
-}))
-
-vi.mock('@/api/auth', () => ({
-  useAuth: () => ({ logout: vi.fn() }),
-}))
+import { render, screen, within } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
 
 import { HeaderBar } from '@/components/layout/HeaderBar'
 import {
   PageHeaderProvider,
   SetPageHeader,
-  type SetPageHeaderProps,
 } from '@/components/layout/PageHeaderProvider'
 
 describe('HeaderBar', () => {
-  it('menampilkan breadcrumb, judul, dan deskripsi halaman dalam hierarki yang sama', async () => {
-    const headerProps = {
-      breadcrumb: [{ label: 'PJ Penyusun' }, { label: 'Berita Acara' }],
-      title: 'Berita Acara Evaluasi',
-      description: 'Kelola berita acara hasil evaluasi SOP.',
-    } as SetPageHeaderProps & { description: string }
-
+  it('menampilkan breadcrumb sebagai identitas visual dan menjaga judul hanya untuk pembaca layar', async () => {
     render(
       <PageHeaderProvider>
         <HeaderBar />
-        <SetPageHeader {...headerProps} />
+        <SetPageHeader
+          breadcrumb={[{ label: 'Penyusun' }, { label: 'Manajemen SOP' }]}
+          title="Manajemen SOP"
+        />
       </PageHeaderProvider>,
     )
 
-    expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument()
-    expect(screen.getByText('PJ Penyusun')).toBeInTheDocument()
-    expect(screen.getByText('Berita Acara')).toHaveAttribute('aria-current', 'page')
-    expect(
-      screen.getByRole('heading', { name: 'Berita Acara Evaluasi' }),
-    ).toHaveClass('text-ui-title')
-    expect(screen.getByText('Kelola berita acara hasil evaluasi SOP.')).toHaveClass(
-      'text-muted-foreground',
-    )
+    const breadcrumb = await screen.findByRole('navigation', { name: 'Breadcrumb' })
+    expect(within(breadcrumb).getByText('Penyusun')).toBeInTheDocument()
+    expect(within(breadcrumb).getByText('Manajemen SOP')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('heading', { name: 'Manajemen SOP' })).toHaveClass('sr-only')
+    expect(screen.queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
   })
 
-  it('tidak membuat breadcrumb kosong ketika breadcrumb tidak diberikan', async () => {
+  it('tidak membuat breadcrumb kosong dan tetap menyediakan judul semantik', async () => {
     render(
       <PageHeaderProvider>
         <HeaderBar />
@@ -59,7 +34,8 @@ describe('HeaderBar', () => {
       </PageHeaderProvider>,
     )
 
-    expect(await screen.findByRole('heading', { name: 'Ringkasan' })).toBeInTheDocument()
+    const heading = await screen.findByRole('heading', { name: 'Ringkasan' })
+    expect(heading).toHaveClass('sr-only')
     expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).not.toBeInTheDocument()
   })
 })

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { Users, Plus, Edit, Trash2 } from 'lucide-react'
+import { DataSurface } from '@/components/data/data-surface'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { SearchToolbar } from '@/components/ui/search-toolbar'
+import { SearchInput } from '@/components/ui/search-input'
 import { PersonFormDialog } from '@/components/forms/person-form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
@@ -150,114 +151,119 @@ export function ManajemenEvaluator() {
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen Evaluator' }]}
       title="Manajemen Evaluator"
-      description="Kelola pengguna peran Evaluator pada OPD PJ Evaluator Organisasi (akses PJ Evaluator)."
-      actions={
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() => {
-            resetForm()
-            setIsCreateDialogOpen(true)
-          }}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Tambah Anggota
-        </Button>
-      }
-      toolbar={
-        <SearchToolbar
-          searchPlaceholder="Cari nama, NIP, atau email..."
-          searchValue={searchQuery}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
-        />
-      }
     >
-      <Table.Paginated data={evaluatorList} label="anggota">
-        {(pageData) => (
-          <Table.Root>
-            <Table.Table>
-            <thead>
-              <Table.HeadRow>
-                <Table.Th>Nama Lengkap</Table.Th>
-                <Table.Th>NIP</Table.Th>
-                <Table.Th>Jabatan</Table.Th>
-                <Table.Th>Pangkat</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>No. HP</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.ActionTh>Aksi</Table.ActionTh>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {pageData.length === 0 ? (
-                <EmptyState
-                  asTableRow
-                  colSpan={8}
-                  icon={<Users className="w-8 h-8" />}
-                  title="Tidak ada Evaluator"
-                  description="Coba ubah kata kunci atau tambah pengguna peran Evaluator"
-                />
-              ) : (
-                pageData.map((tim) => (
-                  <Table.BodyRow key={tim.id}>
-                    <Table.Td>
-                      <PersonNameCell name={tim.user?.nama} icon={Users} />
-                    </Table.Td>
-                    <Table.Td>
-                      <PersonMonoCell value={tim.user?.nip} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge variant="outline" className="text-xs">
-                        {tim.user?.jabatan ?? '-'}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <PersonTextCell value={tim.user?.pangkat} />
-                    </Table.Td>
-                    <Table.Td>
-                      <PersonTextCell value={tim.user?.email} />
-                    </Table.Td>
-                    <Table.Td>
-                      <PersonTextCell value={tim.user?.nohp} />
-                    </Table.Td>
-                    <Table.Td>
-                      <PersonStatusCell
-                        status={tim.status}
-                        subtext={tim.berakhirPada ? `Selesai: ${formatDateId(tim.berakhirPada)}` : undefined}
-                      />
-                    </Table.Td>
-                    <Table.ActionTd>
-                      <div className="flex flex-wrap items-center justify-start gap-1">
-                        <RowActions
-                          wrap
-                          actions={[
-                            {
-                              icon: Edit,
-                              title: 'Edit',
-                              onClick: () => openEditDialog(tim),
-                            },
-                            ...(tim.status === 'AKTIF'
-                              ? [
-                                  {
-                                    icon: Trash2,
-                                    title: 'Nonaktifkan',
-                                    destructive: true,
-                                    onClick: () => setDeleteTimId(tim.id),
-                                  },
-                                ]
-                              : []),
-                          ]}
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Toolbar>
+            <SearchInput
+              placeholder="Cari nama, NIP, atau email..."
+              aria-label="Cari nama, NIP, atau email..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <DataSurface.Actions>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={() => {
+                  resetForm()
+                  setIsCreateDialogOpen(true)
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Tambah Anggota
+              </Button>
+            </DataSurface.Actions>
+          </DataSurface.Toolbar>
+        </DataSurface.Header>
+
+        <Table.Paginated data={evaluatorList} label="anggota" surfaceMode="embedded">
+          {(pageData) => (
+            <Table.Root>
+              <Table.Table>
+              <thead>
+                <Table.HeadRow>
+                  <Table.Th>Nama Lengkap</Table.Th>
+                  <Table.Th>NIP</Table.Th>
+                  <Table.Th>Jabatan</Table.Th>
+                  <Table.Th>Pangkat</Table.Th>
+                  <Table.Th>Email</Table.Th>
+                  <Table.Th>No. HP</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.ActionTh>Aksi</Table.ActionTh>
+                </Table.HeadRow>
+              </thead>
+              <tbody>
+                {pageData.length === 0 ? (
+                  <EmptyState
+                    asTableRow
+                    colSpan={8}
+                    icon={<Users className="w-8 h-8" />}
+                    title={searchQuery.trim() ? `Tidak ada Evaluator yang cocok dengan “${searchQuery.trim()}”` : "Tidak ada Evaluator"}
+                    description={searchQuery.trim() ? "Ubah atau hapus kata kunci pencarian." : "Tambah pengguna peran Evaluator untuk memulai."}
+                  />
+                ) : (
+                  pageData.map((tim) => (
+                    <Table.BodyRow key={tim.id}>
+                      <Table.Td>
+                        <PersonNameCell name={tim.user?.nama} icon={Users} />
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonMonoCell value={tim.user?.nip} />
+                      </Table.Td>
+                      <Table.Td>
+                        <Badge variant="outline" className="text-xs">
+                          {tim.user?.jabatan ?? '-'}
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonTextCell value={tim.user?.pangkat} />
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonTextCell value={tim.user?.email} />
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonTextCell value={tim.user?.nohp} />
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonStatusCell
+                          status={tim.status}
+                          subtext={tim.berakhirPada ? `Selesai: ${formatDateId(tim.berakhirPada)}` : undefined}
                         />
-                      </div>
-                    </Table.ActionTd>
-                  </Table.BodyRow>
-                ))
-              )}
-            </tbody>
-            </Table.Table>
-          </Table.Root>
-        )}
-      </Table.Paginated>
+                      </Table.Td>
+                      <Table.ActionTd>
+                        <div className="flex flex-wrap items-center justify-start gap-1">
+                          <RowActions
+                            wrap
+                            actions={[
+                              {
+                                icon: Edit,
+                                title: 'Edit',
+                                onClick: () => openEditDialog(tim),
+                              },
+                              ...(tim.status === 'AKTIF'
+                                ? [
+                                    {
+                                      icon: Trash2,
+                                      title: 'Nonaktifkan',
+                                      destructive: true,
+                                      onClick: () => setDeleteTimId(tim.id),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </div>
+                      </Table.ActionTd>
+                    </Table.BodyRow>
+                  ))
+                )}
+              </tbody>
+              </Table.Table>
+            </Table.Root>
+          )}
+        </Table.Paginated>
+      </DataSurface.Root>
 
       <PersonFormDialog
         open={isCreateDialogOpen}

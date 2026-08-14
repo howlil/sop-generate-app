@@ -3,10 +3,11 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { Eye, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Eye } from 'lucide-react'
+import { ActiveFilterChips } from '@/components/data/active-filter-chips'
+import { DataSurface } from '@/components/data/data-surface'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { SearchToolbar } from '@/components/ui/search-toolbar'
+import { SearchInput } from '@/components/ui/search-input'
 import { RowActions } from '@/components/data/row-actions'
 import {
   EvaluasiFilterTabs,
@@ -58,64 +59,67 @@ export function DaftarSOPEvaluasi() {
   const items = data?.items ?? []
   const pagination = readPaginationMeta(data)
 
+  const clearOpdFilter = () =>
+    navigate({
+      to: ROUTES.EVALUATOR.EVALUASI,
+      search: {},
+      replace: true,
+    })
+
   return (
     <ListPageLayout
       breadcrumb={[{ label: 'Evaluasi SOP' }]}
       title="Evaluasi SOP"
-      description="Pilih satu pengajuan evaluasi untuk membuka halaman penilaian (daftar SOP dalam pengajuan tersebut)."
-      toolbar={
-        <div className="flex flex-col gap-3 w-full">
-          <SearchToolbar
-            searchPlaceholder="Cari nama OPD..."
-            searchValue={searchQuery}
-            onSearchChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <div className="flex flex-wrap items-center gap-2 w-full">
-            <EvaluasiFilterTabs value={filterTab} onValueChange={setFilterTab} />
-            {opdIdFilter ? (
-              <Badge
-                variant="secondary"
-                className="gap-1 pl-2 pr-1 py-0.5 text-xs font-normal"
-              >
-                Filter OPD aktif
-                <button
-                  type="button"
-                  className="rounded p-0.5 hover:bg-muted"
-                  aria-label="Hapus filter OPD"
-                  onClick={() =>
-                    navigate({
-                      to: ROUTES.EVALUATOR.EVALUASI,
-                      search: {},
-                      replace: true,
-                    })
-                  }
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </Badge>
-            ) : null}
-          </div>
-        </div>
-      }
     >
-      <EvaluasiPengajuanGroupedList
-        rows={items}
-        isLoading={isLoading}
-        pagination={pagination}
-        onPageChange={setPage}
-        renderAction={(row) => (
-          <RowActions
-            actions={[
-              {
-                icon: Eye,
-                to: ROUTES.EVALUATOR.DETAIL_EVALUASI_PENGAJUAN,
-                params: { id: row.pengajuanEvaluasiId },
-                title: 'Buka penilaian',
-              },
-            ]}
-          />
-        )}
-      />
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Tabs>
+            <EvaluasiFilterTabs value={filterTab} onValueChange={setFilterTab} />
+          </DataSurface.Tabs>
+          <DataSurface.Toolbar>
+            <SearchInput
+              placeholder="Cari nama OPD..."
+              aria-label="Cari nama OPD..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </DataSurface.Toolbar>
+          {opdIdFilter ? (
+            <DataSurface.FilterRow>
+              <ActiveFilterChips
+                items={[
+                  {
+                    id: 'opd',
+                    label: 'Filter OPD aktif',
+                    onRemove: clearOpdFilter,
+                  },
+                ]}
+                onClearAll={clearOpdFilter}
+              />
+            </DataSurface.FilterRow>
+          ) : null}
+        </DataSurface.Header>
+
+        <EvaluasiPengajuanGroupedList
+          rows={items}
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+          surfaceMode="embedded"
+          renderAction={(row) => (
+            <RowActions
+              actions={[
+                {
+                  icon: Eye,
+                  to: ROUTES.EVALUATOR.DETAIL_EVALUASI_PENGAJUAN,
+                  params: { id: row.pengajuanEvaluasiId },
+                  title: 'Buka penilaian',
+                },
+              ]}
+            />
+          )}
+        />
+      </DataSurface.Root>
     </ListPageLayout>
   )
 }

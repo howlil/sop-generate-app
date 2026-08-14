@@ -27,6 +27,7 @@ export interface EvaluasiPengajuanGroupedListProps {
   pagination?: PaginationMetaDto | null
   onPageChange: (page: number) => void
   renderAction: (row: PengajuanEvaluasiRingkasRow) => ReactNode
+  surfaceMode?: 'standalone' | 'embedded'
 }
 
 function labelJenis(jenis: string): string {
@@ -46,6 +47,7 @@ export function EvaluasiPengajuanGroupedList({
   pagination,
   onPageChange,
   renderAction,
+  surfaceMode = 'standalone',
 }: EvaluasiPengajuanGroupedListProps) {
   const groupedByOpd = useMemo<PengajuanGroupByOpd[]>(() => {
     const map = new Map<string, PengajuanGroupByOpd>()
@@ -89,15 +91,23 @@ export function EvaluasiPengajuanGroupedList({
         </>
       )}
       isLoading={isLoading}
-      loadingContent={<StateTable title="Memuat data..." description="Mohon tunggu." />}
+      loadingContent={
+        <StateTable
+          title="Memuat data..."
+          description="Mohon tunggu."
+          surfaceMode={surfaceMode}
+        />
+      }
       emptyContent={
         <StateTable
           title="Tidak ada pengajuan"
           description="Sesuaikan filter atau kata kunci pencarian."
+          surfaceMode={surfaceMode}
         />
       }
       pagination={pagination}
       onPageChange={onPageChange}
+      surfaceMode={surfaceMode}
       renderRows={(group) => (
         <Table.Table>
           <thead>
@@ -150,12 +160,14 @@ export function EvaluasiPengajuanGroupedList({
 function StateTable({
   title,
   description,
+  surfaceMode,
 }: {
   title: string
   description: string
+  surfaceMode: 'standalone' | 'embedded'
 }) {
   return (
-    <GroupedTableState>
+    <GroupedTableState surfaceMode={surfaceMode}>
       <EmptyState
         asTableRow
         colSpan={6}

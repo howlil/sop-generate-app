@@ -50,20 +50,24 @@ export function OPDTab({
 
   return (
     <>
-      <Table.Paginated data={filteredOPD} label="OPD" className="w-full">
+      <div className="flex justify-end border-b border-border px-card py-2">
+        <Button
+          size="sm"
+          className="h-8 text-xs"
+          onClick={openCreateDialog}
+        >
+          Tambah OPD
+        </Button>
+      </div>
+      <Table.Paginated
+        data={filteredOPD}
+        label="OPD"
+        className="w-full"
+        surfaceMode="embedded"
+      >
         {(pageData) => (
-          <>
-            <div className="flex justify-end mb-2">
-              <Button
-                size="sm"
-                className="h-8 text-xs"
-                onClick={openCreateDialog}
-              >
-                Tambah OPD
-              </Button>
-            </div>
-            <Table.Root>
-              <Table.Table>
+          <Table.Root>
+            <Table.Table>
               <thead>
                 <Table.HeadRow>
                   <Table.Th className="w-full">Nama OPD</Table.Th>
@@ -104,9 +108,8 @@ export function OPDTab({
                   </Table.BodyRow>
                 ))}
               </tbody>
-              </Table.Table>
-            </Table.Root>
-          </>
+            </Table.Table>
+          </Table.Root>
         )}
       </Table.Paginated>
 

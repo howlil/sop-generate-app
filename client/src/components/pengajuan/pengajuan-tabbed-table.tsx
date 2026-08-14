@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { FileSignature } from 'lucide-react'
+import { DataSurface } from '@/components/data/data-surface'
 import { Table } from '@/components/ui/data-table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -91,67 +92,78 @@ export function PengajuanTabbedTable<T>({
   emptyIcon = <FileSignature />,
 }: PengajuanTabbedTableProps<T>) {
   return (
-    <Tabs defaultValue={defaultValue} className="space-y-3">
-      <TabsList className="h-9 w-full grid grid-cols-2">
+    <Tabs defaultValue={defaultValue}>
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Tabs>
+            <TabsList className="h-9 w-full min-w-[24rem] grid grid-cols-2">
+              {tabs.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value} className="text-xs w-full">
+                  {tab.label} ({tab.rows.length})
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </DataSurface.Tabs>
+        </DataSurface.Header>
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value} className="text-xs w-full">
-            {tab.label} ({tab.rows.length})
-          </TabsTrigger>
+          <TabsContent key={tab.value} value={tab.value} className="mt-0">
+            <Table.Paginated
+              data={tab.rows}
+              pageSize={pageSize}
+              label={label}
+              surfaceMode="embedded"
+            >
+              {(pageData) => (
+                <Table.Root>
+                  <Table.Table>
+                    <thead>
+                      <Table.HeadRow>
+                        {columns.map((column) => (
+                          <Table.Th
+                            key={column.id}
+                            className={column.className}
+                            align={column.align}
+                          >
+                            {column.header}
+                          </Table.Th>
+                        ))}
+                        <Table.ActionTh>Aksi</Table.ActionTh>
+                      </Table.HeadRow>
+                    </thead>
+                    <tbody aria-busy={isLoading || undefined}>
+                      {isLoading ? (
+                        <TableLoadingRows
+                          rows={loadingRows}
+                          columns={columns.length + 1}
+                        />
+                      ) : pageData.length === 0 ? (
+                        <EmptyState
+                          asTableRow
+                          colSpan={columns.length + 1}
+                          icon={emptyIcon}
+                          title={tab.emptyTitle}
+                          description={tab.emptyDescription}
+                        />
+                      ) : (
+                        pageData.map((row) => (
+                          <Table.BodyRow key={getRowId(row)}>
+                            {columns.map((column) => (
+                              <Table.Td key={column.id} className={column.className}>
+                                {column.render(row)}
+                              </Table.Td>
+                            ))}
+                            <Table.ActionTd>{renderAction(row)}</Table.ActionTd>
+                          </Table.BodyRow>
+                        ))
+                      )}
+                    </tbody>
+                  </Table.Table>
+                </Table.Root>
+              )}
+            </Table.Paginated>
+          </TabsContent>
         ))}
-      </TabsList>
-      {tabs.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value} className="mt-0">
-          <Table.Paginated data={tab.rows} pageSize={pageSize} label={label}>
-            {(pageData) => (
-              <Table.Root>
-                <Table.Table>
-                  <thead>
-                    <Table.HeadRow>
-                      {columns.map((column) => (
-                        <Table.Th
-                          key={column.id}
-                          className={column.className}
-                          align={column.align}
-                        >
-                          {column.header}
-                        </Table.Th>
-                      ))}
-                      <Table.ActionTh>Aksi</Table.ActionTh>
-                    </Table.HeadRow>
-                  </thead>
-                  <tbody aria-busy={isLoading || undefined}>
-                    {isLoading ? (
-                      <TableLoadingRows
-                        rows={loadingRows}
-                        columns={columns.length + 1}
-                      />
-                    ) : pageData.length === 0 ? (
-                      <EmptyState
-                        asTableRow
-                        colSpan={columns.length + 1}
-                        icon={emptyIcon}
-                        title={tab.emptyTitle}
-                        description={tab.emptyDescription}
-                      />
-                    ) : (
-                      pageData.map((row) => (
-                        <Table.BodyRow key={getRowId(row)}>
-                          {columns.map((column) => (
-                            <Table.Td key={column.id} className={column.className}>
-                              {column.render(row)}
-                            </Table.Td>
-                          ))}
-                          <Table.ActionTd>{renderAction(row)}</Table.ActionTd>
-                        </Table.BodyRow>
-                      ))
-                    )}
-                  </tbody>
-                </Table.Table>
-              </Table.Root>
-            )}
-          </Table.Paginated>
-        </TabsContent>
-      ))}
+      </DataSurface.Root>
     </Tabs>
   )
 }

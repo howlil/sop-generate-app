@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
+import { DataSurface } from '@/components/data/data-surface'
 import { Button } from '@/components/ui/button'
-import { SearchToolbar } from '@/components/ui/search-toolbar'
+import { SearchInput } from '@/components/ui/search-input'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -27,7 +28,6 @@ export function ManajemenPeraturan() {
     delete: deletePeraturan,
   } = usePeraturan(currentOpdId || undefined)
 
-  // Inline state (replaced useManajemenPeraturanState)
   const [searchQuery, setSearchQuery] = useState('')
   const [isPeraturanDialogOpen, setIsPeraturanDialogOpen] = useState(false)
   const [editingPeraturan, setEditingPeraturan] = useState<Peraturan | null>(null)
@@ -56,7 +56,6 @@ export function ManajemenPeraturan() {
   }, [peraturanList, searchQuery])
 
   const canEditPeraturan = (p: Peraturan) => {
-    // Only allow editing peraturan that belong to current user's OPD
     return p.opdId === currentOpdId;
   };
 
@@ -77,14 +76,11 @@ export function ManajemenPeraturan() {
   }
 
   const handleSavePeraturan = async () => {
-    if (
-      !isPeraturanFormValid
-    ) {
+    if (!isPeraturanFormValid) {
       showToast('Semua field wajib diisi', 'error')
       return
     }
 
-    // Validate year is reasonable (1900 - current year + 1)
     const year = Number(peraturanFormData.tahun)
     const currentYear = new Date().getFullYear()
     if (year < 1900 || year > currentYear + 1) {
@@ -146,48 +142,51 @@ export function ManajemenPeraturan() {
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen Peraturan' }]}
       title="Database Peraturan"
-      description="Kelola database peraturan"
-      actions={
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() => openPeraturanDialog()}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Tambah Peraturan
-        </Button>
-      }
-      toolbar={
-        <SearchToolbar
-          searchPlaceholder="Cari peraturan..."
-          searchValue={searchQuery}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
-        />
-      }
     >
-      {isLoadingPeraturan ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      ) : (
-        <PeraturanTableTab
-        filteredPeraturan={filteredPeraturan}
-        canEditPeraturan={canEditPeraturan}
-        isPeraturanDialogOpen={isPeraturanDialogOpen}
-        setIsPeraturanDialogOpen={setIsPeraturanDialogOpen}
-        editingPeraturan={editingPeraturan}
-        peraturanFormData={peraturanFormData}
-        setPeraturanFormData={setPeraturanFormData}
-        onOpenPeraturanDialog={openPeraturanDialog}
-        onSavePeraturan={handleSavePeraturan}
-        onDeletePeraturan={handleDeletePeraturan}
-        confirmDisabled={
-          !isPeraturanFormValid
-        }
-      />
-      )}
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Toolbar>
+            <SearchInput
+              placeholder="Cari peraturan..."
+              aria-label="Cari peraturan..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <DataSurface.Actions>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={() => openPeraturanDialog()}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Tambah Peraturan
+              </Button>
+            </DataSurface.Actions>
+          </DataSurface.Toolbar>
+        </DataSurface.Header>
+
+        {isLoadingPeraturan ? (
+          <div className="space-y-4 p-card">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : (
+          <PeraturanTableTab
+            filteredPeraturan={filteredPeraturan}
+            canEditPeraturan={canEditPeraturan}
+            isPeraturanDialogOpen={isPeraturanDialogOpen}
+            setIsPeraturanDialogOpen={setIsPeraturanDialogOpen}
+            editingPeraturan={editingPeraturan}
+            peraturanFormData={peraturanFormData}
+            setPeraturanFormData={setPeraturanFormData}
+            onOpenPeraturanDialog={openPeraturanDialog}
+            onSavePeraturan={handleSavePeraturan}
+            onDeletePeraturan={handleDeletePeraturan}
+            confirmDisabled={!isPeraturanFormValid}
+          />
+        )}
+      </DataSurface.Root>
 
       <ConfirmDialog
         open={deleteConfirm != null}

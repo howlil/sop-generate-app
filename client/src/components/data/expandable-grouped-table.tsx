@@ -21,6 +21,7 @@ export interface ExpandableGroupedTableProps<TGroup> {
   pagination?: PaginationMetaDto | null
   onPageChange?: (page: number) => void
   className?: string
+  surfaceMode?: 'standalone' | 'embedded'
 }
 
 export function ExpandableGroupedTable<TGroup>({
@@ -36,9 +37,11 @@ export function ExpandableGroupedTable<TGroup>({
   pagination,
   onPageChange,
   className,
+  surfaceMode = 'standalone',
 }: ExpandableGroupedTableProps<TGroup>) {
   const [expandedGroupIds, setExpandedGroupIds] = useState<string[]>([])
   const panelIdPrefix = useId()
+  const embedded = surfaceMode === 'embedded'
 
   useEffect(() => {
     if (isLoading) return
@@ -63,7 +66,7 @@ export function ExpandableGroupedTable<TGroup>({
   }
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className={cn(embedded ? 'divide-y divide-border' : 'space-y-3', className)}>
       {isLoading ? (loadingContent ?? <LoadingState />) : null}
       {!isLoading && groups.length === 0 ? emptyContent : null}
       {!isLoading
@@ -74,7 +77,10 @@ export function ExpandableGroupedTable<TGroup>({
             return (
               <div
                 key={groupId}
-                className="overflow-hidden rounded-surface border border-border bg-surface shadow-surface"
+                className={cn(
+                  'overflow-hidden',
+                  !embedded && 'rounded-surface border border-border bg-surface shadow-surface',
+                )}
               >
                 <button
                   type="button"
@@ -116,7 +122,7 @@ export function ExpandableGroupedTable<TGroup>({
           })
         : null}
       {pagination && onPageChange ? (
-        <div className="rounded-surface border border-border bg-surface shadow-surface">
+        <div className={cn(!embedded && 'rounded-surface border border-border bg-surface shadow-surface')}>
           <Pagination
             totalItems={pagination.totalItems}
             currentPage={pagination.page}
@@ -132,11 +138,19 @@ export function ExpandableGroupedTable<TGroup>({
 
 export function GroupedTableState({
   children,
+  surfaceMode = 'standalone',
 }: {
   children: ReactNode
+  surfaceMode?: 'standalone' | 'embedded'
 }) {
   return (
-    <div className="overflow-hidden rounded-surface border border-border bg-surface shadow-surface">
+    <div
+      className={cn(
+        surfaceMode === 'standalone'
+          ? 'overflow-hidden rounded-surface border border-border bg-surface shadow-surface'
+          : 'overflow-hidden',
+      )}
+    >
       <Table.Table>
         <tbody>{children}</tbody>
       </Table.Table>

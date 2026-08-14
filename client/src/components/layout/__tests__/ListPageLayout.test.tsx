@@ -7,37 +7,44 @@ import {
 } from '@/components/layout/PageHeaderProvider'
 
 function HeaderProbe() {
-  const context = usePageHeaderContext()
+  const headerContent = usePageHeaderContext()?.headerContent
   return (
     <div>
-      <span data-testid="header-description">
-        {context?.headerContent?.description ?? ''}
+      <span data-testid="header-title">{headerContent?.title ?? ''}</span>
+      <span data-testid="header-breadcrumb">
+        {headerContent?.breadcrumb.map((item) => item.label).join(' / ') ?? ''}
       </span>
-      <div data-testid="header-actions">{context?.headerContent?.actions}</div>
+      <span data-testid="has-description">
+        {String(
+          headerContent != null &&
+            Object.prototype.hasOwnProperty.call(headerContent, 'description'),
+        )}
+      </span>
+      <span data-testid="has-actions">
+        {String(
+          headerContent != null &&
+            Object.prototype.hasOwnProperty.call(headerContent, 'actions'),
+        )}
+      </span>
     </div>
   )
 }
 
 describe('ListPageLayout', () => {
-  it('meneruskan metadata halaman sambil mempertahankan toolbar di konten halaman', async () => {
+  it('meneruskan hanya metadata shell dan membiarkan collection controls dimiliki konten halaman', async () => {
     render(
       <PageHeaderProvider>
         <HeaderProbe />
-        <ListPageLayout
-          breadcrumb={[{ label: 'SOP' }]}
-          title="Manajemen SOP"
-          description="Daftar SOP yang Anda kelola."
-          actions={<button type="button">Buat SOP</button>}
-          toolbar={<div data-testid="search-toolbar">Cari SOP</div>}
-        >
-          <div>Daftar</div>
+        <ListPageLayout breadcrumb={[{ label: 'SOP' }]} title="Manajemen SOP">
+          <div data-testid="page-content">Daftar</div>
         </ListPageLayout>
       </PageHeaderProvider>,
     )
 
-    expect(await screen.findByText('Daftar SOP yang Anda kelola.')).toBeInTheDocument()
-    expect(screen.getByTestId('header-actions')).toHaveTextContent('Buat SOP')
-    expect(screen.getByTestId('search-toolbar')).toBeInTheDocument()
-    expect(screen.getByText('Daftar')).toBeInTheDocument()
+    expect(await screen.findByTestId('header-title')).toHaveTextContent('Manajemen SOP')
+    expect(screen.getByTestId('header-breadcrumb')).toHaveTextContent('SOP')
+    expect(screen.getByTestId('has-description')).toHaveTextContent('false')
+    expect(screen.getByTestId('has-actions')).toHaveTextContent('false')
+    expect(screen.getByTestId('page-content')).toBeInTheDocument()
   })
 })
