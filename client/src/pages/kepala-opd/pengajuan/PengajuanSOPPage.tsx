@@ -22,7 +22,6 @@ export function PengajuanSOPPage() {
     <ListPageLayout
       breadcrumb={[{ label: "Pengajuan SOP" }]}
       title="Pengajuan SOP"
-      description="Pengajuan SOP OPD Anda, dipisahkan berdasarkan status tanda tangan Kepala OPD."
     >
       <PengajuanTabbedTable
         defaultValue="belum"
