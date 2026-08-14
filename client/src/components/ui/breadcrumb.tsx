@@ -3,9 +3,9 @@ import { ChevronRight } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
 export interface BreadcrumbItem {
-  /** Label tampilan */
+  /** Label tampilan. */
   label: string
-  /** Link (kosong = item saat ini, tidak diklik) */
+  /** Link ancestor; item terakhir selalu diperlakukan sebagai halaman saat ini. */
   to?: string
 }
 
@@ -26,7 +26,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
             {i > 0 && (
               <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" aria-hidden />
             )}
-            {!item.to ? (
+            {isLast || !item.to ? (
               <span
                 className={isLast ? 'font-medium text-foreground' : 'font-medium text-secondary-foreground'}
                 aria-current={isLast ? 'page' : undefined}
