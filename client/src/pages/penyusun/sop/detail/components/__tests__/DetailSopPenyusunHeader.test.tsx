@@ -75,4 +75,21 @@ describe('DetailSOPPenyusunHeader', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Coba lagi' }))
     expect(retryAutosave).toHaveBeenCalledTimes(1)
   })
+
+  it('menaruh aksi dokumen sekunder di menu yang sama', async () => {
+    renderHeader({
+      currentSopStatus: 'BERLAKU',
+      currentSopStatusLabel: 'Berlaku',
+      canBuatVersiBaru: true,
+      onBuatVersiBaru,
+    })
+
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Aksi dokumen lainnya' }), {
+      button: 0,
+      ctrlKey: false,
+    })
+
+    expect(await screen.findByText('Cetak PDF')).toBeInTheDocument()
+    expect(screen.getByText('Buat versi baru')).toBeInTheDocument()
+  })
 })
