@@ -14,6 +14,16 @@ vi.mock('@/components/layout/HeaderBar', () => ({ HeaderBar: () => <div>Header</
 vi.mock('@/components/layout/PageHeaderProvider', () => ({
   PageHeaderProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
+vi.mock('@/components/layout/SidebarUserMenu', () => ({
+  SidebarUserMenu: ({ collapsed = false }: { collapsed?: boolean }) => (
+    <button
+      type="button"
+      aria-label={collapsed ? 'Menu profil uji collapsed' : 'Menu profil uji'}
+    >
+      Profil
+    </button>
+  ),
+}))
 vi.mock('@/stores/authStore', () => ({
   useAuthStore: (selector: (state: { user: { peran: string } }) => unknown) =>
     selector({ user: { peran: 'PENYUSUN' } }),
@@ -71,6 +81,21 @@ describe('DashboardLayout desktop sidebar', () => {
     expect(sidebar).toHaveClass('border-r', 'border-border', 'bg-surface')
     expect(activeLink?.className).not.toContain('before:left-0')
     expect(activeLink?.querySelector('span')).not.toHaveClass('truncate')
+  })
+
+  it('menaruh menu profil di footer sidebar desktop dan drawer mobile', () => {
+    render(<DashboardLayout />)
+
+    const desktopSidebar = document.querySelector('#desktop-sidebar')
+    expect(
+      desktopSidebar?.querySelector('[aria-label^="Menu profil"]'),
+    ).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Buka navigasi' }))
+    const mobileDrawer = document.querySelector('#mobile-main-navigation')
+    expect(
+      mobileDrawer?.querySelector('[aria-label^="Menu profil"]'),
+    ).not.toBeNull()
   })
 
   it('menaruh gutter fluid di dalam scroll container', () => {
