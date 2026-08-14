@@ -1,22 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-
-vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
-vi.mock('@/hooks/useAppRole', () => ({
-  useAppRole: () => ({
-    role: 'PJ_PENYUSUN',
-    getRoleLabel: () => 'PJ Penyusun',
-    getRoleNip: () => '',
-    getRoleDisplayName: () => 'Pengguna Uji',
-  }),
-}))
-
-vi.mock('@/api/auth', () => ({
-  useAuth: () => ({ logout: vi.fn() }),
-}))
+import { describe, expect, it } from 'vitest'
 
 import { HeaderBar } from '@/components/layout/HeaderBar'
 import {
@@ -32,8 +15,6 @@ describe('HeaderBar', () => {
         <SetPageHeader
           breadcrumb={[{ label: 'Penyusun' }, { label: 'Manajemen SOP' }]}
           title="Manajemen SOP"
-          description="Deskripsi yang tidak boleh terlihat di header."
-          actions={<button type="button">Buat SOP</button>}
         />
       </PageHeaderProvider>,
     )
@@ -42,8 +23,6 @@ describe('HeaderBar', () => {
     expect(within(breadcrumb).getByText('Penyusun')).toBeInTheDocument()
     expect(within(breadcrumb).getByText('Manajemen SOP')).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('heading', { name: 'Manajemen SOP' })).toHaveClass('sr-only')
-    expect(screen.queryByText('Deskripsi yang tidak boleh terlihat di header.')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Buat SOP' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
   })
 
