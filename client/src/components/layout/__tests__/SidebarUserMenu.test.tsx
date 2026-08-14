@@ -27,16 +27,23 @@ vi.mock('@/utils/role-routing', () => ({
 
 import { SidebarUserMenu } from '@/components/layout/SidebarUserMenu'
 
+function openProfileMenu() {
+  fireEvent.pointerDown(screen.getByRole('button', { name: 'Menu profil Pengguna Uji' }), {
+    button: 0,
+    ctrlKey: false,
+  })
+}
+
 describe('SidebarUserMenu', () => {
-  it('menampilkan identitas ringkas dan detail akun di menu', () => {
+  it('menampilkan identitas ringkas dan detail akun di menu', async () => {
     render(<SidebarUserMenu />)
 
     expect(screen.getByText('Pengguna Uji')).toBeInTheDocument()
     expect(screen.getByText('PJ Penyusun')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Menu profil Pengguna Uji' }))
+    openProfileMenu()
 
-    expect(screen.getByText('NIP. 123456789')).toBeInTheDocument()
+    expect(await screen.findByText('NIP. 123456789')).toBeInTheDocument()
     expect(screen.getByText('Profil Saya')).toBeInTheDocument()
     expect(screen.getByText('Logout')).toBeInTheDocument()
   })
@@ -52,13 +59,13 @@ describe('SidebarUserMenu', () => {
     const onNavigate = vi.fn()
     render(<SidebarUserMenu onNavigate={onNavigate} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Menu profil Pengguna Uji' }))
-    fireEvent.click(screen.getByText('Profil Saya'))
+    openProfileMenu()
+    fireEvent.click(await screen.findByText('Profil Saya'))
     expect(onNavigate).toHaveBeenCalledTimes(1)
     expect(navigate).toHaveBeenCalledWith({ to: '/penyusun/me' })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Menu profil Pengguna Uji' }))
-    fireEvent.click(screen.getByText('Logout'))
+    openProfileMenu()
+    fireEvent.click(await screen.findByText('Logout'))
 
     await waitFor(() => expect(logout).toHaveBeenCalledTimes(1))
     expect(onNavigate).toHaveBeenCalledTimes(2)
