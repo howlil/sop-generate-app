@@ -1,14 +1,23 @@
-import { useState } from 'react'
-import { Building2, Edit, Trash2 } from 'lucide-react'
+import { forwardRef, useImperativeHandle, useState } from 'react'
+import { Building2, Edit, MoreVertical, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { SingleTextFieldDialog } from '@/components/forms/single-text-field-dialog'
-import { RowActions } from '@/components/data/row-actions'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { OPDUI as OPD } from '@/types/ui/organisasi'
 
 interface OpdDialogState {
   isCreateOpen: boolean
   isEditOpen: boolean
+}
+
+export interface OPDTabHandle {
+  openCreateDialog: () => void
 }
 
 export interface OPDTabProps {
@@ -19,13 +28,13 @@ export interface OPDTabProps {
   onUpdate: (payload: { id: string; name: string }) => void | Promise<void>
 }
 
-export function OPDTab({
+export const OPDTab = forwardRef<OPDTabHandle, OPDTabProps>(function OPDTab({
   filteredOPD,
   hasRelasiData,
   onDelete,
   onCreate,
   onUpdate,
-}: OPDTabProps) {
+}: OPDTabProps, ref) {
   const [selectedOPD, setSelectedOPD] = useState<OPD | null>(null)
   const [formData, setFormData] = useState({ name: '' })
   const [dialogState, setDialogState] = useState<OpdDialogState>({
@@ -37,6 +46,9 @@ export function OPDTab({
     setFormData({ name: '' })
     setDialogState((prev) => ({ ...prev, isCreateOpen: true }))
   }
+
+  useImperativeHandle(ref, () => ({ openCreateDialog }), [])
+
   const openEditDialog = (opd: OPD) => {
     setSelectedOPD(opd)
     setFormData({ name: opd.name })
@@ -50,15 +62,6 @@ export function OPDTab({
 
   return (
     <>
-      <div className="flex justify-end border-b border-border px-card py-2">
-        <Button
-          size="sm"
-          className="h-8 text-xs"
-          onClick={openCreateDialog}
-        >
-          Tambah OPD
-        </Button>
-      </div>
       <Table.Paginated
         data={filteredOPD}
         label="OPD"
@@ -78,32 +81,44 @@ export function OPDTab({
                 {pageData.map((opd) => (
                   <Table.BodyRow key={opd.id}>
                     <Table.Td>
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
-                          <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-subtle text-primary">
+                          <Building2 className="h-4 w-4" />
                         </div>
-                        <p className="font-medium text-foreground">{opd.name}</p>
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">{opd.name}</p>
+                          <p className="text-xs text-muted-foreground">Organisasi perangkat daerah</p>
+                        </div>
                       </div>
                     </Table.Td>
                     <Table.ActionTd>
-                      <RowActions
-                        actions={[
-                          {
-                            icon: Edit,
-                            title: 'Edit OPD',
-                            onClick: () => openEditDialog(opd),
-                          },
-                          {
-                            icon: Trash2,
-                            title: hasRelasiData(opd)
-                              ? 'Hapus (ditolak: ada SOP)'
-                              : 'Hapus OPD',
-                            destructive: true,
-                            onClick: () => onDelete(opd.id),
-                            disabled: hasRelasiData(opd),
-                          },
-                        ]}
-                      />
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => openEditDialog(opd)}
+                        >
+                          Ubah
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Aksi lainnya untuk ${opd.name}`}>
+                              <MoreVertical className="h-4 w-4 text-secondary-foreground" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem
+                              disabled={hasRelasiData(opd)}
+                              onClick={() => onDelete(opd.id)}
+                              className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {hasRelasiData(opd) ? 'Tidak dapat dihapus' : 'Hapus OPD'}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </Table.ActionTd>
                   </Table.BodyRow>
                 ))}
@@ -149,4 +164,4 @@ export function OPDTab({
       />
     </>
   )
-}
+})
