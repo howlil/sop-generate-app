@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Building2, Users } from 'lucide-react'
-import { SearchToolbar } from '@/components/ui/search-toolbar'
+import { DataSurface } from '@/components/data/data-surface'
+import { SearchInput } from '@/components/ui/search-input'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
@@ -94,61 +95,77 @@ export function ManajemenOPD() {
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen OPD' }]}
       title="Manajemen OPD"
-      description="Kelola data organisasi perangkat daerah dan jabatan kepala OPD"
-      toolbar={
-        <SearchToolbar
-          searchPlaceholder={
-            activeTab === 'opd'
-              ? 'Cari nama OPD...'
-              : 'Cari nama, NIP, atau email...'
-          }
-          searchValue={activeTab === 'opd' ? searchQuery : searchUserQuery}
-          onSearchChange={(e) =>
-            activeTab === 'opd' ? setSearchQuery(e.target.value) : setSearchUserQuery(e.target.value)
-          }
-        />
-      }
     >
-      <Tabs value={activeTab} onValueChange={(v: string) => setActiveTab(v as 'opd' | 'kepala')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-9 bg-surface border border-border w-full">
-          <TabsTrigger value="opd" className="text-xs gap-1.5">
-            <Building2 className="w-3.5 h-3.5" />
-            Manajemen OPD
-          </TabsTrigger>
-          <TabsTrigger value="kepala" className="text-xs gap-1.5">
-            <Users className="w-3.5 h-3.5" />
-            Kepala OPD
-          </TabsTrigger>
-        </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value: string) => setActiveTab(value as 'opd' | 'kepala')}
+        className="w-full"
+      >
+        <DataSurface.Root>
+          <DataSurface.Header>
+            <DataSurface.Tabs>
+              <TabsList className="grid h-9 w-full min-w-[24rem] grid-cols-2 bg-surface border border-border">
+                <TabsTrigger value="opd" className="text-xs gap-1.5">
+                  <Building2 className="w-3.5 h-3.5" />
+                  Manajemen OPD
+                </TabsTrigger>
+                <TabsTrigger value="kepala" className="text-xs gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  Kepala OPD
+                </TabsTrigger>
+              </TabsList>
+            </DataSurface.Tabs>
+            <DataSurface.Toolbar>
+              <SearchInput
+                placeholder={
+                  activeTab === 'opd'
+                    ? 'Cari nama OPD...'
+                    : 'Cari nama, NIP, atau email...'
+                }
+                aria-label={
+                  activeTab === 'opd'
+                    ? 'Cari nama OPD...'
+                    : 'Cari nama, NIP, atau email...'
+                }
+                value={activeTab === 'opd' ? searchQuery : searchUserQuery}
+                onChange={(event) =>
+                  activeTab === 'opd'
+                    ? setSearchQuery(event.target.value)
+                    : setSearchUserQuery(event.target.value)
+                }
+              />
+            </DataSurface.Toolbar>
+          </DataSurface.Header>
 
-        <TabsContent value="opd" className="space-y-3 mt-3">
-          <OPDTab
-            filteredOPD={opdList}
-            hasRelasiData={hasRelasiData}
-            onDelete={handleDeleteOpd}
-            onCreate={onConfirmCreate}
-            onUpdate={onConfirmEdit}
-          />
-        </TabsContent>
+          <TabsContent value="opd" className="mt-0">
+            <OPDTab
+              filteredOPD={opdList}
+              hasRelasiData={hasRelasiData}
+              onDelete={handleDeleteOpd}
+              onCreate={onConfirmCreate}
+              onUpdate={onConfirmEdit}
+            />
+          </TabsContent>
 
-        <TabsContent value="kepala" className="space-y-3 mt-3">
-          <KepalaOPDTab
-            opdList={opdList}
-            kepalaRows={kepalaData}
-            isLoading={isLoadingKepala}
-            onCreate={async (payload) => {
-              await createKepala(payload)
-            }}
-            onUpdate={async (id, payload) => {
-              await updateKepala({ id, payload })
-            }}
-            onPindah={async (id, opdTujuanId) => {
-              await updateKepala({ id, payload: { opdId: opdTujuanId } })
-            }}
-            onDeleteRequest={(id) => setDeleteKepalaId(id)}
-            canDeleteKepala={canDeleteKepala}
-          />
-        </TabsContent>
+          <TabsContent value="kepala" className="mt-0">
+            <KepalaOPDTab
+              opdList={opdList}
+              kepalaRows={kepalaData}
+              isLoading={isLoadingKepala}
+              onCreate={async (payload) => {
+                await createKepala(payload)
+              }}
+              onUpdate={async (id, payload) => {
+                await updateKepala({ id, payload })
+              }}
+              onPindah={async (id, opdTujuanId) => {
+                await updateKepala({ id, payload: { opdId: opdTujuanId } })
+              }}
+              onDeleteRequest={(id) => setDeleteKepalaId(id)}
+              canDeleteKepala={canDeleteKepala}
+            />
+          </TabsContent>
+        </DataSurface.Root>
       </Tabs>
 
       <ConfirmDialog
