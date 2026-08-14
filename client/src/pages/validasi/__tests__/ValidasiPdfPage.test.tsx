@@ -99,7 +99,7 @@ describe('ValidasiPdfPage', () => {
     )
   })
 
-  it('revokes the previous object URL when the selected file changes', () => {
+  it('revokes the previous object URL when the selected file changes', async () => {
     const createObjectURL = vi
       .fn()
       .mockReturnValueOnce('blob:preview-1')
@@ -112,12 +112,16 @@ describe('ValidasiPdfPage', () => {
     })
 
     const { container } = render(<ValidasiPdfPage />)
-    const input = container.querySelector<HTMLInputElement>('input[type="file"]')!
+    const initialInput = container.querySelector<HTMLInputElement>('input[type="file"]')!
 
-    fireEvent.change(input, { target: { files: [makePdf('first.pdf')] } })
-    fireEvent.change(input, { target: { files: [makePdf('second.pdf')] } })
+    fireEvent.change(initialInput, { target: { files: [makePdf('first.pdf')] } })
 
-    expect(revokeObjectURL).toHaveBeenCalledWith('blob:preview-1')
+    const replacementInput = screen.getByLabelText<HTMLInputElement>('Ganti PDF')
+    fireEvent.change(replacementInput, { target: { files: [makePdf('second.pdf')] } })
+
+    await waitFor(() =>
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:preview-1'),
+    )
   })
 
   it('keeps verification working without duplicating the matched success heading', async () => {
