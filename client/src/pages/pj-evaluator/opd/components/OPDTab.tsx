@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useState } from 'react'
-import { Building2, Edit, MoreVertical, Trash2 } from 'lucide-react'
+import { Building2, MoreVertical, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { SingleTextFieldDialog } from '@/components/forms/single-text-field-dialog'
