@@ -261,12 +261,13 @@ export function DetailPengajuanSOPPage() {
                 <CollapsibleSidePanelHeader
                   side="left"
                   onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-border bg-surface px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface px-2.5 py-2 sm:px-3"
                 >
                   <SimplePanelHeader title="Daftar SOP" subtitle={`${sopList.length} dokumen`} />
                 </CollapsibleSidePanelHeader>
-                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1">
+                <CollapsibleSidePanelContent className="px-2.5 py-2 sm:px-3">
                   <SOPListCard
+                    variant="compact"
                     items={sopList.map((item) => ({
                       id: item.sopDetailId,
                       nama: item.nama,

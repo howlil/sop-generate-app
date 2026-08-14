@@ -25,12 +25,48 @@ export interface SOPListCardProps {
   variant?: 'default' | 'compact'
 }
 
-const ITEM_CLASS =
-  'w-full justify-start text-left h-auto rounded-lg border px-2 py-1.5 text-xs transition-colors flex flex-col items-stretch border-border hover:bg-surface-subtle text-secondary-foreground'
-const SELECTED_ITEM_CLASS =
+const ITEM_BASE_CLASS =
+  'group relative w-full justify-start text-left h-auto rounded-md border px-2.5 py-2 text-xs transition-colors flex flex-col items-stretch'
+const DEFAULT_ITEM_CLASS =
+  'border-border hover:bg-surface-subtle text-secondary-foreground'
+const DEFAULT_SELECTED_ITEM_CLASS =
   'border-primary bg-primary-subtle text-primary-hover'
+const COMPACT_ITEM_CLASS =
+  'border-transparent bg-transparent text-secondary-foreground hover:border-border hover:bg-surface-subtle'
+const COMPACT_SELECTED_ITEM_CLASS =
+  'border-border bg-surface text-foreground'
 
-function renderStatus(sop: SOPListItem) {
+function renderCompactStatus(sop: SOPListItem) {
+  const statusDokumenLabel = sop.statusDokumenLabel
+  const hasPenilaian =
+    sop.hasilEvaluasi !== undefined && sop.hasilEvaluasiLabel !== undefined
+
+  if (!statusDokumenLabel && !hasPenilaian) return null
+
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] leading-4 text-muted-foreground">
+      {statusDokumenLabel ? (
+        <span className="rounded-full bg-surface-muted px-1.5 py-0.5 font-medium text-secondary-foreground">
+          {statusDokumenLabel}
+        </span>
+      ) : null}
+      {hasPenilaian ? (
+        <span className="rounded-full border border-success-subtle bg-surface px-1.5 py-0.5 font-medium text-success-foreground">
+          {sop.hasilEvaluasiLabel}
+        </span>
+      ) : null}
+      {sop.statusTindakLanjutLabel ? (
+        <span className="text-[11px] text-muted-foreground">
+          {sop.statusTindakLanjutLabel}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+function renderStatus(sop: SOPListItem, variant: SOPListCardProps['variant'] = 'default') {
+  if (variant === 'compact') return renderCompactStatus(sop)
+
   const statusDokumen = sop.statusDokumen
   const statusDokumenLabel = sop.statusDokumenLabel
   if (!statusDokumen || !statusDokumenLabel) return null
@@ -52,25 +88,52 @@ function renderStatus(sop: SOPListItem) {
   return <SopStatusBadge status={statusDokumen} label={statusDokumenLabel} />
 }
 
+function getItemClassName(variant: SOPListCardProps['variant'], isSelected: boolean) {
+  if (variant === 'compact') {
+    return cn(
+      ITEM_BASE_CLASS,
+      COMPACT_ITEM_CLASS,
+      isSelected && COMPACT_SELECTED_ITEM_CLASS,
+    )
+  }
+
+  return cn(
+    ITEM_BASE_CLASS,
+    DEFAULT_ITEM_CLASS,
+    isSelected && DEFAULT_SELECTED_ITEM_CLASS,
+  )
+}
+
 function SopListItemButton({
   sop,
   isSelected,
   onSelect,
+  variant,
 }: {
   sop: SOPListItem
   isSelected: boolean
   onSelect: (id: string) => void
+  variant: SOPListCardProps['variant']
 }) {
   return (
     <Button
       type="button"
       variant="ghost"
       aria-pressed={isSelected}
-      className={cn(ITEM_CLASS, isSelected && SELECTED_ITEM_CLASS)}
+      className={getItemClassName(variant, isSelected)}
       onClick={() => onSelect(sop.id)}
     >
+      {variant === 'compact' ? (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-transparent transition-colors',
+            isSelected && 'bg-primary',
+          )}
+        />
+      ) : null}
       <p className="w-full truncate font-medium leading-snug">{sop.nama}</p>
-      <div className="mt-0.5">{renderStatus(sop)}</div>
+      <div className="mt-0.5">{renderStatus(sop, variant)}</div>
     </Button>
   )
 }
@@ -80,6 +143,7 @@ export function SOPListCard({
   selectedId = null,
   onSelect,
   className,
+  variant = 'default',
 }: SOPListCardProps) {
   if (items.length === 0) {
     return (
@@ -90,7 +154,7 @@ export function SOPListCard({
   }
 
   return (
-    <div className={cn('space-y-1', className)}>
+    <div className={cn(variant === 'compact' ? 'space-y-1.5' : 'space-y-1', className)}>
       {items.map((sop) => {
         const isSelected = selectedId === sop.id
         if (onSelect != null) {
@@ -100,13 +164,23 @@ export function SOPListCard({
               sop={sop}
               isSelected={isSelected}
               onSelect={onSelect}
+              variant={variant}
             />
           )
         }
         return (
-          <div key={sop.id} className={cn('px-2 py-1.5', ITEM_CLASS)}>
+          <div key={sop.id} className={getItemClassName(variant, isSelected)}>
+            {variant === 'compact' ? (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-transparent transition-colors',
+                  isSelected && 'bg-primary',
+                )}
+              />
+            ) : null}
             <p className="w-full truncate font-medium leading-snug">{sop.nama}</p>
-            <div className="mt-0.5">{renderStatus(sop)}</div>
+            <div className="mt-0.5">{renderStatus(sop, variant)}</div>
           </div>
         )
       })}
