@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeftClose, PanelLeftOpen, type LucideIcon } from 'lucide-react'
 import logoSvg from '@/assets/logo.svg'
 import { APP_DISPLAY_NAME } from '@/config/env'
+import { SidebarUserMenu } from '@/components/layout/SidebarUserMenu'
 import { cn } from '@/utils/cn'
 
 export interface AppSidebarItem {
@@ -122,6 +123,8 @@ export function AppSidebar({
           })}
         </div>
       </nav>
+
+      <SidebarUserMenu collapsed={collapsed} />
     </aside>
   )
 }
