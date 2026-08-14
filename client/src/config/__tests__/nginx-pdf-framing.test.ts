@@ -9,6 +9,7 @@ describe('nginx PDF framing policy', () => {
     expect(nginx).toContain('add_header X-Frame-Options "DENY" always;')
     expect(nginx).toContain("frame-ancestors 'none'")
     expect(nginx).toContain('location /api/v1/sop/public/pdf/')
+    expect(nginx).toContain('proxy_pass http://backend:3001/api/v1/sop/public/pdf/;')
     expect(nginx).toContain('add_header X-Frame-Options "SAMEORIGIN" always;')
     expect(nginx).toContain("frame-ancestors 'self'")
   })
