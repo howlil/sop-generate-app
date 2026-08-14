@@ -2,6 +2,7 @@
  * Picker skor 1–5 (untuk evaluasi OPD).
  */
 import { FormField } from '@/components/ui/form-field'
+import { InlineHelperNote } from '@/components/ui/inline-helper-note'
 import { useRef, type KeyboardEvent } from 'react'
 
 const SKOR_OPTIONS = [1, 2, 3, 4, 5] as const
@@ -26,7 +27,7 @@ export function SkorRatingPicker({
   value,
   onChange,
   label = 'Nilai evaluasi OPD (1–5)',
-  hint = 'Setiap evaluasi SOP dapat disertai nilai evaluasi OPD.',
+  hint = 'Pilih nilai evaluasi OPD untuk SOP ini.',
   disabled = false,
 }: SkorRatingPickerProps) {
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -74,29 +75,24 @@ export function SkorRatingPicker({
             title={`${n} - ${SKOR_LABELS[n]}`}
             onClick={() => {
               if (!disabled) {
-                onChange(n);
+                onChange(n)
               }
             }}
             onKeyDown={(event) => handleKeyDown(event, index)}
-            className={`w-9 h-9 rounded-md border text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`h-9 w-9 rounded-md border text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
               value === n
                 ? 'border-primary bg-primary-subtle text-primary'
-                : 'border-border-strong bg-surface text-secondary-foreground hover:bg-surface-subtle'
+                : 'border-border bg-surface text-secondary-foreground hover:bg-surface-subtle'
             }`}
           >
             {n}
           </button>
         ))}
       </div>
-      {hint && <p className="text-[10px] text-muted-foreground mt-1">{hint}</p>}
-      <div className="mt-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2">
-        <p className="text-[11px] font-medium text-blue-900">
-          Arti nilai: 1 adalah nilai terendah dan 5 adalah nilai tertinggi.
-        </p>
-        <p className="mt-1 text-[10px] leading-relaxed text-blue-800">
-          1 = Sangat rendah · 2 = Rendah · 3 = Sedang · 4 = Tinggi · 5 = Sangat tinggi
-        </p>
-      </div>
+      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+      <InlineHelperNote label="Skala nilai" className="mt-2">
+        1 sangat rendah · 2 rendah · 3 sedang · 4 tinggi · 5 sangat tinggi.
+      </InlineHelperNote>
     </FormField>
   )
 }
