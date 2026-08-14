@@ -1,21 +1,22 @@
-import { DocumentIntegrity } from '@/pages/landing/document-integrity'
-import { InstitutionalHero } from '@/pages/landing/institutional-hero'
+import { DocumentTraceability } from '@/pages/landing/document-traceability'
+import { IdentityHero } from '@/pages/landing/identity-hero'
+import { InstitutionalClosing } from '@/pages/landing/institutional-closing'
 import { PublicFooter } from '@/pages/landing/public-footer'
 import { PublicHeader } from '@/pages/landing/public-header'
-import { PublicUtilities } from '@/pages/landing/public-utilities'
+import { PublicServiceGateway } from '@/pages/landing/public-service-gateway'
 import {
-  RoleOverview,
-  type PublicRoleProfile,
-} from '@/pages/landing/role-overview'
+  RoleWorkspaceShowcase,
+  type LandingRoleProfile,
+} from '@/pages/landing/role-workspace-showcase'
 import {
-  WorkflowOverview,
-  type WorkflowStage,
-} from '@/pages/landing/workflow-overview'
+  WorkflowStory,
+  type WorkflowChapter,
+} from '@/pages/landing/workflow-story'
 
 const GOVERNMENT_NAME = 'Pemerintah Provinsi Sumatera Barat'
 const OFFICE_NAME = 'Biro Organisasi'
 
-const WORKFLOW_STAGES: WorkflowStage[] = [
+const WORKFLOW_STAGES = [
   {
     step: '01',
     title: 'Penyusunan',
@@ -51,73 +52,76 @@ const WORKFLOW_STAGES: WorkflowStage[] = [
     title: 'Arsip',
     description: 'SOP yang berlaku tersimpan sebagai arsip digital dan dapat diakses sesuai hak aksesnya.',
   },
+] as const
+
+const WORKFLOW_CHAPTERS: WorkflowChapter[] = [
+  {
+    number: '01',
+    title: 'Penyusunan',
+    description: 'OPD menyusun identitas, pelaksana, prosedur, peraturan, dan kelengkapan SOP dalam struktur yang konsisten.',
+    preview: 'authoring',
+  },
+  {
+    number: '02',
+    title: 'Evaluasi & Perbaikan',
+    description: 'Evaluator memberi penilaian dan catatan yang dapat ditindaklanjuti; OPD memperbaiki dokumen tanpa kehilangan konteks revisi.',
+    preview: 'evaluation',
+  },
+  {
+    number: '03',
+    title: 'Pengesahan & Arsip',
+    description: 'Setelah evaluasi dan berita acara selesai, pengesahan internal menutup proses sebelum SOP tersedia sebagai arsip yang berlaku.',
+    preview: 'approval',
+  },
 ]
 
-const ROLE_PROFILES: PublicRoleProfile[] = [
+const ROLE_PROFILES: LandingRoleProfile[] = [
   {
-    name: 'Penyusun',
-    responsibility: 'Menyusun isi SOP, mengelola pelaksana dan peraturan, serta menindaklanjuti catatan evaluasi.',
-    access: ['Draft SOP', 'Pelaksana', 'Peraturan', 'Riwayat perubahan'],
-    output: 'Draft dan revisi SOP yang siap diajukan oleh PJ Penyusun.',
+    id: 'penyusun',
+    label: 'Penyusun',
+    responsibility: 'Menyusun isi SOP, mengelola pelaksana dan peraturan, serta menindaklanjuti catatan evaluasi pada dokumen yang sama.',
+    output: 'Draft dan revisi SOP yang siap dikoordinasikan oleh PJ Penyusun.',
   },
   {
-    name: 'PJ Penyusun',
-    responsibility: 'Mengkoordinasikan pekerjaan penyusun pada OPD dan mengirim SOP ke proses evaluasi.',
-    access: ['Seluruh SOP OPD', 'Pengajuan evaluasi', 'Berita acara', 'Riwayat pengajuan'],
-    output: 'Paket pengajuan evaluasi dan tindak lanjut yang terkoordinasi.',
+    id: 'pj-penyusun',
+    label: 'PJ Penyusun',
+    responsibility: 'Mengkoordinasikan SOP pada OPD dan memastikan dokumen yang siap dapat masuk ke proses pengajuan evaluasi.',
+    output: 'Paket pengajuan evaluasi dan tindak lanjut revisi yang terkoordinasi.',
   },
   {
-    name: 'Evaluator',
-    responsibility: 'Memeriksa substansi SOP dan memberikan nilai serta catatan yang dapat ditindaklanjuti OPD.',
-    access: ['Daftar evaluasi', 'Rubrik penilaian', 'Catatan per SOP', 'Riwayat evaluasi'],
-    output: 'Hasil evaluasi yang terdokumentasi per SOP.',
+    id: 'evaluator',
+    label: 'Evaluator',
+    responsibility: 'Memeriksa substansi SOP, memberikan penilaian, dan menulis catatan yang dapat ditindaklanjuti oleh OPD.',
+    output: 'Hasil evaluasi dan catatan perbaikan yang terdokumentasi per SOP.',
   },
   {
-    name: 'PJ Evaluator Organisasi',
-    responsibility: 'Mengelola proses evaluasi lintas OPD, tim evaluator, data OPD, dan penyelesaian berita acara.',
-    access: ['Pengajuan lintas OPD', 'Manajemen tim', 'Data OPD', 'Grafik evaluasi'],
-    output: 'Evaluasi terkoordinasi dan berita acara yang siap diproses.',
+    id: 'pj-evaluator',
+    label: 'PJ Evaluator Organisasi',
+    responsibility: 'Mengelola proses evaluasi lintas OPD, koordinasi tim evaluator, dan penyelesaian berita acara hasil evaluasi.',
+    output: 'Evaluasi lintas OPD yang terkoordinasi dan berita acara yang siap diproses.',
   },
   {
-    name: 'Kepala OPD',
-    responsibility: 'Meninjau pengajuan OPD sendiri, mengesahkan SOP yang selesai dievaluasi, dan mengelola pencabutan SOP berlaku.',
-    access: ['Pengajuan OPD', 'Detail SOP', 'Pengesahan', 'Arsip OPD'],
-    output: 'SOP yang disahkan atau dicabut sesuai kewenangan Kepala OPD.',
+    id: 'kepala-opd',
+    label: 'Kepala OPD',
+    responsibility: 'Meninjau SOP OPD yang telah menyelesaikan evaluasi dan berita acara sebelum melakukan pengesahan internal.',
+    output: 'SOP yang selesai disahkan dan bergerak menuju arsip berlaku sesuai kewenangan.',
   },
 ]
 
 export function LandingPage() {
+  const compactStages = WORKFLOW_STAGES.map(({ step, title }) => ({ step, title }))
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-surface text-foreground">
+    <div className="min-h-screen bg-surface text-foreground">
       <PublicHeader governmentName={GOVERNMENT_NAME} officeName={OFFICE_NAME} />
 
       <main>
-        <InstitutionalHero
-          governmentName={GOVERNMENT_NAME}
-          officeName={OFFICE_NAME}
-          previewStages={WORKFLOW_STAGES.slice(0, 4)}
-        />
-
-        <PublicUtilities archiveLabel="Arsip SOP" validationLabel="Validasi PDF" />
-
-        <section className="border-y border-border bg-surface-subtle" aria-label="Identitas penyelenggara">
-          <div className="mx-auto grid max-w-6xl gap-5 px-4 py-5 sm:px-6 md:grid-cols-[1.2fr_2fr] md:items-center lg:px-8">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">{GOVERNMENT_NAME}</p>
-              <p className="mt-1 text-sm font-medium text-foreground">Sekretariat Daerah · {OFFICE_NAME}</p>
-            </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-secondary-foreground md:justify-end">
-              <span>Penyusunan SOP AP</span>
-              <span>Evaluasi dokumen</span>
-              <span>Pengesahan internal</span>
-              <span>Arsip publik</span>
-            </div>
-          </div>
-        </section>
-
-        <WorkflowOverview stages={WORKFLOW_STAGES} />
-        <RoleOverview roles={ROLE_PROFILES} />
-        <DocumentIntegrity />
+        <IdentityHero governmentName={GOVERNMENT_NAME} officeName={OFFICE_NAME} stages={compactStages} />
+        <PublicServiceGateway />
+        <WorkflowStory stages={compactStages} chapters={WORKFLOW_CHAPTERS} />
+        <RoleWorkspaceShowcase roles={ROLE_PROFILES} />
+        <DocumentTraceability />
+        <InstitutionalClosing governmentName={GOVERNMENT_NAME} officeName={OFFICE_NAME} />
       </main>
 
       <PublicFooter governmentName={GOVERNMENT_NAME} officeName={OFFICE_NAME} />
