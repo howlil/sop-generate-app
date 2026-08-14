@@ -58,9 +58,17 @@ interface PaginatedTableProps<T> {
   label?: string
   children: (pageData: T[], startIndex: number) => React.ReactNode
   className?: string
+  surfaceMode?: 'standalone' | 'embedded'
 }
 
-function PaginatedTable<T>({ data, pageSize = 10, label, children, className }: PaginatedTableProps<T>) {
+function PaginatedTable<T>({
+  data,
+  pageSize = 10,
+  label,
+  children,
+  className,
+  surfaceMode = 'standalone',
+}: PaginatedTableProps<T>) {
   const [page, setPage] = useState(1)
   const totalPages = data.length === 0 ? 1 : Math.ceil(data.length / pageSize)
   const safePage = Math.min(Math.max(1, page), totalPages)
@@ -69,7 +77,7 @@ function PaginatedTable<T>({ data, pageSize = 10, label, children, className }: 
   const pageData = useMemo(() => data.slice(startIndex, startIndex + pageSize), [data, startIndex, pageSize])
 
   return (
-    <div className={cn(tableSurfaceClassName, className)}>
+    <div className={cn(surfaceMode === 'standalone' ? tableSurfaceClassName : 'min-w-0', className)}>
       {children(pageData, startIndex)}
       {data.length > pageSize ? <Pagination totalItems={data.length} currentPage={safePage} onPageChange={setPage} pageSize={pageSize} label={label} /> : null}
     </div>
