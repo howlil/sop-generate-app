@@ -22,7 +22,7 @@ describe('ManajemenOPD', () => {
     expect(screen.getByText('Kelola OPD dan akun Kepala OPD.')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'OPD' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Kepala OPD' })).toBeInTheDocument()
-    expect(screen.getByRole('searchbox', { name: 'Cari nama OPD...' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Cari nama OPD...' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tambah OPD' })).toBeInTheDocument()
   })
 })
