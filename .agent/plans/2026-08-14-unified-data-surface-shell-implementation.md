@@ -2,97 +2,95 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Refactor the authenticated admin UI so the shell owns only navigation/global controls, the profile lives in the sidebar footer, and every list/table page can render tabs, search, filters, active filters, page actions, table content, and pagination as one coherent data surface.
+**Goal:** Refactor the authenticated admin UI so the shell owns navigation/global controls only, profile lives in the sidebar footer, and list/table pages render tabs, search, filters, page actions, table content, and pagination as one coherent data surface.
 
-**Architecture:** Keep page/domain logic in existing pages and introduce only small composition primitives. `PageHeaderProvider` remains metadata transport for breadcrumb + semantic page title; `HeaderBar` becomes breadcrumb + notification only; `SidebarUserMenu` owns profile/logout presentation in desktop and mobile navigation; `DataSurface` owns the single collection surface while existing table primitives retain table behavior. No TanStack Table migration is introduced.
+**Architecture:** Keep domain state and workflows inside existing pages. `PageHeaderProvider` transports breadcrumb + semantic title, `HeaderBar` renders breadcrumb + notification and an `sr-only` page heading, `SidebarUserMenu` owns profile/logout in desktop and mobile navigation, and small composition primitives (`DataSurface`, `ActiveFilterChips`) own collection layout without becoming domain-aware. Existing table pagination logic remains intact with an explicit embedded visual mode.
 
 **Tech Stack:** React 19, TypeScript, TanStack Router, Tailwind CSS, Vitest, Testing Library, Playwright, pnpm.
 
 ## Global Constraints
 
-- Frontend/UI-system refactor only; do not change backend endpoints, DTOs, API contracts, route permissions, role checks, or business workflows.
-- Keep exactly one semantic page `h1`; it must remain in the DOM but be visually `sr-only` in the authenticated shell.
-- The visible authenticated header contains breadcrumb/navigation context and notification only.
-- Move profile, role identity, `Profil Saya`, NIP detail, and logout into the sidebar footer; use the same user-menu concept in the mobile drawer.
-- Do not place create/submit/workflow buttons in the global header.
-- One collection should have one visible outer surface: one border, one radius, one background; avoid nested toolbar/table cards.
-- Prefer composition primitives over a boolean-heavy `DataTable` mega-component.
-- Preserve existing tab state, filter state ownership, handlers, dialogs, row actions, query behavior, and pagination behavior unless a task explicitly narrows a UX bug.
-- Search and advanced filters are independent; resetting filters must not clear the search query.
+- Frontend/UI-system refactor only; do not change backend endpoints, DTOs, API contracts, permissions, role checks, routes, or business workflows.
+- Keep exactly one semantic page `h1`; in the authenticated shell it is visually `sr-only`.
+- Visible `HeaderBar` content is breadcrumb/navigation context + notification only.
+- Profile identity, `Profil Saya`, NIP detail, and logout live in the sidebar footer on desktop and mobile drawer.
+- Page create/submit/workflow actions live with their data collection, never in the global header.
+- One collection has one outer surface: one border, one radius, one background.
+- Use composition instead of feature booleans on a mega `DataTable` component.
+- Preserve existing data fetching, handlers, dialogs, row actions, tab state, and pagination behavior.
+- Search and advanced filters are independent; resetting filters must not clear search.
 - Do not introduce TanStack Table in this iteration.
-- Responsive layout is part of the implementation: desktop, tablet, and mobile must not create page-level horizontal overflow.
-- Use TDD for new shared behavior and regression-prone state changes.
-- Keep this entire refactor on `refactor/unified-data-surface-shell`; do not create follow-up branches for failures within this task.
+- Responsive behavior is required on desktop/tablet/mobile; collection controls may wrap, but the page must not gain horizontal overflow.
+- New shared behavior and state-reset changes follow TDD.
+- Use the existing branch `refactor/unified-data-surface-shell` for the whole task.
 - Required repository CI must be green before squash merge.
 
 ---
 
 ## File map
 
-### New shared components
+### Create
 
-- `client/src/components/layout/SidebarUserMenu.tsx`: reusable user/profile dropdown for expanded sidebar, collapsed rail, and mobile drawer.
-- `client/src/components/layout/__tests__/SidebarUserMenu.test.tsx`: profile/footer behavior, navigation, logout, collapsed accessibility.
-- `client/src/components/data/data-surface.tsx`: composition-only outer collection surface, header/tabs/toolbar/actions/filter-row layout.
-- `client/src/components/data/active-filter-chips.tsx`: visible removable filter chips + clear-all action.
-- `client/src/components/data/__tests__/data-surface.test.tsx`: surface/toolbar/responsive composition regression coverage.
-- `client/src/components/data/__tests__/active-filter-chips.test.tsx`: individual removal and clear-all behavior.
+- `client/src/components/layout/SidebarUserMenu.tsx` — reusable profile/footer menu for expanded sidebar, collapsed rail, and mobile drawer.
+- `client/src/components/layout/__tests__/SidebarUserMenu.test.tsx` — identity, profile navigation, logout, collapsed accessibility.
+- `client/src/components/data/data-surface.tsx` — outer collection surface + header/tabs/toolbar/actions/filter-row composition primitives.
+- `client/src/components/data/active-filter-chips.tsx` — removable active-filter chips + clear-all action.
+- `client/src/components/data/__tests__/data-surface.test.tsx` — surface ownership and responsive layout contract.
+- `client/src/components/data/__tests__/active-filter-chips.test.tsx` — individual removal, clear-all, empty-items behavior.
+- `client/src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx` — search/filter reset independence.
 
-### Shared components to modify
+### Modify shared shell/data primitives
 
-- `client/src/components/layout/HeaderBar.tsx`: breadcrumb + notification only, single `sr-only` page heading.
-- `client/src/components/layout/PageHeaderProvider.tsx`: transitional metadata contract, then final breadcrumb/title/leading-only contract.
-- `client/src/components/layout/ListPageLayout.tsx`: transitional consumer, then final page metadata wrapper without visible description/actions/toolbar ownership.
-- `client/src/components/layout/AppSidebar.tsx`: append desktop `SidebarUserMenu` below scrollable navigation.
-- `client/src/components/layout/DashboardLayout.tsx`: render `SidebarUserMenu` in the mobile drawer footer.
-- `client/src/components/layout/__tests__/HeaderBar.test.tsx`: assert breadcrumb visible, title semantic-only, profile/actions/description absent.
-- `client/src/components/layout/__tests__/DashboardLayout.test.tsx`: desktop footer + mobile drawer placement and preserved collapse behavior.
-- `client/src/components/ui/data-table.tsx`: add explicit embedded surface mode to `Table.Paginated` while preserving standalone default.
-- `client/src/components/ui/__tests__/p3-polish-regressions.test.tsx`: preserve table typography/border regression expectations and add embedded-surface expectation if this file is still the closest table-style test owner.
-- `client/src/components/ui/search-toolbar.tsx`: keep temporarily while pages migrate, then delete after the last consumer is removed.
+- `client/src/components/layout/HeaderBar.tsx`
+- `client/src/components/layout/PageHeaderProvider.tsx`
+- `client/src/components/layout/ListPageLayout.tsx`
+- `client/src/components/layout/AppSidebar.tsx`
+- `client/src/components/layout/DashboardLayout.tsx`
+- `client/src/components/layout/__tests__/HeaderBar.test.tsx`
+- `client/src/components/layout/__tests__/DashboardLayout.test.tsx`
+- `client/src/components/layout/__tests__/ListPageLayout.test.tsx`
+- `client/src/components/ui/breadcrumb.tsx`
+- `client/src/components/ui/data-table.tsx`
+- `client/src/components/ui/__tests__/p3-polish-regressions.test.tsx`
+- `client/src/components/ui/search-toolbar.tsx` — delete after all production consumers are migrated.
 
-### SOP reference implementation
+### Modify reference + list pages
 
-- `client/src/pages/penyusun/sop/hooks/use-daftar-sop-filters.ts`: separate search from advanced filter reset semantics.
-- `client/src/pages/penyusun/sop/ManajemenSOP.tsx`: reference `DataSurface`, active filter chips, page actions in data toolbar, contextual empty states.
-- Add or update focused SOP filter tests in the nearest existing SOP hook/page test file; if no focused hook test exists, create `client/src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx`.
-
-### Simple list-page migrations
-
+- `client/src/pages/penyusun/sop/hooks/use-daftar-sop-filters.ts`
+- `client/src/pages/penyusun/sop/ManajemenSOP.tsx`
 - `client/src/pages/penyusun/pelaksana/PelaksanaSOP.tsx`
 - `client/src/pages/penyusun/peraturan/ManajemenPeraturan.tsx`
 - `client/src/pages/pj-evaluator/evaluator/ManajemenEvaluator.tsx`
 - `client/src/pages/pj-evaluator/penyusun/ManajemenPenyusun.tsx`
 - `client/src/pages/kepala-opd/sop/PantauSOP.tsx`
-
-### Complex/tabbed list-page migrations
-
 - `client/src/pages/pj-evaluator/opd/ManajemenOPD.tsx`
 - `client/src/pages/evaluator/evaluasi/DaftarSOPEvaluasi.tsx`
 - `client/src/pages/pj-evaluator/evaluasi/ManajemenEvaluasiSop.tsx`
 - `client/src/components/pengajuan/pengajuan-tabbed-table.tsx`
 - `client/src/pages/kepala-opd/pengajuan/PengajuanSOPPage.tsx`
 - `client/src/pages/penyusun/koordinator/berita-acara/BeritaAcaraKoordinatorPage.tsx`
+- `client/src/pages/pj-evaluator/grafik-evaluasi/GrafikEvaluasiTahunan.tsx` — metadata-contract cleanup only unless it actually owns a tabular collection.
 
-### Final contract cleanup consumers
+### E2E
 
-- Every remaining `ListPageLayout` consumer, including `client/src/pages/pj-evaluator/grafik-evaluasi/GrafikEvaluasiTahunan.tsx`, must compile against the final metadata-only `ListPageLayout` contract.
+- `client/e2e/list-filter-pagination.spec.ts`
 
 ---
 
-## Task 1: Simplify the visible header without breaking page metadata consumers
+## Task 1: Simplify `HeaderBar` and breadcrumb hierarchy
 
 **Files:**
 - Modify: `client/src/components/layout/HeaderBar.tsx`
 - Modify: `client/src/components/layout/__tests__/HeaderBar.test.tsx`
+- Modify: `client/src/components/ui/breadcrumb.tsx`
 
 **Interfaces:**
-- Consumes: current `PageHeaderContent` including `breadcrumb`, `title`, temporary `description`, temporary `actions`.
-- Produces: a header that visibly renders breadcrumb + `NotificationBell`, renders exactly one `h1.sr-only`, and ignores temporary description/actions while migration is in progress.
+- Temporarily consumes the current `PageHeaderContent` shape so list pages keep compiling during migration.
+- Produces visible breadcrumb + `NotificationBell`; title remains exactly one `h1.sr-only`; description/actions/profile are not rendered.
 
-- [ ] **Step 1: Replace the current visible-title test with a failing shell-semantics test**
+- [ ] **Step 1: Write the failing header-semantics test**
 
-Use the existing provider setup but assert the new contract:
+Replace the current visible-title expectation with:
 
 ```tsx
 render(
@@ -101,43 +99,42 @@ render(
     <SetPageHeader
       breadcrumb={[{ label: 'Penyusun' }, { label: 'Manajemen SOP' }]}
       title="Manajemen SOP"
-      description="Deskripsi yang tidak boleh tampil di header."
+      description="Tidak boleh terlihat di header."
       actions={<button type="button">Buat SOP</button>}
     />
   </PageHeaderProvider>,
 )
 
 expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument()
-expect(screen.getByText('Penyusun')).toBeInTheDocument()
 expect(screen.getByText('Manajemen SOP')).toHaveAttribute('aria-current', 'page')
 expect(screen.getByRole('heading', { name: 'Manajemen SOP' })).toHaveClass('sr-only')
-expect(screen.queryByText('Deskripsi yang tidak boleh tampil di header.')).not.toBeInTheDocument()
+expect(screen.queryByText('Tidak boleh terlihat di header.')).not.toBeInTheDocument()
 expect(screen.queryByRole('button', { name: 'Buat SOP' })).not.toBeInTheDocument()
 expect(screen.queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
 ```
 
-Keep the existing empty-breadcrumb regression but change its title assertion to `sr-only`.
+Keep the empty-breadcrumb test and require its heading to have `sr-only`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
-
-Run from `client/`:
+- [ ] **Step 2: Run RED**
 
 ```bash
+cd client
 pnpm test -- src/components/layout/__tests__/HeaderBar.test.tsx
 ```
 
-Expected: FAIL because title/description/actions/profile are currently visible.
+Expected: FAIL because title, description, actions, and profile are currently rendered.
 
-- [ ] **Step 3: Reduce `HeaderBar` to breadcrumb + notification + semantic title**
+- [ ] **Step 3: Implement the minimal shell header**
 
-Remove the role/auth/profile/logout imports and code from `HeaderBar.tsx`. Keep `usePageHeaderContext` and `NotificationBell`.
-
-Target structure:
+`HeaderBar.tsx` becomes:
 
 ```tsx
+import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { NotificationBell } from './NotificationBell'
+import { usePageHeaderContext } from '@/components/layout/PageHeaderProvider'
+
 export function HeaderBar() {
-  const pageHeader = usePageHeaderContext()
-  const headerContent = pageHeader?.headerContent
+  const headerContent = usePageHeaderContext()?.headerContent
 
   return (
     <header
@@ -159,38 +156,40 @@ export function HeaderBar() {
 }
 ```
 
-Do not delete `description`/`actions` from `PageHeaderProvider` yet; Task 8 removes them after all pages migrate.
+Do not delete provider props yet; final contract cleanup happens after all page migrations.
 
-- [ ] **Step 4: Strengthen the current breadcrumb item visually in the breadcrumb primitive only if required by existing markup**
+- [ ] **Step 4: Strengthen the current breadcrumb item**
 
-If the breadcrumb primitive already differentiates the current item, keep it. Otherwise update its final/current item class to foreground + medium weight without changing routing behavior:
+Change the non-link/current breadcrumb class from:
+
+```tsx
+className="font-medium text-secondary-foreground"
+```
+
+to:
 
 ```tsx
 className="font-medium text-foreground"
 ```
 
-Add/update the closest breadcrumb unit test only if this class change is required.
+Do not change link routing or `aria-current` behavior.
 
-- [ ] **Step 5: Run the focused test and verify GREEN**
+- [ ] **Step 5: Run GREEN**
 
 ```bash
 pnpm test -- src/components/layout/__tests__/HeaderBar.test.tsx
 ```
 
-Expected: PASS.
-
-- [ ] **Step 6: Commit the shell-header behavior**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add client/src/components/layout/HeaderBar.tsx client/src/components/layout/__tests__/HeaderBar.test.tsx client/src/components/ui/breadcrumb.tsx
 git commit -m "refactor(client): simplify authenticated header"
 ```
 
-Only add `breadcrumb.tsx` if Step 4 changed it.
-
 ---
 
-## Task 2: Move profile/logout into a reusable sidebar footer on desktop and mobile
+## Task 2: Move profile/logout to the sidebar footer on desktop and mobile
 
 **Files:**
 - Create: `client/src/components/layout/SidebarUserMenu.tsx`
@@ -200,7 +199,6 @@ Only add `breadcrumb.tsx` if Step 4 changed it.
 - Modify: `client/src/components/layout/__tests__/DashboardLayout.test.tsx`
 
 **Interfaces:**
-- Produces:
 
 ```ts
 export interface SidebarUserMenuProps {
@@ -210,17 +208,14 @@ export interface SidebarUserMenuProps {
 }
 ```
 
-- `SidebarUserMenu` owns use of `useAppRole()`, `useAuth()`, `useNavigate()`, `getMeRoute()`, and logout navigation to `ROUTES.HOME`.
-- `AppSidebar` renders it with `collapsed={collapsed}`.
-- Mobile drawer renders it with `collapsed={false}` and closes the drawer through `onNavigate` after profile navigation/logout selection.
+The component owns `useAppRole()`, `useAuth()`, `useNavigate()`, `getMeRoute()`, and logout navigation to `ROUTES.HOME`.
 
-- [ ] **Step 1: Write failing `SidebarUserMenu` tests**
+- [ ] **Step 1: Write failing profile-footer tests**
 
-Mock the existing hooks/router and cover expanded identity, collapsed accessible trigger, profile route, and logout:
+Mock the same role/auth/router behavior that the old header test used:
 
 ```tsx
 render(<SidebarUserMenu />)
-
 expect(screen.getByText('Pengguna Uji')).toBeInTheDocument()
 expect(screen.getByText('PJ Penyusun')).toBeInTheDocument()
 fireEvent.click(screen.getByRole('button', { name: 'Menu profil Pengguna Uji' }))
@@ -233,23 +228,21 @@ Collapsed case:
 
 ```tsx
 render(<SidebarUserMenu collapsed />)
-expect(screen.queryByText('Pengguna Uji')).not.toBeVisible()
 expect(screen.getByRole('button', { name: 'Menu profil Pengguna Uji' })).toBeInTheDocument()
+expect(screen.queryByText('PJ Penyusun')).not.toBeVisible()
 ```
 
-Logout case must assert the mocked `logout` is called and router navigation targets `ROUTES.HOME`.
+Logout case must assert mocked logout and navigation to `ROUTES.HOME`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [ ] **Step 2: Run RED**
 
 ```bash
 pnpm test -- src/components/layout/__tests__/SidebarUserMenu.test.tsx
 ```
 
-Expected: FAIL because the component does not exist.
+- [ ] **Step 3: Implement `SidebarUserMenu`**
 
-- [ ] **Step 3: Implement `SidebarUserMenu` by extracting the existing header profile behavior**
-
-Use the existing dropdown primitives and a compact footer trigger:
+Use the existing dropdown primitives and identity helpers:
 
 ```tsx
 export function SidebarUserMenu({
@@ -280,8 +273,9 @@ export function SidebarUserMenu({
           <button
             type="button"
             aria-label={`Menu profil ${displayName}`}
+            title={collapsed ? displayName : undefined}
             className={cn(
-              'group flex min-h-11 w-full items-center rounded-control text-left hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'flex min-h-11 w-full items-center rounded-control text-left hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               collapsed ? 'justify-center px-0' : 'gap-2.5 px-2.5',
             )}
           >
@@ -304,10 +298,10 @@ export function SidebarUserMenu({
           {getMeRoute(role) ? (
             <DropdownMenuItem
               onSelect={() => {
-                const mePath = getMeRoute(role)
-                if (!mePath) return
+                const route = getMeRoute(role)
+                if (!route) return
                 onNavigate?.()
-                navigate({ to: mePath })
+                navigate({ to: route })
               }}
             >
               Profil Saya
@@ -317,7 +311,7 @@ export function SidebarUserMenu({
             className="text-danger focus:bg-danger-subtle focus:text-danger-foreground"
             onSelect={() => void handleLogout()}
           >
-            <LogOut className="mr-2 h-3.5 w-3.5" />
+            <LogOut className="mr-2 h-3.5 w-3.5" aria-hidden />
             Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -327,17 +321,15 @@ export function SidebarUserMenu({
 }
 ```
 
-Use the existing rail tooltip pattern or native title for collapsed hover/focus context; do not duplicate identity text visually in the collapsed rail.
+- [ ] **Step 4: Mount it below the scrollable navigation**
 
-- [ ] **Step 4: Mount the user menu in desktop and mobile navigation**
-
-At the end of `AppSidebar`, after the scrollable `<nav>`:
+At the end of `AppSidebar`, after `<nav>`:
 
 ```tsx
 <SidebarUserMenu collapsed={collapsed} />
 ```
 
-At the end of the mobile drawer, after its scrollable navigation container:
+At the end of the mobile drawer, after the scrollable menu container:
 
 ```tsx
 <SidebarUserMenu
@@ -346,28 +338,25 @@ At the end of the mobile drawer, after its scrollable navigation container:
 />
 ```
 
-The footer must be outside the scrollable nav region so it remains pinned to the bottom when menu items overflow.
+The footer must stay outside the scrollable nav container.
 
 - [ ] **Step 5: Extend `DashboardLayout.test.tsx`**
 
-Keep all current collapse/localStorage tests. Add assertions that expanded desktop sidebar has the profile menu after navigation, collapsed state still exposes its accessible trigger, and mobile drawer renders the same menu after clicking `Buka navigasi`.
+Keep all existing sidebar-collapse/localStorage tests and add:
 
 ```tsx
-expect(screen.getByRole('button', { name: /Menu profil/i })).toBeInTheDocument()
+expect(document.querySelector('#desktop-sidebar')?.querySelector('[aria-label^="Menu profil"]')).not.toBeNull()
 fireEvent.click(screen.getByRole('button', { name: 'Buka navigasi' }))
-expect(document.querySelector('#mobile-main-navigation')).toBeInTheDocument()
 expect(document.querySelector('#mobile-main-navigation')?.querySelector('[aria-label^="Menu profil"]')).not.toBeNull()
 ```
 
-- [ ] **Step 6: Run focused tests and verify GREEN**
+- [ ] **Step 6: Run GREEN**
 
 ```bash
 pnpm test -- src/components/layout/__tests__/SidebarUserMenu.test.tsx src/components/layout/__tests__/DashboardLayout.test.tsx src/components/layout/__tests__/HeaderBar.test.tsx
 ```
 
-Expected: PASS.
-
-- [ ] **Step 7: Commit sidebar profile ownership**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add client/src/components/layout/SidebarUserMenu.tsx client/src/components/layout/AppSidebar.tsx client/src/components/layout/DashboardLayout.tsx client/src/components/layout/__tests__/SidebarUserMenu.test.tsx client/src/components/layout/__tests__/DashboardLayout.test.tsx
@@ -376,7 +365,7 @@ git commit -m "refactor(client): move profile into sidebar"
 
 ---
 
-## Task 3: Introduce composition-based `DataSurface` and active-filter primitives
+## Task 3: Add composition-based `DataSurface` and active filter chips
 
 **Files:**
 - Create: `client/src/components/data/data-surface.tsx`
@@ -386,24 +375,16 @@ git commit -m "refactor(client): move profile into sidebar"
 
 **Interfaces:**
 
-`data-surface.tsx` exports:
-
 ```ts
-export const DataSurface: {
-  Root: typeof DataSurfaceRoot
-  Header: typeof DataSurfaceHeader
-  Tabs: typeof DataSurfaceTabs
-  Toolbar: typeof DataSurfaceToolbar
-  Actions: typeof DataSurfaceActions
-  FilterRow: typeof DataSurfaceFilterRow
+export const DataSurface = {
+  Root: DataSurfaceRoot,
+  Header: DataSurfaceHeader,
+  Tabs: DataSurfaceTabs,
+  Toolbar: DataSurfaceToolbar,
+  Actions: DataSurfaceActions,
+  FilterRow: DataSurfaceFilterRow,
 }
-```
 
-Each component accepts normal `React.HTMLAttributes<HTMLDivElement>` so domain pages can compose arbitrary controls without adding feature booleans.
-
-`active-filter-chips.tsx` exports:
-
-```ts
 export interface ActiveFilterChipItem {
   id: string
   label: string
@@ -417,7 +398,7 @@ export interface ActiveFilterChipsProps {
 }
 ```
 
-- [ ] **Step 1: Write failing `DataSurface` composition tests**
+- [ ] **Step 1: Write failing composition tests**
 
 ```tsx
 render(
@@ -430,49 +411,44 @@ render(
         <DataSurface.Actions><button type="button">Buat SOP</button></DataSurface.Actions>
       </DataSurface.Toolbar>
     </DataSurface.Header>
-    <div>Table content</div>
+    <div>Isi tabel</div>
   </DataSurface.Root>,
 )
 
-const surface = screen.getByTestId('data-surface')
-expect(surface).toHaveClass('rounded-surface', 'border', 'border-border', 'bg-surface')
+expect(screen.getByTestId('data-surface')).toHaveClass('rounded-surface', 'border', 'border-border', 'bg-surface')
 expect(screen.getByLabelText('Cari SOP')).toBeInTheDocument()
 expect(screen.getByRole('button', { name: 'Buat SOP' })).toBeInTheDocument()
 ```
 
-Also assert toolbar classes support `flex-col` and `sm:flex-row`, actions wrap, and tabs have horizontal overflow safety.
+Also assert the toolbar includes `flex-col sm:flex-row`, actions wrap, and tabs are horizontally scroll-safe.
 
-- [ ] **Step 2: Write failing active-filter behavior tests**
+- [ ] **Step 2: Write failing filter-chip tests**
 
 ```tsx
-const removeStatus = vi.fn()
+const remove = vi.fn()
 const clearAll = vi.fn()
 render(
   <ActiveFilterChips
-    items={[{ id: 'status', label: 'Status: Draft', onRemove: removeStatus }]}
+    items={[{ id: 'status', label: 'Status: Draft', onRemove: remove }]}
     onClearAll={clearAll}
   />,
 )
 
 fireEvent.click(screen.getByRole('button', { name: 'Hapus filter Status: Draft' }))
-expect(removeStatus).toHaveBeenCalledTimes(1)
+expect(remove).toHaveBeenCalledTimes(1)
 fireEvent.click(screen.getByRole('button', { name: 'Hapus semua filter' }))
 expect(clearAll).toHaveBeenCalledTimes(1)
 ```
 
-Add an empty-items test that renders nothing.
+Add a second test with `items={[]}` and assert neither chip nor clear-all button renders.
 
-- [ ] **Step 3: Run focused tests and verify RED**
+- [ ] **Step 3: Run RED**
 
 ```bash
 pnpm test -- src/components/data/__tests__/data-surface.test.tsx src/components/data/__tests__/active-filter-chips.test.tsx
 ```
 
-Expected: FAIL because both shared components do not exist.
-
-- [ ] **Step 4: Implement `DataSurface` as pure layout composition**
-
-Use a single outer surface and no domain logic:
+- [ ] **Step 4: Implement `DataSurface`**
 
 ```tsx
 const DataSurfaceRoot = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -517,11 +493,9 @@ const DataSurfaceFilterRow = React.forwardRef<HTMLDivElement, React.HTMLAttribut
 )
 ```
 
-Use display names and export the `DataSurface` object.
+Set display names and export the object shown in Interfaces.
 
 - [ ] **Step 5: Implement `ActiveFilterChips`**
-
-Use removable button-like chips with accessible labels and a neutral clear-all action. Do not use status-semantic colors for generic filters.
 
 ```tsx
 export function ActiveFilterChips({
@@ -556,15 +530,13 @@ export function ActiveFilterChips({
 }
 ```
 
-- [ ] **Step 6: Run focused tests and verify GREEN**
+- [ ] **Step 6: Run GREEN**
 
 ```bash
 pnpm test -- src/components/data/__tests__/data-surface.test.tsx src/components/data/__tests__/active-filter-chips.test.tsx
 ```
 
-Expected: PASS.
-
-- [ ] **Step 7: Commit the collection primitives**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add client/src/components/data/data-surface.tsx client/src/components/data/active-filter-chips.tsx client/src/components/data/__tests__/data-surface.test.tsx client/src/components/data/__tests__/active-filter-chips.test.tsx
@@ -573,48 +545,42 @@ git commit -m "feat(client): add unified data surface primitives"
 
 ---
 
-## Task 4: Make paginated tables embed cleanly inside one data surface
+## Task 4: Add explicit embedded mode to paginated tables
 
 **Files:**
 - Modify: `client/src/components/ui/data-table.tsx`
-- Modify: nearest existing table test, preferably `client/src/components/ui/__tests__/p3-polish-regressions.test.tsx`
+- Modify: `client/src/components/ui/__tests__/p3-polish-regressions.test.tsx`
 
 **Interfaces:**
-
-Extend `PaginatedTableProps<T>` with an explicit visual mode:
 
 ```ts
 surfaceMode?: 'standalone' | 'embedded'
 ```
 
-Default remains `standalone` for backward compatibility. `embedded` removes the outer border/radius/background because `DataSurface.Root` owns them.
+Default is `standalone`. `embedded` removes only the outer table card styling; page state, slicing, and pagination behavior do not change.
 
-- [ ] **Step 1: Write a failing embedded-surface regression test**
-
-Render a paginated table in embedded mode and assert no second card styling:
+- [ ] **Step 1: Write failing standalone/embedded tests**
 
 ```tsx
 render(
   <Table.Paginated data={[1]} label="Item" surfaceMode="embedded">
-    {(items) => <div>{items[0]}</div>}
+    {(items) => <div data-testid="embedded-content">{items[0]}</div>}
   </Table.Paginated>,
 )
 
-const container = screen.getByText('1').parentElement
-expect(container).not.toHaveClass('rounded-surface', 'border', 'bg-surface')
+const embedded = screen.getByTestId('embedded-content').parentElement
+expect(embedded).not.toHaveClass('rounded-surface', 'border', 'bg-surface')
 ```
 
-Keep or add a companion assertion that default mode still has the standalone table surface classes.
+Render a second instance without `surfaceMode` and assert the current standalone surface classes remain.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [ ] **Step 2: Run RED**
 
 ```bash
 pnpm test -- src/components/ui/__tests__/p3-polish-regressions.test.tsx
 ```
 
-Expected: FAIL because `surfaceMode` is not supported.
-
-- [ ] **Step 3: Implement the explicit mode without changing pagination logic**
+- [ ] **Step 3: Implement the mode**
 
 ```tsx
 interface PaginatedTableProps<T> {
@@ -634,14 +600,15 @@ function PaginatedTable<T>({
   className,
   surfaceMode = 'standalone',
 }: PaginatedTableProps<T>) {
-  // keep existing page state/slicing logic unchanged
+  const [page, setPage] = useState(1)
+  const totalPages = data.length === 0 ? 1 : Math.ceil(data.length / pageSize)
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  useEffect(() => { if (page > totalPages) setPage(1) }, [page, totalPages])
+  const startIndex = (safePage - 1) * pageSize
+  const pageData = useMemo(() => data.slice(startIndex, startIndex + pageSize), [data, startIndex, pageSize])
+
   return (
-    <div
-      className={cn(
-        surfaceMode === 'standalone' ? tableSurfaceClassName : 'min-w-0',
-        className,
-      )}
-    >
+    <div className={cn(surfaceMode === 'standalone' ? tableSurfaceClassName : 'min-w-0', className)}>
       {children(pageData, startIndex)}
       {data.length > pageSize ? (
         <Pagination
@@ -657,17 +624,13 @@ function PaginatedTable<T>({
 }
 ```
 
-Do not move sorting/filtering logic into this component.
-
-- [ ] **Step 4: Run focused table tests and verify GREEN**
+- [ ] **Step 4: Run GREEN**
 
 ```bash
 pnpm test -- src/components/ui/__tests__/p3-polish-regressions.test.tsx
 ```
 
-Expected: PASS.
-
-- [ ] **Step 5: Commit embedded table support**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add client/src/components/ui/data-table.tsx client/src/components/ui/__tests__/p3-polish-regressions.test.tsx
@@ -676,16 +639,14 @@ git commit -m "refactor(client): support embedded paginated tables"
 
 ---
 
-## Task 5: Use Manajemen SOP as the reference implementation for filters, actions, empty states, and one-surface layout
+## Task 5: Make Manajemen SOP the reference implementation
 
 **Files:**
 - Modify: `client/src/pages/penyusun/sop/hooks/use-daftar-sop-filters.ts`
-- Create or modify: `client/src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx`
+- Create: `client/src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx`
 - Modify: `client/src/pages/penyusun/sop/ManajemenSOP.tsx`
 
 **Interfaces:**
-
-Final filter hook shape:
 
 ```ts
 export interface DaftarSOPAdvancedFilters {
@@ -693,28 +654,11 @@ export interface DaftarSOPAdvancedFilters {
   filterTanggalDari: string | null
   filterTanggalSampai: string | null
 }
-
-return {
-  searchQuery,
-  filterStatus,
-  filterTanggalDari,
-  filterTanggalSampai,
-  isFilterOpen,
-  activeFilterCount,
-  setSearchQuery,
-  clearSearch,
-  setStatusFilter,
-  setFilterTanggalDari,
-  setFilterTanggalSampai,
-  clearFilters,
-}
 ```
 
-`clearFilters()` resets only advanced filters. `clearSearch()` resets only `searchQuery`.
+Hook return includes `searchQuery`, `filterStatus`, both date values, `isFilterOpen`, `activeFilterCount`, setters, `clearSearch()`, and `clearFilters()`.
 
-- [ ] **Step 1: Write a failing filter-reset regression test**
-
-Use `renderHook`:
+- [ ] **Step 1: Write failing reset-independence test**
 
 ```tsx
 const { result } = renderHook(() => useDaftarSopFilters())
@@ -726,7 +670,6 @@ act(() => {
 })
 
 act(() => result.current.clearFilters())
-
 expect(result.current.searchQuery).toBe('pengadaan')
 expect(result.current.filterStatus).toBeNull()
 expect(result.current.filterTanggalDari).toBeNull()
@@ -735,17 +678,13 @@ act(() => result.current.clearSearch())
 expect(result.current.searchQuery).toBe('')
 ```
 
-- [ ] **Step 2: Run the hook test and verify RED**
+- [ ] **Step 2: Run RED**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx
 ```
 
-Expected: FAIL because current `clearFilters()` clears the search query and `clearSearch()` does not exist.
-
-- [ ] **Step 3: Separate search state from advanced filters in the hook**
-
-Use one state for search and one for advanced filters:
+- [ ] **Step 3: Separate search state from advanced filters**
 
 ```tsx
 const [searchQuery, setSearchQuery] = useState('')
@@ -765,80 +704,104 @@ const clearFilters = useCallback(() => {
 }, [])
 ```
 
-Keep `activeFilterCount` based only on advanced filters.
+`activeFilterCount` counts only advanced filters.
 
-- [ ] **Step 4: Run the hook test and verify GREEN**
+- [ ] **Step 4: Run GREEN for the hook**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx
 ```
 
-Expected: PASS.
+- [ ] **Step 5: Replace header action + `SearchToolbar` ownership in `ManajemenSOP.tsx`**
 
-- [ ] **Step 5: Replace `ListPageLayout` header actions + `SearchToolbar` with one `DataSurface` in `ManajemenSOP.tsx`**
-
-Keep page metadata only:
+The page metadata becomes:
 
 ```tsx
 <ListPageLayout
   breadcrumb={[{ label: 'Manajemen SOP' }]}
   title="Manajemen SOP"
 >
-  <DataSurface.Root>
-    <DataSurface.Header>
-      <DataSurface.Toolbar>
-        <SearchInput
-          placeholder="Cari judul atau nomor SOP..."
-          aria-label="Cari judul atau nomor SOP..."
-          value={filters.searchQuery}
-          onChange={(event) => filters.setSearchQuery(event.target.value)}
-        />
-        <FilterDropdownButton
-          open={filters.isFilterOpen}
-          onOpenChange={filters.setIsFilterOpen}
-          activeCount={filters.activeFilterCount}
-        >
-          {/* keep existing status/date FormField content and Reset -> filters.clearFilters */}
-        </FilterDropdownButton>
-        <DataSurface.Actions>
-          {canPjPenyusunRunCoordinatorActions(role ?? '') ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs"
-              onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
-            >
-              <Send className="h-3.5 w-3.5" />
-              Ajukan evaluasi SOP
-            </Button>
-          ) : null}
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => setIsBuatSOPDialogOpen(true)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Buat SOP Baru
-          </Button>
-        </DataSurface.Actions>
-      </DataSurface.Toolbar>
-      <DataSurface.FilterRow>
-        <ActiveFilterChips items={activeFilterItems} onClearAll={filters.clearFilters} />
-      </DataSurface.FilterRow>
-    </DataSurface.Header>
-
-    <Table.Paginated data={filteredList} label="SOP" surfaceMode="embedded">
-      {/* keep the current table/row action mapping */}
-    </Table.Paginated>
-  </DataSurface.Root>
-
-  {/* keep dialogs and confirm dialog outside DataSurface.Root */}
-</ListPageLayout>
 ```
 
-- [ ] **Step 6: Build the explicit active-filter item model in `ManajemenSOP`**
+Inside it, add one `DataSurface.Root` containing:
 
-Add a local date formatter that avoids UTC date shifting:
+```tsx
+<DataSurface.Header>
+  <DataSurface.Toolbar>
+    <SearchInput
+      placeholder="Cari judul atau nomor SOP..."
+      aria-label="Cari judul atau nomor SOP..."
+      value={filters.searchQuery}
+      onChange={(event) => filters.setSearchQuery(event.target.value)}
+    />
+    <FilterDropdownButton
+      open={filters.isFilterOpen}
+      onOpenChange={filters.setIsFilterOpen}
+      activeCount={filters.activeFilterCount}
+    >
+      <div className="space-y-3">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-xs font-semibold text-foreground">Filter SOP</p>
+          {filters.activeFilterCount > 0 ? (
+            <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={filters.clearFilters}>
+              Reset
+            </Button>
+          ) : null}
+        </div>
+        <FormField label="Status" htmlFor={filterStatusId}>
+          <SOPStatusFilterSelect
+            id={filterStatusId}
+            value={filters.filterStatus ?? 'all'}
+            onValueChange={filters.setStatusFilter}
+          />
+        </FormField>
+        <FormField label="Terakhir diperbarui">
+          <DateRangeFilterFields
+            fromId={filterTanggalDariId}
+            toId={filterTanggalSampaiId}
+            fromValue={filters.filterTanggalDari ?? ''}
+            toValue={filters.filterTanggalSampai ?? ''}
+            onFromChange={filters.setFilterTanggalDari}
+            onToChange={filters.setFilterTanggalSampai}
+          />
+        </FormField>
+      </div>
+    </FilterDropdownButton>
+    <DataSurface.Actions>
+      {canPjPenyusunRunCoordinatorActions(role ?? '') ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
+        >
+          <Send className="h-3.5 w-3.5" />
+          Ajukan evaluasi SOP
+        </Button>
+      ) : null}
+      <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setIsBuatSOPDialogOpen(true)}>
+        <Plus className="h-3.5 w-3.5" />
+        Buat SOP Baru
+      </Button>
+    </DataSurface.Actions>
+  </DataSurface.Toolbar>
+  <DataSurface.FilterRow>
+    <ActiveFilterChips items={activeFilterItems} onClearAll={filters.clearFilters} />
+  </DataSurface.FilterRow>
+</DataSurface.Header>
+```
+
+Move the page's existing `Table.Paginated` block directly below this header, unchanged except for:
+
+```tsx
+<Table.Paginated data={filteredList} label="SOP" surfaceMode="embedded">
+```
+
+Keep `BukaPengajuanEvaluasiDialog`, `BuatSOPDialog`, and `ConfirmDialog` outside `DataSurface.Root` so dialogs are not part of the visual collection surface.
+
+- [ ] **Step 6: Build visible filter chips**
+
+Use a local safe date formatter:
 
 ```tsx
 const formatFilterDate = (value: string) =>
@@ -849,46 +812,32 @@ const formatFilterDate = (value: string) =>
   }).format(new Date(`${value}T00:00:00`))
 ```
 
-Build items with individual reset callbacks:
+Build:
 
 ```tsx
 const activeFilterItems = [
   ...(filters.filterStatus && filters.filterStatus !== 'all'
-    ? [{
-        id: 'status',
-        label: `Status: ${filters.filterStatus}`,
-        onRemove: () => filters.setStatusFilter(null),
-      }]
+    ? [{ id: 'status', label: `Status: ${filters.filterStatus}`, onRemove: () => filters.setStatusFilter(null) }]
     : []),
   ...(filters.filterTanggalDari
-    ? [{
-        id: 'tanggal-dari',
-        label: `Dari: ${formatFilterDate(filters.filterTanggalDari)}`,
-        onRemove: () => filters.setFilterTanggalDari(null),
-      }]
+    ? [{ id: 'tanggal-dari', label: `Dari: ${formatFilterDate(filters.filterTanggalDari)}`, onRemove: () => filters.setFilterTanggalDari(null) }]
     : []),
   ...(filters.filterTanggalSampai
-    ? [{
-        id: 'tanggal-sampai',
-        label: `Sampai: ${formatFilterDate(filters.filterTanggalSampai)}`,
-        onRemove: () => filters.setFilterTanggalSampai(null),
-      }]
+    ? [{ id: 'tanggal-sampai', label: `Sampai: ${formatFilterDate(filters.filterTanggalSampai)}`, onRemove: () => filters.setFilterTanggalSampai(null) }]
     : []),
 ]
 ```
 
-If the status filter component already exposes a human-readable status-label helper, use that existing label instead of the raw enum value; do not add a second status mapping table.
+If the existing status config already exports the human-readable label for the selected status, use that label instead of displaying the enum value; do not create a duplicate status mapping.
 
 - [ ] **Step 7: Make the empty row contextual**
-
-Derive:
 
 ```tsx
 const hasSearch = filters.searchQuery.trim().length > 0
 const hasAdvancedFilters = filters.activeFilterCount > 0
 ```
 
-Render copy based on context:
+Replace the generic empty copy with:
 
 ```tsx
 <EmptyState
@@ -912,17 +861,14 @@ Render copy based on context:
 />
 ```
 
-Keep recovery buttons in the toolbar/chips rather than nesting another action inside a table row unless the existing `EmptyState` API already supports a safe action slot.
-
-- [ ] **Step 8: Run focused + page-adjacent tests**
+- [ ] **Step 8: Run focused tests + typecheck**
 
 ```bash
 pnpm test -- src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx src/components/data/__tests__/data-surface.test.tsx src/components/data/__tests__/active-filter-chips.test.tsx
+pnpm typecheck
 ```
 
-Expected: PASS.
-
-- [ ] **Step 9: Commit the reference implementation**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add client/src/pages/penyusun/sop/hooks/use-daftar-sop-filters.ts client/src/pages/penyusun/sop/hooks/__tests__/use-daftar-sop-filters.test.tsx client/src/pages/penyusun/sop/ManajemenSOP.tsx
@@ -931,129 +877,78 @@ git commit -m "refactor(client): unify SOP collection controls"
 
 ---
 
-## Task 6: Migrate simple search/action list pages to the unified surface
+## Task 6: Migrate all remaining collection pages to the same surface pattern
 
 **Files:**
-- Modify: `client/src/pages/penyusun/pelaksana/PelaksanaSOP.tsx`
-- Modify: `client/src/pages/penyusun/peraturan/ManajemenPeraturan.tsx`
-- Modify: `client/src/pages/pj-evaluator/evaluator/ManajemenEvaluator.tsx`
-- Modify: `client/src/pages/pj-evaluator/penyusun/ManajemenPenyusun.tsx`
-- Modify: `client/src/pages/kepala-opd/sop/PantauSOP.tsx`
+- Modify all list/collection files listed in the File map.
 
 **Interfaces:**
-- Consumes: `DataSurface`, `SearchInput`, existing page buttons/handlers, `Table.Paginated surfaceMode="embedded"`.
-- Produces: no `SearchToolbar` use in these five pages and no page actions passed to `ListPageLayout`.
+- Search uses existing `SearchInput` values/handlers.
+- Existing tabs are placed inside `DataSurface.Tabs`; their state and callbacks are unchanged.
+- Existing page action buttons move into `DataSurface.Actions` unchanged.
+- Existing `Table.Paginated` instances inside `DataSurface.Root` use `surfaceMode="embedded"`.
+- Read-only pages omit `DataSurface.Actions` entirely.
 
-- [ ] **Step 1: Establish a green baseline before migration**
+- [ ] **Step 1: Migrate simple create/search pages**
 
-```bash
-pnpm test -- src/components/data/__tests__/data-surface.test.tsx src/components/layout/__tests__/HeaderBar.test.tsx
-```
-
-Expected: PASS.
-
-- [ ] **Step 2: Migrate `PelaksanaSOP.tsx`**
-
-Keep its existing create handler/dialog exactly, but move search + create action into one surface:
+For `PelaksanaSOP.tsx`, `ManajemenPeraturan.tsx`, `ManajemenEvaluator.tsx`, and `ManajemenPenyusun.tsx`, remove `SearchToolbar` and `ListPageLayout.actions`/`toolbar`. Use this structure:
 
 ```tsx
-<ListPageLayout breadcrumb={[{ label: 'Pelaksana SOP' }]} title="Pelaksana SOP">
+<ListPageLayout breadcrumb={breadcrumb} title={title}>
   <DataSurface.Root>
     <DataSurface.Header>
       <DataSurface.Toolbar>
         <SearchInput
-          placeholder="Cari pelaksana..."
-          aria-label="Cari pelaksana..."
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder={searchPlaceholder}
+          aria-label={searchPlaceholder}
+          value={searchValue}
+          onChange={searchChangeHandler}
         />
         <DataSurface.Actions>
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => {
-              resetForm()
-              setIsCreateDialogOpen(true)
-            }}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Tambah Pelaksana
-          </Button>
+          {createButton}
         </DataSurface.Actions>
       </DataSurface.Toolbar>
     </DataSurface.Header>
-    <Table.Paginated data={filteredData} label="Pelaksana" surfaceMode="embedded">
-      {renderExistingTable}
-    </Table.Paginated>
+    {tableContent}
   </DataSurface.Root>
-  {renderExistingDialogs}
+  {dialogContent}
 </ListPageLayout>
 ```
 
-During implementation, replace `renderExistingTable`/`renderExistingDialogs` with the file's existing JSX blocks verbatim; these names are not new runtime helpers.
+In implementation, `breadcrumb`, `title`, `searchPlaceholder`, `searchValue`, `searchChangeHandler`, `createButton`, `tableContent`, and `dialogContent` are not new runtime variables: substitute the page's current literal props/JSX in place. Do not introduce helper variables solely to satisfy this structure.
 
-- [ ] **Step 3: Migrate `ManajemenPeraturan.tsx`**
+Preserve these existing create callbacks exactly:
 
-Use the same `DataSurface` structure, preserving the existing `openPeraturanDialog()` handler:
-
-```tsx
-<DataSurface.Toolbar>
-  <SearchInput
-    placeholder="Cari peraturan..."
-    aria-label="Cari peraturan..."
-    value={searchQuery}
-    onChange={(event) => setSearchQuery(event.target.value)}
-  />
-  <DataSurface.Actions>
-    <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openPeraturanDialog()}>
-      <Plus className="h-3.5 w-3.5" />
-      Tambah Peraturan
-    </Button>
-  </DataSurface.Actions>
-</DataSurface.Toolbar>
-```
-
-Keep existing tabs/table-tab domain components inside `DataSurface` rather than rewriting their state.
-
-- [ ] **Step 4: Migrate `ManajemenEvaluator.tsx`**
-
-Move its existing search control and `Tambah Anggota` button into `DataSurface.Toolbar` + `DataSurface.Actions`; keep role/OPD assignment logic unchanged. Use `surfaceMode="embedded"` on the paginated table.
-
-Target action node:
+`PelaksanaSOP.tsx`:
 
 ```tsx
-<DataSurface.Actions>
-  <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openCreateDialog}>
-    <Plus className="h-3.5 w-3.5" />
-    Tambah Anggota
-  </Button>
-</DataSurface.Actions>
+onClick={() => {
+  resetForm()
+  setIsCreateDialogOpen(true)
+}}
 ```
 
-If the current file uses an inline state-reset block rather than `openCreateDialog`, preserve that exact existing callback instead of introducing a new helper merely for this refactor.
-
-- [ ] **Step 5: Migrate `ManajemenPenyusun.tsx`**
-
-Move search + existing `Tambah Penyusun` action into the surface. Preserve the current create reset behavior:
+`ManajemenPeraturan.tsx`:
 
 ```tsx
-<Button
-  size="sm"
-  className="h-8 gap-1.5 text-xs"
-  onClick={() => {
-    setFormData(emptyForm())
-    setCreateOpdId(undefined)
-    setIsCreateOpen(true)
-  }}
->
-  <Plus className="h-3.5 w-3.5" />
-  Tambah Penyusun
-</Button>
+onClick={() => openPeraturanDialog()}
 ```
 
-- [ ] **Step 6: Migrate read-only `PantauSOP.tsx`**
+`ManajemenPenyusun.tsx`:
 
-Use only the controls that page already has. Do not create an empty actions slot:
+```tsx
+onClick={() => {
+  setFormData(emptyForm())
+  setCreateOpdId(undefined)
+  setIsCreateOpen(true)
+}}
+```
+
+For `ManajemenEvaluator.tsx`, preserve its current create/reset callback verbatim rather than changing evaluator assignment behavior.
+
+- [ ] **Step 2: Migrate read-only `PantauSOP.tsx`**
+
+Use:
 
 ```tsx
 <DataSurface.Root>
@@ -1068,155 +963,99 @@ Use only the controls that page already has. Do not create an empty actions slot
     </DataSurface.Toolbar>
   </DataSurface.Header>
   <Table.Paginated data={filteredList} label="SOP" surfaceMode="embedded">
-    {tableRenderer}
+    {pageData => /* keep the file's current table renderer unchanged */ null}
   </Table.Paginated>
 </DataSurface.Root>
 ```
 
-Replace `tableRenderer` with the existing table child function; do not introduce it as a new helper unless the page already has one.
+During implementation, keep the current table child renderer; do not replace it with `null` or change row behavior. The snippet defines only ownership/layout.
 
-- [ ] **Step 7: Run typecheck and focused UI tests**
+- [ ] **Step 3: Migrate `ManajemenOPD.tsx`**
 
-```bash
-pnpm typecheck
-pnpm test -- src/components/data/__tests__/data-surface.test.tsx src/components/layout/__tests__/HeaderBar.test.tsx
+Place the current OPD/Kepala OPD tab control inside:
+
+```tsx
+<DataSurface.Tabs>
+  {/* current tabs JSX, unchanged */}
+</DataSurface.Tabs>
 ```
 
-Expected: both commands succeed.
+Place the current search control and page actions inside `DataSurface.Toolbar`; render the current active tab content below `DataSurface.Header`. Do not move tab state into `DataSurface`.
 
-- [ ] **Step 8: Commit simple list-page migrations**
+- [ ] **Step 4: Migrate evaluation collections**
 
-```bash
-git add client/src/pages/penyusun/pelaksana/PelaksanaSOP.tsx client/src/pages/penyusun/peraturan/ManajemenPeraturan.tsx client/src/pages/pj-evaluator/evaluator/ManajemenEvaluator.tsx client/src/pages/pj-evaluator/penyusun/ManajemenPenyusun.tsx client/src/pages/kepala-opd/sop/PantauSOP.tsx
-git commit -m "refactor(client): unify simple list surfaces"
-```
-
----
-
-## Task 7: Migrate complex and tabbed collection pages without rewriting domain state
-
-**Files:**
-- Modify: `client/src/pages/pj-evaluator/opd/ManajemenOPD.tsx`
-- Modify: `client/src/pages/evaluator/evaluasi/DaftarSOPEvaluasi.tsx`
-- Modify: `client/src/pages/pj-evaluator/evaluasi/ManajemenEvaluasiSop.tsx`
-- Modify: `client/src/components/pengajuan/pengajuan-tabbed-table.tsx`
-- Modify: `client/src/pages/kepala-opd/pengajuan/PengajuanSOPPage.tsx`
-- Modify: `client/src/pages/penyusun/koordinator/berita-acara/BeritaAcaraKoordinatorPage.tsx`
-
-**Interfaces:**
-- Existing tabs remain the source of tab value/state and callbacks.
-- `DataSurface.Tabs` provides only horizontal-safe placement.
-- Existing grouped lists or tab-specific tables remain domain components; wrap rather than reimplement them.
-
-- [ ] **Step 1: Migrate `ManajemenOPD.tsx`**
-
-Place existing OPD tabs in `DataSurface.Tabs` and search/controls in `DataSurface.Toolbar`:
+For `DaftarSOPEvaluasi.tsx` and `ManajemenEvaluasiSop.tsx`:
 
 ```tsx
 <DataSurface.Root>
   <DataSurface.Header>
     <DataSurface.Tabs>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        {existingTabsList}
-      </Tabs>
+      {/* existing evaluation filter tabs */}
     </DataSurface.Tabs>
     <DataSurface.Toolbar>
-      <SearchInput
-        placeholder={searchPlaceholder}
-        aria-label={searchPlaceholder}
-        value={searchQuery}
-        onChange={(event) => setSearchQuery(event.target.value)}
-      />
-      {existingPageActions ? <DataSurface.Actions>{existingPageActions}</DataSurface.Actions> : null}
+      {/* existing search/filter controls */}
+      <DataSurface.Actions>
+        {/* only existing page-wide workflow actions */}
+      </DataSurface.Actions>
     </DataSurface.Toolbar>
   </DataSurface.Header>
-  {existingActiveTabContent}
+  {/* existing grouped list or table content */}
 </DataSurface.Root>
 ```
 
-During implementation inline the file's current tab list/content/action JSX instead of creating the pseudo variables shown above. Do not change OPD/Kepala OPD tab switching behavior.
+Keep evaluation status values, queries, and workflow handlers unchanged.
 
-- [ ] **Step 2: Migrate `DaftarSOPEvaluasi.tsx`**
+- [ ] **Step 5: Make `pengajuan-tabbed-table.tsx` own the single collection surface**
 
-Place the existing evaluation filter tabs (if present) in `DataSurface.Tabs`, search/filter controls in `DataSurface.Toolbar`, and the existing table/grouped list below the header. Preserve evaluator workflow actions and query/filter logic.
-
-```tsx
-<DataSurface.Header>
-  <DataSurface.Tabs>
-    <EvaluasiFilterTabs value={filter} onValueChange={setFilter} />
-  </DataSurface.Tabs>
-  <DataSurface.Toolbar>
-    <SearchInput
-      placeholder="Cari SOP..."
-      aria-label="Cari SOP..."
-      value={searchQuery}
-      onChange={(event) => setSearchQuery(event.target.value)}
-    />
-  </DataSurface.Toolbar>
-</DataSurface.Header>
-```
-
-Adapt prop names to the existing `EvaluasiFilterTabs` API exactly; do not change that component's public API unless typecheck proves the current API cannot compose directly.
-
-- [ ] **Step 3: Migrate `ManajemenEvaluasiSop.tsx`**
-
-Use the same ownership boundary: existing evaluation status tabs → `DataSurface.Tabs`; search/filter → toolbar; any page-wide workflow controls → actions; existing grouped/table content unchanged below the header.
-
-- [ ] **Step 4: Refactor `pengajuan-tabbed-table.tsx` to own one surface instead of nested tab/table cards**
-
-Make the component render:
+Its visible structure becomes:
 
 ```tsx
 <DataSurface.Root>
   <DataSurface.Header>
-    <DataSurface.Tabs>{tabs}</DataSurface.Tabs>
-    {toolbar ? <DataSurface.Toolbar>{toolbar}</DataSurface.Toolbar> : null}
+    <DataSurface.Tabs>
+      {/* current tab list and counts */}
+    </DataSurface.Tabs>
+    {/* render a DataSurface.Toolbar here only when the current component has actual controls */}
   </DataSurface.Header>
-  {content}
+  {/* current tab content / empty states / tables */}
 </DataSurface.Root>
 ```
 
-Preserve the existing tab labels, counts, empty states, and table/group content. Do not introduce new data fetching.
+Then remove any second bordered collection wrapper around it in `PengajuanSOPPage.tsx`.
 
-- [ ] **Step 5: Update `PengajuanSOPPage.tsx` to stop wrapping the tabbed table in another collection card/toolbar**
+- [ ] **Step 6: Migrate `BeritaAcaraKoordinatorPage.tsx` only where it owns a collection**
 
-The page should provide metadata and domain props to the tabbed component, not another outer bordered collection surface.
+Keep non-tabular/detail sections untouched. Any table/list section with its own search/actions uses one `DataSurface`; no chart/detail card is converted just to enforce uniformity.
 
-- [ ] **Step 6: Migrate `BeritaAcaraKoordinatorPage.tsx` if it renders a list/table collection**
-
-Use one `DataSurface` around its existing controls/table. If the page is not a collection after inspecting the current branch, leave its body unchanged and only rely on Task 8's `ListPageLayout` metadata cleanup; do not force a data-surface abstraction onto non-tabular content.
-
-- [ ] **Step 7: Run typecheck and the existing list/filter E2E spec locally when available**
+- [ ] **Step 7: Run typecheck after all migrations**
 
 ```bash
 pnpm typecheck
-pnpm test
-pnpm exec playwright test e2e/list-filter-pagination.spec.ts
 ```
 
-Expected: typecheck/unit tests pass; Playwright spec passes when its documented local prerequisites are available. If the E2E environment is not available locally, do not weaken assertions; rely on repository CI in Task 9.
+Expected: PASS with no stale page-action/header type errors.
 
-- [ ] **Step 8: Commit complex collection migrations**
+- [ ] **Step 8: Commit collection migrations**
 
 ```bash
-git add client/src/pages/pj-evaluator/opd/ManajemenOPD.tsx client/src/pages/evaluator/evaluasi/DaftarSOPEvaluasi.tsx client/src/pages/pj-evaluator/evaluasi/ManajemenEvaluasiSop.tsx client/src/components/pengajuan/pengajuan-tabbed-table.tsx client/src/pages/kepala-opd/pengajuan/PengajuanSOPPage.tsx client/src/pages/penyusun/koordinator/berita-acara/BeritaAcaraKoordinatorPage.tsx
-git commit -m "refactor(client): unify tabbed collection surfaces"
+git add client/src/pages/penyusun/pelaksana/PelaksanaSOP.tsx client/src/pages/penyusun/peraturan/ManajemenPeraturan.tsx client/src/pages/pj-evaluator/evaluator/ManajemenEvaluator.tsx client/src/pages/pj-evaluator/penyusun/ManajemenPenyusun.tsx client/src/pages/kepala-opd/sop/PantauSOP.tsx client/src/pages/pj-evaluator/opd/ManajemenOPD.tsx client/src/pages/evaluator/evaluasi/DaftarSOPEvaluasi.tsx client/src/pages/pj-evaluator/evaluasi/ManajemenEvaluasiSop.tsx client/src/components/pengajuan/pengajuan-tabbed-table.tsx client/src/pages/kepala-opd/pengajuan/PengajuanSOPPage.tsx client/src/pages/penyusun/koordinator/berita-acara/BeritaAcaraKoordinatorPage.tsx
+git commit -m "refactor(client): unify list collection surfaces"
 ```
 
 ---
 
-## Task 8: Remove legacy header/list-toolbar contracts after every page has migrated
+## Task 7: Remove legacy page-header/list-toolbar ownership contracts
 
 **Files:**
 - Modify: `client/src/components/layout/PageHeaderProvider.tsx`
 - Modify: `client/src/components/layout/ListPageLayout.tsx`
 - Modify: `client/src/components/layout/__tests__/ListPageLayout.test.tsx`
 - Delete: `client/src/components/ui/search-toolbar.tsx`
-- Modify: all remaining `ListPageLayout` consumers that still pass `description`, `actions`, or `toolbar`, including `client/src/pages/pj-evaluator/grafik-evaluasi/GrafikEvaluasiTahunan.tsx` when applicable.
+- Modify any remaining `ListPageLayout` consumer that still passes `description`, `actions`, or `toolbar`.
 
 **Interfaces:**
 
-Final page metadata contract:
+Final contracts:
 
 ```ts
 export interface PageHeaderContent {
@@ -1240,9 +1079,7 @@ export interface ListPageLayoutProps {
 }
 ```
 
-- [ ] **Step 1: Update `ListPageLayout.test.tsx` first and verify RED**
-
-The test should assert metadata-only forwarding and ordinary child rendering:
+- [ ] **Step 1: Write failing `ListPageLayout` contract test**
 
 ```tsx
 render(
@@ -1252,36 +1089,55 @@ render(
 )
 
 expect(setPageHeaderSpy).toHaveBeenCalledWith(
-  expect.objectContaining({
-    breadcrumb: [{ label: 'SOP' }],
-    title: 'Manajemen SOP',
-  }),
+  expect.objectContaining({ breadcrumb: [{ label: 'SOP' }], title: 'Manajemen SOP' }),
 )
 expect(setPageHeaderSpy.mock.calls[0][0]).not.toHaveProperty('description')
 expect(setPageHeaderSpy.mock.calls[0][0]).not.toHaveProperty('actions')
 expect(screen.getByTestId('page-content')).toBeInTheDocument()
 ```
 
-- [ ] **Step 2: Remove `description` and `actions` from `PageHeaderProvider`**
+- [ ] **Step 2: Run RED**
 
-Update `PageHeaderContent`, `SetPageHeaderProps`, refs, and effect dependencies:
-
-```tsx
-const propsRef = useRef({ breadcrumb, title, leading })
-propsRef.current = { breadcrumb, title, leading }
-
-useEffect(() => {
-  if (!setHeaderRef.current) return
-  setHeaderRef.current(propsRef.current)
-  return () => setHeaderRef.current?.(null)
-}, [breadcrumbKey, title])
+```bash
+pnpm test -- src/components/layout/__tests__/ListPageLayout.test.tsx
 ```
 
-Update comments/examples so they no longer advertise page actions/descriptions in the shell.
+- [ ] **Step 3: Simplify `PageHeaderProvider`**
 
-- [ ] **Step 3: Remove `description`, `actions`, and `toolbar` from `ListPageLayout`**
+```tsx
+export interface PageHeaderContent {
+  breadcrumb: BreadcrumbItem[]
+  title: string
+  leading?: ReactNode
+}
 
-Final implementation:
+export interface SetPageHeaderProps {
+  breadcrumb: BreadcrumbItem[]
+  title: string
+  leading?: ReactNode
+}
+
+export function SetPageHeader({ breadcrumb, title, leading }: SetPageHeaderProps) {
+  const ctx = usePageHeaderContext()
+  const propsRef = useRef({ breadcrumb, title, leading })
+  propsRef.current = { breadcrumb, title, leading }
+  const breadcrumbKey = JSON.stringify(breadcrumb)
+  const setHeaderRef = useRef(ctx?.setHeaderContent)
+  setHeaderRef.current = ctx?.setHeaderContent
+
+  useEffect(() => {
+    if (!setHeaderRef.current) return
+    setHeaderRef.current(propsRef.current)
+    return () => setHeaderRef.current?.(null)
+  }, [breadcrumbKey, title])
+
+  return null
+}
+```
+
+Update comments/examples so they no longer advertise visible header descriptions/actions.
+
+- [ ] **Step 4: Simplify `ListPageLayout`**
 
 ```tsx
 export function ListPageLayout({
@@ -1304,92 +1160,98 @@ export function ListPageLayout({
 }
 ```
 
-- [ ] **Step 4: Search for legacy consumers and remove every remaining use**
+- [ ] **Step 5: Remove obsolete props from every remaining consumer**
 
 Run:
 
 ```bash
-rg "SearchToolbar|description=|actions=|toolbar=" client/src/pages client/src/components
+rg "<ListPageLayout" client/src/pages
+rg "SearchToolbar" client/src
 ```
 
-Interpret results carefully: `description=`, `actions=`, and `toolbar=` may be valid props on unrelated components. Only remove matches where the receiver is `ListPageLayout`/`SetPageHeader` or the deleted `SearchToolbar`.
+For each `ListPageLayout`, remove only its obsolete `description`, `actions`, and `toolbar` props. Do not remove unrelated `description`/`actions` props from dialogs, empty states, menus, or other components.
 
-Update non-table `ListPageLayout` pages such as annual evaluation charts by simply dropping obsolete description/action props; do not wrap chart content in `DataSurface` unless it is actually a data collection.
+For `GrafikEvaluasiTahunan.tsx`, keep chart content as chart content; only clean the page metadata contract.
 
-- [ ] **Step 5: Delete `search-toolbar.tsx` only after `rg "SearchToolbar" client/src` returns no consumers**
+- [ ] **Step 6: Delete `search-toolbar.tsx` after the second search returns only the component file itself**
 
 ```bash
 rm client/src/components/ui/search-toolbar.tsx
 ```
 
-Do not leave a deprecated dead wrapper once migration is complete.
+Then run:
 
-- [ ] **Step 6: Run typecheck + layout tests and verify GREEN**
+```bash
+rg "SearchToolbar" client/src
+```
+
+Expected: no result.
+
+- [ ] **Step 7: Run GREEN**
 
 ```bash
 pnpm typecheck
 pnpm test -- src/components/layout/__tests__/HeaderBar.test.tsx src/components/layout/__tests__/ListPageLayout.test.tsx src/components/layout/__tests__/DashboardLayout.test.tsx src/components/layout/__tests__/SidebarUserMenu.test.tsx
 ```
 
-Expected: PASS.
-
-- [ ] **Step 7: Commit final contract cleanup**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add -A client/src/components/layout client/src/components/ui/search-toolbar.tsx client/src/pages client/src/components
-git commit -m "refactor(client): finalize collection ownership contracts"
+git commit -m "refactor(client): finalize shell and collection ownership"
 ```
 
-Before committing, inspect `git diff --cached --stat` and ensure unrelated application/editor code was not accidentally staged.
+Inspect staged files before committing and exclude unrelated editor/business logic.
 
 ---
 
-## Task 9: Add end-to-end regression coverage and run the full quality gate
+## Task 8: E2E regression and full quality gate
 
 **Files:**
 - Modify: `client/e2e/list-filter-pagination.spec.ts`
-- Modify only if needed for stable selectors: shared components from Tasks 1-8.
 
 **Interfaces:**
-- E2E verifies user-observable behavior, not implementation classes.
-- Existing J01-J07 business journeys must continue to pass unchanged.
+- E2E asserts user-visible behavior, not internal component classes.
+- Existing critical business journeys remain unchanged.
 
-- [ ] **Step 1: Extend the list/filter E2E spec for the new SOP reference UX**
+- [ ] **Step 1: Extend SOP list E2E for semantic header + collection actions**
 
-Add assertions covering:
+Add:
 
 ```ts
 await expect(page.getByRole('heading', { name: 'Manajemen SOP' })).toBeAttached()
 await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
 await expect(page.getByText('Daftar SOP yang Anda kelola.')).toHaveCount(0)
 await expect(page.getByRole('button', { name: 'Buat SOP Baru' })).toBeVisible()
+```
+
+For a PJ Penyusun fixture, also require:
+
+```ts
 await expect(page.getByRole('button', { name: 'Ajukan evaluasi SOP' })).toBeVisible()
 ```
 
-Because the heading is `sr-only`, assert attachment/semantic presence rather than visual visibility.
+- [ ] **Step 2: Verify filter reset does not erase search**
 
-After setting a filter, assert the visible filter chip appears and can be removed without clearing search:
+Use the existing filter controls/fixture values in this spec. After entering search text and selecting one advanced filter:
 
 ```ts
 await search.fill('pengadaan')
-// select one advanced filter using the page's existing stable filter controls
 await expect(page.getByText(/Status:/)).toBeVisible()
 await page.getByRole('button', { name: /Hapus filter Status:/ }).click()
 await expect(search).toHaveValue('pengadaan')
 ```
 
-Use the existing status option and selector names from the current test fixture; do not add test-only production behavior.
+Do not add test-only production behavior.
 
-- [ ] **Step 2: Add shell placement assertions where the authenticated fixture already opens the dashboard**
-
-Verify profile is not in header and remains reachable in navigation:
+- [ ] **Step 3: Verify profile placement**
 
 ```ts
 await expect(page.locator('header').getByRole('button', { name: 'Profil' })).toHaveCount(0)
 await expect(page.locator('#desktop-sidebar').getByRole('button', { name: /Menu profil/ })).toBeVisible()
 ```
 
-- [ ] **Step 3: Run the full client quality suite locally**
+- [ ] **Step 4: Run the complete client verification**
 
 From `client/`:
 
@@ -1400,58 +1262,58 @@ pnpm test
 pnpm build
 ```
 
-Expected: every command exits successfully with zero test failures and zero lint/typecheck errors.
+Every command must exit successfully before PR creation.
 
-- [ ] **Step 4: Run available local E2E**
+- [ ] **Step 5: Run the list/filter Playwright spec when local E2E prerequisites are available**
 
 ```bash
 pnpm exec playwright test e2e/list-filter-pagination.spec.ts
 ```
 
-If documented local prerequisites are available, expected: PASS. If not, record the exact environment blocker in the PR body and rely on mandatory CI; do not claim E2E success without evidence.
+If local infrastructure is unavailable, record the exact blocker in the PR body; do not claim local E2E success.
 
-- [ ] **Step 5: Search for stale UI ownership patterns**
+- [ ] **Step 6: Final stale-pattern scan**
 
 ```bash
 rg "SearchToolbar" client/src
-rg "<ListPageLayout[\\s\\S]*?(description=|actions=|toolbar=)" client/src/pages
+rg "description=" client/src/pages
+rg "actions=" client/src/pages
+rg "toolbar=" client/src/pages
 ```
 
-The first command must return no production consumers/file. For the second, if ripgrep multiline syntax is not supported in the current shell, search each prop separately and inspect only `ListPageLayout` call sites.
+The first command must be empty. For the other three, inspect results and confirm no `ListPageLayout`/`SetPageHeader` call still uses obsolete props; unrelated components may legitimately keep those prop names.
 
-- [ ] **Step 6: Create the PR only after local verification**
+- [ ] **Step 7: Open PR**
 
-Use a PR title such as:
+Title:
 
 ```text
 refactor(client): unify data surfaces and app shell
 ```
 
-PR body must summarize:
+PR summary:
 
 ```text
-- profile moved from header to desktop/mobile sidebar footer;
-- authenticated header reduced to breadcrumb + notification with semantic sr-only h1;
-- list actions moved into collection toolbars;
-- search/filter/table/pagination unified into one DataSurface;
-- active SOP filters are visible/removable and filter reset no longer clears search;
-- simple + tabbed list pages migrated without backend/workflow changes;
-- SearchToolbar legacy wrapper removed.
+- move profile/logout from header to desktop/mobile sidebar footer;
+- reduce authenticated header to breadcrumb + notification with semantic sr-only h1;
+- move page actions into collection toolbars;
+- unify tabs/search/filter/actions/table/pagination under one DataSurface;
+- expose removable SOP filter chips and keep search independent from filter reset;
+- migrate simple and tabbed list pages without backend/workflow changes;
+- remove the legacy SearchToolbar wrapper.
 ```
 
-- [ ] **Step 7: Wait for and inspect mandatory repository CI**
+- [ ] **Step 8: Require full repository CI success before merge**
 
-Required green jobs include the repository's current client quality, server quality, database migration invariants, minimal production config, critical E2E business journeys, and container build jobs.
+Fetch the final PR workflow run. Require overall `conclusion: success`, including the repository's client quality, server quality, database migration invariants, minimal production config, critical E2E business journeys, and container build jobs.
 
-Do not infer success from partial jobs. Fetch the final workflow run and require overall `conclusion: success` before merge.
+- [ ] **Step 9: Squash merge only after CI success and no unresolved blocker**
 
-- [ ] **Step 8: Squash merge only after final CI success and no unresolved review blocker**
+Merge using the PR head SHA as `expected_head_sha`.
 
-Use the branch head SHA as the expected merge head so a moved PR cannot be merged accidentally.
+- [ ] **Step 10: Verify merged state**
 
-- [ ] **Step 9: Verify the merged PR state**
-
-Fetch PR metadata after merge and confirm:
+Fetch PR metadata and require:
 
 ```text
 state = closed
@@ -1459,29 +1321,27 @@ merged = true
 base = main
 ```
 
-Record the resulting main/squash commit SHA in the completion message.
+Report the resulting squash/main commit SHA.
 
 ---
 
 ## Acceptance checklist
 
-The implementation is complete only when all of the following are true:
-
-- The authenticated header visibly contains breadcrumb + notification only.
-- A single semantic `h1` remains present and is visually `sr-only`.
-- Profile/user identity is reachable from the bottom of the expanded desktop sidebar, collapsed sidebar rail, and mobile drawer.
-- Header contains no profile trigger, no description, and no page business action.
-- Page create/workflow actions live with their relevant data collection controls.
-- `DataSurface` is composition-based and does not know domain filter/action/table schemas.
-- Collection toolbar + table + pagination read as one outer surface with no nested card border/radius.
-- Existing table pagination behavior is preserved.
-- Existing tabs retain their domain state/callback behavior and are only repositioned visually.
-- SOP advanced filters render visible removable chips.
-- Removing one SOP filter leaves other filters and search intact.
+- Header visibly shows breadcrumb + notification only.
+- Exactly one semantic page heading remains, as `h1.sr-only`.
+- Current breadcrumb item is visually stronger than ancestors.
+- Profile/menu is pinned to the bottom of expanded desktop sidebar, remains reachable in collapsed rail, and appears at the bottom of the mobile drawer.
+- Header contains no profile trigger, page description, or business action.
+- Page actions live in the related collection toolbar.
+- `DataSurface` is composition-only and domain-agnostic.
+- Collection controls + table + pagination use one outer surface with no nested card border/radius.
+- Existing pagination logic remains unchanged.
+- Existing tab state/callbacks remain domain-owned.
+- SOP active filters are visible and individually removable.
 - `clearFilters()` does not clear search; `clearSearch()` only clears search.
-- SOP empty state distinguishes source-empty, search-empty, and filter-empty contexts.
+- SOP empty state distinguishes no-source-data, no-search-result, and no-filter-result conditions.
 - `SearchToolbar` has no production consumer and is deleted.
-- `ListPageLayout` no longer owns visible description, page actions, or toolbar.
-- No backend/API/route/permission/business-workflow code changes are required for the refactor.
+- `ListPageLayout`/`PageHeaderProvider` no longer expose description/actions/toolbar ownership.
+- No backend/API/route/permission/business-workflow change is introduced.
 - Client typecheck, lint, unit tests, and build pass.
-- Mandatory repository CI concludes successfully before squash merge.
+- Mandatory repository CI is fully successful before squash merge.
