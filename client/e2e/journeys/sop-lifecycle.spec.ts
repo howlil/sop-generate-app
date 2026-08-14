@@ -33,6 +33,27 @@ test.describe('End-to-End Business Journey — SOP lifecycle', () => {
       await expectSopStatus(penyusun.api, original.detailSopId, 'BERLAKU')
     })
 
+    await test.step('Workbench versi baru memakai navigation dan editor UI yang baru', async () => {
+      const page = penyusun.page
+      await expect(page.getByRole('link', { name: 'Manajemen SOP' })).toBeVisible()
+      await expect(page.getByTitle('Kembali')).toHaveCount(0)
+      await expect(page.getByRole('tab', { name: 'Properti' })).toBeVisible()
+
+      const stepsButton = page.getByRole('button', { name: 'Langkah' })
+      await expect(stepsButton).toBeVisible()
+      await expect(stepsButton).toHaveAttribute('aria-pressed', 'false')
+      await stepsButton.click()
+
+      const spreadsheet = page.getByTestId('procedure-editor-scroll')
+      await expect(spreadsheet).toBeVisible()
+      await expect(spreadsheet.getByRole('columnheader', { name: 'Kegiatan' })).toBeVisible()
+      await expect(spreadsheet.getByRole('columnheader', { name: 'Waktu' })).toBeVisible()
+
+      const diagramButton = page.getByRole('button', { name: 'Diagram' })
+      await expect(diagramButton).toHaveAttribute('aria-pressed', 'true')
+      await diagramButton.click()
+    })
+
     await test.step('Precondition membawa versi baru ke tahap pengesahan tanpa menduplikasi J01/J02', async () => {
       const newVersion = await getWorkbench(penyusun.api, newDetailId)
       replacementPengajuanId = await advanceVersionToHeadSignaturePrecondition(roleApi, {
