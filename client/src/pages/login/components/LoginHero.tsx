@@ -1,102 +1,58 @@
+import { FileText } from 'lucide-react'
+import heroBg from '@/assets/Kantor_Gubernur_Sumbar_belakang.jpg'
+import logoSvg from '@/assets/logo.svg'
+import { APP_DISPLAY_NAME } from '@/config/env'
 
-import {
-  Shield,
-  CheckCircle,
-  Zap,
-  ArrowUpRight,
-} from "lucide-react";
+const lifecycle = ['Penyusunan', 'Pengajuan', 'Evaluasi', 'Perbaikan', 'Berita Acara', 'Pengesahan', 'Arsip']
 
 export function LoginHero() {
   return (
-    <div className="flex flex-col justify-center h-full text-white relative">
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
+    <aside className="relative flex h-full min-h-screen overflow-hidden bg-slate-950 text-white">
+      <img
+        src={heroBg}
+        alt="Kantor Gubernur Sumatera Barat"
+        className="absolute inset-x-0 bottom-0 h-[46%] w-full object-cover opacity-20"
+      />
+      <div className="absolute inset-x-0 bottom-0 h-[46%] bg-slate-950/45" aria-hidden />
 
-      {/* Gradient Orbs */}
-      <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-400/30 rounded-full blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-indigo-400/20 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
-
-      {/* Animated Dots */}
-      <div className="absolute top-20 left-16 w-2 h-2 bg-blue-300/50 rounded-full" />
-      <div className="absolute top-40 right-24 w-1.5 h-1.5 bg-cyan-300/40 rounded-full" />
-      <div className="absolute bottom-32 left-24 w-2 h-2 bg-indigo-300/50 rounded-full" />
-      <div className="absolute top-1/2 right-8 w-1.5 h-1.5 bg-blue-300/30 rounded-full" />
-
-      {/* Main Content */}
-      <div className="relative z-10">
-        {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Pengelolaan SOP AP
-            <br />
-            <span className="bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">
-              Terpadu dan Teraudit
-            </span>
-          </h1>
-          <p className="text-sm text-blue-100/70 leading-relaxed max-w-sm">
-            Penyusunan, evaluasi, verifikasi, dan pengesahan SOP Administrasi
-            Pemerintahan dalam satu sistem terintegrasi.
-          </p>
-        </div>
-
-        {/* Feature Cards */}
-        <div className="space-y-3 mb-8">
-          <div className="flex items-center gap-3 p-3 bg-surface/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-surface/10 transition-all group">
-            <div className="w-9 h-9 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center shrink-0 border border-green-400/20">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white/90">
-                Penyusunan hingga pengesahan
-              </p>
-              <p className="text-xs text-blue-200/60">
-                Alur kerja dari draft di OPD sampai pengesahan TTE BSRE
-              </p>
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
-          </div>
-
-          <div className="flex items-center gap-3 p-3 bg-surface/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-surface/10 transition-all group">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center shrink-0 border border-blue-400/20">
-              <Shield className="w-4 h-4 text-blue-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white/90">
-                Evaluasi dan verifikasi berjenjang
-              </p>
-              <p className="text-xs text-blue-200/60">
-                Penilaian Biro Organisasi dengan persetujuan bertingkat
-              </p>
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
-          </div>
-
-          <div className="flex items-center gap-3 p-3 bg-surface/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-surface/10 transition-all group">
-            <div className="w-9 h-9 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-lg flex items-center justify-center shrink-0 border border-amber-400/20">
-              <Zap className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white/90">
-                Dashboard dan pelaporan
-              </p>
-              <p className="text-xs text-blue-200/60">
-                Rekapitulasi data evaluasi dan statistik pengelolaan SOP
-              </p>
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
+      <div className="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
+        <div className="flex items-center gap-3">
+          <img src={logoSvg} alt={APP_DISPLAY_NAME} className="h-10 w-10" />
+          <div>
+            <p className="text-sm font-semibold text-white">{APP_DISPLAY_NAME}</p>
+            <p className="mt-0.5 text-[11px] text-slate-300">Pemerintah Provinsi Sumatera Barat · Biro Organisasi</p>
           </div>
         </div>
+
+        <div className="my-12 max-w-xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-300">Sistem Pengelolaan SOP AP</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.03em] text-white xl:text-5xl">Ruang kerja untuk proses SOP yang terdokumentasi dari awal hingga akhir.</h1>
+          <p className="mt-5 max-w-lg text-sm leading-6 text-slate-300">Penyusunan di OPD, evaluasi oleh Biro Organisasi, tindak lanjut, berita acara, pengesahan, dan arsip berada dalam satu alur kerja.</p>
+
+          <div className="mt-9 border-y border-white/20 py-5">
+            <div className="mb-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-300">
+              <FileText className="h-3.5 w-3.5 text-blue-300" aria-hidden />
+              Alur pengelolaan
+            </div>
+            <div className="grid grid-cols-2 gap-x-7 gap-y-3 xl:grid-cols-3">
+              {lifecycle.map((item, index) => (
+                <div key={item} className="flex items-center gap-2 border-l border-white/20 pl-3">
+                  <span className="font-mono text-[9px] text-blue-300">0{index + 1}</span>
+                  <span className="text-xs text-slate-200">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between gap-5 border-t border-white/20 pt-5 text-[11px] text-slate-300">
+          <div>
+            <p className="font-medium text-white">Sekretariat Daerah</p>
+            <p className="mt-1">Pemerintah Provinsi Sumatera Barat</p>
+          </div>
+          <p className="text-right">Akses internal sesuai peran<br />dan organisasi pengguna.</p>
+        </div>
       </div>
-    </div>
-  );
+    </aside>
+  )
 }
