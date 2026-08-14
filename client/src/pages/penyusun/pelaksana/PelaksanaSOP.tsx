@@ -124,24 +124,25 @@ export function PelaksanaSOP() {
       breadcrumb={[{ label: "Manajemen Pelaksana SOP" }]}
       title="Manajemen Pelaksana SOP"
       description="Master data pelaksana/aktor yang dipakai di kolom pelaksana saat menyusun prosedur SOP"
+      actions={
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={() => {
+            resetForm();
+            setIsCreateDialogOpen(true);
+          }}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Tambah Pelaksana
+        </Button>
+      }
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari nama pelaksana..."
           searchValue={searchQuery}
           onSearchChange={(event) => setSearchQuery(event.target.value)}
-        >
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => {
-              resetForm();
-              setIsCreateDialogOpen(true);
-            }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Tambah Pelaksana
-          </Button>
-        </SearchToolbar>
+        />
       }
     >
       <Table.Paginated data={filteredList} label="pelaksana">

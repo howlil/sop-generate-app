@@ -18,7 +18,7 @@ export interface ListPageLayoutProps {
   description?: string
   /** Konten di kiri (mis. BackButton) */
   leading?: React.ReactNode
-  /** Konten di kanan (tombol aksi) */
+  /** Konten di kanan (tombol aksi, dll.) */
   actions?: React.ReactNode
   /** Toolbar di bawah header (mis. SearchToolbar dengan filter). Opsional. */
   toolbar?: React.ReactNode
@@ -51,6 +51,7 @@ export interface ListPageLayoutProps {
 export function ListPageLayout({
   breadcrumb,
   title,
+  description,
   leading,
   actions,
   toolbar,
@@ -62,6 +63,7 @@ export function ListPageLayout({
       <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}
+        description={description}
         leading={leading}
         actions={actions}
       />

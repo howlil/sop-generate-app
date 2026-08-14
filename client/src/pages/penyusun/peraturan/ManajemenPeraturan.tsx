@@ -147,21 +147,22 @@ export function ManajemenPeraturan() {
       breadcrumb={[{ label: 'Manajemen Peraturan' }]}
       title="Database Peraturan"
       description="Kelola database peraturan"
+      actions={
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={() => openPeraturanDialog()}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Tambah Peraturan
+        </Button>
+      }
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari peraturan..."
           searchValue={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
-        >
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => openPeraturanDialog()}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Tambah Peraturan
-          </Button>
-        </SearchToolbar>
+        />
       }
     >
       {isLoadingPeraturan ? (
