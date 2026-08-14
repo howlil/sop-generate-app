@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { AlertCircle, CheckCircle, FileText, Loader2 } from "lucide-react";
+import { CheckCircle, FileText, Loader2 } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
@@ -13,9 +13,7 @@ import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/ui/back-button";
 import { NotFoundWithBack } from "@/components/ui/not-found";
-import { InfoCard } from "@/components/ui/info-card";
-import { InfoField } from "@/components/ui/info-field";
-import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-evaluasi-status-header";
+import { InlineHelperNote } from "@/components/ui/inline-helper-note";
 import {
   CollapsedStripButton,
   CollapsibleSidePanel,
@@ -33,7 +31,7 @@ import { SOPListCard } from "@/components/sop/sop-list-card";
 import { useRequireTteSetup } from "@/hooks/use-require-tte-setup";
 import { useToast } from "@/hooks/useToast";
 import { ROUTES } from "@/utils/constants";
-import { formatDateIdFull } from "@/utils/format-date";
+import { PengajuanDetailSummaryHeader } from "./PengajuanDetailSummaryHeader";
 
 const STATUS_SOP_SIAP_TTD_KEPALA_OPD = "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI";
 const WORKBENCH_LOGS_LIMIT = 100;
@@ -179,6 +177,9 @@ export function DetailPengajuanSOPPage() {
     );
   }
 
+  const opdName = pengajuan.opdNama ?? pengajuan.opd?.nama ?? "—";
+  const statusLabel = pengajuan.statusLabel ?? pengajuan.status;
+
   return (
     <>
       <DetailPageLayout
@@ -187,70 +188,58 @@ export function DetailPengajuanSOPPage() {
           { label: "Detail Pengajuan" },
         ]}
         title="Detail Pengajuan SOP"
-        description={pengajuan.opdNama ?? ""}
-        backTo={ROUTES.KEPALA_OPD.PENGAJUAN}
-        backSize="icon"
         header={
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-sm font-semibold text-foreground">Informasi Pengajuan</h2>
-              <div className="flex items-center gap-2 flex-wrap">
-                <PengajuanCetakArsipButtons
-                  printScope="pj-penyusun-kepala-opd"
-                  pengajuanStatus={pengajuan.status}
-                  effectiveSopDetailId={effectiveSopDetailId}
-                  sopCount={allSopList.length}
-                  cetakLoading={cetakLoading}
-                  onCetak={handleCetak}
-                />
-                {canShowSignAll && (
-                  <Button
-                    size="sm"
-                    className="h-8 text-xs gap-1.5"
-                    onClick={handleOpenPinDialog}
-                    disabled={tandaTanganiSemuaSop.isPending}
-                  >
-                    {tandaTanganiSemuaSop.isPending ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Menandatangani...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Tanda Tangan Semua SOP
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5">
-              <InfoField label="OPD">{pengajuan.opdNama ?? pengajuan.opd?.nama ?? "—"}</InfoField>
-              <InfoField label="Jenis">{pengajuan.jenis}</InfoField>
-              <InfoField label="Nomor BA">
-                <span className="font-mono">{pengajuan.nomorBA ?? "—"}</span>
-              </InfoField>
-              <InfoField label="Tanggal BA Ditandatangani PJ Penyusun">
-                {formatDateIdFull(pengajuan.tanggalTTDBaPjPenyusun)}
-              </InfoField>
-              <InfoField label="Jumlah SOP">{`${allSopList.length} dokumen`}</InfoField>
-            </div>
-            <PengajuanEvaluasiStatusHeader
+          <div className="space-y-3">
+            <PengajuanDetailSummaryHeader
+              opdName={opdName}
+              jenis={pengajuan.jenis}
+              nomorBA={pengajuan.nomorBA}
+              tanggalTTDBaPjPenyusun={pengajuan.tanggalTTDBaPjPenyusun}
+              sopCount={allSopList.length}
               status={pengajuan.status}
-              statusLabel={pengajuan.statusLabel ?? pengajuan.status}
-              role="KEPALA_OPD"
+              statusLabel={statusLabel}
+              actions={
+                <>
+                  <PengajuanCetakArsipButtons
+                    printScope="pj-penyusun-kepala-opd"
+                    pengajuanStatus={pengajuan.status}
+                    effectiveSopDetailId={effectiveSopDetailId}
+                    sopCount={allSopList.length}
+                    cetakLoading={cetakLoading}
+                    onCetak={handleCetak}
+                  />
+                  {canShowSignAll && (
+                    <Button
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs"
+                      onClick={handleOpenPinDialog}
+                      disabled={tandaTanganiSemuaSop.isPending}
+                    >
+                      {tandaTanganiSemuaSop.isPending ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Menandatangani...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          Tanda Tangan Semua SOP
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </>
+              }
             />
             {!canSignAll && !isSudahBerlaku && (
-              <InfoCard variant="warning" icon={<AlertCircle />} title="Pengajuan belum siap ditandatangani">
+              <InlineHelperNote tone="warning" label="Belum siap TTE">
                 Pengajuan harus berstatus ditandatangani PJ Penyusun sebelum disahkan Kepala OPD.
-              </InfoCard>
+              </InlineHelperNote>
             )}
             {canSignAll && sopTidakEligibleCount > 0 && (
-              <InfoCard variant="warning" icon={<AlertCircle />} title="Sebagian SOP tidak perlu TTD ulang">
-                {sopTidakEligibleCount} dari {allSopList.length} SOP tidak masuk payload tanda tangan karena statusnya
-                bukan {STATUS_SOP_SIAP_TTD_KEPALA_OPD}. SOP tetap ditampilkan untuk pratinjau.
-              </InfoCard>
+              <InlineHelperNote tone="warning" label="Sebagian SOP tidak perlu TTD ulang">
+                {sopTidakEligibleCount} dari {allSopList.length} SOP tidak masuk payload tanda tangan karena statusnya bukan {STATUS_SOP_SIAP_TTD_KEPALA_OPD}. SOP tetap ditampilkan untuk pratinjau.
+              </InlineHelperNote>
             )}
           </div>
         }
@@ -259,12 +248,12 @@ export function DetailPengajuanSOPPage() {
             side="left"
             collapsed={leftPanelCollapsed}
             widthCollapsed="w-10"
-            widthExpanded="w-[min(380px,40vw)]"
+            widthExpanded="w-[min(340px,36vw)]"
           >
             {leftPanelCollapsed ? (
               <CollapsedStripButton
                 label="SOP"
-                icon={<FileText className="w-4 h-4" />}
+                icon={<FileText className="h-4 w-4" />}
                 onClick={() => setLeftPanelCollapsed(false)}
               />
             ) : (
@@ -272,11 +261,11 @@ export function DetailPengajuanSOPPage() {
                 <CollapsibleSidePanelHeader
                   side="left"
                   onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
+                  className="border-border bg-surface px-2 py-1.5 sm:px-2.5"
                 >
-                  <SimplePanelHeader title="Daftar SOP" />
+                  <SimplePanelHeader title="Daftar SOP" subtitle={`${sopList.length} dokumen`} />
                 </CollapsibleSidePanelHeader>
-                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
+                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1">
                   <SOPListCard
                     items={sopList.map((item) => ({
                       id: item.sopDetailId,
@@ -297,37 +286,37 @@ export function DetailPengajuanSOPPage() {
         }
       >
         <div className="flex h-full min-h-0 min-w-0 flex-col">
-        <DocumentPreviewTabs
-          value={previewMainTab}
-          onValueChange={setPreviewMainTab}
-          tabs={[
-            {
-              value: "sop",
-              label: "Pratinjau SOP",
-              contentClassName: "mt-3 flex min-h-0 flex-1 flex-col overflow-auto px-2 pb-2",
-              content: (
-                <SopDocumentPreviewPane
-                  selectedSop={selectedSop}
-                  isLoading={sopWorkbenchLoading}
-                  sopPreviewProps={sopPreviewProps}
-                  tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
-                />
-              ),
-            },
-            {
-              value: "ba",
-              label: "Pratinjau Berita Acara",
-              contentClassName: "mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2",
-              content:
-                baTemplateProps != null ? (
-                  <BeritaAcaraPreviewPane
-                    isLoading={baViewLoading}
-                    templateProps={baTemplateProps}
+          <DocumentPreviewTabs
+            value={previewMainTab}
+            onValueChange={setPreviewMainTab}
+            tabs={[
+              {
+                value: "sop",
+                label: "Pratinjau SOP",
+                contentClassName: "mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-2 pb-2",
+                content: (
+                  <SopDocumentPreviewPane
+                    selectedSop={selectedSop}
+                    isLoading={sopWorkbenchLoading}
+                    sopPreviewProps={sopPreviewProps}
+                    tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
                   />
-                ) : null,
-            },
-          ]}
-        />
+                ),
+              },
+              {
+                value: "ba",
+                label: "Pratinjau Berita Acara",
+                contentClassName: "mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2",
+                content:
+                  baTemplateProps != null ? (
+                    <BeritaAcaraPreviewPane
+                      isLoading={baViewLoading}
+                      templateProps={baTemplateProps}
+                    />
+                  ) : null,
+              },
+            ]}
+          />
         </div>
       </DetailPageLayout>
 
