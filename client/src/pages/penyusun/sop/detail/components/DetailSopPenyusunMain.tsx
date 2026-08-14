@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListTree, PenLine, RotateCcw } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/sop-preview-template'
 import { DetailSOPProsedurEditor } from './DetailSopProsedurEditor'
-import type { SOPDetailMetadata } from "@/types/ui/sop";
+import type { SOPDetailMetadata } from '@/types/ui/sop'
 import { namaLembagaToInstitutionLines } from '@/lib/sop/detailSop.mappers'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/utils/cn'
@@ -36,7 +36,7 @@ function toPreviewMetadata(meta: SOPDetailMetadata) {
   const institutionLines =
     meta.institutionLines !== undefined && meta.institutionLines.length > 0
       ? meta.institutionLines
-      : namaLembagaToInstitutionLines(meta.lembaga);
+      : namaLembagaToInstitutionLines(meta.lembaga)
   return {
     name: meta.nama ?? meta.judul ?? '',
     number: meta.nomorSOP ?? meta.nomor ?? '',
@@ -64,18 +64,27 @@ export function DetailSOPPenyusunMain({
   isEditingSteps,
   setIsEditingSteps,
 }: DetailSOPPenyusunMainProps) {
-  const { sopDetailId, metadata, prosedurRows, setProsedurRows, implementers, isReadOnly } = useSopEditor()
+  const {
+    sopDetailId,
+    metadata,
+    prosedurRows,
+    setProsedurRows,
+    implementers,
+    isReadOnly,
+  } = useSopEditor()
   const { data: workbench, isLoading: isWorkbenchLoading } = usePenyusunWorkbench(sopDetailId)
   const [allowDiagramRender, setAllowDiagramRender] = useState(false)
-  const isWorkbenchDataReady =
-    Boolean(workbench?.detail.id) && !isWorkbenchLoading
+  const isWorkbenchDataReady = Boolean(workbench?.detail.id) && !isWorkbenchLoading
+
   useEffect(() => {
     setAllowDiagramRender(false)
   }, [sopDetailId])
+
   useEffect(() => {
     if (!isWorkbenchDataReady || allowDiagramRender) return
     return scheduleDiagramIdleMount(() => setAllowDiagramRender(true))
   }, [isWorkbenchDataReady, allowDiagramRender])
+
   const diagramConfig = usePenyusunDiagramConfig({
     detailSopId: sopDetailId,
     workbench,
@@ -84,9 +93,9 @@ export function DetailSOPPenyusunMain({
     activeTab,
     enabled: !isReadOnly && isWorkbenchDataReady && allowDiagramRender,
   })
-  const isDiagramReady =
-    isWorkbenchDataReady && diagramConfig.isDiagramHydrated
+  const isDiagramReady = isWorkbenchDataReady && diagramConfig.isDiagramHydrated
   const diagramMountEnabled = allowDiagramRender && isDiagramReady
+
   const handleActiveTabChange = useCallback(
     (tab: 'flowchart' | 'bpmn') => {
       setAllowDiagramRender(true)
@@ -94,6 +103,7 @@ export function DetailSOPPenyusunMain({
     },
     [onActiveTabChange],
   )
+
   const previewMetadata = useMemo(() => toPreviewMetadata(metadata), [metadata])
 
   const handleToggleManualEdit = () => {
@@ -104,13 +114,13 @@ export function DetailSOPPenyusunMain({
       return
     }
 
-    diagramConfig.setIsEditingDiagramPaths((v) => !v)
+    diagramConfig.setIsEditingDiagramPaths((value) => !value)
     diagramConfig.setSelectedConnectionId(null)
   }
 
   const toolbar = (
     <div
-      className="inline-flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-lg bg-surface/55 p-0.5 ring-1 ring-border/70"
+      className="inline-flex max-w-full flex-wrap items-center justify-center gap-1 rounded-control border border-border bg-surface p-1"
       role="group"
       aria-label="Kontrol dokumen SOP"
     >
@@ -120,11 +130,10 @@ export function DetailSOPPenyusunMain({
             type="button"
             variant="ghost"
             size="sm"
+            aria-pressed={isEditingSteps}
             className={cn(
-              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-secondary-foreground',
-              isEditingSteps
-                ? 'bg-surface text-foreground shadow-surface ring-1 ring-border/90'
-                : 'hover:bg-surface/90',
+              'h-8 gap-1.5 rounded-control px-2.5 text-xs font-medium text-secondary-foreground',
+              isEditingSteps ? 'bg-surface-subtle text-foreground' : 'hover:bg-surface-subtle',
             )}
             title={
               isEditingSteps
@@ -140,11 +149,10 @@ export function DetailSOPPenyusunMain({
             type="button"
             variant="ghost"
             size="sm"
+            aria-pressed={diagramConfig.isEditingDiagramPaths}
             className={cn(
-              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-secondary-foreground hover:bg-surface/90',
-              diagramConfig.isEditingDiagramPaths
-                ? 'bg-surface text-foreground shadow-surface ring-1 ring-border/90'
-                : '',
+              'h-8 gap-1.5 rounded-control px-2.5 text-xs font-medium text-secondary-foreground hover:bg-surface-subtle',
+              diagramConfig.isEditingDiagramPaths ? 'bg-surface-subtle text-foreground' : '',
             )}
             onClick={handleToggleManualEdit}
             title="Edit path panah diagram secara manual"
@@ -157,7 +165,7 @@ export function DetailSOPPenyusunMain({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-secondary-foreground hover:bg-surface/90"
+              className="h-8 gap-1.5 rounded-control px-2.5 text-xs font-medium text-secondary-foreground hover:bg-surface-subtle"
               onClick={diagramConfig.handleResetAllPaths}
               title="Reset semua path ke routing otomatis"
             >
@@ -169,9 +177,10 @@ export function DetailSOPPenyusunMain({
       ) : null}
     </div>
   )
+
   const diagramAlternate =
     !isReadOnly && isEditingSteps ? (
-      <div className="print:hidden w-full">
+      <div className="w-full print:hidden">
         <DetailSOPProsedurEditor
           prosedurRows={prosedurRows}
           setProsedurRows={setProsedurRows}
@@ -180,32 +189,33 @@ export function DetailSOPPenyusunMain({
         />
       </div>
     ) : undefined
+
   return (
     <div className="h-full min-h-0 flex-1 overflow-auto p-4">
-        <SOPPreviewTemplate
-          metadata={previewMetadata}
-          prosedurRows={prosedurRows}
-          implementers={implementers}
-          tteSignaturePayload={workbench?.tteSignaturePayloadKepalaOpd}
-          diagramState={{
-            pathLayoutSeed: diagramConfig.pathLayoutSeed,
-            activeTab,
-            onActiveTabChange: handleActiveTabChange,
-            diagramMountEnabled,
-            onRequestDiagramMount: () => setAllowDiagramRender(true),
-            editMode: diagramConfig.isEditingDiagramPaths,
-            arrowConfig: diagramConfig.effectiveArrowConfig,
-            labelConfig: diagramConfig.labelConfig,
-            selectedConnectionId: diagramConfig.selectedConnectionId,
-            onSelectConnection: diagramConfig.setSelectedConnectionId,
-            onManualPathChange: diagramConfig.handleManualPathChange,
-            onResetSelectedPath: diagramConfig.handleResetSelectedPath,
-          }}
-          previewOptions={{
-            toolbar,
-            diagramAlternate,
-          }}
-        />
+      <SOPPreviewTemplate
+        metadata={previewMetadata}
+        prosedurRows={prosedurRows}
+        implementers={implementers}
+        tteSignaturePayload={workbench?.tteSignaturePayloadKepalaOpd}
+        diagramState={{
+          pathLayoutSeed: diagramConfig.pathLayoutSeed,
+          activeTab,
+          onActiveTabChange: handleActiveTabChange,
+          diagramMountEnabled,
+          onRequestDiagramMount: () => setAllowDiagramRender(true),
+          editMode: diagramConfig.isEditingDiagramPaths,
+          arrowConfig: diagramConfig.effectiveArrowConfig,
+          labelConfig: diagramConfig.labelConfig,
+          selectedConnectionId: diagramConfig.selectedConnectionId,
+          onSelectConnection: diagramConfig.setSelectedConnectionId,
+          onManualPathChange: diagramConfig.handleManualPathChange,
+          onResetSelectedPath: diagramConfig.handleResetSelectedPath,
+        }}
+        previewOptions={{
+          toolbar,
+          diagramAlternate,
+        }}
+      />
     </div>
   )
 }

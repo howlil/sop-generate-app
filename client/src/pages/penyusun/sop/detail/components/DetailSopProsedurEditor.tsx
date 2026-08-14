@@ -1,7 +1,12 @@
 import { MoreHorizontal, Settings2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useProsedurEditor } from '@/pages/penyusun/sop/hooks/use-prosedur-editor'
 import { useToast } from '@/hooks/useToast'
 import {
@@ -35,7 +40,6 @@ export function DetailSOPProsedurEditor({
 }: DetailSOPProsedurEditorProps) {
   const { showToast } = useToast()
   const {
-    // Dialog state
     isDecisionDialogOpen,
     setIsDecisionDialogOpen,
     decisionStepIndex,
@@ -43,8 +47,6 @@ export function DetailSOPProsedurEditor({
     decisionNoId,
     setDecisionYesId,
     setDecisionNoId,
-    
-    // Row operations
     handleAddRow,
     handleDeleteRow,
     handleTypeChange,
@@ -59,8 +61,9 @@ export function DetailSOPProsedurEditor({
 
   const hasImplementers = implementers.length > 0
   const stepOrderById = Object.fromEntries(
-    prosedurRows.map((row, idx) => [row.id, idx + 1]),
+    prosedurRows.map((row, index) => [row.id, index + 1]),
   ) as Record<string, number>
+
   const guardedAddRow = (index: number) => {
     if (!hasImplementers) {
       showToast(
@@ -87,7 +90,7 @@ export function DetailSOPProsedurEditor({
         <Button
           variant="ghost"
           size="sm"
-          className="h-10 w-10 p-0 text-secondary-foreground hover:bg-surface-subtle hover:text-foreground"
+          className="h-9 w-9 p-0 text-secondary-foreground hover:bg-surface-subtle hover:text-foreground"
           aria-label={`Aksi langkah ${realIdx + 1}`}
         >
           <MoreHorizontal className="h-4 w-4" aria-hidden />
@@ -109,13 +112,15 @@ export function DetailSOPProsedurEditor({
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem onClick={() => guardedAddRow(realIdx)}>
-          <span className="mr-1.5 text-blue-600" aria-hidden>+</span>
+          <span className="mr-1.5 text-primary" aria-hidden>
+            +
+          </span>
           <span>Tambah langkah setelah ini</span>
         </DropdownMenuItem>
         {prosedurRows.length > 1 ? (
           <DropdownMenuItem
             onClick={() => handleDeleteRow(realIdx)}
-            className="text-red-600 focus:text-red-600"
+            className="text-danger focus:text-danger"
           >
             <X className="mr-1.5 h-4 w-4 shrink-0" aria-hidden />
             <span>Hapus langkah</span>
@@ -127,95 +132,104 @@ export function DetailSOPProsedurEditor({
 
   return (
     <div className="w-full max-w-full">
-      <div className="flex flex-wrap items-center justify-between gap-2 print:hidden mb-3">
+      <div className="mb-2 print:hidden">
         <p className="text-xs font-semibold text-foreground">Edit langkah / prosedur</p>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          No otomatis mengikuti urutan baris. Geser tabel secara horizontal untuk melihat semua kolom.
+        </p>
       </div>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-[11px] text-muted-foreground">No akan otomatis mengikuti urutan baris.</p>
-      </div>
-      <div className="hidden overflow-x-auto rounded-lg border border-border bg-surface md:block">
-        <Table.Table className="min-w-[1000px]">
-          <thead className="bg-surface-subtle border-b border-border">
+
+      <div
+        data-testid="procedure-editor-scroll"
+        className="hidden overflow-x-auto overscroll-x-contain rounded-surface border border-border bg-surface [scrollbar-width:thin] md:block"
+      >
+        <Table.Table className="min-w-[1460px] table-fixed">
+          <thead className="border-b border-border bg-surface-subtle">
             <Table.HeadRow>
-              <Table.Th className="px-2 py-2 w-10 min-w-[40px]">No</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[200px]">Kegiatan</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[120px]">Tipe</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[140px]">Pelaksana</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[140px]">Kelengkapan</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[120px]">Waktu</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[140px]">Output</Table.Th>
-              <Table.Th className="px-2 py-2 min-w-[160px]">Keterangan</Table.Th>
-              <Table.ActionTh className="w-12 min-w-[48px] px-1 py-2">Aksi</Table.ActionTh>
+              <Table.Th className="w-[48px] min-w-[48px] px-1.5 py-2 text-center">No</Table.Th>
+              <Table.Th className="w-[260px] min-w-[260px] px-1.5 py-2">Kegiatan</Table.Th>
+              <Table.Th className="w-[140px] min-w-[140px] px-1.5 py-2">Tipe</Table.Th>
+              <Table.Th className="w-[190px] min-w-[190px] px-1.5 py-2">Pelaksana</Table.Th>
+              <Table.Th className="w-[190px] min-w-[190px] px-1.5 py-2">Kelengkapan</Table.Th>
+              <Table.Th className="w-[190px] min-w-[190px] px-1.5 py-2">Waktu</Table.Th>
+              <Table.Th className="w-[190px] min-w-[190px] px-1.5 py-2">Output</Table.Th>
+              <Table.Th className="w-[220px] min-w-[220px] px-1.5 py-2">Keterangan</Table.Th>
+              <Table.ActionTh className="w-[48px] min-w-[48px] px-1 py-2 text-center">
+                Aksi
+              </Table.ActionTh>
             </Table.HeadRow>
           </thead>
           <tbody>
-            {prosedurRows.map((row, realIdx) => {
-              return (
-                <Table.BodyRow key={row.id} className="align-top">
-                  <Table.Td className="px-2 py-2 text-center align-middle">{realIdx + 1}</Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <KegiatanCell
-                      value={row.kegiatan}
-                      onChange={(value) => handleKegiatanChange(realIdx, value)}
-                    />
-                  </Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <TypeCell
-                      row={row}
-                      index={realIdx}
-                      totalRows={prosedurRows.length}
-                      stepOrderById={stepOrderById}
-                      onTypeChange={(type, role) => handleTypeChange(realIdx, type, role)}
-                    />
-                  </Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <ImplementerCell
-                      row={row}
-                      implementers={implementers}
-                      onImplementerChange={(id) => handlePelaksanaChange(realIdx, id, implementers)}
-                    />
-                  </Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <MutuKelengkapanCell
-                      value={row.mutu_kelengkapan ?? ''}
-                      onChange={(value) => handleMutuKelengkapanChange(realIdx, value)}
-                    />
-                  </Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <MutuWaktuCell
-                      value={row.mutu_waktu ?? ''}
-                      onChange={(amount, unit) => handleMutuWaktuChange(realIdx, amount, unit)}
-                    />
-                  </Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <OutputCell
-                      value={row.output ?? ''}
-                      onChange={(value) => handleOutputChange(realIdx, value)}
-                    />
-                  </Table.Td>
-                  <Table.Td className="px-2 py-2">
-                    <KeteranganCell
-                      value={row.keterangan ?? ''}
-                      onChange={(value) => handleKeteranganChange(realIdx, value)}
-                    />
-                  </Table.Td>
-                  <Table.ActionTd className="w-12 min-w-[48px] px-1 py-2">
-                    {renderRowActions(row, realIdx)}
-                  </Table.ActionTd>
-                </Table.BodyRow>
-              )
-            })}
+            {prosedurRows.map((row, realIdx) => (
+              <Table.BodyRow key={row.id} className="align-top">
+                <Table.Td className="px-1.5 py-1.5 text-center align-middle text-xs tabular-nums text-muted-foreground">
+                  {realIdx + 1}
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <KegiatanCell
+                    value={row.kegiatan}
+                    onChange={(value) => handleKegiatanChange(realIdx, value)}
+                  />
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <TypeCell
+                    row={row}
+                    index={realIdx}
+                    totalRows={prosedurRows.length}
+                    stepOrderById={stepOrderById}
+                    onTypeChange={(type, role) => handleTypeChange(realIdx, type, role)}
+                  />
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <ImplementerCell
+                    row={row}
+                    implementers={implementers}
+                    onImplementerChange={(id) =>
+                      handlePelaksanaChange(realIdx, id, implementers)
+                    }
+                  />
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <MutuKelengkapanCell
+                    value={row.mutu_kelengkapan ?? ''}
+                    onChange={(value) => handleMutuKelengkapanChange(realIdx, value)}
+                  />
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <MutuWaktuCell
+                    value={row.mutu_waktu ?? ''}
+                    onChange={(amount, unit) => handleMutuWaktuChange(realIdx, amount, unit)}
+                  />
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <OutputCell
+                    value={row.output ?? ''}
+                    onChange={(value) => handleOutputChange(realIdx, value)}
+                  />
+                </Table.Td>
+                <Table.Td className="px-1.5 py-1.5 align-top">
+                  <KeteranganCell
+                    value={row.keterangan ?? ''}
+                    onChange={(value) => handleKeteranganChange(realIdx, value)}
+                  />
+                </Table.Td>
+                <Table.ActionTd className="w-[48px] min-w-[48px] px-1 py-1.5 align-top">
+                  {renderRowActions(row, realIdx)}
+                </Table.ActionTd>
+              </Table.BodyRow>
+            ))}
           </tbody>
         </Table.Table>
       </div>
-      <div className="space-y-3 md:hidden" aria-label="Editor langkah prosedur">
+
+      <div className="space-y-2 md:hidden" aria-label="Editor langkah prosedur">
         {prosedurRows.map((row, realIdx) => (
-          <section key={row.id} className="rounded-xl border border-border bg-surface p-4 shadow-surface">
-            <div className="mb-4 flex items-center justify-between gap-2 border-b border-border pb-3">
+          <section key={row.id} className="rounded-surface border border-border bg-surface p-3">
+            <div className="mb-3 flex items-center justify-between gap-2 border-b border-border pb-2">
               <h3 className="text-sm font-semibold text-foreground">Langkah {realIdx + 1}</h3>
               {renderRowActions(row, realIdx)}
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-secondary-foreground">Kegiatan</p>
                 <KegiatanCell
@@ -223,7 +237,7 @@ export function DetailSOPProsedurEditor({
                   onChange={(value) => handleKegiatanChange(realIdx, value)}
                 />
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-secondary-foreground">Tipe</p>
                   <TypeCell
@@ -240,7 +254,9 @@ export function DetailSOPProsedurEditor({
                   <ImplementerCell
                     row={row}
                     implementers={implementers}
-                    onImplementerChange={(id) => handlePelaksanaChange(realIdx, id, implementers)}
+                    onImplementerChange={(id) =>
+                      handlePelaksanaChange(realIdx, id, implementers)
+                    }
                   />
                 </div>
               </div>
@@ -276,19 +292,17 @@ export function DetailSOPProsedurEditor({
           </section>
         ))}
       </div>
+
       <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Button
           variant="outline"
-          size="default"
+          size="sm"
+          className="h-9"
           onClick={() => guardedAddRow(prosedurRows.length)}
         >
           Tambah langkah
         </Button>
-        <Button
-          variant="default"
-          size="default"
-          onClick={handleDone}
-        >
+        <Button size="sm" className="h-9" onClick={handleDone}>
           Selesai edit
         </Button>
       </div>
@@ -304,16 +318,16 @@ export function DetailSOPProsedurEditor({
         setDecisionNoId={setDecisionNoId}
         onValidationError={() => {}}
         onSave={(stepIndex, yesId, noId) => {
-          setProsedurRows((prev) =>
-            prev.map((row, idx) =>
-              idx === stepIndex
+          setProsedurRows((previous) =>
+            previous.map((row, index) =>
+              index === stepIndex
                 ? {
                     ...row,
                     id_next_step_if_yes: yesId || undefined,
                     id_next_step_if_no: noId || undefined,
                   }
-                : row
-            )
+                : row,
+            ),
           )
         }}
       />

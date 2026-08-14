@@ -3,31 +3,36 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ to, children }: { to: string; children: ReactNode }) => (
-    <a href={to}>{children}</a>
-  ),
+  Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
 }))
 
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
+import { HeaderBar } from '@/components/layout/HeaderBar'
 import { PageHeaderProvider } from '@/components/layout/PageHeaderProvider'
 
 describe('DetailPageLayout', () => {
-  it('menaruh tombol kembali dan page action di konten lokal, bukan metadata header global', () => {
+  it('menggunakan breadcrumb sebagai navigasi balik tanpa standalone back row', async () => {
     render(
       <PageHeaderProvider>
+        <HeaderBar />
         <DetailPageLayout
-          breadcrumb={[{ label: 'SOP' }, { label: 'Detail' }]}
-          title="Detail SOP"
-          backTo="/sop"
-          backSize="icon"
-          actions={<button type="button">Aksi Dokumen</button>}
+          breadcrumb={[
+            { label: 'Manajemen SOP', to: '/penyusun/sop' },
+            { label: 'Edit SOP' },
+          ]}
+          title="Edit Dokumen SOP"
           main={<div>Dokumen</div>}
         />
       </PageHeaderProvider>,
     )
 
-    expect(screen.getByTitle('Kembali')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Aksi Dokumen' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Manajemen SOP' })).toHaveAttribute(
+      'href',
+      '/penyusun/sop',
+    )
+    expect(screen.getByText('Edit SOP')).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByTitle('Kembali')).not.toBeInTheDocument()
+    expect(screen.queryByText('Kembali')).not.toBeInTheDocument()
     expect(screen.getByText('Dokumen')).toBeInTheDocument()
   })
 })
