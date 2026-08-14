@@ -28,7 +28,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
             )}
             {!item.to ? (
               <span
-                className="font-medium text-secondary-foreground"
+                className={isLast ? 'font-medium text-foreground' : 'font-medium text-secondary-foreground'}
                 aria-current={isLast ? 'page' : undefined}
               >
                 {item.label}
