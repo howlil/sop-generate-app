@@ -188,25 +188,26 @@ export function ManajemenPenyusun() {
       ]}
       title="Manajemen penyusun"
       description="Kelola pengguna peran Penyusun dan PJ Penyusun per OPD. Satu PJ Penyusun aktif per OPD."
+      actions={
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={() => {
+            setFormData(emptyForm());
+            setCreateOpdId(undefined);
+            setIsCreateOpen(true);
+          }}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Tambah Penyusun
+        </Button>
+      }
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari nama, NIP, atau email..."
           searchValue={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
-        >
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => {
-              setFormData(emptyForm());
-              setCreateOpdId(undefined);
-              setIsCreateOpen(true);
-            }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Tambah Penyusun
-          </Button>
-        </SearchToolbar>
+        />
       }
     >
       {isLoading ? (

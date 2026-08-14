@@ -78,6 +78,29 @@ export function ManajemenSOP() {
       breadcrumb={[{ label: "Manajemen SOP" }]}
       title="Manajemen SOP"
       description="Daftar SOP yang Anda kelola. Penyusun menyelesaikan penyusunan lewat tombol Selesai di editor (status Menunggu pengajuan evaluasi). PJ Penyusun membuka pengajuan evaluasi ke Biro lewat tombol di halaman ini. Klik baris untuk melihat atau mengedit detail SOP."
+      actions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {canPjPenyusunRunCoordinatorActions(role ?? "") ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
+            >
+              <Send className="h-3.5 w-3.5" />
+              Ajukan evaluasi SOP
+            </Button>
+          ) : null}
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={() => setIsBuatSOPDialogOpen(true)}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Buat SOP Baru
+          </Button>
+        </div>
+      }
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari judul atau nomor SOP..."
@@ -124,25 +147,6 @@ export function ManajemenSOP() {
               </FormField>
             </div>
           </FilterDropdownButton>
-          {canPjPenyusunRunCoordinatorActions(role ?? "") && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
-            >
-              <Send className="w-3.5 h-3.5" />
-              Ajukan evaluasi SOP
-            </Button>
-          )}
-          <Button
-            size="sm"
-            className="h-8 text-xs gap-1.5"
-            onClick={() => setIsBuatSOPDialogOpen(true)}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Buat SOP Baru
-          </Button>
         </SearchToolbar>
       }
     >
