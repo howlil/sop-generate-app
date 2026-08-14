@@ -16,6 +16,7 @@ import {
 import logoSvg from "@/assets/logo.svg";
 import { HeaderBar } from "@/components/layout/HeaderBar";
 import { PageHeaderProvider } from "@/components/layout/PageHeaderProvider";
+import { SidebarUserMenu } from "@/components/layout/SidebarUserMenu";
 import { APP_DISPLAY_NAME } from "@/config/env";
 import {
   AppSidebar,
@@ -229,6 +230,10 @@ export function DashboardLayout() {
                 ))}
               </div>
             </div>
+            <SidebarUserMenu
+              collapsed={false}
+              onNavigate={() => setIsMobileNavOpen(false)}
+            />
           </div>
         </div>
       ) : null}
