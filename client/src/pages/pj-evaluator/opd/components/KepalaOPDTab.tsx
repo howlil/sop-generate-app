@@ -108,9 +108,7 @@ export function KepalaOPDTab({
 
   const handleManageOpenChange = (open: boolean) => {
     setManageDialogOpen(open)
-    if (!open) {
-      resetManageState()
-    }
+    if (!open) resetManageState()
   }
 
   const openManageDialog = (src: KepalaOpdDto) => {
@@ -166,7 +164,6 @@ export function KepalaOPDTab({
     resetManageState()
   }
 
-  /** OPD boleh dipilih sebagai tujuan jika tidak ada kepala aktif lain di sana */
   const canPickOpdAsDestination = (opdId: string): boolean => {
     const other = kepalaRows.find((r) => r.opdId === opdId && r.isActive)
     return other === undefined
@@ -174,7 +171,7 @@ export function KepalaOPDTab({
 
   return (
     <>
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-end border-b border-border px-card py-2">
         <Button
           size="sm"
           className="h-8 gap-1.5 text-xs shrink-0"
@@ -186,88 +183,93 @@ export function KepalaOPDTab({
           Tambah Kepala OPD
         </Button>
       </div>
-      <Table.Paginated data={kepalaRows} label="kepala" className="w-full">
+      <Table.Paginated
+        data={kepalaRows}
+        label="kepala"
+        className="w-full"
+        surfaceMode="embedded"
+      >
         {(pageData) => (
           <Table.Root>
             <Table.Table>
-            <thead>
-              <Table.HeadRow>
-                <Table.Th>Nama</Table.Th>
-                <Table.Th>NIP</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>OPD</Table.Th>
-                <Table.Th>Jabatan</Table.Th>
-                <Table.Th align="center">Status</Table.Th>
-                <Table.ActionTh>Aksi</Table.ActionTh>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <LoadingTableRow colSpan={7} message="Memuat data Kepala OPD…" />
-              ) : pageData.length === 0 ? (
-                <EmptyState
-                  asTableRow
-                  colSpan={7}
-                  title="Belum ada Kepala OPD"
-                  description="Gunakan tombol Tambah Kepala OPD untuk membuat akun baru."
-                />
-              ) : (
-                pageData.map((k) => (
-                  <Table.BodyRow key={k.id}>
-                    <Table.Td>
-                      <PersonNameCell name={k.nama} avatarText={k.nama[0]} />
-                    </Table.Td>
-                    <Table.Td>
-                      <PersonMonoCell value={k.nip} />
-                    </Table.Td>
-                    <Table.Td>
-                    <PersonTextCell value={k.email} />
-                    </Table.Td>
-                    <Table.Td>{k.namaOpd}</Table.Td>
-                    <Table.Td className="max-w-[140px] truncate">
-                    <PersonTextCell value={k.jabatan} />
-                    </Table.Td>
-                    <Table.Td className="text-center">
-                      <PersonStatusCell status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
-                    </Table.Td>
-                    <Table.ActionTd>
-                      <div className="flex justify-end">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4 text-secondary-foreground" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setRiwayatForId(k.id)
-                                setRiwayatNama(k.nama)
-                              }}
-                            >
-                              <History className="mr-2 h-4 w-4" />
-                              Riwayat penugasan
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openManageDialog(k)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Ubah / pindah OPD
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={!canDeleteKepala(k)}
-                              onClick={() => onDeleteRequest(k.id)}
-                              className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Hapus Kepala OPD
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </Table.ActionTd>
-                  </Table.BodyRow>
-                ))
-              )}
-            </tbody>
+              <thead>
+                <Table.HeadRow>
+                  <Table.Th>Nama</Table.Th>
+                  <Table.Th>NIP</Table.Th>
+                  <Table.Th>Email</Table.Th>
+                  <Table.Th>OPD</Table.Th>
+                  <Table.Th>Jabatan</Table.Th>
+                  <Table.Th align="center">Status</Table.Th>
+                  <Table.ActionTh>Aksi</Table.ActionTh>
+                </Table.HeadRow>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <LoadingTableRow colSpan={7} message="Memuat data Kepala OPD…" />
+                ) : pageData.length === 0 ? (
+                  <EmptyState
+                    asTableRow
+                    colSpan={7}
+                    title="Belum ada Kepala OPD"
+                    description="Gunakan tombol Tambah Kepala OPD untuk membuat akun baru."
+                  />
+                ) : (
+                  pageData.map((k) => (
+                    <Table.BodyRow key={k.id}>
+                      <Table.Td>
+                        <PersonNameCell name={k.nama} avatarText={k.nama[0]} />
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonMonoCell value={k.nip} />
+                      </Table.Td>
+                      <Table.Td>
+                        <PersonTextCell value={k.email} />
+                      </Table.Td>
+                      <Table.Td>{k.namaOpd}</Table.Td>
+                      <Table.Td className="max-w-[140px] truncate">
+                        <PersonTextCell value={k.jabatan} />
+                      </Table.Td>
+                      <Table.Td className="text-center">
+                        <PersonStatusCell status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
+                      </Table.Td>
+                      <Table.ActionTd>
+                        <div className="flex justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4 text-secondary-foreground" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setRiwayatForId(k.id)
+                                  setRiwayatNama(k.nama)
+                                }}
+                              >
+                                <History className="mr-2 h-4 w-4" />
+                                Riwayat penugasan
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openManageDialog(k)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Ubah / pindah OPD
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={!canDeleteKepala(k)}
+                                onClick={() => onDeleteRequest(k.id)}
+                                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Hapus Kepala OPD
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </Table.ActionTd>
+                    </Table.BodyRow>
+                  ))
+                )}
+              </tbody>
             </Table.Table>
           </Table.Root>
         )}
