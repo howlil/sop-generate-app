@@ -219,12 +219,13 @@ export function ManajemenPenyusun() {
             <LoadingState message="Memuat data penyusun…" />
           </div>
         ) : (
-          <div className="p-card">
+          <>
             <ExpandableGroupedTable
               groups={grup}
               getGroupId={(g) => g.opdId}
               renderGroupTitle={(g) => g.namaOpd}
               renderGroupMeta={(g) => `${g.penyusun.length} penyusun`}
+              surfaceMode="embedded"
               renderRows={(g) => (
                 <Table.Table>
                   <thead>
@@ -299,13 +300,13 @@ export function ManajemenPenyusun() {
             />
 
             {barisFlat.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground text-sm">
+              <div className="px-card py-8 text-center text-sm text-muted-foreground">
                 {searchQuery.trim()
                   ? `Tidak ada penyusun yang cocok dengan “${searchQuery.trim()}”.`
                   : "Belum ada data penyusun. Klik Tambah Penyusun untuk menambah."}
               </div>
             ) : null}
-          </div>
+          </>
         )}
       </DataSurface.Root>
 
