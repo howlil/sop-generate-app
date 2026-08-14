@@ -105,23 +105,13 @@ export function ManajemenOPD() {
       >
         <DataSurface.Root>
           <DataSurface.Header>
-            <div className="space-y-1 px-card pt-4">
+            <div className="space-y-1">
               <p className="text-sm text-secondary-foreground">Kelola OPD dan akun Kepala OPD.</p>
             </div>
             <DataSurface.Tabs>
-              <TabsList className="inline-flex h-9 w-auto gap-5 rounded-none border-0 border-b border-border bg-transparent p-0">
-                <TabsTrigger
-                  value="opd"
-                  className="h-9 rounded-none border-b-2 border-transparent bg-transparent px-0 text-sm text-secondary-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-                >
-                  OPD
-                </TabsTrigger>
-                <TabsTrigger
-                  value="kepala"
-                  className="h-9 rounded-none border-b-2 border-transparent bg-transparent px-0 text-sm text-secondary-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-                >
-                  Kepala OPD
-                </TabsTrigger>
+              <TabsList>
+                <TabsTrigger value="opd">OPD</TabsTrigger>
+                <TabsTrigger value="kepala">Kepala OPD</TabsTrigger>
               </TabsList>
             </DataSurface.Tabs>
             <DataSurface.Toolbar>
@@ -143,17 +133,19 @@ export function ManajemenOPD() {
                     : setSearchUserQuery(event.target.value)
                 }
               />
-              <Button
-                size="sm"
-                className="h-9 shrink-0 text-sm"
-                onClick={() =>
-                  activeTab === 'opd'
-                    ? opdTabRef.current?.openCreateDialog()
-                    : kepalaTabRef.current?.openCreateDialog()
-                }
-              >
-                {activeTab === 'opd' ? 'Tambah OPD' : 'Tambah Kepala OPD'}
-              </Button>
+              <DataSurface.Actions>
+                <Button
+                  size="sm"
+                  className="h-9 shrink-0 text-sm"
+                  onClick={() =>
+                    activeTab === 'opd'
+                      ? opdTabRef.current?.openCreateDialog()
+                      : kepalaTabRef.current?.openCreateDialog()
+                  }
+                >
+                  {activeTab === 'opd' ? 'Tambah OPD' : 'Tambah Kepala OPD'}
+                </Button>
+              </DataSurface.Actions>
             </DataSurface.Toolbar>
           </DataSurface.Header>
 
