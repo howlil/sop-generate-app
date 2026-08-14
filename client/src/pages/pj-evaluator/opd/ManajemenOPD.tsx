@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Building2, Users } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { DataSurface } from '@/components/data/data-surface'
 import { SearchInput } from '@/components/ui/search-input'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -16,8 +16,8 @@ import {
 } from '@/api/kepala-opd'
 import type { OPDUI as OPD } from '@/types/ui/organisasi'
 import type { KepalaOpdDto } from '@/types/dto/kepala-opd.dto'
-import { OPDTab } from './components/OPDTab'
-import { KepalaOPDTab } from './components/KepalaOPDTab'
+import { OPDTab, type OPDTabHandle } from './components/OPDTab'
+import { KepalaOPDTab, type KepalaOPDTabHandle } from './components/KepalaOPDTab'
 
 function hasRelasiData(opd: OPD): boolean {
   if (!opd._count) return false
@@ -30,6 +30,8 @@ function canDeleteKepala(kepala: KepalaOpdDto): boolean {
 
 export function ManajemenOPD() {
   const { showToast } = useToast()
+  const opdTabRef = useRef<OPDTabHandle>(null)
+  const kepalaTabRef = useRef<KepalaOPDTabHandle>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchUserQuery, setSearchUserQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'opd' | 'kepala'>('opd')
@@ -94,7 +96,7 @@ export function ManajemenOPD() {
   return (
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen OPD' }]}
-      title="Manajemen OPD"
+      title="Manajemen Organisasi"
     >
       <Tabs
         value={activeTab}
@@ -103,14 +105,21 @@ export function ManajemenOPD() {
       >
         <DataSurface.Root>
           <DataSurface.Header>
+            <div className="space-y-1 px-card pt-4">
+              <p className="text-sm text-secondary-foreground">Kelola OPD dan akun Kepala OPD.</p>
+            </div>
             <DataSurface.Tabs>
-              <TabsList className="grid h-9 w-full min-w-[24rem] grid-cols-2 bg-surface border border-border">
-                <TabsTrigger value="opd" className="text-xs gap-1.5">
-                  <Building2 className="w-3.5 h-3.5" />
-                  Manajemen OPD
+              <TabsList className="inline-flex h-9 w-auto gap-5 rounded-none border-0 border-b border-border bg-transparent p-0">
+                <TabsTrigger
+                  value="opd"
+                  className="h-9 rounded-none border-b-2 border-transparent bg-transparent px-0 text-sm text-secondary-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+                >
+                  OPD
                 </TabsTrigger>
-                <TabsTrigger value="kepala" className="text-xs gap-1.5">
-                  <Users className="w-3.5 h-3.5" />
+                <TabsTrigger
+                  value="kepala"
+                  className="h-9 rounded-none border-b-2 border-transparent bg-transparent px-0 text-sm text-secondary-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+                >
                   Kepala OPD
                 </TabsTrigger>
               </TabsList>
@@ -134,11 +143,23 @@ export function ManajemenOPD() {
                     : setSearchUserQuery(event.target.value)
                 }
               />
+              <Button
+                size="sm"
+                className="h-9 shrink-0 text-sm"
+                onClick={() =>
+                  activeTab === 'opd'
+                    ? opdTabRef.current?.openCreateDialog()
+                    : kepalaTabRef.current?.openCreateDialog()
+                }
+              >
+                {activeTab === 'opd' ? 'Tambah OPD' : 'Tambah Kepala OPD'}
+              </Button>
             </DataSurface.Toolbar>
           </DataSurface.Header>
 
           <TabsContent value="opd" className="mt-0">
             <OPDTab
+              ref={opdTabRef}
               filteredOPD={opdList}
               hasRelasiData={hasRelasiData}
               onDelete={handleDeleteOpd}
@@ -149,6 +170,7 @@ export function ManajemenOPD() {
 
           <TabsContent value="kepala" className="mt-0">
             <KepalaOPDTab
+              ref={kepalaTabRef}
               opdList={opdList}
               kepalaRows={kepalaData}
               isLoading={isLoadingKepala}
