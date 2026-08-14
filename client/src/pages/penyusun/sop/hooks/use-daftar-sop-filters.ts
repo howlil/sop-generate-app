@@ -4,26 +4,21 @@
 
 import { useState, useCallback, useMemo } from "react";
 
-export interface DaftarSOPFilters {
-  searchQuery: string;
+export interface DaftarSOPAdvancedFilters {
   statusFilter: string | null;
   filterTanggalDari: string | null;
   filterTanggalSampai: string | null;
 }
 
 export function useDaftarSopFilters() {
-  const [filters, setFilters] = useState<DaftarSOPFilters>({
-    searchQuery: "",
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<DaftarSOPAdvancedFilters>({
     statusFilter: null,
     filterTanggalDari: null,
     filterTanggalSampai: null,
   });
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  const setSearchQuery = useCallback((query: string) => {
-    setFilters((prev) => ({ ...prev, searchQuery: query }));
-  }, []);
 
   const setStatusFilter = useCallback((status: string | null) => {
     setFilters((prev) => ({ ...prev, statusFilter: status }));
@@ -37,9 +32,12 @@ export function useDaftarSopFilters() {
     setFilters((prev) => ({ ...prev, filterTanggalSampai: tanggal }));
   }, []);
 
+  const clearSearch = useCallback(() => {
+    setSearchQuery("");
+  }, []);
+
   const clearFilters = useCallback(() => {
     setFilters({
-      searchQuery: "",
       statusFilter: null,
       filterTanggalDari: null,
       filterTanggalSampai: null,
@@ -56,19 +54,18 @@ export function useDaftarSopFilters() {
 
   return {
     filters,
-    // Direct access aliases for pages that destructure flat
-    searchQuery: filters.searchQuery,
+    searchQuery,
     filterStatus: filters.statusFilter,
     filterTanggalDari: filters.filterTanggalDari,
     filterTanggalSampai: filters.filterTanggalSampai,
     isFilterOpen,
     setIsFilterOpen,
     activeFilterCount,
-    // Setters
     setSearchQuery,
     setStatusFilter,
     setFilterTanggalDari,
     setFilterTanggalSampai,
+    clearSearch,
     clearFilters,
   };
 }
