@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { PanelTabStrip } from '@/components/ui/collapsible-side-panel'
+import { Table } from '@/components/ui/data-table'
 import { Pagination } from '@/components/ui/pagination'
 import { SearchableSelectDialog } from '@/components/ui/searchable-select-dialog'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -41,6 +42,31 @@ describe('regresi polish UI P3', () => {
     expect(screen.getByRole('button', { name: 'Halaman 12' })).toHaveAttribute(
       'aria-current',
       'page',
+    )
+  })
+
+  it('mendukung tabel paginated standalone dan embedded tanpa nested surface', () => {
+    const { rerender } = render(
+      <Table.Paginated data={[1]} label="Item" surfaceMode="embedded">
+        {(items) => <div data-testid="table-content">{items[0]}</div>}
+      </Table.Paginated>,
+    )
+
+    const embedded = screen.getByTestId('table-content').parentElement
+    expect(embedded).not.toHaveClass('rounded-surface', 'border', 'bg-surface')
+    expect(embedded).toHaveClass('min-w-0')
+
+    rerender(
+      <Table.Paginated data={[1]} label="Item">
+        {(items) => <div data-testid="table-content">{items[0]}</div>}
+      </Table.Paginated>,
+    )
+
+    expect(screen.getByTestId('table-content').parentElement).toHaveClass(
+      'rounded-surface',
+      'border',
+      'border-border',
+      'bg-surface',
     )
   })
 
