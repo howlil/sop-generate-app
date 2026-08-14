@@ -2,17 +2,12 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 
 /**
- * PageHeaderContent - Header content structure
- *
- * Used by PageHeaderProvider to manage header state across layout.
- * Content is set by SetPageHeader component, displayed by HeaderBar.
+ * Metadata halaman yang dibutuhkan global authenticated shell.
+ * Business actions, descriptions, dan local navigation dimiliki page content.
  */
 export interface PageHeaderContent {
   breadcrumb: BreadcrumbItem[]
   title: string
-  description?: string
-  leading?: ReactNode
-  actions?: ReactNode
 }
 
 interface PageHeaderContextValue {
@@ -20,43 +15,18 @@ interface PageHeaderContextValue {
   setHeaderContent: (content: PageHeaderContent | null) => void
 }
 
-/**
- * PageHeaderProvider - Context for managing page header content
- *
- * Provides a way for pages to declaratively set header content
- * without prop drilling through layout layers.
- *
- * @example
- * ```tsx
- * // In DashboardLayout (provider)
- * <PageHeaderProvider>
- *   <HeaderBar />
- *   <Outlet />
- * </PageHeaderProvider>
- *
- * // In page component (consumer)
- * <SetPageHeader
- *   breadcrumb={[{ label: 'Home' }]}
- *   title="Dashboard"
- *   description="Ringkasan aktivitas terbaru"
- *   actions={<Button>Action</Button>}
- * />
- * ```
- */
 const PageHeaderContext = createContext<PageHeaderContextValue | null>(null)
 
-/**
- * PageHeaderProvider - Provides header context to component tree
- *
- * Must wrap RoleLayout or similar layout component.
- * Stores header content state and provides setter via context.
- */
 export function PageHeaderProvider({ children }: { children: ReactNode }) {
   const [headerContent, setHeaderContent] = useState<PageHeaderContent | null>(null)
   const stableSetter = useCallback((content: PageHeaderContent | null) => {
     setHeaderContent(content)
   }, [])
-  const value = useMemo(() => ({ headerContent, setHeaderContent: stableSetter }), [headerContent, stableSetter])
+  const value = useMemo(
+    () => ({ headerContent, setHeaderContent: stableSetter }),
+    [headerContent, stableSetter],
+  )
+
   return (
     <PageHeaderContext.Provider value={value}>
       {children}
@@ -64,59 +34,24 @@ export function PageHeaderProvider({ children }: { children: ReactNode }) {
   )
 }
 
-/**
- * usePageHeaderContext - Hook to access header context
- *
- * @returns Context value with headerContent and setHeaderContent
- * @returns null if used outside PageHeaderProvider
- *
- * @example
- * ```tsx
- * const ctx = usePageHeaderContext()
- * if (ctx) {
- *   ctx.setHeaderContent({ breadcrumb: [], title: 'New Title' })
- * }
- * ```
- */
 export function usePageHeaderContext() {
-  const ctx = useContext(PageHeaderContext)
-  return ctx
+  return useContext(PageHeaderContext)
 }
-
-// ========================
-// SetPageHeader
-// ========================
 
 export interface SetPageHeaderProps {
-  /** Item breadcrumb (urutan: parent → current). Item terakhir = halaman saat ini (boleh tanpa `to`) */
+  /** Item breadcrumb (urutan: parent → current). Item terakhir = halaman saat ini. */
   breadcrumb: BreadcrumbItem[]
-  /** Judul halaman */
+  /** Judul semantik halaman; HeaderBar merendernya sebagai satu h1 sr-only. */
   title: string
-  /** Deskripsi ringkas di bawah judul */
-  description?: string
-  /** Konten di kiri (sebelah kiri judul), mis. tombol kembali */
-  leading?: ReactNode
-  /** Konten tambahan di kanan (tombol aksi, dll.) */
-  actions?: ReactNode
-  className?: string
 }
 
 /**
- * SetPageHeader - Declarative header content setter
- *
- * Sets header content (breadcrumb, title, description, actions) via PageHeaderProvider.
- * Renders nothing (null) - only updates context for HeaderBar to display.
+ * Mengirim metadata navigation context ke global shell tanpa merender UI lokal.
  */
-export function SetPageHeader({
-  breadcrumb,
-  title,
-  description,
-  leading,
-  actions,
-}: SetPageHeaderProps) {
+export function SetPageHeader({ breadcrumb, title }: SetPageHeaderProps) {
   const ctx = usePageHeaderContext()
-  const propsRef = useRef({ breadcrumb, title, description, leading, actions })
-  propsRef.current = { breadcrumb, title, description, leading, actions }
+  const propsRef = useRef({ breadcrumb, title })
+  propsRef.current = { breadcrumb, title }
 
   const breadcrumbKey = JSON.stringify(breadcrumb)
   const setHeader = ctx?.setHeaderContent
@@ -129,7 +64,7 @@ export function SetPageHeader({
     return () => {
       setHeaderRef.current?.(null)
     }
-  }, [breadcrumbKey, title, description])
+  }, [breadcrumbKey, title])
 
   return null
 }
