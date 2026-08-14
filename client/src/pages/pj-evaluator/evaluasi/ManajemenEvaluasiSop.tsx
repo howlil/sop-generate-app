@@ -5,8 +5,9 @@ import {
   STATUS_RIWAYAT_FINAL_EVALUASI,
   usePengajuanEvaluasiRingkas,
 } from '@/api/evaluasi'
+import { DataSurface } from '@/components/data/data-surface'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { SearchToolbar } from '@/components/ui/search-toolbar'
+import { SearchInput } from '@/components/ui/search-input'
 import { RowActions } from '@/components/data/row-actions'
 import {
   EvaluasiFilterTabs,
@@ -48,38 +49,42 @@ export function ManajemenEvaluasiSop() {
     <ListPageLayout
       breadcrumb={[{ label: IA.NAV_BIRO_BATCH_BA }]}
       title={IA.NAV_BIRO_BATCH_BA}
-      description={`${IA.PENGAJUAN_EVALUASI_OPD} per OPD. Buka detail untuk ${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}.`}
-      toolbar={
-        <div className="flex flex-col gap-3 w-full">
-          <SearchToolbar
-            searchPlaceholder="Cari OPD..."
-            searchValue={searchQuery}
-            onSearchChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <div className="w-full">
-            <EvaluasiFilterTabs value={filterTab} onValueChange={setFilterTab} />
-          </div>
-        </div>
-      }
     >
-      <EvaluasiPengajuanGroupedList
-        rows={items}
-        isLoading={isLoading}
-        pagination={pagination}
-        onPageChange={setPage}
-        renderAction={(row) => (
-          <RowActions
-            actions={[
-              {
-                icon: Eye,
-                to: ROUTES.PJ_EVALUATOR.DETAIL_EVALUASI,
-                params: { id: row.pengajuanEvaluasiId },
-                title: 'Detail evaluasi',
-              },
-            ]}
-          />
-        )}
-      />
+      <DataSurface.Root>
+        <DataSurface.Header>
+          <DataSurface.Tabs>
+            <EvaluasiFilterTabs value={filterTab} onValueChange={setFilterTab} />
+          </DataSurface.Tabs>
+          <DataSurface.Toolbar>
+            <SearchInput
+              placeholder="Cari OPD..."
+              aria-label="Cari OPD..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </DataSurface.Toolbar>
+        </DataSurface.Header>
+
+        <EvaluasiPengajuanGroupedList
+          rows={items}
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+          surfaceMode="embedded"
+          renderAction={(row) => (
+            <RowActions
+              actions={[
+                {
+                  icon: Eye,
+                  to: ROUTES.PJ_EVALUATOR.DETAIL_EVALUASI,
+                  params: { id: row.pengajuanEvaluasiId },
+                  title: 'Detail evaluasi',
+                },
+              ]}
+            />
+          )}
+        />
+      </DataSurface.Root>
     </ListPageLayout>
   )
 }
