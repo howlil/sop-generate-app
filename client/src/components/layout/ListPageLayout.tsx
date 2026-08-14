@@ -1,73 +1,31 @@
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 import { SetPageHeader } from '@/components/layout/PageHeaderProvider'
 
-/**
- * ListPageLayoutProps - Props for list page layout
- * 
- * Standard layout for list pages with:
- * - Page header (breadcrumb, title, actions)
- * - Optional toolbar (search, filters)
- * - Main content (table, cards, etc.)
- */
 export interface ListPageLayoutProps {
   /** Item breadcrumb. Opsional: null/undefined = tidak tampil breadcrumb. */
   breadcrumb?: BreadcrumbItem[] | null
-  /** Judul halaman */
+  /** Judul semantik halaman. */
   title: string
-  /** Deskripsi di bawah judul */
+  /** @deprecated Deskripsi tidak lagi dirender di global shell. */
   description?: string
-  /** Konten di kiri (mis. BackButton) */
-  leading?: React.ReactNode
-  /** Konten di kanan (tombol aksi, dll.) */
-  actions?: React.ReactNode
-  /** Toolbar di bawah header (mis. SearchToolbar dengan filter). Opsional. */
-  toolbar?: React.ReactNode
-  /** Konten utama (tabel, kartu, dll.) */
+  /** Konten collection/page lokal. */
   children: React.ReactNode
   className?: string
 }
 
 /**
- * ListPageLayout - Standard layout for list pages
- * 
- * Used in:
- * - SOPSaya
- * - DaftarSOPEvaluasi
- * - DaftarSOP
- * - ManajemenEvaluator
- * 
- * @example
- * ```tsx
- * <ListPageLayout
- *   title="SOP Saya"
- *   description="Daftar SOP yang Anda susun"
- *   toolbar={<SearchToolbar />}
- *   actions={<Button>Buat SOP Baru</Button>}
- * >
- *   <SopTable />
- * </ListPageLayout>
- * ```
+ * Wrapper metadata untuk halaman list. Collection controls dimiliki children,
+ * biasanya melalui DataSurface, bukan global header.
  */
 export function ListPageLayout({
   breadcrumb,
   title,
-  description,
-  leading,
-  actions,
-  toolbar,
   children,
   className,
 }: ListPageLayoutProps) {
   return (
     <div className={className ?? 'space-y-4 sm:space-y-section'}>
-      <SetPageHeader
-        breadcrumb={breadcrumb ?? []}
-        title={title}
-        description={description}
-        leading={leading}
-        actions={actions}
-      />
-      {toolbar}
+      <SetPageHeader breadcrumb={breadcrumb ?? []} title={title} />
       {children}
     </div>
   )
