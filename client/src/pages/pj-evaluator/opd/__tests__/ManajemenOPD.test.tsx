@@ -16,15 +16,26 @@ vi.mock('@/api/kepala-opd', () => ({
 vi.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a> }))
 
 describe('ManajemenOPD', () => {
-  it('uses the shared tab treatment and keeps the active create action in the toolbar action slot', () => {
+  it('uses a full-width line tab row integrated with the data surface', () => {
     render(<ManajemenOPD />)
 
     expect(screen.getByText('Kelola OPD dan akun Kepala OPD.')).toBeInTheDocument()
 
     const opdTab = screen.getByRole('tab', { name: 'OPD' })
-    expect(opdTab).toBeInTheDocument()
-    expect(opdTab.className).not.toContain('border-b-2')
-    expect(screen.getByRole('tab', { name: 'Kepala OPD' })).toBeInTheDocument()
+    const kepalaTab = screen.getByRole('tab', { name: 'Kepala OPD' })
+    const tabList = opdTab.closest('[role="tablist"]')
+
+    expect(tabList).not.toBeNull()
+    expect(tabList).toHaveClass('w-full')
+    expect(tabList).toHaveClass('rounded-none')
+    expect(tabList).toHaveClass('border-b')
+    expect(tabList).toHaveClass('bg-transparent')
+    expect(tabList).not.toHaveClass('bg-surface-muted')
+
+    expect(opdTab).toHaveClass('flex-1')
+    expect(opdTab).toHaveClass('rounded-none')
+    expect(opdTab.className).toContain('data-[state=active]:border-primary')
+    expect(kepalaTab).toHaveClass('flex-1')
 
     expect(screen.getByRole('textbox', { name: 'Cari nama OPD...' })).toBeInTheDocument()
     const createButton = screen.getByRole('button', { name: 'Tambah OPD' })
