@@ -20,12 +20,12 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
   const activeRole = roles.find((role) => role.id === activeRoleId) ?? roles[0]
 
   return (
-    <section id="peran" className="scroll-mt-20 border-y border-border bg-surface-subtle py-20 sm:py-24">
+    <section id="peran" className="scroll-mt-20 border-y border-border bg-[#f7f9fc] py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[0.7fr_0.3fr] lg:items-end">
+        <div className="grid gap-6 lg:grid-cols-[0.68fr_0.32fr] lg:items-end">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Ruang kerja berbasis peran</p>
-            <h2 className="mt-4 max-w-3xl text-[clamp(2.5rem,4.6vw,3.75rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-foreground">
+            <h2 className="mt-4 max-w-3xl text-[clamp(2.5rem,4.6vw,3.75rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-slate-950">
               Satu sistem. Lima konteks kerja.
             </h2>
           </div>
@@ -62,7 +62,7 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
           id="role-workspace-panel"
           role="tabpanel"
           aria-labelledby={`role-tab-${activeRoleId}`}
-          className="mt-8 grid gap-8 border border-border bg-surface p-5 sm:p-8 lg:grid-cols-[0.32fr_0.68fr] lg:gap-10"
+          className="mt-8 grid gap-8 border border-border bg-surface p-5 shadow-sm sm:p-8 lg:grid-cols-[0.32fr_0.68fr] lg:gap-10"
         >
           <div className="lg:py-2">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">{activeRole.label}</p>

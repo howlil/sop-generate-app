@@ -4,6 +4,8 @@ interface PreviewFrameProps {
   rows: ReadonlyArray<readonly [string, string]>
 }
 
+export type WorkflowPreviewKind = 'authoring' | 'evaluation' | 'approval'
+
 function PreviewFrame({ eyebrow, title, rows }: PreviewFrameProps) {
   return (
     <div className="border border-border bg-surface p-5 sm:p-6">
@@ -96,4 +98,15 @@ export function ApprovalArchivePreview() {
       </ol>
     </div>
   )
+}
+
+export function WorkflowPreview({ preview }: { preview: WorkflowPreviewKind }) {
+  switch (preview) {
+    case 'authoring':
+      return <AuthoringPreview />
+    case 'evaluation':
+      return <EvaluationPreview />
+    case 'approval':
+      return <ApprovalArchivePreview />
+  }
 }

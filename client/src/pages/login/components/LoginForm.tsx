@@ -73,8 +73,10 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
 
       <div className="mb-8 border-b border-border pb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Akses internal</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-foreground">Masuk ke sistem</h1>
-        <p className="mt-2 text-sm leading-6 text-secondary-foreground">Gunakan akun {APP_DISPLAY_NAME} yang telah didaftarkan oleh administrator instansi.</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">Masuk ke SOPFlow</h1>
+        <p className="mt-3 text-sm leading-6 text-secondary-foreground">
+          Gunakan akun {APP_DISPLAY_NAME} yang telah didaftarkan oleh administrator instansi. Akses dan menu akan mengikuti peran pengguna.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -118,7 +120,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           </div>
         </div>
 
-        <Button type="submit" variant="default" size="default" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" variant="default" size="default" className="h-11 w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden />
@@ -134,7 +136,9 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
       </form>
 
       <div className="mt-7 border-t border-border pt-5">
-        <p className="text-xs leading-5 text-muted-foreground">Kesulitan masuk? Hubungi administrator instansi Anda untuk memastikan akun dan peran sudah terdaftar.</p>
+        <p className="text-xs leading-5 text-muted-foreground">
+          Kesulitan masuk? Hubungi administrator instansi Anda untuk memastikan akun, OPD, dan peran sudah terdaftar.
+        </p>
       </div>
     </div>
   )
