@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { CheckCircle, FileText, History } from "lucide-react";
+import { CheckCircle, History } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
@@ -8,7 +8,7 @@ import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/p
 import { BeritaAcaraPreviewPane } from "@/components/pengajuan/berita-acara-preview-pane";
 import { SopDocumentPreviewPane } from "@/components/pengajuan/sop-document-preview-pane";
 import { mapBeritaAcaraTemplateProps } from "@/lib/pengajuan/map-berita-acara-template-props";
-import { SOPListCard } from "@/components/sop/sop-list-card";
+import { SopWorkbenchSidePanel } from "@/components/sop/sop-workbench-side-panel";
 import { formatDateId } from "@/utils/format-date";
 import { PinVerificationDialog } from "@/components/tte/pin-verification-dialog";
 import { TteSetupRequiredDialog } from "@/components/tte/tte-setup-required-dialog";
@@ -159,6 +159,16 @@ export function DetailPengajuanEvaluasi() {
     );
   }
 
+  const workbenchSopItems = sopList.map((sop) => ({
+    id: sop.sopDetailId,
+    nama: sop.nama,
+    nomor: sop.nomor,
+    statusDokumen: sop.status,
+    statusDokumenLabel: sop.statusLabel ?? sop.status,
+    hasilEvaluasi: sop.hasil,
+    hasilEvaluasiLabel: sop.hasilLabel,
+  }));
+
   return (
     <>
       <DetailPageLayout
@@ -224,45 +234,14 @@ export function DetailPengajuanEvaluasi() {
           </div>
         }
         leftPanel={
-          <CollapsibleSidePanel
-            side="left"
+          <SopWorkbenchSidePanel
             collapsed={leftPanelCollapsed}
-            widthCollapsed="w-10"
-            widthExpanded="w-[min(380px,40vw)]"
-          >
-            {leftPanelCollapsed ? (
-              <CollapsedStripButton
-                label="SOP"
-                icon={<FileText className="w-4 h-4" />}
-                onClick={() => setLeftPanelCollapsed(false)}
-              />
-            ) : (
-              <>
-                <CollapsibleSidePanelHeader
-                  side="left"
-                  onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
-                >
-                  <SimplePanelHeader title="Daftar SOP" />
-                </CollapsibleSidePanelHeader>
-                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
-                  <SOPListCard
-                    items={sopList.map((sop) => ({
-                      id: sop.sopDetailId,
-                      nama: sop.nama,
-                      nomor: sop.nomor,
-                      statusDokumen: sop.status,
-                      statusDokumenLabel: sop.statusLabel ?? sop.status,
-                      hasilEvaluasi: sop.hasil,
-                      hasilEvaluasiLabel: sop.hasilLabel,
-                    }))}
-                    selectedId={effectiveSopDetailId}
-                    onSelect={setSelectedSopId}
-                  />
-                </CollapsibleSidePanelContent>
-              </>
-            )}
-          </CollapsibleSidePanel>
+            onCollapse={() => setLeftPanelCollapsed(true)}
+            onExpand={() => setLeftPanelCollapsed(false)}
+            items={workbenchSopItems}
+            selectedId={effectiveSopDetailId}
+            onSelect={setSelectedSopId}
+          />
         }
         rightPanel={
           <CollapsibleSidePanel
