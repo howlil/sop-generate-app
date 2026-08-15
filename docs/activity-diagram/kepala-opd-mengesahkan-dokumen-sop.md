@@ -9,7 +9,7 @@ Sumber use case: `UC-13` pada [`../usecase.md`](../usecase.md).
 | Use case | Mengesahkan Dokumen SOP |
 | Aktor utama | Kepala OPD |
 | Nomor kebutuhan fungsional | 18 |
-| Tujuan | Menggambarkan proses Kepala OPD mengesahkan SOP yang telah menyelesaikan tahapan evaluasi dan penandatanganan Berita Acara. |
+| Tujuan | Menggambarkan proses Kepala OPD meninjau dan mengesahkan SOP setelah proses evaluasi selesai. |
 
 ## PlantUML
 
@@ -23,10 +23,10 @@ title Diagram Aktivitas - Mengesahkan Dokumen SOP
 
 |Kepala OPD|
 start
-:Membuka pengajuan yang siap disahkan;
+:Membuka dokumen yang siap disahkan;
 
 |Sistem|
-:Menampilkan SOP dan Berita Acara yang telah selesai ditandatangani;
+:Menampilkan SOP dan Berita Acara;
 
 |Kepala OPD|
 :Meninjau dokumen SOP;
@@ -34,13 +34,10 @@ start
 :Memasukkan PIN TTE;
 
 |Sistem|
-:Memvalidasi kewenangan, PIN TTE, dan kesiapan dokumen;
+:Memproses pengesahan SOP;
 
-if (Pengesahan memenuhi syarat?) then (Ya)
-  :Mengesahkan seluruh SOP dalam pengajuan;
-  :Menetapkan SOP sebagai berlaku;
-  :Memperbarui arsip publik;
-  :Menandai pengajuan selesai;
+if (Pengesahan berhasil?) then (Ya)
+  :Menetapkan SOP sebagai dokumen berlaku;
   :Menampilkan hasil pengesahan;
 else (Tidak)
   :Menampilkan alasan pengesahan belum dapat dilakukan;

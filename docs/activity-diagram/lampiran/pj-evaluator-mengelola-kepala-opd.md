@@ -9,7 +9,7 @@ Sumber use case: `UC-07` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Kepala OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 4 |
-| Tujuan | Menggambarkan proses PJ Evaluator mengelola penugasan dan data Kepala OPD. |
+| Tujuan | Menggambarkan proses PJ Evaluator menetapkan dan memperbarui Kepala OPD. |
 
 ## PlantUML
 
@@ -23,23 +23,22 @@ title Diagram Aktivitas - Mengelola Kepala OPD
 
 |PJ Evaluator|
 start
-:Membuka data Kepala OPD;
+:Membuka pengelolaan Kepala OPD;
 
 |Sistem|
-:Menampilkan daftar Kepala OPD beserta OPD-nya;
+:Menampilkan data Kepala OPD pada setiap OPD;
 
 |PJ Evaluator|
-:Memilih tambah, ubah, pindah OPD, atau nonaktifkan Kepala OPD;
-:Mengisi data yang diperlukan;
+:Memilih OPD;
+:Menambah atau memperbarui Kepala OPD;
 
 |Sistem|
-:Memvalidasi data dan penugasan Kepala OPD;
+:Memproses penetapan Kepala OPD;
 
-if (Penugasan sesuai aturan?) then (Ya)
-  :Menyimpan perubahan Kepala OPD;
-  :Menampilkan data terbaru;
+if (Penetapan dapat dilakukan?) then (Ya)
+  :Menampilkan Kepala OPD yang berlaku;
 else (Tidak)
-  :Menampilkan alasan perubahan tidak dapat dilakukan;
+  :Menampilkan alasan penetapan tidak dapat dilakukan;
 endif
 
 stop

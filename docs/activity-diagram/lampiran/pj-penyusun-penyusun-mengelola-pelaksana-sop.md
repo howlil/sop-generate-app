@@ -9,7 +9,7 @@ Sumber use case: `UC-17` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Pelaksana SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 6 |
-| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun mengelola daftar pelaksana SOP pada OPD. |
+| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun mengelola data pelaksana yang digunakan dalam penyusunan SOP. |
 
 ## PlantUML
 
@@ -23,20 +23,19 @@ title Diagram Aktivitas - Mengelola Pelaksana SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka data pelaksana SOP;
+:Membuka pengelolaan pelaksana SOP;
 
 |Sistem|
-:Menampilkan daftar pelaksana pada OPD pengguna;
+:Menampilkan daftar pelaksana pada OPD;
 
 |PJ Penyusun / Penyusun|
-:Memilih tambah, ubah, atau hapus pelaksana;
-:Mengisi atau memilih data pelaksana;
+:Memilih tindakan pengelolaan;
+:Menambah, mengubah, atau menghapus pelaksana;
 
 |Sistem|
-:Memvalidasi perubahan data pelaksana;
+:Memproses perubahan data pelaksana;
 
 if (Perubahan dapat dilakukan?) then (Ya)
-  :Menyimpan perubahan pelaksana;
   :Menampilkan daftar pelaksana terbaru;
 else (Tidak)
   :Menampilkan alasan perubahan tidak dapat dilakukan;

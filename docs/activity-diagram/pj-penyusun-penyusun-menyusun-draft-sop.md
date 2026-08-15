@@ -9,7 +9,7 @@ Sumber use case: `UC-15` pada [`../usecase.md`](../usecase.md).
 | Use case | Menyusun Draft SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 10 |
-| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun melengkapi draft SOP hingga siap diajukan untuk evaluasi. |
+| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun melengkapi dan menyimpan draft SOP hingga siap diajukan. |
 
 ## PlantUML
 
@@ -23,37 +23,26 @@ title Diagram Aktivitas - Menyusun Draft SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka draft SOP yang akan disusun;
+:Membuka draft SOP;
 
 |Sistem|
-:Menampilkan isi draft dan informasi pendukung penyusunan;
+:Menampilkan isi draft SOP;
 
 |PJ Penyusun / Penyusun|
-:Melengkapi identitas dan informasi dokumen SOP;
+:Melengkapi informasi dokumen SOP;
 :Menyusun pelaksana dan langkah prosedur;
-:Meninjau hasil penyusunan SOP;
+:Meninjau hasil penyusunan;
+:Menyimpan draft;
 
 |Sistem|
-:Memvalidasi dan menyimpan perubahan draft;
-
-if (Data penyusunan valid?) then (Ya)
-  :Menampilkan draft terbaru;
-else (Tidak)
-  :Menampilkan bagian yang perlu diperbaiki;
-endif
+:Menampilkan draft terbaru;
 
 |PJ Penyusun / Penyusun|
 if (Draft sudah lengkap?) then (Ya)
-  :Memilih tandai siap diajukan;
+  :Menandai draft siap diajukan;
 
   |Sistem|
-  :Memeriksa kelengkapan akhir SOP;
-  if (SOP memenuhi kelengkapan?) then (Ya)
-    :Menandai SOP menunggu pengajuan evaluasi;
-    :Menampilkan SOP siap diajukan oleh PJ Penyusun;
-  else (Tidak)
-    :Menampilkan bagian SOP yang belum lengkap;
-  endif
+  :Menampilkan SOP siap diajukan untuk evaluasi;
 else (Tidak)
   :Melanjutkan penyusunan pada waktu berikutnya;
 endif

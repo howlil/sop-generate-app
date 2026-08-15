@@ -9,7 +9,7 @@ Sumber use case: `UC-19` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat Arsip Publik SOP |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 22 |
-| Tujuan | Menggambarkan proses pengunjung mencari dan melihat dokumen SOP yang tersedia pada arsip publik. |
+| Tujuan | Menggambarkan proses pengunjung mencari dan melihat SOP yang tersedia pada arsip publik. |
 
 ## PlantUML
 
@@ -26,18 +26,19 @@ start
 :Membuka arsip publik SOP;
 
 |Sistem|
-:Menampilkan daftar OPD dan SOP yang tersedia untuk publik;
+:Menampilkan SOP yang tersedia untuk publik;
 
 |Pengunjung|
-:Melakukan pencarian atau memilih OPD;
+:Mencari atau menyaring SOP bila diperlukan;
+
+|Sistem|
+:Menampilkan SOP sesuai pilihan;
+
+|Pengunjung|
 :Memilih SOP yang ingin dilihat;
 
 |Sistem|
-if (SOP tersedia pada arsip publik?) then (Ya)
-  :Menampilkan informasi dan dokumen SOP;
-else (Tidak)
-  :Menampilkan informasi bahwa SOP tidak tersedia;
-endif
+:Menampilkan dokumen SOP;
 
 stop
 

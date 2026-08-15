@@ -9,7 +9,7 @@ Sumber use case: `UC-01` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Login |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 7 |
-| Tujuan | Menggambarkan proses pengguna masuk ke sistem menggunakan akun yang valid dan memperoleh akses sesuai perannya. |
+| Tujuan | Menggambarkan proses pengguna masuk ke sistem dan memperoleh akses sesuai perannya. |
 
 ## PlantUML
 
@@ -33,13 +33,13 @@ start
 :Memilih masuk;
 
 |Sistem|
-:Memvalidasi kredensial pengguna;
+:Memeriksa informasi login;
 
-if (Kredensial valid?) then (Ya)
-  :Membuka sesi pengguna;
-  :Mengarahkan pengguna ke halaman sesuai perannya;
+if (Informasi login sesuai?) then (Ya)
+  :Memberikan akses sesuai peran pengguna;
+  :Menampilkan halaman utama;
 else (Tidak)
-  :Menampilkan informasi bahwa login gagal;
+  :Menampilkan informasi login gagal;
 endif
 
 stop

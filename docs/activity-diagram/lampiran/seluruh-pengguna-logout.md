@@ -9,7 +9,7 @@ Sumber use case: `UC-02` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Logout |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | Pendukung login |
-| Tujuan | Menggambarkan proses pengguna mengakhiri sesi penggunaan sistem. |
+| Tujuan | Menggambarkan proses pengguna keluar dari sistem setelah selesai menggunakan aplikasi. |
 
 ## PlantUML
 
@@ -26,9 +26,11 @@ start
 :Memilih menu keluar;
 
 |Sistem|
-:Mengakhiri sesi pengguna;
-:Menghapus akses dari sesi yang sedang digunakan;
+:Mengakhiri akses pengguna;
 :Mengarahkan pengguna ke halaman login atau halaman publik;
+
+|Pengguna|
+:Keluar dari area pengguna;
 
 stop
 

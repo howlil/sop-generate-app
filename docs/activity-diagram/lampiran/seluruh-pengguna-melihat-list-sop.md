@@ -9,7 +9,7 @@ Sumber use case: `UC-03` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat List SOP |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | Tidak memiliki nomor tersendiri |
-| Tujuan | Menggambarkan proses pengguna melihat dan memilih SOP sesuai cakupan aksesnya. |
+| Tujuan | Menggambarkan proses pengguna melihat, mencari, dan memilih SOP yang dapat diakses. |
 
 ## PlantUML
 
@@ -26,24 +26,19 @@ start
 :Membuka daftar SOP;
 
 |Sistem|
-:Menentukan cakupan SOP sesuai peran dan OPD pengguna;
-:Menampilkan daftar SOP yang dapat diakses;
+:Menampilkan SOP yang dapat diakses pengguna;
 
 |Pengguna|
 :Melakukan pencarian atau penyaringan bila diperlukan;
 
 |Sistem|
-:Memperbarui daftar SOP sesuai pilihan pengguna;
+:Menampilkan daftar sesuai pilihan pengguna;
 
 |Pengguna|
-if (Memilih salah satu SOP?) then (Ya)
-  :Membuka SOP yang dipilih;
+:Memilih SOP yang ingin dilihat;
 
-  |Sistem|
-  :Menampilkan informasi dan dokumen SOP;
-else (Tidak)
-  :Tetap melihat daftar SOP;
-endif
+|Sistem|
+:Menampilkan informasi SOP yang dipilih;
 
 stop
 

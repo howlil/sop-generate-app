@@ -9,7 +9,7 @@ Sumber use case: `UC-16` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Inisiasi Dokumen SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 10 |
-| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun memulai dokumen SOP baru atau versi baru untuk disusun. |
+| Tujuan | Menggambarkan proses PJ Penyusun atau Penyusun memulai draft SOP baru atau versi baru dari SOP yang ada. |
 
 ## PlantUML
 
@@ -23,24 +23,23 @@ title Diagram Aktivitas - Inisiasi Dokumen SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka menu inisiasi dokumen SOP;
+:Membuka pembuatan dokumen SOP;
 :Memilih membuat SOP baru atau versi baru;
 
-if (Membuat SOP baru?) then (Ya)
-  :Mengisi informasi awal SOP;
+if (Membuat versi baru?) then (Ya)
+  :Memilih SOP yang akan dijadikan dasar;
 else (Tidak)
-  :Memilih versi SOP yang akan dijadikan sumber;
+  :Mengisi informasi awal SOP;
 endif
 
 |Sistem|
-:Memvalidasi hak akses dan data awal;
+:Membuat draft SOP;
 
-if (Data dapat digunakan?) then (Ya)
-  :Membuat draft SOP;
-  :Menampilkan draft untuk dilanjutkan ke proses penyusunan;
-else (Tidak)
-  :Menampilkan alasan dokumen belum dapat dibuat;
-endif
+|PJ Penyusun / Penyusun|
+:Membuka draft yang telah dibuat;
+
+|Sistem|
+:Menampilkan ruang penyusunan SOP;
 
 stop
 

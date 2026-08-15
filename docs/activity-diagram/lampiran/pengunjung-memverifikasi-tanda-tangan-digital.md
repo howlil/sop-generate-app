@@ -9,7 +9,7 @@ Sumber use case: `UC-21` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memverifikasi Tanda Tangan Digital |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 24 |
-| Tujuan | Menggambarkan proses pengunjung memeriksa keabsahan tanda tangan digital pada berkas PDF. |
+| Tujuan | Menggambarkan proses pengunjung memverifikasi tanda tangan digital pada dokumen PDF. |
 
 ## PlantUML
 
@@ -23,17 +23,20 @@ title Diagram Aktivitas - Memverifikasi Tanda Tangan Digital
 
 |Pengunjung|
 start
-:Membuka halaman verifikasi tanda tangan digital;
-:Memilih berkas PDF yang akan diperiksa;
+:Membuka halaman verifikasi dokumen;
+:Mengunggah dokumen PDF;
 
 |Sistem|
-:Memeriksa tanda tangan digital dan integritas berkas;
+:Memeriksa tanda tangan digital pada dokumen;
 
 if (Tanda tangan dapat diverifikasi?) then (Ya)
-  :Menampilkan hasil verifikasi dan informasi penandatangan;
+  :Menampilkan status valid dan informasi penandatangan;
 else (Tidak)
-  :Menampilkan bahwa tanda tangan tidak valid atau tidak dapat diverifikasi;
+  :Menampilkan informasi tanda tangan tidak valid atau tidak dapat diverifikasi;
 endif
+
+|Pengunjung|
+:Meninjau hasil verifikasi;
 
 stop
 

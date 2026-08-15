@@ -9,7 +9,7 @@ Sumber use case: `UC-10` pada [`../usecase.md`](../usecase.md).
 | Use case | Menandatangani Berita Acara |
 | Aktor utama | PJ Evaluator, PJ Penyusun |
 | Nomor kebutuhan fungsional | 17 |
-| Tujuan | Menggambarkan penandatanganan Berita Acara secara berurutan oleh PJ Evaluator dan PJ Penyusun. |
+| Tujuan | Menggambarkan proses penandatanganan Berita Acara secara berurutan oleh PJ Evaluator dan PJ Penyusun. |
 
 ## PlantUML
 
@@ -23,33 +23,30 @@ title Diagram Aktivitas - Menandatangani Berita Acara
 
 |PJ Evaluator|
 start
-:Membuka pengajuan yang selesai dievaluasi;
+:Membuka Berita Acara hasil evaluasi;
 :Meninjau Berita Acara;
-:Memilih tanda tangani dan memasukkan PIN TTE;
+:Menandatangani Berita Acara menggunakan PIN TTE;
 
 |Sistem|
-:Memvalidasi kewenangan, PIN TTE, dan status pengajuan;
+:Memproses penandatanganan PJ Evaluator;
 
-if (Tanda tangan PJ Evaluator valid?) then (Ya)
-  :Mencatat tanda tangan PJ Evaluator;
-  :Menyiapkan Berita Acara untuk PJ Penyusun;
+if (Penandatanganan berhasil?) then (Ya)
+  :Menampilkan Berita Acara menunggu tanda tangan PJ Penyusun;
 else (Tidak)
   :Menampilkan alasan penandatanganan gagal;
   stop
 endif
 
 |PJ Penyusun|
-:Membuka Berita Acara yang menunggu tanda tangan;
+:Membuka Berita Acara;
 :Meninjau Berita Acara;
-:Memilih tanda tangani dan memasukkan PIN TTE;
+:Menandatangani Berita Acara menggunakan PIN TTE;
 
 |Sistem|
-:Memvalidasi kewenangan, PIN TTE, dan urutan penandatanganan;
+:Memproses penandatanganan PJ Penyusun;
 
-if (Tanda tangan PJ Penyusun valid?) then (Ya)
-  :Mencatat tanda tangan PJ Penyusun;
-  :Menandai Berita Acara selesai ditandatangani;
-  :Menyiapkan SOP untuk pengesahan Kepala OPD;
+if (Penandatanganan berhasil?) then (Ya)
+  :Menampilkan Berita Acara selesai ditandatangani;
 else (Tidak)
   :Menampilkan alasan penandatanganan gagal;
 endif

@@ -9,7 +9,7 @@ Sumber use case: `UC-14` pada [`../usecase.md`](../usecase.md).
 | Use case | Mengajukan Evaluasi SOP |
 | Aktor utama | PJ Penyusun |
 | Nomor kebutuhan fungsional | 12 |
-| Tujuan | Menggambarkan proses PJ Penyusun mengajukan SOP yang telah siap kepada evaluator. |
+| Tujuan | Menggambarkan proses PJ Penyusun memilih dan mengajukan SOP untuk dievaluasi. |
 
 ## PlantUML
 
@@ -23,24 +23,23 @@ title Diagram Aktivitas - Mengajukan Evaluasi SOP
 
 |PJ Penyusun|
 start
-:Membuka menu pengajuan evaluasi;
+:Membuka pengajuan evaluasi;
 
 |Sistem|
-:Menampilkan SOP pada OPD yang siap diajukan;
+:Menampilkan SOP yang siap diajukan;
 
 |PJ Penyusun|
-:Memilih SOP yang akan diajukan;
+:Memilih SOP yang akan dievaluasi;
+:Meninjau SOP terpilih;
 :Mengirim pengajuan evaluasi;
 
 |Sistem|
-:Memvalidasi SOP terpilih dan proses evaluasi OPD yang sedang berjalan;
+:Memproses pengajuan;
 
-if (Pengajuan memenuhi syarat?) then (Ya)
-  :Mencatat pengajuan evaluasi;
-  :Memindahkan SOP terpilih ke proses evaluasi;
-  :Menampilkan pengajuan berhasil dibuat;
+if (Pengajuan dapat diterima?) then (Ya)
+  :Menampilkan pengajuan telah dikirim untuk evaluasi;
 else (Tidak)
-  :Menampilkan alasan pengajuan belum dapat dibuat;
+  :Menampilkan alasan pengajuan belum dapat dilakukan;
 endif
 
 stop

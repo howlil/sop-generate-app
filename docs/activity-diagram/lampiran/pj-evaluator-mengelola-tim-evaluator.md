@@ -23,23 +23,22 @@ title Diagram Aktivitas - Mengelola Tim Evaluator
 
 |PJ Evaluator|
 start
-:Membuka data tim evaluator;
+:Membuka pengelolaan tim evaluator;
 
 |Sistem|
 :Menampilkan anggota tim evaluator;
 
 |PJ Evaluator|
-:Memilih tambah, ubah, atau nonaktifkan anggota;
-:Mengisi data anggota evaluator;
+:Memilih anggota atau menambahkan anggota baru;
+:Menentukan perubahan data atau status anggota;
 
 |Sistem|
-:Memvalidasi data dan perubahan yang dipilih;
+:Memproses perubahan tim evaluator;
 
-if (Data valid?) then (Ya)
-  :Menyimpan perubahan anggota evaluator;
-  :Menampilkan tim evaluator terbaru;
+if (Perubahan dapat diterapkan?) then (Ya)
+  :Menampilkan susunan tim evaluator terbaru;
 else (Tidak)
-  :Menampilkan informasi yang perlu diperbaiki;
+  :Menampilkan alasan perubahan tidak dapat dilakukan;
 endif
 
 stop

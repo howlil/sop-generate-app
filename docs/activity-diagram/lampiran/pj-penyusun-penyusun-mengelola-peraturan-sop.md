@@ -23,20 +23,19 @@ title Diagram Aktivitas - Mengelola Peraturan SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka data peraturan SOP;
+:Membuka pengelolaan peraturan SOP;
 
 |Sistem|
-:Menampilkan daftar peraturan pada OPD pengguna;
+:Menampilkan daftar peraturan pada OPD;
 
 |PJ Penyusun / Penyusun|
-:Memilih tambah, ubah, atau hapus peraturan;
-:Mengisi data peraturan;
+:Memilih tindakan pengelolaan;
+:Menambah, mengubah, atau menghapus peraturan;
 
 |Sistem|
-:Memvalidasi data dan penggunaan peraturan;
+:Memproses perubahan data peraturan;
 
 if (Perubahan dapat dilakukan?) then (Ya)
-  :Menyimpan perubahan peraturan;
   :Menampilkan daftar peraturan terbaru;
 else (Tidak)
   :Menampilkan alasan perubahan tidak dapat dilakukan;

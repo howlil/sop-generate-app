@@ -23,21 +23,20 @@ title Diagram Aktivitas - Mengelola OPD
 
 |PJ Evaluator|
 start
-:Membuka data OPD;
+:Membuka pengelolaan OPD;
 
 |Sistem|
 :Menampilkan daftar OPD;
 
 |PJ Evaluator|
-:Memilih tambah, ubah, atau hapus OPD;
-:Mengisi atau memilih data yang diperlukan;
+:Memilih tindakan pengelolaan;
+:Menambah, mengubah, atau menghapus data OPD;
 
 |Sistem|
-:Memvalidasi perubahan data OPD;
+:Memproses perubahan data OPD;
 
-if (Perubahan dapat dilakukan?) then (Ya)
-  :Menyimpan perubahan data OPD;
-  :Menampilkan daftar OPD terbaru;
+if (Perubahan dapat diterapkan?) then (Ya)
+  :Menampilkan data OPD terbaru;
 else (Tidak)
   :Menampilkan alasan perubahan tidak dapat dilakukan;
 endif

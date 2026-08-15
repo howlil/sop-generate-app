@@ -9,7 +9,7 @@ Sumber use case: `UC-12` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Membuat Komentar |
 | Aktor utama | Evaluator |
 | Nomor kebutuhan fungsional | 16 |
-| Tujuan | Menggambarkan proses evaluator memberikan catatan perbaikan pada SOP yang belum sesuai. |
+| Tujuan | Menggambarkan proses evaluator memberikan catatan perbaikan pada SOP yang memerlukan tindak lanjut. |
 
 ## PlantUML
 
@@ -23,19 +23,16 @@ title Diagram Aktivitas - Membuat Komentar
 
 |Evaluator|
 start
-:Menilai SOP sebagai perlu perbaikan;
-:Menuliskan catatan perbaikan;
+:Memilih SOP yang memerlukan perbaikan;
+:Menulis komentar perbaikan;
+:Menyimpan komentar;
 
 |Sistem|
-:Memvalidasi catatan evaluator;
+:Menyimpan catatan evaluasi;
+:Menampilkan komentar pada hasil evaluasi;
 
-if (Catatan telah diisi?) then (Ya)
-  :Menyimpan catatan perbaikan;
-  :Menandai SOP memerlukan tindak lanjut penyusun;
-  :Menampilkan catatan pada hasil evaluasi;
-else (Tidak)
-  :Meminta evaluator melengkapi catatan perbaikan;
-endif
+|Evaluator|
+:Meninjau komentar yang telah disimpan;
 
 stop
 

@@ -9,7 +9,7 @@ Sumber use case: `UC-11` pada [`../usecase.md`](../usecase.md).
 | Use case | Mengevaluasi SOP |
 | Aktor utama | Evaluator |
 | Nomor kebutuhan fungsional | 15 |
-| Tujuan | Menggambarkan proses evaluator menilai substansi SOP hingga pengajuan dapat diselesaikan. |
+| Tujuan | Menggambarkan proses evaluator menilai substansi SOP dan menyelesaikan evaluasi. |
 
 ## PlantUML
 
@@ -26,11 +26,11 @@ start
 :Membuka pengajuan evaluasi;
 
 |Sistem|
-:Menampilkan SOP yang terdapat dalam pengajuan;
+:Menampilkan SOP dalam pengajuan;
 
 |Evaluator|
 :Memilih SOP;
-:Memeriksa substansi SOP;
+:Meninjau substansi SOP;
 :Menentukan hasil penilaian;
 
 if (SOP perlu perbaikan?) then (Ya)
@@ -43,20 +43,13 @@ endif
 :Menyimpan hasil penilaian;
 
 |Evaluator|
-if (Seluruh SOP sudah sesuai?) then (Ya)
-  :Melengkapi informasi penyelesaian evaluasi;
-  :Memilih selesaikan evaluasi;
+if (Seluruh SOP telah selesai dinilai?) then (Ya)
+  :Menyelesaikan evaluasi;
 
   |Sistem|
-  :Memvalidasi hasil seluruh SOP;
-  if (Evaluasi dapat diselesaikan?) then (Ya)
-    :Menandai pengajuan selesai dievaluasi;
-    :Menyiapkan pengajuan untuk penandatanganan Berita Acara;
-  else (Tidak)
-    :Menampilkan informasi yang masih perlu dilengkapi;
-  endif
+  :Menampilkan evaluasi telah selesai;
 else (Tidak)
-  :Melanjutkan penilaian atau menunggu perbaikan SOP;
+  :Melanjutkan penilaian SOP lainnya;
 endif
 
 stop

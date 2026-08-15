@@ -9,7 +9,7 @@ Sumber use case: `UC-08` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Tim Penyusun SOP |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 3 |
-| Tujuan | Menggambarkan proses PJ Evaluator mengelola PJ Penyusun dan anggota Penyusun pada setiap OPD. |
+| Tujuan | Menggambarkan proses PJ Evaluator mengelola PJ Penyusun dan anggota tim penyusun SOP pada OPD. |
 
 ## PlantUML
 
@@ -23,21 +23,21 @@ title Diagram Aktivitas - Mengelola Tim Penyusun SOP
 
 |PJ Evaluator|
 start
-:Membuka data tim penyusun SOP;
+:Membuka pengelolaan tim penyusun SOP;
 
 |Sistem|
 :Menampilkan tim penyusun berdasarkan OPD;
 
 |PJ Evaluator|
-:Memilih tambah, ubah, pindah OPD, aktifkan, atau nonaktifkan anggota;
-:Mengisi data dan peran anggota;
+:Memilih OPD dan anggota tim;
+:Menambah, memperbarui, atau mengubah status anggota;
+:Menentukan PJ Penyusun bila diperlukan;
 
 |Sistem|
-:Memvalidasi data, OPD, dan penetapan PJ Penyusun;
+:Memproses perubahan susunan tim;
 
-if (Perubahan sesuai aturan?) then (Ya)
-  :Menyimpan perubahan tim penyusun;
-  :Menampilkan data terbaru;
+if (Susunan tim dapat diterapkan?) then (Ya)
+  :Menampilkan tim penyusun terbaru;
 else (Tidak)
   :Menampilkan alasan perubahan tidak dapat dilakukan;
 endif
