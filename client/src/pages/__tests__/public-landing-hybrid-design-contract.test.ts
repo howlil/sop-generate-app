@@ -79,8 +79,9 @@ describe('institutional SaaS public landing contract', () => {
   })
 
   it('keeps role, workflow, archive, and validation sections available', () => {
-    expect(workflowSource).toContain('Evaluasi & Perbaikan')
-    expect(workflowSource).toContain('Pengesahan & Arsip')
+    expect(landingSource).toContain('Evaluasi & Perbaikan')
+    expect(landingSource).toContain('Pengesahan & Arsip')
+    expect(workflowSource).toContain('WorkflowPreview')
     expect(roleSource).toContain('Ruang kerja berbasis peran')
     expect(roleSource).toContain('Satu sistem. Lima konteks kerja.')
     expect(rolePreviewSource).toContain('Catatan evaluator')
