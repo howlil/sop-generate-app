@@ -9,7 +9,7 @@ Sumber use case: `UC-12` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Membuat Komentar |
 | Aktor utama | Evaluator |
 | Nomor kebutuhan fungsional | 16 |
-| Tujuan | Menggambarkan interaksi evaluator dan sistem saat memberikan catatan perbaikan pada SOP yang belum sesuai. |
+| Tujuan | Menggambarkan interaksi evaluator dan sistem saat memberikan catatan perbaikan pada hasil evaluasi SOP. |
 
 ## PlantUML
 
@@ -24,25 +24,16 @@ autonumber
 autoactivate on
 
 actor "Evaluator" as A
-boundary "Form Penilaian SOP" as B
+boundary "Form Komentar Evaluasi" as B
 control "Pengelola Evaluasi" as C
-entity "Hasil Evaluasi" as D
+entity "Catatan Evaluasi" as D
 
-A -> B : Memilih hasil perlu perbaikan
-B --> A : Menampilkan bagian catatan perbaikan
-A -> B : Mengirim catatan perbaikan
-B -> C : Meminta penyimpanan catatan
-C -> D : Memeriksa dan menyimpan catatan
-
-alt Catatan telah diisi
-  D --> C : Catatan tersimpan
-  C --> B : Mengirim hasil evaluasi terbaru
-  B --> A : Menampilkan catatan dan status perlu tindak lanjut
-else Catatan belum memenuhi ketentuan
-  D --> C : Catatan belum dapat disimpan
-  C --> B : Mengirim informasi kekurangan catatan
-  B --> A : Meminta evaluator melengkapi catatan
-end
+A -> B : Menulis komentar perbaikan
+B -> C : Meminta penyimpanan komentar
+C -> D : Menyimpan catatan evaluasi
+D --> C : Catatan tersimpan
+C --> B : Mengirim komentar terbaru
+B --> A : Menampilkan komentar tersimpan
 
 @enduml
 ```

@@ -9,7 +9,7 @@ Sumber use case: `UC-05` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 1 |
-| Tujuan | Menggambarkan interaksi PJ Evaluator dan sistem saat menambah, mengubah, atau menghapus data OPD. |
+| Tujuan | Menggambarkan interaksi PJ Evaluator dan sistem saat mengelola data OPD. |
 
 ## PlantUML
 
@@ -24,7 +24,7 @@ autonumber
 autoactivate on
 
 actor "PJ Evaluator" as A
-boundary "Halaman Data OPD" as B
+boundary "Halaman OPD" as B
 control "Pengelola OPD" as C
 entity "Data OPD" as D
 
@@ -35,20 +35,12 @@ D --> C : Daftar OPD
 C --> B : Mengirim daftar OPD
 B --> A : Menampilkan data OPD
 
-A -> B : Memilih tambah, ubah, atau hapus OPD
-B -> C : Mengirim perubahan data OPD
-C -> D : Memeriksa aturan perubahan OPD
-D --> C : Hasil pemeriksaan
-
-alt Perubahan dapat dilakukan
-  C -> D : Menyimpan perubahan OPD
-  D --> C : Data OPD terbaru
-  C --> B : Mengirim hasil perubahan
-  B --> A : Menampilkan data OPD terbaru
-else Perubahan tidak dapat dilakukan
-  C --> B : Mengirim alasan penolakan
-  B --> A : Menampilkan informasi perubahan tidak dapat dilakukan
-end
+A -> B : Memilih tambah, ubah, atau hapus
+B -> C : Meminta perubahan data
+C -> D : Menyimpan perubahan
+D --> C : Hasil perubahan
+C --> B : Mengirim hasil pengelolaan
+B --> A : Menampilkan data terbaru atau alasan perubahan ditolak
 
 @enduml
 ```

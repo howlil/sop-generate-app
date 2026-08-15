@@ -9,7 +9,7 @@ Sumber use case: `UC-20` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memeriksa Pengesahan TTE |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 23 |
-| Tujuan | Menggambarkan interaksi pengunjung dan sistem saat memeriksa informasi pengesahan dokumen melalui tautan atau QR verifikasi. |
+| Tujuan | Menggambarkan interaksi pengunjung dan sistem saat memeriksa informasi pengesahan melalui QR atau tautan verifikasi. |
 
 ## PlantUML
 
@@ -24,23 +24,16 @@ autonumber
 autoactivate on
 
 actor "Pengunjung" as A
-boundary "Halaman Verifikasi Pengesahan" as B
+boundary "Halaman Verifikasi TTE" as B
 control "Pengelola Verifikasi TTE" as C
 entity "Riwayat Pengesahan" as D
 
-A -> B : Membuka tautan atau QR verifikasi
+A -> B : Membuka QR atau tautan verifikasi
 B -> C : Meminta informasi pengesahan
 C -> D : Mencari riwayat pengesahan
-
-alt Data pengesahan ditemukan
-  D --> C : Informasi dokumen dan penandatangan
-  C --> B : Mengirim hasil pengesahan
-  B --> A : Menampilkan dokumen, penandatangan, peran, dan waktu pengesahan
-else Data pengesahan tidak ditemukan
-  D --> C : Data tidak tersedia
-  C --> B : Mengirim informasi tidak ditemukan
-  B --> A : Menampilkan informasi pengesahan tidak ditemukan
-end
+D --> C : Data pengesahan
+C --> B : Mengirim hasil pemeriksaan
+B --> A : Menampilkan informasi pengesahan
 
 @enduml
 ```

@@ -26,29 +26,21 @@ autoactivate on
 actor "PJ Evaluator" as A
 boundary "Halaman Tim Evaluator" as B
 control "Pengelola Tim Evaluator" as C
-entity "Anggota Evaluator" as D
+entity "Data Tim Evaluator" as D
 
-A -> B : Membuka data tim evaluator
-B -> C : Meminta anggota evaluator
-C -> D : Mengambil anggota evaluator
-D --> C : Daftar anggota
-C --> B : Mengirim daftar anggota
-B --> A : Menampilkan tim evaluator
+A -> B : Membuka data Tim Evaluator
+B -> C : Meminta daftar tim evaluator
+C -> D : Mengambil data tim evaluator
+D --> C : Daftar tim evaluator
+C --> B : Mengirim daftar tim evaluator
+B --> A : Menampilkan data tim evaluator
 
-A -> B : Memilih tambah, ubah, atau nonaktifkan anggota
-B -> C : Mengirim perubahan anggota
-C -> D : Memeriksa data dan status anggota
-D --> C : Hasil pemeriksaan
-
-alt Data sesuai aturan
-  C -> D : Menyimpan perubahan anggota
-  D --> C : Data anggota terbaru
-  C --> B : Mengirim hasil perubahan
-  B --> A : Menampilkan tim evaluator terbaru
-else Data tidak sesuai
-  C --> B : Mengirim informasi yang perlu diperbaiki
-  B --> A : Menampilkan pesan validasi
-end
+A -> B : Memilih tambah, ubah, atau hapus
+B -> C : Meminta perubahan data
+C -> D : Menyimpan perubahan
+D --> C : Hasil perubahan
+C --> B : Mengirim hasil pengelolaan
+B --> A : Menampilkan data terbaru atau alasan perubahan ditolak
 
 @enduml
 ```

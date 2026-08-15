@@ -8,7 +8,7 @@ Sumber use case: `UC-02` pada [`../../usecase.md`](../../usecase.md).
 | :--- | :--- |
 | Use case | Logout |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
-| Nomor kebutuhan fungsional | Pendukung login |
+| Nomor kebutuhan fungsional | — |
 | Tujuan | Menggambarkan interaksi pengguna dan sistem saat mengakhiri sesi penggunaan aplikasi. |
 
 ## PlantUML
@@ -24,16 +24,16 @@ autonumber
 autoactivate on
 
 actor "Pengguna" as A
-boundary "Antarmuka Sistem" as B
-control "Pengelola Autentikasi" as C
+boundary "Antarmuka Aplikasi" as B
+control "Pengelola Sesi" as C
 entity "Sesi Pengguna" as D
 
-A -> B : Memilih menu keluar
+A -> B : Memilih logout
 B -> C : Meminta pengakhiran sesi
 C -> D : Mengakhiri sesi pengguna
 D --> C : Sesi berakhir
-C --> B : Mengonfirmasi proses keluar
-B --> A : Mengarahkan ke halaman login atau halaman publik
+C --> B : Mengonfirmasi logout
+B --> A : Menampilkan halaman login
 
 @enduml
 ```

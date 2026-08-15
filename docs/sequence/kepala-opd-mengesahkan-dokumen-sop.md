@@ -9,7 +9,7 @@ Sumber use case: `UC-13` pada [`../usecase.md`](../usecase.md).
 | Use case | Mengesahkan Dokumen SOP |
 | Aktor utama | Kepala OPD |
 | Nomor kebutuhan fungsional | 18 |
-| Tujuan | Menggambarkan interaksi Kepala OPD dan sistem saat mengesahkan SOP yang telah menyelesaikan tahapan evaluasi dan penandatanganan Berita Acara. |
+| Tujuan | Menggambarkan interaksi Kepala OPD dan sistem saat mengesahkan SOP yang telah menyelesaikan proses evaluasi. |
 
 ## PlantUML
 
@@ -26,36 +26,21 @@ autoactivate on
 actor "Kepala OPD" as A
 boundary "Halaman Pengesahan SOP" as B
 control "Pengelola Pengesahan" as C
-entity "Pengajuan Evaluasi" as D
-entity "Dokumen SOP" as E
+entity "Pengajuan dan SOP" as D
 
-A -> B : Membuka pengajuan yang siap disahkan
-B -> C : Meminta dokumen pra-pengesahan
-C -> D : Memeriksa tahap pengajuan
-D --> C : Status pengajuan
-C -> E : Mengambil SOP yang akan disahkan
-E --> C : Daftar SOP
+A -> B : Membuka pengajuan siap disahkan
+B -> C : Meminta dokumen pengesahan
+C -> D : Mengambil pengajuan dan SOP
+D --> C : Dokumen yang siap disahkan
 C --> B : Mengirim dokumen pengesahan
-B --> A : Menampilkan SOP dan Berita Acara
+B --> A : Menampilkan SOP yang akan disahkan
 
-A -> B : Memilih pengesahan dan memasukkan PIN TTE
-B -> C : Meminta pengesahan SOP
-C -> D : Memeriksa kewenangan dan kesiapan pengajuan
-D --> C : Hasil pemeriksaan
-C -> E : Memeriksa kesiapan seluruh SOP
-E --> C : Hasil pemeriksaan SOP
-
-alt Pengesahan memenuhi syarat
-  C -> E : Mengesahkan SOP dan menetapkan status berlaku
-  E --> C : SOP berlaku
-  C -> D : Menandai pengajuan selesai
-  D --> C : Pengajuan selesai
-  C --> B : Mengirim hasil pengesahan
-  B --> A : Menampilkan SOP telah disahkan dan tersedia pada arsip publik
-else Pengesahan belum memenuhi syarat
-  C --> B : Mengirim alasan pengesahan ditolak
-  B --> A : Menampilkan informasi yang perlu diselesaikan
-end
+A -> B : Mengesahkan SOP
+B -> C : Meminta pengesahan
+C -> D : Mencatat pengesahan SOP
+D --> C : Pengesahan tersimpan
+C --> B : Mengirim hasil pengesahan
+B --> A : Menampilkan SOP telah disahkan
 
 @enduml
 ```

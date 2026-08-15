@@ -9,7 +9,7 @@ Sumber use case: `UC-08` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Tim Penyusun SOP |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 3 |
-| Tujuan | Menggambarkan interaksi PJ Evaluator dan sistem saat mengelola PJ Penyusun dan anggota Penyusun pada OPD. |
+| Tujuan | Menggambarkan interaksi PJ Evaluator dan sistem saat mengelola anggota tim penyusun SOP. |
 
 ## PlantUML
 
@@ -24,34 +24,23 @@ autonumber
 autoactivate on
 
 actor "PJ Evaluator" as A
-boundary "Halaman Tim Penyusun" as B
-control "Pengelola Tim Penyusun" as C
-entity "Anggota Penyusun" as D
-entity "Data OPD" as E
+boundary "Halaman Tim Penyusun SOP" as B
+control "Pengelola Tim Penyusun SOP" as C
+entity "Data Tim Penyusun SOP" as D
 
-A -> B : Membuka data tim penyusun
-B -> C : Meminta tim penyusun per OPD
-C -> D : Mengambil anggota penyusun
-D --> C : Daftar anggota
-C --> B : Mengirim tim penyusun
-B --> A : Menampilkan tim penyusun per OPD
+A -> B : Membuka data Tim Penyusun SOP
+B -> C : Meminta daftar tim penyusun SOP
+C -> D : Mengambil data tim penyusun SOP
+D --> C : Daftar tim penyusun SOP
+C --> B : Mengirim daftar tim penyusun SOP
+B --> A : Menampilkan data tim penyusun SOP
 
-A -> B : Memilih tambah, ubah, pindah, aktifkan, atau nonaktifkan
-B -> C : Mengirim perubahan anggota
-C -> E : Memeriksa OPD dan penetapan PJ Penyusun
-E --> C : Hasil pemeriksaan
-C -> D : Memeriksa data anggota
-D --> C : Hasil pemeriksaan data
-
-alt Perubahan sesuai aturan
-  C -> D : Menyimpan perubahan anggota
-  D --> C : Data tim terbaru
-  C --> B : Mengirim hasil perubahan
-  B --> A : Menampilkan tim penyusun terbaru
-else Perubahan tidak sesuai
-  C --> B : Mengirim alasan perubahan ditolak
-  B --> A : Menampilkan informasi penolakan
-end
+A -> B : Memilih tambah, ubah, atau hapus
+B -> C : Meminta perubahan data
+C -> D : Menyimpan perubahan
+D --> C : Hasil perubahan
+C --> B : Mengirim hasil pengelolaan
+B --> A : Menampilkan data terbaru atau alasan perubahan ditolak
 
 @enduml
 ```

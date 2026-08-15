@@ -9,7 +9,7 @@ Sumber use case: `UC-19` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat Arsip Publik SOP |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 22 |
-| Tujuan | Menggambarkan interaksi pengunjung dan sistem saat mencari serta melihat SOP yang tersedia pada arsip publik. |
+| Tujuan | Menggambarkan interaksi pengunjung dan sistem saat mencari dan melihat SOP yang tersedia pada arsip publik. |
 
 ## PlantUML
 
@@ -26,36 +26,21 @@ autoactivate on
 actor "Pengunjung" as A
 boundary "Arsip Publik SOP" as B
 control "Pengelola Arsip Publik" as C
-entity "Dokumen SOP Berlaku" as D
+entity "SOP Berlaku" as D
 
 A -> B : Membuka arsip publik
-B -> C : Meminta daftar SOP publik
-C -> D : Mengambil SOP yang berstatus berlaku
-D --> C : Daftar SOP publik
+B -> C : Meminta daftar SOP
+C -> D : Mengambil SOP yang tersedia untuk publik
+D --> C : Daftar SOP
 C --> B : Mengirim daftar SOP
-B --> A : Menampilkan arsip publik
-
-opt Pengunjung melakukan pencarian atau memilih OPD
-  A -> B : Menentukan kriteria pencarian
-  B -> C : Meminta SOP sesuai kriteria
-  C -> D : Mengambil SOP yang sesuai
-  D --> C : Hasil pencarian
-  C --> B : Mengirim hasil pencarian
-  B --> A : Memperbarui daftar SOP
-end
+B --> A : Menampilkan arsip SOP
 
 A -> B : Memilih SOP
 B -> C : Meminta dokumen SOP
-C -> D : Mengambil dokumen yang dapat dipublikasikan
-alt Dokumen tersedia
-  D --> C : Dokumen SOP
-  C --> B : Mengirim dokumen SOP
-  B --> A : Menampilkan dokumen SOP
-else Dokumen tidak tersedia
-  D --> C : Dokumen tidak ditemukan
-  C --> B : Mengirim informasi ketidaktersediaan
-  B --> A : Menampilkan informasi SOP tidak tersedia
-end
+C -> D : Mengambil dokumen SOP
+D --> C : Dokumen SOP
+C --> B : Mengirim dokumen
+B --> A : Menampilkan dokumen SOP
 
 @enduml
 ```
