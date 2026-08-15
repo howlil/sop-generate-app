@@ -30,9 +30,9 @@ const DEFAULT_ITEM_CLASS =
 const DEFAULT_SELECTED_ITEM_CLASS =
   'border-border bg-surface text-foreground'
 const COMPACT_ITEM_CLASS =
-  'rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-3 py-2.5 text-secondary-foreground hover:bg-surface-subtle'
+  'rounded-control border border-border bg-surface px-3 py-2.5 text-secondary-foreground hover:bg-surface-subtle'
 const COMPACT_SELECTED_ITEM_CLASS =
-  'bg-surface-subtle text-foreground'
+  'border-primary bg-primary-subtle text-foreground'
 
 function getStatusChipClass(label?: string | null, status?: string | null) {
   const raw = `${status ?? ''} ${label ?? ''}`.toLowerCase()
@@ -121,6 +121,20 @@ function getItemClassName(variant: SOPListCardProps['variant'], isSelected: bool
   )
 }
 
+function SelectionRail({ compact, isSelected }: { compact: boolean; isSelected: boolean }) {
+  if (compact) return null
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-transparent transition-colors',
+        isSelected && 'bg-primary',
+      )}
+    />
+  )
+}
+
 function SopListItemButton({
   sop,
   isSelected,
@@ -142,14 +156,7 @@ function SopListItemButton({
       className={getItemClassName(variant, isSelected)}
       onClick={() => onSelect(sop.id)}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          'absolute bottom-2 left-0 top-2 w-0.5 bg-transparent transition-colors',
-          compact ? 'rounded-none' : 'rounded-full',
-          isSelected && 'bg-primary',
-        )}
-      />
+      <SelectionRail compact={compact} isSelected={isSelected} />
       <p className="w-full truncate font-medium leading-snug">{sop.nama}</p>
       <div className="mt-0.5">{renderQuietStatus(sop, compact)}</div>
     </Button>
@@ -174,7 +181,7 @@ export function SOPListCard({
   const compact = variant === 'compact'
 
   return (
-    <div className={cn(compact ? 'space-y-0' : 'space-y-1', className)}>
+    <div className={cn(compact ? 'space-y-2 px-2' : 'space-y-1', className)}>
       {items.map((sop) => {
         const isSelected = selectedId === sop.id
         if (onSelect != null) {
@@ -190,14 +197,7 @@ export function SOPListCard({
         }
         return (
           <div key={sop.id} className={getItemClassName(variant, isSelected)}>
-            <span
-              aria-hidden="true"
-              className={cn(
-                'absolute bottom-2 left-0 top-2 w-0.5 bg-transparent transition-colors',
-                compact ? 'rounded-none' : 'rounded-full',
-                isSelected && 'bg-primary',
-              )}
-            />
+            <SelectionRail compact={compact} isSelected={isSelected} />
             <p className="w-full truncate font-medium leading-snug">{sop.nama}</p>
             <div className="mt-0.5">{renderQuietStatus(sop, compact)}</div>
           </div>
