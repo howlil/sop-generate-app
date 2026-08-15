@@ -105,13 +105,14 @@ export function ManajemenOPD() {
       >
         <DataSurface.Root>
           <DataSurface.Header>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
+              <h2 className="text-sm font-semibold text-foreground">Manajemen Organisasi</h2>
               <p className="text-sm text-secondary-foreground">Kelola OPD dan akun Kepala OPD.</p>
             </div>
-            <DataSurface.Tabs>
-              <TabsList>
-                <TabsTrigger value="opd">OPD</TabsTrigger>
-                <TabsTrigger value="kepala">Kepala OPD</TabsTrigger>
+            <DataSurface.Tabs className="w-full">
+              <TabsList variant="line">
+                <TabsTrigger variant="line" value="opd">OPD</TabsTrigger>
+                <TabsTrigger variant="line" value="kepala">Kepala OPD</TabsTrigger>
               </TabsList>
             </DataSurface.Tabs>
             <DataSurface.Toolbar>
