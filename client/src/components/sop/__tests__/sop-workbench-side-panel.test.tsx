@@ -15,7 +15,7 @@ describe('SopWorkbenchSidePanel', () => {
     },
   ]
 
-  it('owns the shared workbench width, header density, and compact SOP rows', () => {
+  it('owns the shared workbench width, header density, and compact SOP cards', () => {
     render(
       <SopWorkbenchSidePanel
         collapsed={false}
@@ -32,9 +32,10 @@ describe('SopWorkbenchSidePanel', () => {
     expect(screen.getByText('Daftar SOP')).toBeInTheDocument()
     expect(screen.getByText('1 dokumen')).toBeInTheDocument()
 
-    const selectedRow = screen.getByRole('button', { name: /sop lama/i })
-    expect(selectedRow).toHaveClass('rounded-none')
-    expect(selectedRow).toHaveClass('bg-surface-subtle')
+    const selectedCard = screen.getByRole('button', { name: /sop lama/i })
+    expect(selectedCard).toHaveClass('rounded-control')
+    expect(selectedCard).toHaveClass('border-primary')
+    expect(selectedCard).toHaveClass('bg-primary-subtle')
   })
 
   it('keeps the collapsed strip operable', () => {
