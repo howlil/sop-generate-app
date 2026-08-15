@@ -17,7 +17,7 @@ export function LandingProductPreview() {
           <div className="flex items-center justify-between border-b border-border bg-surface-subtle px-4 py-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">Pengajuan Evaluasi</p>
-              <h2 className="mt-1 text-base font-semibold tracking-[-0.02em] text-foreground">Dinas Kesehatan Provinsi · 4 SOP</h2>
+              <p className="mt-1 text-base font-semibold tracking-[-0.02em] text-foreground">Dinas Kesehatan Provinsi · 4 SOP</p>
             </div>
             <span className="border border-border-strong bg-surface px-2.5 py-1 text-[10px] font-medium text-secondary-foreground">
               Berbasis peran
