@@ -12,7 +12,7 @@ import { BeritaAcaraPreviewPane } from '@/components/pengajuan/berita-acara-prev
 import { DocumentPreviewTabs } from '@/components/pengajuan/document-preview-tabs'
 import { SopDocumentPreviewPane } from '@/components/pengajuan/sop-document-preview-pane'
 import { mapBeritaAcaraTemplateProps } from '@/lib/pengajuan/map-berita-acara-template-props'
-import { SOPListCard } from '@/components/sop/sop-list-card'
+import { SopWorkbenchSidePanel } from '@/components/sop/sop-workbench-side-panel'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
@@ -20,16 +20,9 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { PengajuanEvaluasiStatusHeader } from '@/components/evaluasi/pengajuan-evaluasi-status-header'
 import { InfoCard } from '@/components/ui/info-card'
 import { InfoField } from '@/components/ui/info-field'
-import {
-  CollapsedStripButton,
-  CollapsibleSidePanel,
-  CollapsibleSidePanelContent,
-  CollapsibleSidePanelHeader,
-  SimplePanelHeader,
-} from '@/components/ui/collapsible-side-panel'
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
 import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
-import { AlertCircle, CheckCircle, FileText, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { LoadingState } from '@/components/ui/loading-state'
 import { ROUTES } from '@/utils/constants'
 import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCetakArsipButtons'
@@ -161,6 +154,16 @@ export function DetailBeritaAcaraPage() {
     )
   }
 
+  const workbenchSopItems = sopList.map((sop) => ({
+    id: sop.sopDetailId,
+    nama: sop.nama,
+    nomor: sop.nomor,
+    statusDokumen: sop.status,
+    statusDokumenLabel: sop.statusLabel ?? sop.status,
+    hasilEvaluasi: sop.hasil,
+    hasilEvaluasiLabel: sop.hasilLabel,
+  }))
+
   return (
     <>
       <DetailPageLayout
@@ -225,10 +228,10 @@ export function DetailBeritaAcaraPage() {
               role="PJ_PENYUSUN"
             />
             {isReadyForSignature && (
-              <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="h-5 w-5 flex-shrink-0 text-orange-700" />
-                  <p className="text-xs text-orange-700">
+              <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2.5">
+                <div className="flex gap-2.5">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0 text-warning-foreground" />
+                  <p className="text-xs leading-relaxed text-warning-foreground">
                     Berita Acara ini telah ditandatangani PJ Evaluator dan menunggu tanda tangan Anda.
                   </p>
                 </div>
@@ -243,45 +246,14 @@ export function DetailBeritaAcaraPage() {
           </div>
         }
         leftPanel={
-          <CollapsibleSidePanel
-            side="left"
+          <SopWorkbenchSidePanel
             collapsed={leftPanelCollapsed}
-            widthCollapsed="w-10"
-            widthExpanded="w-[min(380px,40vw)]"
-          >
-            {leftPanelCollapsed ? (
-              <CollapsedStripButton
-                label="SOP"
-                icon={<FileText className="w-4 h-4" />}
-                onClick={() => setLeftPanelCollapsed(false)}
-              />
-            ) : (
-              <>
-                <CollapsibleSidePanelHeader
-                  side="left"
-                  onCollapse={() => setLeftPanelCollapsed(true)}
-                  className="border-border bg-surface-subtle/90 px-2 py-1.5 sm:px-2.5"
-                >
-                  <SimplePanelHeader title="Daftar SOP" />
-                </CollapsibleSidePanelHeader>
-                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
-                  <SOPListCard
-                    items={sopList.map((sop) => ({
-                      id: sop.sopDetailId,
-                      nama: sop.nama,
-                      nomor: sop.nomor,
-                      statusDokumen: sop.status,
-                      statusDokumenLabel: sop.statusLabel ?? sop.status,
-                      hasilEvaluasi: sop.hasil,
-                      hasilEvaluasiLabel: sop.hasilLabel,
-                    }))}
-                    selectedId={effectiveSopDetailId}
-                    onSelect={setSelectedSopId}
-                  />
-                </CollapsibleSidePanelContent>
-              </>
-            )}
-          </CollapsibleSidePanel>
+            onCollapse={() => setLeftPanelCollapsed(true)}
+            onExpand={() => setLeftPanelCollapsed(false)}
+            items={workbenchSopItems}
+            selectedId={effectiveSopDetailId}
+            onSelect={setSelectedSopId}
+          />
         }
       >
         <div className="flex h-full min-h-0 min-w-0 flex-col">
