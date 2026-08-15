@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { SOPListCard } from '../sop-list-card'
 
 describe('SOPListCard', () => {
-  it('uses a flat quiet compact selected state for workbench SOP rows', () => {
+  it('matches the restrained workspace card pattern for compact SOP items', () => {
     const onSelect = vi.fn()
 
     render(
@@ -21,18 +21,38 @@ describe('SOPListCard', () => {
             hasilEvaluasi: 'SESUAI',
             hasilEvaluasiLabel: 'Sesuai',
           },
+          {
+            id: 'sop-2',
+            nama: 'sop barang',
+            nomor: '654321',
+            statusDokumen: 'DRAFT',
+            statusDokumenLabel: 'Draft',
+          },
         ]}
       />,
     )
 
-    const selectedRow = screen.getByRole('button', { name: /sop lama/i })
+    const selectedCard = screen.getByRole('button', { name: /sop lama/i })
+    const idleCard = screen.getByRole('button', { name: /sop barang/i })
+    const list = selectedCard.parentElement
 
-    expect(selectedRow).toHaveAttribute('aria-pressed', 'true')
-    expect(selectedRow).toHaveClass('rounded-none')
-    expect(selectedRow).toHaveClass('bg-surface-subtle')
-    expect(selectedRow).not.toHaveClass('rounded-md')
-    expect(selectedRow).not.toHaveClass('bg-primary-subtle')
-    expect(selectedRow).not.toHaveClass('border-primary')
+    expect(selectedCard).toHaveAttribute('aria-pressed', 'true')
+    expect(selectedCard).toHaveClass('rounded-control')
+    expect(selectedCard).toHaveClass('border')
+    expect(selectedCard).toHaveClass('border-primary')
+    expect(selectedCard).toHaveClass('bg-primary-subtle')
+    expect(selectedCard).not.toHaveClass('rounded-none')
+    expect(selectedCard).not.toHaveClass('border-x-0')
+    expect(selectedCard).not.toHaveClass('bg-surface-subtle')
+    expect(selectedCard.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument()
+
+    expect(idleCard).toHaveClass('rounded-control')
+    expect(idleCard).toHaveClass('border-border')
+    expect(idleCard).toHaveClass('bg-surface')
+
+    expect(list).toHaveClass('space-y-2')
+    expect(list).toHaveClass('px-2')
+
     expect(screen.queryByText('Dokumen')).not.toBeInTheDocument()
     expect(screen.queryByText('Penilaian')).not.toBeInTheDocument()
     expect(screen.getByText('Berlaku')).toHaveClass('rounded-sm')
