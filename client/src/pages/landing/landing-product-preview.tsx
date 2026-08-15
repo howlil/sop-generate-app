@@ -1,0 +1,100 @@
+import { Archive, CheckCircle2, FileCheck2, ShieldCheck } from 'lucide-react'
+import heroBg from '@/assets/Kantor_Gubernur_Sumbar_belakang.jpg'
+
+const lifecycle = ['Draft', 'Evaluasi', 'BA', 'Pengesahan', 'Arsip']
+
+const metrics = [
+  { label: 'OPD terhubung', value: '52', helper: 'ruang kerja berbasis organisasi' },
+  { label: 'SOP dalam proses', value: '4', helper: 'menunggu tindak lanjut evaluasi' },
+  { label: 'Validasi publik', value: 'PDF', helper: 'cek dokumen dari arsip' },
+]
+
+export function LandingProductPreview() {
+  return (
+    <div className="relative mx-auto w-full max-w-2xl lg:mx-0" aria-label="Pratinjau ruang kerja SOPFlow">
+      <div className="border border-border bg-surface p-3 shadow-sm">
+        <div className="border border-border bg-surface">
+          <div className="flex items-center justify-between border-b border-border bg-surface-subtle px-4 py-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">Pengajuan Evaluasi</p>
+              <h2 className="mt-1 text-base font-semibold tracking-[-0.02em] text-foreground">Dinas Kesehatan Provinsi · 4 SOP</h2>
+            </div>
+            <span className="border border-border-strong bg-surface px-2.5 py-1 text-[10px] font-medium text-secondary-foreground">
+              Berbasis peran
+            </span>
+          </div>
+
+          <div className="grid gap-0 lg:grid-cols-[0.36fr_0.64fr]">
+            <div className="border-b border-border bg-surface-subtle p-4 lg:border-b-0 lg:border-r">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle</p>
+              <ol className="mt-4 space-y-3">
+                {lifecycle.map((item, index) => (
+                  <li key={item} className="flex items-center gap-3">
+                    <span className={index < 3 ? 'h-2 w-2 bg-primary' : 'h-2 w-2 border border-border-strong bg-surface'} />
+                    <span className={index < 3 ? 'text-xs font-medium text-foreground' : 'text-xs text-muted-foreground'}>{item}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              <div className="flex flex-col gap-3 border-b border-row-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">SOP Pelayanan Administrasi</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Evaluasi substansi dan kelengkapan dokumen</p>
+                </div>
+                <span className="w-fit bg-warning-subtle px-2.5 py-1 text-[10px] font-semibold text-warning-foreground">
+                  Menunggu TTD PJ Evaluator
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="border border-border p-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                    <FileCheck2 className="h-3.5 w-3.5 text-primary" aria-hidden />
+                    Catatan evaluasi
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-secondary-foreground">Perbaikan prosedur, pelaksana, dan kelengkapan tercatat pada dokumen yang sama.</p>
+                </div>
+                <div className="border border-border p-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden />
+                    Arsip tervalidasi
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-secondary-foreground">Dokumen final dapat ditemukan dan diperiksa melalui halaman validasi PDF.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {metrics.map((metric) => (
+                  <div key={metric.label} className="border-t border-border bg-surface-subtle p-3">
+                    <p className="text-lg font-semibold tracking-[-0.03em] text-foreground">{metric.value}</p>
+                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-secondary-foreground">{metric.label}</p>
+                    <p className="mt-1 text-[10px] leading-4 text-muted-foreground">{metric.helper}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-[0.62fr_0.38fr]">
+        <div className="border border-border bg-surface p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+            <Archive className="h-3.5 w-3.5 text-primary" aria-hidden />
+            Arsip dan validasi dokumen
+          </div>
+          <p className="mt-2 text-xs leading-5 text-secondary-foreground">Publik dapat menelusuri SOP berlaku, lalu memeriksa keabsahan PDF dari halaman validasi.</p>
+        </div>
+        <figure className="overflow-hidden border border-border bg-surface">
+          <img src={heroBg} alt="Kantor Gubernur Sumatera Barat" className="h-24 w-full object-cover opacity-85" />
+          <figcaption className="flex items-center gap-2 border-t border-border px-3 py-2 text-[10px] font-medium text-muted-foreground">
+            <CheckCircle2 className="h-3.5 w-3.5 text-primary" aria-hidden />
+            Identitas institusi
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  )
+}
