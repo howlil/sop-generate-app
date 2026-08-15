@@ -11,21 +11,31 @@ const loginFormSource = readSource('../login/components/LoginForm.tsx')
 const allSources = [loginPageSource, loginHeroSource, loginFormSource].join('\n')
 
 describe('public auth design contract', () => {
-  it('frames login as an enterprise institutional access surface', () => {
-    expect(loginFormSource).toContain('Masuk ke SOPFlow')
-    expect(loginFormSource).toContain('Akses internal')
-    expect(loginFormSource).toContain('Gunakan akun')
-    expect(loginHeroSource).toContain('Pemerintah Provinsi Sumatera Barat')
-    expect(loginHeroSource).toContain('Biro Organisasi')
-    expect(loginHeroSource).toContain('Akses berbasis peran')
-    expect(loginHeroSource).toContain('Evaluasi terdokumentasi')
-    expect(loginHeroSource).toContain('Arsip SOP terpusat')
-    expect(loginHeroSource).toContain('Alur pengelolaan')
+  it('uses a true balanced split instead of an asymmetric marketing layout', () => {
+    expect(loginPageSource).toContain('lg:grid-cols-2')
+    expect(loginPageSource).not.toContain('lg:grid-cols-[1.08fr_0.92fr]')
+    expect(loginPageSource).toContain('LoginForm isSubmitting={isLoggingIn} onSubmitLogin={login}')
   })
 
-  it('uses a calm form card without changing login behavior', () => {
-    expect(loginPageSource).toContain('LoginForm isSubmitting={isLoggingIn} onSubmitLogin={login}')
-    expect(loginPageSource).toContain('border border-border bg-surface p-6')
+  it('keeps the left panel visual-first and low-copy', () => {
+    expect(loginHeroSource).toContain('Pemerintah Provinsi Sumatera Barat')
+    expect(loginHeroSource).toContain('Biro Organisasi')
+    expect(loginHeroSource).toContain('Pengelolaan SOP AP dalam satu alur kerja.')
+    expect(loginHeroSource).toContain('Akses internal')
+    expect(loginHeroSource).not.toContain('trustBullets')
+    expect(loginHeroSource).not.toContain('lifecycle')
+    expect(loginHeroSource).not.toContain('Akses berbasis peran')
+    expect(loginHeroSource).not.toContain('Evaluasi terdokumentasi')
+    expect(loginHeroSource).not.toContain('Arsip SOP terpusat')
+    expect(loginHeroSource).not.toContain('Alur pengelolaan')
+  })
+
+  it('keeps the form focused and preserves login behavior', () => {
+    expect(loginFormSource).toContain('Masuk')
+    expect(loginFormSource).toContain('Gunakan akun yang telah didaftarkan administrator.')
+    expect(loginFormSource).toContain('Butuh bantuan? Hubungi administrator instansi.')
+    expect(loginFormSource).not.toContain('Masuk ke SOPFlow')
+    expect(loginFormSource).not.toContain('Akses dan menu akan mengikuti peran pengguna')
     expect(loginFormSource).toContain('await onSubmitLogin({ email, kataSandi: password })')
     expect(loginFormSource).toContain('Email wajib diisi')
     expect(loginFormSource).toContain('Kata sandi minimal 8 karakter')

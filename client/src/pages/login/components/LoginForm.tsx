@@ -4,7 +4,6 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { APP_DISPLAY_NAME } from '@/config/env'
 import type { LoginRequestDto } from '@/types/dto/auth.dto'
 
 export interface LoginFormProps {
@@ -72,10 +71,9 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
       </Button>
 
       <div className="mb-8 border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Akses internal</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">Masuk ke SOPFlow</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground">Masuk</h1>
         <p className="mt-3 text-sm leading-6 text-secondary-foreground">
-          Gunakan akun {APP_DISPLAY_NAME} yang telah didaftarkan oleh administrator instansi. Akses dan menu akan mengikuti peran pengguna.
+          Gunakan akun yang telah didaftarkan administrator.
         </p>
       </div>
 
@@ -135,11 +133,9 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
         </Button>
       </form>
 
-      <div className="mt-7 border-t border-border pt-5">
-        <p className="text-xs leading-5 text-muted-foreground">
-          Kesulitan masuk? Hubungi administrator instansi Anda untuk memastikan akun, OPD, dan peran sudah terdaftar.
-        </p>
-      </div>
+      <p className="mt-7 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
+        Butuh bantuan? Hubungi administrator instansi.
+      </p>
     </div>
   )
 }
