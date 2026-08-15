@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { SOPListCard } from '../sop-list-card'
 
 describe('SOPListCard', () => {
-  it('uses a quiet compact selected state for side-panel SOP cards', () => {
+  it('uses a flat quiet compact selected state for workbench SOP rows', () => {
     const onSelect = vi.fn()
 
     render(
@@ -25,14 +25,18 @@ describe('SOPListCard', () => {
       />,
     )
 
-    const selectedCard = screen.getByRole('button', { name: /sop lama/i })
+    const selectedRow = screen.getByRole('button', { name: /sop lama/i })
 
-    expect(selectedCard).toHaveAttribute('aria-pressed', 'true')
-    expect(selectedCard).toHaveClass('bg-surface')
-    expect(selectedCard).not.toHaveClass('bg-primary-subtle')
-    expect(selectedCard).not.toHaveClass('border-primary')
+    expect(selectedRow).toHaveAttribute('aria-pressed', 'true')
+    expect(selectedRow).toHaveClass('rounded-none')
+    expect(selectedRow).toHaveClass('bg-surface-subtle')
+    expect(selectedRow).not.toHaveClass('rounded-md')
+    expect(selectedRow).not.toHaveClass('bg-primary-subtle')
+    expect(selectedRow).not.toHaveClass('border-primary')
     expect(screen.queryByText('Dokumen')).not.toBeInTheDocument()
     expect(screen.queryByText('Penilaian')).not.toBeInTheDocument()
+    expect(screen.getByText('Berlaku')).toHaveClass('rounded-sm')
+    expect(screen.getByText('Sesuai')).toHaveClass('rounded-sm')
     expect(screen.getByText('Berlaku')).toHaveClass('text-success-foreground')
     expect(screen.getByText('Sesuai')).toHaveClass('text-success-foreground')
   })
