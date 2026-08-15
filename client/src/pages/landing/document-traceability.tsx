@@ -1,51 +1,59 @@
-const TRACE_STAGES = [
-  ['Draft', 'Penyusun'],
-  ['Revisi', 'OPD'],
-  ['Evaluasi', 'Evaluator'],
-  ['Berita Acara', 'PJ terkait'],
-  ['Pengesahan', 'Kepala OPD'],
-  ['Arsip Berlaku', 'Publik / sesuai akses'],
-] as const
+import { CheckCircle2, FileSearch, ShieldCheck } from 'lucide-react'
+
+const validationRows = [
+  ['Nomor dokumen', 'SOP-OPD-2026-014'],
+  ['Status arsip', 'Berlaku'],
+  ['Validasi PDF', 'Valid'],
+]
 
 export function DocumentTraceability() {
   return (
-    <section className="bg-slate-950 py-20 text-white sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[0.72fr_0.28fr] lg:items-end">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-300">Jejak dokumen</p>
-            <h2 className="mt-4 max-w-4xl text-[clamp(2.75rem,5vw,4.5rem)] font-semibold leading-[1] tracking-[-0.045em]">
-              Satu dokumen. Satu riwayat yang dapat ditelusuri.
-            </h2>
-          </div>
-          <p className="text-sm leading-6 text-slate-400 lg:text-right">
-            Perubahan, aktor, dan status tetap berada dalam satu konteks lifecycle—bukan tersebar sebagai berkas terpisah tanpa jejak.
+    <section className="border-y border-border bg-surface py-20 sm:py-24">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.42fr_0.58fr] lg:px-8">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Arsip publik dan validasi</p>
+          <h2 className="mt-4 text-[clamp(2.25rem,4vw,3.4rem)] font-semibold leading-[1.03] tracking-[-0.04em] text-slate-950">
+            Arsip dan validasi dokumen dalam satu tempat.
+          </h2>
+          <p className="mt-5 text-base leading-7 text-secondary-foreground">
+            Publik dapat menelusuri SOP yang sudah berlaku, sementara dokumen pengesahan dapat diperiksa melalui halaman validasi PDF tanpa membuka ruang kerja internal.
           </p>
         </div>
 
-        <div className="mt-16 overflow-x-auto border-y border-slate-700">
-          <ol className="grid min-w-[820px] lg:min-w-0 lg:grid-cols-6">
-            {TRACE_STAGES.map(([label, actor], index) => (
-              <li key={label} className="relative border-r border-slate-800 px-5 py-7 last:border-r-0">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[10px] font-semibold text-blue-300">0{index + 1}</span>
-                  <span className={index < 3 ? 'h-1.5 w-1.5 bg-blue-400' : 'h-1.5 w-1.5 border border-slate-500'} aria-hidden />
-                </div>
-                <p className="mt-8 text-sm font-semibold text-white">{label}</p>
-                <p className="mt-1 text-xs text-slate-400">{actor}</p>
-                {index < TRACE_STAGES.length - 1 ? <span className="absolute right-0 top-[31px] h-px w-full translate-x-full bg-slate-700" aria-hidden /> : null}
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        <div className="mt-9 grid gap-5 border-t border-slate-800 pt-7 sm:grid-cols-5">
-          {['Versi dokumen', 'Aktor', 'Status', 'Perubahan', 'Riwayat proses'].map((label, index) => (
-            <div key={label} className="flex items-center gap-3">
-              <span className="font-mono text-[10px] text-blue-300">0{index + 1}</span>
-              <span className="text-xs text-slate-400">{label}</span>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="border border-border bg-surface-subtle p-5">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+              <FileSearch className="h-4 w-4" aria-hidden />
+              Pencarian arsip
             </div>
-          ))}
+            <div className="mt-5 border border-border bg-surface p-4">
+              <p className="text-sm font-semibold text-foreground">SOP Pelayanan Administrasi</p>
+              <p className="mt-1 text-xs text-muted-foreground">Dinas Kesehatan Provinsi</p>
+              <div className="mt-4 flex items-center justify-between border-t border-row-border pt-3">
+                <span className="text-xs text-muted-foreground">Status</span>
+                <span className="bg-success-subtle px-2.5 py-1 text-[10px] font-semibold text-success">Berlaku</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-border bg-surface p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+              <ShieldCheck className="h-4 w-4" aria-hidden />
+              Hasil validasi
+            </div>
+            <div className="mt-5 divide-y divide-row-border border-y border-row-border">
+              {validationRows.map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between gap-4 py-3">
+                  <span className="text-xs text-muted-foreground">{label}</span>
+                  <span className="text-xs font-semibold text-foreground">{value}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 flex items-center gap-2 text-xs leading-5 text-secondary-foreground">
+              <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden />
+              Satu dokumen. Satu riwayat yang dapat ditelusuri.
+            </p>
+          </div>
         </div>
       </div>
     </section>
