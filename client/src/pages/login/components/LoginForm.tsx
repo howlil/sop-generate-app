@@ -71,7 +71,12 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
       </Button>
 
       <div className="mb-8 border-b border-border pb-6">
-        <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground">Masuk</h1>
+        <span className="inline-flex border border-border bg-surface-subtle px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Akun internal
+        </span>
+        <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-foreground">
+          Masuk ke SOPFlow
+        </h1>
         <p className="mt-3 text-sm leading-6 text-secondary-foreground">
           Gunakan akun yang telah didaftarkan administrator.
         </p>
