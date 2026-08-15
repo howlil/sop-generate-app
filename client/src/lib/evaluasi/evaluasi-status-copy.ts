@@ -44,7 +44,7 @@ export function getEvaluasiStatusBanner(
         }
       }
       return {
-        variant: 'info',
+        variant: 'warning',
         title: 'Menunggu tanda tangan BA',
         message: 'Penilaian tim selesai. PJ Evaluator akan menandatangani Berita Acara.',
       }
@@ -58,7 +58,7 @@ export function getEvaluasiStatusBanner(
         }
       }
       return {
-        variant: 'success',
+        variant: 'warning',
         title: 'BA ditandatangani PJ Evaluator',
         message: 'PJ Penyusun dapat melanjutkan tanda tangan BA. Setelah itu Kepala OPD mengesahkan SOP.',
       }
@@ -72,7 +72,7 @@ export function getEvaluasiStatusBanner(
         }
       }
       return {
-        variant: 'info',
+        variant: 'warning',
         title: 'Menunggu pengesahan Kepala OPD',
         message: 'BA OPD sudah ditandatangani. Kepala OPD akan mengesahkan tiap SOP.',
       }

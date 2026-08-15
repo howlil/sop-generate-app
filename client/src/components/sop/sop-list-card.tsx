@@ -29,8 +29,10 @@ const DEFAULT_ITEM_CLASS =
   'border-transparent bg-transparent text-secondary-foreground hover:border-border hover:bg-surface-subtle'
 const DEFAULT_SELECTED_ITEM_CLASS =
   'border-border bg-surface text-foreground'
-const COMPACT_ITEM_CLASS = DEFAULT_ITEM_CLASS
-const COMPACT_SELECTED_ITEM_CLASS = DEFAULT_SELECTED_ITEM_CLASS
+const COMPACT_ITEM_CLASS =
+  'rounded-none border-x-0 border-t-0 border-b border-border bg-transparent px-3 py-2.5 text-secondary-foreground hover:bg-surface-subtle'
+const COMPACT_SELECTED_ITEM_CLASS =
+  'bg-surface-subtle text-foreground'
 
 function getStatusChipClass(label?: string | null, status?: string | null) {
   const raw = `${status ?? ''} ${label ?? ''}`.toLowerCase()
@@ -55,15 +57,18 @@ function getStatusChipClass(label?: string | null, status?: string | null) {
 function StatusChip({
   label,
   status,
+  compact,
 }: {
   label?: string | null
   status?: string | null
+  compact: boolean
 }) {
   if (!label) return null
   return (
     <span
       className={cn(
-        'max-w-full truncate rounded-full border px-1.5 py-0.5 font-medium',
+        'max-w-full truncate border px-1.5 py-0.5 font-medium',
+        compact ? 'rounded-sm text-[10px] leading-4' : 'rounded-full',
         getStatusChipClass(label, status),
       )}
       title={label}
@@ -73,7 +78,7 @@ function StatusChip({
   )
 }
 
-function renderQuietStatus(sop: SOPListItem) {
+function renderQuietStatus(sop: SOPListItem, compact: boolean) {
   const statusDokumenLabel = sop.statusDokumenLabel
   const hasPenilaian =
     sop.hasilEvaluasi !== undefined && sop.hasilEvaluasiLabel !== undefined
@@ -81,14 +86,20 @@ function renderQuietStatus(sop: SOPListItem) {
   if (!statusDokumenLabel && !hasPenilaian && !sop.statusTindakLanjutLabel) return null
 
   return (
-    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] leading-4 text-muted-foreground">
-      <StatusChip label={statusDokumenLabel} status={sop.statusDokumen} />
+    <div
+      className={cn(
+        'mt-1 flex flex-wrap items-center text-muted-foreground',
+        compact ? 'gap-1 text-[10px] leading-4' : 'gap-1.5 text-[11px] leading-4',
+      )}
+    >
+      <StatusChip label={statusDokumenLabel} status={sop.statusDokumen} compact={compact} />
       {hasPenilaian ? (
-        <StatusChip label={sop.hasilEvaluasiLabel} status={sop.hasilEvaluasi} />
+        <StatusChip label={sop.hasilEvaluasiLabel} status={sop.hasilEvaluasi} compact={compact} />
       ) : null}
       <StatusChip
         label={sop.statusTindakLanjutLabel}
         status={sop.statusTindakLanjut}
+        compact={compact}
       />
     </div>
   )
@@ -121,6 +132,8 @@ function SopListItemButton({
   onSelect: (id: string) => void
   variant: SOPListCardProps['variant']
 }) {
+  const compact = variant === 'compact'
+
   return (
     <Button
       type="button"
@@ -132,12 +145,13 @@ function SopListItemButton({
       <span
         aria-hidden="true"
         className={cn(
-          'absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-transparent transition-colors',
+          'absolute bottom-2 left-0 top-2 w-0.5 bg-transparent transition-colors',
+          compact ? 'rounded-none' : 'rounded-full',
           isSelected && 'bg-primary',
         )}
       />
       <p className="w-full truncate font-medium leading-snug">{sop.nama}</p>
-      <div className="mt-0.5">{renderQuietStatus(sop)}</div>
+      <div className="mt-0.5">{renderQuietStatus(sop, compact)}</div>
     </Button>
   )
 }
@@ -157,8 +171,10 @@ export function SOPListCard({
     )
   }
 
+  const compact = variant === 'compact'
+
   return (
-    <div className={cn(variant === 'compact' ? 'space-y-1.5' : 'space-y-1', className)}>
+    <div className={cn(compact ? 'space-y-0' : 'space-y-1', className)}>
       {items.map((sop) => {
         const isSelected = selectedId === sop.id
         if (onSelect != null) {
@@ -177,12 +193,13 @@ export function SOPListCard({
             <span
               aria-hidden="true"
               className={cn(
-                'absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-transparent transition-colors',
+                'absolute bottom-2 left-0 top-2 w-0.5 bg-transparent transition-colors',
+                compact ? 'rounded-none' : 'rounded-full',
                 isSelected && 'bg-primary',
               )}
             />
             <p className="w-full truncate font-medium leading-snug">{sop.nama}</p>
-            <div className="mt-0.5">{renderQuietStatus(sop)}</div>
+            <div className="mt-0.5">{renderQuietStatus(sop, compact)}</div>
           </div>
         )
       })}
