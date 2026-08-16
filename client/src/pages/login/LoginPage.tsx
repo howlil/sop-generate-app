@@ -6,11 +6,11 @@ export function LoginPage() {
   const { login, isLoggingIn } = useAuth()
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] px-4 py-6 text-foreground sm:px-6 lg:grid lg:place-items-center lg:py-10">
-      <main className="mx-auto grid w-full max-w-[1120px] overflow-hidden rounded-[22px] border border-border bg-surface shadow-raised lg:min-h-[620px] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+    <div className="min-h-screen bg-surface text-foreground">
+      <main className="grid min-h-screen w-full lg:min-h-screen lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]">
         <LoginHero />
 
-        <section className="flex items-center bg-surface px-6 py-8 sm:px-10 lg:px-14 lg:py-12">
+        <section className="flex min-h-[560px] items-center bg-surface px-6 py-10 sm:px-10 lg:min-h-screen lg:px-16 lg:py-12 xl:px-20">
           <LoginForm isSubmitting={isLoggingIn} onSubmitLogin={login} />
         </section>
       </main>

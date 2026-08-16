@@ -6,7 +6,7 @@ const workflowIcons = [FileText, ClipboardCheck, Stamp, Archive]
 export function LoginHero() {
   return (
     <aside
-      className="relative m-1.5 min-h-[420px] overflow-hidden rounded-[18px] px-6 py-7 text-white sm:m-2 sm:min-h-[480px] sm:px-8 sm:py-8 lg:min-h-0 lg:px-9 lg:py-10"
+      className="relative min-h-[420px] overflow-hidden px-6 py-8 text-white sm:min-h-[480px] sm:px-8 sm:py-10 lg:min-h-screen lg:px-12 lg:py-12 xl:px-16 xl:py-14"
       style={{
         backgroundImage:
           'radial-gradient(circle at 78% 12%, rgba(219,234,254,0.9) 0%, rgba(219,234,254,0) 34%), radial-gradient(circle at 72% 58%, rgba(147,197,253,0.55) 0%, rgba(147,197,253,0) 38%), linear-gradient(145deg, #60a5fa 0%, #2563eb 42%, #1d4ed8 68%, #0f3a9a 100%)',

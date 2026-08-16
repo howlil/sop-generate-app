@@ -11,23 +11,29 @@ const loginFormSource = readSource('../login/components/LoginForm.tsx')
 const allSources = [loginPageSource, loginHeroSource, loginFormSource].join('\n')
 
 describe('public auth design contract', () => {
-  it('uses one cohesive reference-inspired auth card', () => {
-    expect(loginPageSource).toContain('max-w-[1120px]')
-    expect(loginPageSource).toContain('lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]')
-    expect(loginPageSource).toContain('rounded-[22px]')
-    expect(loginPageSource).toContain('overflow-hidden')
-    expect(loginPageSource).not.toContain('lg:grid-cols-[minmax(0,7fr)_minmax(360px,5fr)]')
-    expect(loginPageSource).not.toContain('lg:grid-cols-2')
+  it('uses a true full-viewport split login shell', () => {
+    expect(loginPageSource).toContain('min-h-screen')
+    expect(loginPageSource).toContain('lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]')
+    expect(loginPageSource).toContain('lg:min-h-screen')
+    expect(loginPageSource).not.toContain('max-w-[1120px]')
+    expect(loginPageSource).not.toContain('rounded-[22px]')
+    expect(loginPageSource).not.toContain('shadow-raised')
+    expect(loginPageSource).not.toContain('lg:place-items-center')
+    expect(loginPageSource).not.toContain('lg:py-10')
     expect(loginPageSource).toContain('LoginForm isSubmitting={isLoggingIn} onSubmitLogin={login}')
   })
 
-  it('uses the approved abstract SOP visual panel', () => {
+  it('uses the approved abstract SOP visual panel edge to edge', () => {
     expect(loginHeroSource).toContain('Portal Internal SOP')
     expect(loginHeroSource).toContain('Kelola SOP secara terstruktur dari penyusunan hingga arsip')
     expect(loginHeroSource).toContain('Biro Organisasi · Pemerintah Provinsi Sumatera Barat')
     expect(loginHeroSource).toContain("['Penyusunan', 'Evaluasi', 'Pengesahan', 'Arsip']")
     expect(loginHeroSource).toContain('linear-gradient')
     expect(loginHeroSource).toContain('radial-gradient')
+    expect(loginHeroSource).toContain('lg:min-h-screen')
+    expect(loginHeroSource).not.toContain('m-1.5')
+    expect(loginHeroSource).not.toContain('sm:m-2')
+    expect(loginHeroSource).not.toContain('rounded-[18px]')
     expect(loginHeroSource).not.toContain('Kantor_Gubernur_Sumbar_belakang.jpg')
     expect(loginHeroSource).not.toContain('Berita Acara')
   })
