@@ -16,7 +16,7 @@ vi.mock('@/api/kepala-opd', () => ({
 vi.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a> }))
 
 describe('ManajemenOPD', () => {
-  it('uses a full-width line tab row integrated with the data surface', () => {
+  it('uses the shared full-width segmented tabs used by evaluation filters', () => {
     render(<ManajemenOPD />)
 
     expect(screen.getByText('Kelola OPD dan akun Kepala OPD.')).toBeInTheDocument()
@@ -27,15 +27,21 @@ describe('ManajemenOPD', () => {
 
     expect(tabList).not.toBeNull()
     expect(tabList).toHaveClass('w-full')
-    expect(tabList).toHaveClass('rounded-none')
-    expect(tabList).toHaveClass('border-b')
-    expect(tabList).toHaveClass('bg-transparent')
-    expect(tabList).not.toHaveClass('bg-surface-muted')
+    expect(tabList).toHaveClass('grid')
+    expect(tabList).toHaveClass('grid-cols-2')
+    expect(tabList).toHaveClass('h-8')
+    expect(tabList).toHaveClass('p-0.5')
+    expect(tabList).toHaveClass('bg-surface-muted')
+    expect(tabList).not.toHaveClass('rounded-none')
+    expect(tabList).not.toHaveClass('border-b')
+    expect(tabList).not.toHaveClass('bg-transparent')
 
-    expect(opdTab).toHaveClass('flex-1')
-    expect(opdTab).toHaveClass('rounded-none')
-    expect(opdTab.className).toContain('data-[state=active]:border-primary')
-    expect(kepalaTab).toHaveClass('flex-1')
+    expect(opdTab).toHaveClass('h-7')
+    expect(opdTab).toHaveClass('text-xs')
+    expect(opdTab.className).toContain('data-[state=active]:bg-surface')
+    expect(opdTab.className).toContain('data-[state=active]:text-primary')
+    expect(kepalaTab).toHaveClass('h-7')
+    expect(kepalaTab).toHaveClass('text-xs')
 
     expect(screen.getByRole('textbox', { name: 'Cari nama OPD...' })).toBeInTheDocument()
     const createButton = screen.getByRole('button', { name: 'Tambah OPD' })
