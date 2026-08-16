@@ -1,1 +1,486 @@
-<mxfile host="65bd71144e"><diagram id="sopflow-domain-class-diagram" name="Class Diagram Sistem Pengelolaan SOP">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</diagram></mxfile>
+<mxfile host="65bd71144e">
+    <diagram id="sopflow-domain-class-diagram" name="Class Diagram Sistem Pengelolaan SOP">
+        <mxGraphModel dx="2250" dy="-5917" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="1250" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="OPD" value="OPD" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry y="8427.499999999975" width="300" height="164" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPD-attr-1" value="- nama: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="OPD" vertex="1">
+                    <mxGeometry y="26" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPD-attr-2" value="- statusAktif: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="OPD" vertex="1">
+                    <mxGeometry y="52" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPD-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="OPD" vertex="1">
+                    <mxGeometry y="78" width="300" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPD-meth-1" value="+ tetapkanKepala()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="OPD" vertex="1">
+                    <mxGeometry y="86" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPD-meth-2" value="+ bentukTimPenyusun()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="OPD" vertex="1">
+                    <mxGeometry y="112" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPD-meth-3" value="+ bentukTimEvaluator()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="OPD" vertex="1">
+                    <mxGeometry y="138" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna" value="Pengguna" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="8070.9999999999745" width="320" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-1" value="- nama: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="26" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-2" value="- email: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="52" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-3" value="- nip: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="78" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-4" value="- jabatan: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="104" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-5" value="- pangkat: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="130" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-6" value="- nomorHP: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="156" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-attr-7" value="- peran: Peran Pengguna" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="182" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="208" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-meth-1" value="+ masuk()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="216" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-meth-2" value="+ keluar()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="242" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-meth-3" value="+ ubahKataSandi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="268" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna-meth-4" value="+ aturTandaTanganElektronik()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pengguna" vertex="1">
+                    <mxGeometry y="294" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan" value="Peraturan" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1640" y="8154.9999999999745" width="320" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-attr-1" value="- nama: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="26" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-attr-2" value="- nomor: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="52" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-attr-3" value="- tahun: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="78" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-attr-4" value="- tentang: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="104" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="130" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-meth-1" value="+ perbarui()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="138" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan-meth-2" value="+ gunakanSebagaiDasarHukum()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Peraturan" vertex="1">
+                    <mxGeometry y="164" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pelaksana" value="Pelaksana" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1230" y="8554.999999999975" width="300" height="112" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pelaksana-attr-1" value="- nama: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pelaksana" vertex="1">
+                    <mxGeometry y="26" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pelaksana-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="Pelaksana" vertex="1">
+                    <mxGeometry y="52" width="300" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pelaksana-meth-1" value="+ tetapkanPadaSOP()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pelaksana" vertex="1">
+                    <mxGeometry y="60" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pelaksana-meth-2" value="+ ubahNama()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Pelaksana" vertex="1">
+                    <mxGeometry y="86" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP" value="Langkah SOP" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1650" y="8374.999999999975" width="300" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-1" value="- kegiatan: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="26" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-2" value="- jenis: Jenis Langkah" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="52" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-3" value="- urutan: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="78" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-4" value="- kelengkapan: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="104" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-5" value="- keluaran: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="130" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-6" value="- waktu: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="156" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-7" value="- satuanWaktu: Satuan Waktu" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="182" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-attr-8" value="- keterangan: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="208" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="234" width="300" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-meth-1" value="+ tentukanPelaksana()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="242" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-meth-2" value="+ tentukanLangkahBerikutnya()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="268" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP-meth-3" value="+ ubahUrutan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="LangkahSOP" vertex="1">
+                    <mxGeometry y="294" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP" value="Dokumen SOP" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1220" y="8175.599999999973" width="320" height="346" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-1" value="- nomorSOP: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="26" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-2" value="- judul: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="52" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-3" value="- versi: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="78" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-4" value="- status: Status SOP" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="104" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-5" value="- tanggalPembuatan: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="130" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-6" value="- tanggalRevisi?: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="156" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-attr-7" value="- tanggalEfektif?: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="182" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="208" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-meth-1" value="+ inisiasi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="216" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-meth-2" value="+ simpanDraft()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="242" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-meth-3" value="+ tandaiSiapDiajukan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="268" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-meth-4" value="+ buatRevisi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="294" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenSOP-meth-5" value="+ cabut()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="DokumenSOP" vertex="1">
+                    <mxGeometry y="320" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi" value="Pengajuan Evaluasi" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="8450.999999999975" width="320" height="294" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-attr-1" value="- jenis: Jenis Pengajuan" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="26" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-attr-2" value="- status: Status Pengajuan" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="52" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-attr-3" value="- nomorBeritaAcara?: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="78" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-attr-4" value="- tanggalPermintaan?: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="104" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-attr-5" value="- tanggalEvaluasi?: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="130" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-attr-6" value="- nilaiOPD?: number" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="156" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="182" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-meth-1" value="+ ajukan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="190" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-meth-2" value="+ tolak()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="216" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-meth-3" value="+ selesaikanEvaluasi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="242" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi-meth-4" value="+ lanjutkanPenandatanganan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengajuanEvaluasi" vertex="1">
+                    <mxGeometry y="268" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP" value="Penilaian SOP" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="8463.999999999975" width="300" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-attr-1" value="- hasil: Hasil Evaluasi" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="26" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-attr-2" value="- catatan?: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="52" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-attr-3" value="- statusTindakLanjut?: Status Tindak Lanjut" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="78" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="104" width="300" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-meth-1" value="+ beriPenilaian()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="112" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-meth-2" value="+ beriCatatan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="138" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PenilaianSOP-meth-3" value="+ tandaiDitindaklanjuti()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PenilaianSOP" vertex="1">
+                    <mxGeometry y="164" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses" value="Pengingat Proses" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="8161.9999999999745" width="300" height="242" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-attr-1" value="- jenis: Jenis Pengingat" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="26" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-attr-2" value="- nomorTujuan: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="52" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-attr-3" value="- jadwalBerikut: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="78" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-attr-4" value="- waktuTerakhir?: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="104" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-attr-5" value="- status: Status Pengingat" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="130" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="156" width="300" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-meth-1" value="+ jadwalkan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="164" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-meth-2" value="+ tandaiTerkirim()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="190" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengingatProses-meth-3" value="+ selesaikan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengingatProses" vertex="1">
+                    <mxGeometry y="216" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengesahanSOP" value="Pengesahan SOP" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1640" y="7986.9999999999745" width="320" height="138" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengesahanSOP-attr-1" value="- tanggalPengesahan?: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengesahanSOP" vertex="1">
+                    <mxGeometry y="26" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengesahanSOP-attr-2" value="- status: Status Pengesahan" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengesahanSOP" vertex="1">
+                    <mxGeometry y="52" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengesahanSOP-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="PengesahanSOP" vertex="1">
+                    <mxGeometry y="78" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengesahanSOP-meth-1" value="+ sahkan()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengesahanSOP" vertex="1">
+                    <mxGeometry y="86" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengesahanSOP-meth-2" value="+ verifikasi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="PengesahanSOP" vertex="1">
+                    <mxGeometry y="112" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara" value="Berita Acara Evaluasi" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1640" y="8724.999999999975" width="320" height="164" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara-attr-1" value="- nomor: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="BeritaAcara" vertex="1">
+                    <mxGeometry y="26" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara-attr-2" value="- tanggal: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="BeritaAcara" vertex="1">
+                    <mxGeometry y="52" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara-attr-3" value="- statusPenandatanganan: Status Penandatanganan" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="BeritaAcara" vertex="1">
+                    <mxGeometry y="78" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="BeritaAcara" vertex="1">
+                    <mxGeometry y="104" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara-meth-1" value="+ bentuk()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="BeritaAcara" vertex="1">
+                    <mxGeometry y="112" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="BeritaAcara-meth-2" value="+ tandatangani()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="BeritaAcara" vertex="1">
+                    <mxGeometry y="138" width="320" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik" value="Tanda Tangan Elektronik" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="2060" y="7973.9999999999745" width="300" height="164" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik-attr-1" value="- peranPenandatangan: Peran Pengguna" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="TandaTanganElektronik" vertex="1">
+                    <mxGeometry y="26" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik-attr-2" value="- waktuTandaTangan: DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="TandaTanganElektronik" vertex="1">
+                    <mxGeometry y="52" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik-attr-3" value="- statusVerifikasi: Status Verifikasi" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="TandaTanganElektronik" vertex="1">
+                    <mxGeometry y="78" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" parent="TandaTanganElektronik" vertex="1">
+                    <mxGeometry y="104" width="300" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik-meth-1" value="+ tandatangani()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="TandaTanganElektronik" vertex="1">
+                    <mxGeometry y="112" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="TandaTanganElektronik-meth-2" value="+ verifikasi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="TandaTanganElektronik" vertex="1">
+                    <mxGeometry y="138" width="300" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel1" value="memiliki pengguna (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="Pengguna" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="312" y="8451.749999999975"/>
+                            <mxPoint x="388" y="8230.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel2" value="memiliki SOP (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="DokumenSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="314" y="8490.249999999975"/>
+                            <mxPoint x="350" y="8420.999999999975"/>
+                            <mxPoint x="770" y="8420.999999999975"/>
+                            <mxPoint x="770" y="8433.999999999975"/>
+                            <mxPoint x="1170" y="8433.999999999975"/>
+                            <mxPoint x="1208" y="8264.599999999973"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel3" value="memiliki pelaksana (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="Pelaksana" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="312" y="8567.249999999975"/>
+                            <mxPoint x="350" y="8774.999999999975"/>
+                            <mxPoint x="770" y="8774.999999999975"/>
+                            <mxPoint x="770" y="8774.999999999975"/>
+                            <mxPoint x="1170" y="8774.999999999975"/>
+                            <mxPoint x="1208" y="8610.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel4" value="dasar hukum (0..* : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="DokumenSOP" target="Peraturan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1554" y="8348.599999999973"/>
+                            <mxPoint x="1628" y="8249.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel5" value="terdiri atas (1 : 1..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=1;endArrow=none;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="DokumenSOP" target="LangkahSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1552" y="8460.599999999973"/>
+                            <mxPoint x="1628" y="8457.499999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel6" value="melaksanakan (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pelaksana" target="LangkahSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1552" y="8610.999999999975"/>
+                            <mxPoint x="1628" y="8612.499999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel7" value="mengajukan (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="PengajuanEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="314" y="8528.749999999975"/>
+                            <mxPoint x="388" y="8597.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel8" value="memuat penilaian (1 : 1..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=0;endArrow=none;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="PengajuanEvaluasi" target="PenilaianSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="734" y="8597.999999999975"/>
+                            <mxPoint x="808" y="8558.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel9" value="menilai (0..* : 1)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="PenilaianSOP" target="DokumenSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1132" y="8558.999999999975"/>
+                            <mxPoint x="1208" y="8432.599999999973"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel10" value="menghasilkan (1 : 0..1)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="PengajuanEvaluasi" target="BeritaAcara" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="732" y="8692.66666666664"/>
+                            <mxPoint x="770" y="8683.999999999975"/>
+                            <mxPoint x="1170" y="8683.999999999975"/>
+                            <mxPoint x="1170" y="8745.499999999975"/>
+                            <mxPoint x="1590" y="8745.499999999975"/>
+                            <mxPoint x="1628" y="8806.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel11" value="memerlukan pengesahan (1 : 0..1)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="DokumenSOP" target="PengesahanSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1552" y="8236.599999999973"/>
+                            <mxPoint x="1628" y="8055.9999999999745"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel12" value="ditandatangani (1 : 1..2)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="BeritaAcara" target="TandaTanganElektronik" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1972" y="8806.999999999975"/>
+                            <mxPoint x="2048" y="8107.333333333308"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel13" value="ditandatangani (1 : 1)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="PengesahanSOP" target="TandaTanganElektronik" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1972" y="8055.9999999999745"/>
+                            <mxPoint x="2046" y="8055.9999999999745"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel14" value="melakukan (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="TandaTanganElektronik" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="732" y="8153.4999999999745"/>
+                            <mxPoint x="770" y="7956.9999999999745"/>
+                            <mxPoint x="1170" y="7956.9999999999745"/>
+                            <mxPoint x="1170" y="7956.9999999999745"/>
+                            <mxPoint x="1590" y="7956.9999999999745"/>
+                            <mxPoint x="1590" y="7956.9999999999745"/>
+                            <mxPoint x="2010" y="7956.9999999999745"/>
+                            <mxPoint x="2048" y="8004.6666666666415"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel15" value="memicu pengingat (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="PengajuanEvaluasi" target="PengingatProses" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="732" y="8503.333333333308"/>
+                            <mxPoint x="808" y="8340.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel16" value="menerima (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontSize=12;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="PengingatProses" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="732" y="8308.499999999975"/>
+                            <mxPoint x="808" y="8224.999999999975"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
