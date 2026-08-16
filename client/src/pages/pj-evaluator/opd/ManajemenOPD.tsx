@@ -110,9 +110,9 @@ export function ManajemenOPD() {
               <p className="text-sm text-secondary-foreground">Kelola OPD dan akun Kepala OPD.</p>
             </div>
             <DataSurface.Tabs className="w-full">
-              <TabsList variant="line">
-                <TabsTrigger variant="line" value="opd">OPD</TabsTrigger>
-                <TabsTrigger variant="line" value="kepala">Kepala OPD</TabsTrigger>
+              <TabsList className="h-8 p-0.5 w-full grid grid-cols-2">
+                <TabsTrigger value="opd" className="h-7 text-xs">OPD</TabsTrigger>
+                <TabsTrigger value="kepala" className="h-7 text-xs">Kepala OPD</TabsTrigger>
               </TabsList>
             </DataSurface.Tabs>
             <DataSurface.Toolbar>
