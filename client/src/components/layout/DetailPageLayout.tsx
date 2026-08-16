@@ -37,7 +37,7 @@ function DetailWorkspace({
         {leftPanel != null && (
           <div
             data-print-hide
-            className="flex flex-col h-full max-h-[min(46vh,340px)] shrink-0 overflow-hidden border-b border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(300px,30vw)] lg:border-b-0 lg:border-r"
+            className="flex flex-col h-full max-h-[min(46vh,340px)] shrink-0 overflow-hidden border-b border-border bg-surface-subtle lg:max-h-none lg:max-w-[min(340px,36vw)] lg:border-b-0 lg:border-r"
           >
             {leftPanel}
           </div>
