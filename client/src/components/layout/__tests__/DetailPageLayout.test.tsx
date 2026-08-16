@@ -35,4 +35,19 @@ describe('DetailPageLayout', () => {
     expect(screen.queryByText('Kembali')).not.toBeInTheDocument()
     expect(screen.getByText('Dokumen')).toBeInTheDocument()
   })
+
+  it('memberi panel kiri ruang penuh untuk lebar workbench SOP', () => {
+    render(
+      <PageHeaderProvider>
+        <DetailPageLayout
+          title="Workspace Pengesahan"
+          leftPanel={<div data-testid="left-panel-content">Daftar SOP</div>}
+          main={<div>Preview SOP</div>}
+        />
+      </PageHeaderProvider>,
+    )
+
+    const leftPanelContent = screen.getByTestId('left-panel-content')
+    expect(leftPanelContent.parentElement).toHaveClass('lg:max-w-[min(340px,36vw)]')
+  })
 })
