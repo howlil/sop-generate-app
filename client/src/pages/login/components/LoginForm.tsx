@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Asterisk, Eye, EyeOff } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,27 +62,27 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
   }
 
   return (
-    <div className="w-full">
-      <Button asChild variant="ghost" size="sm" className="mb-8 -ml-3 text-muted-foreground hover:text-foreground">
+    <div className="mx-auto w-full max-w-[430px]">
+      <Button asChild variant="ghost" size="sm" className="mb-10 -ml-3 text-primary hover:text-primary-hover">
         <Link to="/">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Kembali ke beranda
         </Link>
       </Button>
 
-      <div className="mb-8 border-b border-border pb-6">
-        <span className="inline-flex border border-border bg-surface-subtle px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Akun internal
+      <div className="mb-9">
+        <span className="grid h-8 w-8 place-items-center text-primary" aria-hidden>
+          <Asterisk className="h-7 w-7" strokeWidth={2.4} />
         </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-foreground">
-          Masuk ke SOPFlow
+        <h1 className="mt-5 text-3xl font-semibold tracking-[-0.035em] text-foreground sm:text-[34px]">
+          Masuk ke sistem
         </h1>
-        <p className="mt-3 text-sm leading-6 text-secondary-foreground">
+        <p className="mt-2.5 text-sm leading-6 text-secondary-foreground">
           Gunakan akun yang telah didaftarkan administrator.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="email" required>Email</Label>
           <Input
@@ -94,6 +94,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
             disabled={isSubmitting}
             autoComplete="email"
             errorMessage={emailError}
+            className="h-11"
           />
         </div>
 
@@ -109,12 +110,12 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
               disabled={isSubmitting}
               autoComplete="current-password"
               errorMessage={passwordError}
-              className="pr-10"
+              className="h-11 pr-11"
             />
             <button
               type="button"
               onClick={() => setShowPassword((current) => !current)}
-              className="absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded-control text-muted-foreground transition-colors hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-control text-muted-foreground transition-colors hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               disabled={isSubmitting}
               aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
             >
@@ -130,15 +131,12 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
               Memproses...
             </>
           ) : (
-            <>
-              Masuk
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </>
+            'Masuk'
           )}
         </Button>
       </form>
 
-      <p className="mt-7 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
+      <p className="mt-8 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
         Butuh bantuan? Hubungi administrator instansi.
       </p>
     </div>
