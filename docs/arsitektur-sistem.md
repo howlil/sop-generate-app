@@ -233,21 +233,19 @@ end note
 
 ## Backend
 
-Backend menggunakan NestJS/TypeScript dan berjalan pada port internal `3001` pada Compose production.
+Backend menggunakan NestJS/TypeScript dan berjalan pada port internal `3001` pada Compose production. Pada level arsitektur, backend ditampilkan sebagai layered application agar diagram menjelaskan pemisahan tanggung jawab tanpa masuk ke detail setiap modul bisnis.
 
-Tanggung jawab utama backend:
+Lapisan utama backend:
 
-- autentikasi, cookie/JWT, CSRF, rate limiting, dan otorisasi berbasis peran;
-- pengelolaan OPD dan pengguna;
-- penyusunan dan versioning SOP;
-- pengajuan, verifikasi, evaluasi, dan revisi;
-- berita acara dan workflow TTE;
-- pengesahan Kepala OPD;
-- arsip dan verifikasi dokumen;
-- reminder in-app dan WhatsApp;
-- integrasi outbound dan delivery webhook Wago;
-- persistence melalui Prisma;
-- persistent PDF storage.
+- **Controller** menerima request HTTP dan mengekspos endpoint REST;
+- **DTO & Validation** mendefinisikan kontrak data request/response serta validasi input;
+- **Service** menjalankan business logic dan workflow aplikasi;
+- **Repository** mengabstraksikan akses data dari business logic;
+- **Prisma ORM** menjadi implementasi akses persistence ke MariaDB;
+- **Wago Integration** menghubungkan service backend dengan gateway WhatsApp eksternal;
+- **PDF Storage** menangani penyimpanan artefak PDF pada persistent volume.
+
+Detail autentikasi, workflow SOP, reminder, webhook, retry, dan mekanisme delivery Wago merupakan detail implementasi di dalam layer tersebut dan tidak ditampilkan pada diagram backend tingkat tinggi.
 
 Backend menjalankan Prisma migration sebelum start production melalui `pnpm prisma migrate deploy`.
 
@@ -265,8 +263,6 @@ skinparam {
   defaultFontName sans-serif
   roundCorner 8
 
-  ActorBorderColor #2D3748
-  ActorBackgroundColor #E2E8F0
   NodeBorderColor #4A5568
   NodeBackgroundColor #F7FAFC
   ComponentBorderColor #3182CE
@@ -278,70 +274,47 @@ skinparam {
 }
 
 cloud "Frontend / Nginx" as Frontend
-cloud "Wago Gateway" as Wago
+cloud "Wago Gateway\nWhatsApp" as Wago
 
 node "Backend Container :3001" as BackendContainer {
   frame "NestJS Application" as NestApp {
-    component "HTTP / Controller Layer\n/api/v1" as Controller
-    component "Security Layer\nJWT, RBAC, CSRF,\nRate Limiting, Validation" as Security
-    component "Domain Services\nSOP, Evaluasi, TTE,\nPengesahan, Arsip" as Domain
-    component "Reminder Scheduler" as Scheduler
-    component "Notification Service" as Notification
-    component "WagoProvider\nOutbound Adapter" as WagoProvider
-    component "WagoWebhookController\nInbound Adapter" as WagoWebhook
-    component "Webhook Signature\nVerification" as WebhookSignature
-    component "Delivery / Webhook\nReconciliation" as Reconciliation
-    component "Prisma Service / ORM" as Prisma
-    component "PDF Storage Service" as PdfStorage
+    component "Controller Layer\nREST API /api/v1" as Controller
+    component "DTO & Validation\nRequest / Response Contract" as DTO
+    component "Service Layer\nBusiness Logic & Workflow" as Service
+    component "Repository Layer\nData Access Abstraction" as Repository
+    component "Prisma ORM" as Prisma
+    component "Wago Integration\nNotification Adapter" as WagoIntegration
+    component "PDF Storage" as PdfStorage
   }
 }
 
 database "MariaDB 11.4" as Database
-storage "db_data" as DbVolume
-storage "sop_pdf_data\n/app/storage/sop-pdf" as PdfVolume
+storage "sop_pdf_data\nPersistent PDF Storage" as PdfVolume
 
-Frontend --> Controller : /api/v1/*
-Controller --> Security : request pipeline
-Security --> Domain : request tervalidasi
-Domain --> Prisma : data / transaction
-Prisma --> Database
-Database --> DbVolume : persistence
+Frontend --> Controller : HTTP / REST
+Controller --> DTO : bind & validate
+DTO --> Service : validated data
+Service --> Repository : read / write data
+Repository --> Prisma : persistence operation
+Prisma --> Database : query / transaction
 
-Domain --> PdfStorage
-PdfStorage --> PdfVolume : PDF persistence
+Service --> PdfStorage : store / read PDF
+PdfStorage --> PdfVolume
 
-Scheduler --> Notification : due reminder
-Notification --> WagoProvider : send WhatsApp
-WagoProvider --> Wago : POST /messages/send\nAuthorization: Bearer\nIdempotency-Key
+Service --> WagoIntegration : send notification
+WagoIntegration --> Wago : REST API
+Wago --> Controller : delivery webhook
 
-Wago --> WagoWebhook : POST /api/v1/webhooks/wago
-WagoWebhook --> WebhookSignature : verify raw body,\ntimestamp, signature
-WebhookSignature --> WagoWebhook : trusted event
-WagoWebhook --> Reconciliation : accepted / rejected
-Reconciliation --> Prisma : delivery + webhook state
-Reconciliation --> Scheduler : accelerate retry\nwhen eligible
-
-note right of WagoProvider
-  Normalize destination,
-  map Wago error,
-  timeout request,
-  preserve idempotency.
-end note
-
-note right of WagoWebhook
-  Envelope yang diterima:
-  message.server_accepted
-  message.rejected
-end note
-
-note bottom of Reconciliation
-  Webhook dideduplikasi dan
-  event unmatched disimpan
-  untuk rekonsiliasi berikutnya.
+note bottom of NestApp
+  Detail modul seperti auth, SOP, evaluasi,
+  TTE, pengesahan, reminder, dan webhook
+  berada di dalam layer yang sama.
 end note
 
 @enduml
 ```
+
+Diagram backend ini sengaja berhenti pada boundary layer aplikasi. Detail internal integrasi Wago tetap dijelaskan pada bagian **Notifikasi** agar diagram arsitektur utama tetap mudah dibaca.
 
 ## Database
 
