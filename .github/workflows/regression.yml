@@ -96,9 +96,17 @@ jobs:
           pnpm prisma generate
           pnpm prisma migrate deploy
 
-      - name: Run autosave concurrency integration test
+      - name: Run server integration regression
         working-directory: server
-        run: pnpm test:integration:run --no-cache -- sop-autosave-concurrency.integration-spec.ts
+        run: >-
+          pnpm test:integration:run --no-cache --
+          auth-session.integration-spec.ts
+          rbac-access-control.integration-spec.ts
+          opd-penyusun-lifecycle.integration-spec.ts
+          core-workflow.integration-spec.ts
+          evaluasi-edge-cases.integration-spec.ts
+          sop-versioning.integration-spec.ts
+          sop-autosave-concurrency.integration-spec.ts
 
       - name: Reset and seed browser regression database
         working-directory: server
