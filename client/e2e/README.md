@@ -1,9 +1,12 @@
-# Playwright System Test Suite
+# Playwright Browser Test Suite
 
-Suite Playwright SOPFlow dipisahkan menjadi dua lapisan agar istilah dan coverage tidak menyesatkan:
+Playwright SOPFlow dibagi menjadi tiga lapisan browser agar istilah dan coverage tidak menyesatkan:
 
-1. **Functional system tests** — menguji fitur/aturan secara terisolasi: autentikasi, RBAC, CRUD, authoring, validasi, filter, TTE, arsip, PDF, concurrency, dan sebagainya.
-2. **End-to-End Business Journeys** — tujuh alur bisnis lintas aktor/modul yang menguji state transition dan outcome utama melalui browser.
+1. **End-to-End Business Journeys** — tujuh alur bisnis lintas aktor/modul (`J01`–`J07`) yang menguji state transition dan outcome utama melalui browser.
+2. **Functional browser/system tests** — menguji fitur atau aturan secara terisolasi seperti autentikasi, RBAC UI, master data, authoring, evaluasi, TTE, arsip, PDF, filter, dan version history.
+3. **Smoke/UI regression tests** — memastikan public pages, profil/TTE surface, dan shell/layout utama tetap dapat digunakan.
+
+API-only behavior seperti concurrency, database invariants, server-side RBAC, state-machine edge cases, dan versioning race conditions bukan browser E2E. Coverage tersebut berada di `server/test/integration/`.
 
 ## End-to-End Business Journeys
 
@@ -17,22 +20,23 @@ Suite Playwright SOPFlow dipisahkan menjadi dua lapisan agar istilah dan coverag
 | `J06` | Revocation | SOP `DICABUT` dan tidak lagi muncul pada arsip publik aktif |
 | `J07` | Public Document Integrity | Arsip publik, verifikasi pengesahan TTE, dan verifikasi signature PDF konsisten |
 
-Implementasi berada di `e2e/journeys/`.
+Implementasi business journey berada di `e2e/journeys/`.
 
-### Boundary penting
+### Boundary business journey
 
-Business journey **tidak mengulang semua input CRUD/form**. Data yang bukan objek pengujian journey boleh dibentuk melalui API sebagai precondition. Contoh: J01 dimulai dari SOP yang sudah lengkap dan berstatus siap diajukan karena editor SOP diuji tersendiri pada functional system tests.
+Business journey tidak mengulang semua input CRUD/form. Data yang bukan objek pengujian journey boleh dibentuk melalui API sebagai precondition. Contoh: J01 dimulai dari SOP yang sudah lengkap dan siap diajukan karena editor SOP diuji pada functional browser tests.
 
 Aturannya:
 
-- aksi bisnis yang sedang diklaim oleh journey dilakukan melalui UI/browser;
-- mutation API hanya boleh digunakan pada `support/business-preconditions.ts` untuk membentuk state awal atau melewati flow yang sudah dibuktikan oleh journey lain;
+- aksi bisnis yang sedang diklaim journey dilakukan melalui UI/browser;
+- mutation API hanya boleh digunakan pada `support/business-preconditions.ts` untuk membentuk state awal atau melewati flow yang sudah dibuktikan journey lain;
 - postcondition boleh dibaca melalui API pada `support/business-audit.ts` untuk memverifikasi invariant server;
-- setiap role pada journey memakai `BrowserContext` terpisah melalui `fixtures/business-test.ts`;
-- setiap test menggunakan data unik dan harus dapat dijalankan sendiri pada database test yang dapat di-reset;
-- `scenario-traceability.spec.ts` adalah meta-test pemetaan traceability, **bukan** bukti bahwa suatu business journey sudah dieksekusi.
+- outcome publik yang diklaim sebagai browser behavior diverifikasi dari browser;
+- setiap role memakai `BrowserContext` terpisah melalui `fixtures/business-test.ts`;
+- setiap journey menggunakan data unik dan dapat dijalankan sendiri pada database test yang resettable;
+- assertion kosmetik/layout tidak dimasukkan ke critical business journey kecuali memang merupakan business invariant.
 
-`pnpm test:e2e:audit` menjaga kontrak arsitektur tersebut dan dijalankan oleh CI.
+`pnpm test:e2e:audit` menjaga kontrak arsitektur J01–J07 dan dijalankan CI.
 
 ## Menjalankan
 
@@ -43,15 +47,21 @@ pnpm test:e2e:install
 pnpm test:e2e:critical
 ```
 
-`test:e2e:critical` hanya menjalankan J01–J07 pada Chromium setelah audit statis.
+`test:e2e:critical` menjalankan J01–J07 pada Chromium dengan database disposable yang di-reset per journey melalui critical runner.
 
-Functional system regression:
+Functional browser regression:
 
 ```powershell
 pnpm test:e2e:functional
 ```
 
-Seluruh suite Chromium:
+Smoke/UI regression:
+
+```powershell
+pnpm test:e2e:smoke
+```
+
+Seluruh intended browser suite Chromium:
 
 ```powershell
 pnpm test:e2e:all
@@ -84,20 +94,7 @@ pnpm test:e2e:ui
 | `E2E_TTE_PIN` | mengikuti fixture E2E |
 | `E2E_TEST_RUN_ID` | generated per run |
 
-Credential role dapat dioverride melalui:
-
-```text
-E2E_PJ_EVALUATOR_EMAIL
-E2E_PJ_EVALUATOR_PASSWORD
-E2E_EVALUATOR_EMAIL
-E2E_EVALUATOR_PASSWORD
-E2E_KEPALA_OPD_EMAIL
-E2E_KEPALA_OPD_PASSWORD
-E2E_PJ_PENYUSUN_EMAIL
-E2E_PJ_PENYUSUN_PASSWORD
-E2E_PENYUSUN_EMAIL
-E2E_PENYUSUN_PASSWORD
-```
+Credential role dapat dioverride melalui environment variable `E2E_<ROLE>_EMAIL` dan `E2E_<ROLE>_PASSWORD` yang sudah dipakai fixtures.
 
 ## Struktur
 
@@ -115,7 +112,7 @@ e2e/
     business-audit.ts              # read-only server invariant assertions
     business-preconditions.ts      # mutation API only for setup/boundaries
     ...
-  *.spec.ts                        # functional/system regression tests
+  *.spec.ts                        # functional browser + smoke/UI regression
 ```
 
-Dokumen desain dan audit journey ada di `docs/e2e-business-journeys.md`.
+Dokumen desain business journey ada di `docs/e2e-business-journeys.md`. API integration tests berada di `server/test/integration/`.
