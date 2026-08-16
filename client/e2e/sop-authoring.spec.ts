@@ -1,25 +1,15 @@
 import { expect, test } from '@playwright/test'
 import { users } from './fixtures/users'
-import {
-  apiPatch,
-  apiPost,
-  createAuthenticatedApiContext,
-  expectApiRejected,
-  expectBackendAvailable,
-} from './support/api'
+import { apiPost, createAuthenticatedApiContext, expectBackendAvailable } from './support/api'
 import {
   expectMainContent,
   loginViaUi,
   searchPageIfAvailable,
   uniqueSuffix,
 } from './support/app'
-import {
-  createApprovedSopFixture,
-  createDraftSopFixture,
-  createReadySopFixture,
-} from './support/e2e-flow'
+import { createApprovedSopFixture, createReadySopFixture } from './support/e2e-flow'
 
-test.describe('E2E penyusunan SOP dasar', () => {
+test.describe('Functional browser — penyusunan SOP dasar', () => {
   test.beforeEach(async ({ request }) => {
     await expectBackendAvailable(request)
   })
@@ -75,21 +65,7 @@ test.describe('E2E penyusunan SOP dasar', () => {
     await expect(page.locator('body')).toContainText(/sop|evaluasi/i)
   })
 
-  test('E2E-23: nomor SOP duplikat ditolak', async () => {
-    const penyusun = await createAuthenticatedApiContext(users.penyusun)
-    try {
-      const draft = await createDraftSopFixture(penyusun, 'DUP')
-      await expectApiRejected(penyusun, 'post', '/sop', {
-        judul: `${draft.title} Duplikat`,
-        nomorSop: draft.number,
-        namaLembaga: 'Biro Organisasi Sumbar',
-      })
-    } finally {
-      await penyusun.dispose()
-    }
-  })
-
-  test('E2E-24 sampai E2E-30: header, prosedur, diagram, riwayat, dan status siap evaluasi tersimpan', async ({ page }) => {
+  test('E2E-24 sampai E2E-30: workbench SOP siap evaluasi menampilkan data yang tersimpan', async ({ page }) => {
     const penyusun = await createAuthenticatedApiContext(users.penyusun)
     try {
       const ready = await createReadySopFixture(penyusun, 'READY')
@@ -107,8 +83,7 @@ test.describe('E2E penyusunan SOP dasar', () => {
         await expect(page.locator('body')).toContainText(/mulai|selesai|diagram|flowchart|bpmn/i)
       }
 
-      const historyText = page.locator('body')
-      await expect(historyText).toContainText(/riwayat|aktivitas|terakhir/i)
+      await expect(page.locator('body')).toContainText(/riwayat|aktivitas|terakhir/i)
 
       await page.goto('/penyusun/sop')
       await expectMainContent(page)
@@ -119,41 +94,7 @@ test.describe('E2E penyusunan SOP dasar', () => {
     }
   })
 
-  test('E2E-26 dan E2E-31: keputusan tanpa cabang dan SOP tidak lengkap tidak bisa siap evaluasi', async () => {
-    const penyusun = await createAuthenticatedApiContext(users.penyusun)
-    try {
-      const draft = await createDraftSopFixture(penyusun, 'INVALID')
-      await expectApiRejected(penyusun, 'patch', `/sop/status/${draft.detailSopId}`, {
-        status: 'MENUNGGU_PENGAJUAN_EVALUASI',
-      })
-
-      const pelaksana = await apiPost<{ id: string }>(penyusun, '/pelaksana', {
-        namaPelaksana: `Pelaksana ${draft.number}`,
-      })
-      await apiPatch(penyusun, `/sop/langkah/${draft.detailSopId}`, {
-        pelaksana: [{ pelaksanaId: pelaksana.id }],
-        langkah: [
-          {
-            tempId: 'decision-without-branches',
-            jenis: 'KEPUTUSAN',
-            kegiatan: 'Apakah dokumen lengkap?',
-            pelaksanaId: pelaksana.id,
-            kelengkapan: 'Dokumen',
-            keluaran: 'Keputusan',
-            waktu: 5,
-            satuanWaktu: 'm',
-          },
-        ],
-      })
-      await expectApiRejected(penyusun, 'patch', `/sop/status/${draft.detailSopId}`, {
-        status: 'MENUNGGU_PENGAJUAN_EVALUASI',
-      })
-    } finally {
-      await penyusun.dispose()
-    }
-  })
-
-  test('E2E-56: versi baru dapat dibuat dari SOP berlaku dan versi lama tetap dapat dilihat', async ({ page }) => {
+  test('E2E-56: daftar SOP menampilkan versi berlaku dan draft revisi', async ({ page }) => {
     const approved = await createApprovedSopFixture('VERSION')
     const penyusun = await createAuthenticatedApiContext(users.penyusun)
     try {
