@@ -47,7 +47,7 @@ describe('institutional SaaS public landing contract', () => {
     }
   })
 
-  it('uses a light product-first hero instead of a dark poster', () => {
+  it('uses a centered light product-first hero instead of a split poster', () => {
     expect(heroSource).toContain('Kelola SOP dari draft hingga berlaku dalam satu alur kerja.')
     expect(heroSource).toContain('Sistem Pengelolaan SOP Berbasis Web')
     expect(heroSource).toContain('Masuk ke Sistem')
@@ -56,17 +56,20 @@ describe('institutional SaaS public landing contract', () => {
     expect(heroSource).toContain('Evaluasi terdokumentasi')
     expect(heroSource).toContain('Arsip dan validasi terpusat')
     expect(heroSource).toContain('LandingProductPreview')
+    expect(heroSource).toContain('data-testid="landing-hero-copy"')
+    expect(heroSource).toContain('text-center')
     expect(heroSource).not.toContain('bg-slate-950 text-white')
-    expect(heroSource).not.toContain('min-h-[720px] lg:grid-cols-[0.43fr_0.57fr]')
+    expect(heroSource).not.toContain('lg:grid-cols-[0.48fr_0.52fr]')
   })
 
-  it('shows a realistic product preview and keeps the building image as an accent', () => {
+  it('keeps the realistic product preview focused and moves the building accent to closing', () => {
     expect(productPreviewSource).toContain('Pengajuan Evaluasi')
     expect(productPreviewSource).toContain('Dinas Kesehatan Provinsi · 4 SOP')
     expect(productPreviewSource).toContain('Menunggu TTD PJ Evaluator')
-    expect(productPreviewSource).toContain('Arsip dan validasi dokumen')
-    expect(productPreviewSource).toContain('Kantor_Gubernur_Sumbar_belakang.jpg')
-    expect(productPreviewSource).toContain('Identitas institusi')
+    expect(productPreviewSource).not.toContain('Arsip dan validasi dokumen')
+    expect(productPreviewSource).not.toContain('Identitas institusi')
+    expect(productPreviewSource).not.toContain('Kantor_Gubernur_Sumbar_belakang.jpg')
+    expect(closingSource).toContain('Kantor_Gubernur_Sumbar_belakang.jpg')
   })
 
   it('keeps public navigation and service entry points clear', () => {
@@ -82,6 +85,7 @@ describe('institutional SaaS public landing contract', () => {
     expect(landingSource).toContain('Evaluasi & Perbaikan')
     expect(landingSource).toContain('Pengesahan & Arsip')
     expect(workflowSource).toContain('WorkflowPreview')
+    expect(workflowSource).toContain('stages.map')
     expect(roleSource).toContain('Ruang kerja berbasis peran')
     expect(roleSource).toContain('Satu sistem. Lima konteks kerja.')
     expect(rolePreviewSource).toContain('Catatan evaluator')
@@ -96,7 +100,7 @@ describe('institutional SaaS public landing contract', () => {
     expect(roleSource).toContain('aria-selected')
     expect(roleSource).toContain('role="tabpanel"')
     expect(roleSource).toContain('motion-reduce:transition-none')
-    expect(productPreviewSource).toContain('alt="Kantor Gubernur Sumatera Barat"')
+    expect(closingSource).toContain('alt="Kantor Gubernur Sumatera Barat"')
     expect(closingSource).toContain('loading="lazy"')
   })
 

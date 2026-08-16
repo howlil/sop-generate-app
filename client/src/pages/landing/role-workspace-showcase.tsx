@@ -20,22 +20,20 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
   const activeRole = roles.find((role) => role.id === activeRoleId) ?? roles[0]
 
   return (
-    <section id="peran" className="scroll-mt-20 border-y border-border bg-[#f7f9fc] py-20 sm:py-24">
+    <section id="peran" className="scroll-mt-20 bg-surface py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[0.68fr_0.32fr] lg:items-end">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Ruang kerja berbasis peran</p>
-            <h2 className="mt-4 max-w-3xl text-[clamp(2.5rem,4.6vw,3.75rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-slate-950">
-              Satu sistem. Lima konteks kerja.
-            </h2>
-          </div>
-          <p className="text-sm leading-6 text-secondary-foreground lg:text-right">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Ruang kerja berbasis peran</p>
+          <h2 className="mt-4 text-[clamp(2.5rem,4.8vw,3.9rem)] font-semibold leading-[1] tracking-[-0.045em] text-slate-950">
+            Satu sistem. Lima konteks kerja.
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-secondary-foreground sm:text-base sm:leading-7">
             Setiap pengguna melihat pekerjaan yang relevan dengan kewenangannya tanpa memecah lifecycle SOP menjadi aplikasi yang berbeda.
           </p>
         </div>
 
-        <div className="mt-10 overflow-x-auto border-b border-border" role="tablist" aria-label="Peran pengguna">
-          <div className="flex min-w-max">
+        <div className="mt-10 overflow-x-auto pb-2" role="tablist" aria-label="Peran pengguna">
+          <div className="mx-auto flex min-w-max w-fit gap-1.5 rounded-[18px] border border-slate-200/80 bg-[#f8fbff] p-1.5 shadow-[0_18px_48px_-40px_rgba(15,23,42,0.3)]">
             {roles.map((role) => (
               <button
                 key={role.id}
@@ -46,10 +44,10 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
                 aria-controls="role-workspace-panel"
                 onClick={() => setActiveRoleId(role.id)}
                 className={cn(
-                  'shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
+                  'shrink-0 rounded-[12px] px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transition-none',
                   activeRoleId === role.id
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                    ? 'bg-primary text-white shadow-[0_10px_24px_-18px_rgba(29,78,216,0.75)]'
+                    : 'text-secondary-foreground hover:bg-white hover:text-foreground',
                 )}
               >
                 {role.label}
@@ -62,18 +60,18 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
           id="role-workspace-panel"
           role="tabpanel"
           aria-labelledby={`role-tab-${activeRoleId}`}
-          className="mt-8 grid gap-8 border border-border bg-surface p-5 shadow-sm sm:p-8 lg:grid-cols-[0.32fr_0.68fr] lg:gap-10"
+          className="mt-8 grid gap-8 overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_30px_80px_-52px_rgba(15,23,42,0.32)] sm:p-8 lg:grid-cols-[0.32fr_0.68fr] lg:gap-10"
         >
-          <div className="lg:py-2">
+          <div className="rounded-[20px] bg-[#f8fbff] p-6 lg:p-7">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">{activeRole.label}</p>
-            <h3 className="mt-4 text-2xl font-semibold tracking-[-0.025em] text-foreground">Konteks kerja</h3>
+            <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-foreground">Konteks kerja</h3>
             <p className="mt-4 text-base leading-7 text-secondary-foreground">{activeRole.responsibility}</p>
-            <div className="mt-7 border-t border-border pt-5">
+            <div className="mt-7 border-t border-blue-100 pt-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Hasil utama</p>
               <p className="mt-2 text-sm leading-6 text-foreground">{activeRole.output}</p>
             </div>
           </div>
-          <div key={activeRoleId} className="transition-opacity duration-200 motion-reduce:transition-none">
+          <div key={activeRoleId} className="self-center transition-opacity duration-200 motion-reduce:transition-none">
             <RoleWorkspacePreview roleId={activeRoleId} />
           </div>
         </div>
