@@ -5,19 +5,19 @@ import { ROUTES } from '@/utils/constants'
 const services = [
   {
     title: 'Arsip SOP',
-    description: 'Cari SOP yang telah tersedia pada arsip publik berdasarkan OPD dan informasi dokumen yang tersedia.',
+    description: 'Cari SOP yang telah dipublikasikan berdasarkan OPD atau informasi dokumen.',
     action: 'Buka Arsip',
     to: ROUTES.ARSIP.PREFIX,
     icon: Archive,
-    detail: 'Dokumen berlaku · pencarian publik',
+    detail: 'Dokumen publik',
   },
   {
     title: 'Validasi PDF',
-    description: 'Periksa informasi validasi dokumen PDF yang dihasilkan sistem tanpa masuk ke area kerja internal.',
-    action: 'Validasi dokumen',
+    description: 'Periksa validitas dokumen PDF yang dihasilkan oleh sistem.',
+    action: 'Validasi PDF',
     to: ROUTES.VALIDASI.PDF,
     icon: ShieldCheck,
-    detail: 'Keabsahan dokumen · akses publik',
+    detail: 'Verifikasi dokumen',
   },
 ] as const
 
@@ -28,10 +28,10 @@ export function PublicServiceGateway() {
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Layanan publik</p>
           <h2 id="public-services-title" className="mt-4 text-[clamp(2.35rem,4.4vw,3.7rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-foreground">
-            Akses dokumen tanpa masuk ke ruang kerja internal.
+            Arsip dan validasi SOP.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-secondary-foreground sm:text-base sm:leading-7">
-            Arsip SOP dan validasi dokumen tetap tersedia sebagai layanan publik yang terpisah dari proses kerja pengguna terautentikasi.
+            Arsip SOP dan validasi PDF dapat diakses tanpa masuk ke ruang kerja pengguna.
           </p>
         </div>
 
