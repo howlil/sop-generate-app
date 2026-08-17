@@ -23,10 +23,10 @@ export function InstitutionalClosing({ governmentName, officeName }: Institution
         <div className="relative flex min-h-[470px] max-w-2xl flex-col justify-center px-7 py-16 sm:px-10 lg:px-14">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-200">{governmentName} · {officeName}</p>
           <h2 className="mt-5 text-[clamp(2.8rem,5vw,4.8rem)] font-semibold leading-[0.98] tracking-[-0.05em]">
-            Dokumen SOP tidak berhenti di folder.
+            Akses ruang kerja pengelolaan SOP.
           </h2>
           <p className="mt-6 max-w-xl text-base leading-7 text-slate-200">
-            Ia disusun, dievaluasi, diperbaiki, disahkan, dan dapat ditelusuri kembali dalam satu alur kerja yang terdokumentasi.
+            Masuk ke sistem untuk mengakses tugas dan dokumen sesuai peran serta kewenangan pengguna.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4">
             <Link
@@ -34,12 +34,6 @@ export function InstitutionalClosing({ governmentName, officeName }: Institution
               className="inline-flex h-11 items-center rounded-[11px] bg-white px-5 text-sm font-semibold text-[#0a2a5f] shadow-[0_14px_30px_-20px_rgba(2,6,23,0.7)] transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a2a5f]"
             >
               Masuk ke Sistem
-            </Link>
-            <Link
-              to={ROUTES.ARSIP.PREFIX}
-              className="inline-flex h-11 items-center px-2 text-sm font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-            >
-              Jelajahi Arsip SOP →
             </Link>
           </div>
         </div>
