@@ -2,12 +2,6 @@ import { FileCheck2, ShieldCheck } from 'lucide-react'
 
 const lifecycle = ['Draft', 'Evaluasi', 'BA', 'Pengesahan', 'Arsip']
 
-const metrics = [
-  { label: 'OPD terhubung', value: '52', helper: 'ruang kerja berbasis organisasi' },
-  { label: 'SOP dalam proses', value: '4', helper: 'menunggu tindak lanjut evaluasi' },
-  { label: 'Validasi publik', value: 'PDF', helper: 'cek dokumen dari arsip' },
-]
-
 export function LandingProductPreview() {
   return (
     <div className="relative mx-auto w-full max-w-5xl" aria-label="Pratinjau ruang kerja SOPFlow">
@@ -16,16 +10,16 @@ export function LandingProductPreview() {
           <div className="flex flex-col gap-3 border-b border-border bg-surface-subtle px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">Pengajuan Evaluasi</p>
-              <p className="mt-1 text-base font-semibold tracking-[-0.02em] text-foreground">Dinas Kesehatan Provinsi · 4 SOP</p>
+              <p className="mt-1 text-base font-semibold tracking-[-0.02em] text-foreground">Contoh paket SOP OPD</p>
             </div>
             <span className="w-fit rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-medium text-secondary-foreground shadow-[0_8px_22px_-20px_rgba(15,23,42,0.45)]">
-              Berbasis peran
+              Pratinjau sistem
             </span>
           </div>
 
           <div className="grid gap-0 lg:grid-cols-[0.28fr_0.72fr]">
             <div className="border-b border-border bg-[#f8fbff] p-5 lg:border-b-0 lg:border-r lg:p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tahapan</p>
               <ol className="mt-5 space-y-4">
                 {lifecycle.map((item, index) => (
                   <li key={item} className="flex items-center gap-3">
@@ -53,25 +47,15 @@ export function LandingProductPreview() {
                     <FileCheck2 className="h-3.5 w-3.5 text-primary" aria-hidden />
                     Catatan evaluasi
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-secondary-foreground">Perbaikan prosedur, pelaksana, dan kelengkapan tercatat pada dokumen yang sama.</p>
+                  <p className="mt-3 text-xs leading-5 text-secondary-foreground">Catatan perbaikan tersimpan pada SOP yang sedang dievaluasi.</p>
                 </div>
                 <div className="rounded-[16px] border border-slate-200/80 bg-white p-4 shadow-[0_18px_38px_-34px_rgba(15,23,42,0.42)]">
                   <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                     <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden />
-                    Arsip tervalidasi
+                    Dokumen final
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-secondary-foreground">Dokumen final dapat ditemukan dan diperiksa melalui halaman validasi PDF.</p>
+                  <p className="mt-3 text-xs leading-5 text-secondary-foreground">SOP yang telah selesai diproses tersedia pada arsip sesuai status dan hak akses.</p>
                 </div>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {metrics.map((metric) => (
-                  <div key={metric.label} className="rounded-[14px] bg-surface-subtle p-4">
-                    <p className="text-xl font-semibold tracking-[-0.03em] text-foreground">{metric.value}</p>
-                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-secondary-foreground">{metric.label}</p>
-                    <p className="mt-1 text-[10px] leading-4 text-muted-foreground">{metric.helper}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>

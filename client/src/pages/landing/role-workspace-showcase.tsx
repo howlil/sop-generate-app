@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { cn } from '@/utils/cn'
-import { RoleWorkspacePreview } from './role-workspace-previews'
 
 export type LandingRoleId = 'penyusun' | 'pj-penyusun' | 'evaluator' | 'pj-evaluator' | 'kepala-opd'
 
@@ -23,12 +22,12 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
     <section id="peran" className="scroll-mt-20 bg-surface py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Ruang kerja berbasis peran</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Peran pengguna</p>
           <h2 className="mt-4 text-[clamp(2.5rem,4.8vw,3.9rem)] font-semibold leading-[1] tracking-[-0.045em] text-slate-950">
-            Satu sistem. Lima konteks kerja.
+            Lima peran dalam pengelolaan SOP.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-secondary-foreground sm:text-base sm:leading-7">
-            Setiap pengguna melihat pekerjaan yang relevan dengan kewenangannya tanpa memecah lifecycle SOP menjadi aplikasi yang berbeda.
+            Setiap peran memiliki tugas dan kewenangan yang berbeda pada proses penyusunan, evaluasi, dan pengesahan SOP.
           </p>
         </div>
 
@@ -60,19 +59,20 @@ export function RoleWorkspaceShowcase({ roles }: RoleWorkspaceShowcaseProps) {
           id="role-workspace-panel"
           role="tabpanel"
           aria-labelledby={`role-tab-${activeRoleId}`}
-          className="mt-8 grid gap-8 overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_30px_80px_-52px_rgba(15,23,42,0.32)] sm:p-8 lg:grid-cols-[0.32fr_0.68fr] lg:gap-10"
+          className="mt-8 overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_30px_80px_-52px_rgba(15,23,42,0.32)] sm:p-8"
         >
           <div className="rounded-[20px] bg-[#f8fbff] p-6 lg:p-7">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">{activeRole.label}</p>
-            <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-foreground">Konteks kerja</h3>
-            <p className="mt-4 text-base leading-7 text-secondary-foreground">{activeRole.responsibility}</p>
-            <div className="mt-7 border-t border-blue-100 pt-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Hasil utama</p>
-              <p className="mt-2 text-sm leading-6 text-foreground">{activeRole.output}</p>
+            <div className="mt-4 grid gap-6 lg:grid-cols-[0.62fr_0.38fr] lg:gap-8">
+              <div>
+                <h3 className="text-2xl font-semibold tracking-[-0.03em] text-foreground">Tugas utama</h3>
+                <p className="mt-4 text-base leading-7 text-secondary-foreground">{activeRole.responsibility}</p>
+              </div>
+              <div className="border-t border-blue-100 pt-5 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Hasil utama</p>
+                <p className="mt-2 text-sm leading-6 text-foreground">{activeRole.output}</p>
+              </div>
             </div>
-          </div>
-          <div key={activeRoleId} className="self-center transition-opacity duration-200 motion-reduce:transition-none">
-            <RoleWorkspacePreview roleId={activeRoleId} />
           </div>
         </div>
       </div>

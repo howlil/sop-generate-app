@@ -12,11 +12,10 @@ const productPreviewSource = readSource('../landing/landing-product-preview.tsx'
 const gatewaySource = readSource('../landing/public-service-gateway.tsx')
 const workflowSource = readSource('../landing/workflow-story.tsx')
 const roleSource = readSource('../landing/role-workspace-showcase.tsx')
-const rolePreviewSource = readSource('../landing/role-workspace-previews.tsx')
-const traceabilitySource = readSource('../landing/document-traceability.tsx')
 const closingSource = readSource('../landing/institutional-closing.tsx')
+const footerSource = readSource('../landing/public-footer.tsx')
 
-const allSources = [
+const allRenderedSources = [
   landingSource,
   headerSource,
   heroSource,
@@ -24,12 +23,11 @@ const allSources = [
   gatewaySource,
   workflowSource,
   roleSource,
-  rolePreviewSource,
-  traceabilitySource,
   closingSource,
+  footerSource,
 ].join('\n')
 
-describe('institutional SaaS public landing contract', () => {
+describe('institutional public landing contract', () => {
   it('keeps official identity and complete SOP lifecycle', () => {
     expect(landingSource).toContain('Pemerintah Provinsi Sumatera Barat')
     expect(landingSource).toContain('Biro Organisasi')
@@ -47,51 +45,54 @@ describe('institutional SaaS public landing contract', () => {
     }
   })
 
-  it('uses a centered light product-first hero instead of a split poster', () => {
-    expect(heroSource).toContain('Kelola SOP dari draft hingga berlaku dalam satu alur kerja.')
+  it('uses a centered light product-first hero with one primary action', () => {
+    expect(heroSource).toContain('Pengelolaan SOP dari penyusunan hingga pengesahan dalam satu sistem.')
     expect(heroSource).toContain('Sistem Pengelolaan SOP Berbasis Web')
     expect(heroSource).toContain('Masuk ke Sistem')
-    expect(heroSource).toContain('Lihat Arsip SOP')
-    expect(heroSource).toContain('Berbasis peran')
-    expect(heroSource).toContain('Evaluasi terdokumentasi')
-    expect(heroSource).toContain('Arsip dan validasi terpusat')
     expect(heroSource).toContain('LandingProductPreview')
     expect(heroSource).toContain('data-testid="landing-hero-copy"')
     expect(heroSource).toContain('text-center')
+    expect(heroSource).not.toContain('Lihat Arsip SOP')
+    expect(heroSource).not.toContain('Berbasis peran')
+    expect(heroSource).not.toContain('Evaluasi terdokumentasi')
+    expect(heroSource).not.toContain('Arsip dan validasi terpusat')
     expect(heroSource).not.toContain('bg-slate-950 text-white')
     expect(heroSource).not.toContain('lg:grid-cols-[0.48fr_0.52fr]')
   })
 
-  it('keeps the realistic product preview focused and moves the building accent to closing', () => {
+  it('keeps the product preview clearly illustrative instead of presenting static metrics as live data', () => {
     expect(productPreviewSource).toContain('Pengajuan Evaluasi')
-    expect(productPreviewSource).toContain('Dinas Kesehatan Provinsi · 4 SOP')
+    expect(productPreviewSource).toContain('Contoh paket SOP OPD')
+    expect(productPreviewSource).toContain('Pratinjau sistem')
     expect(productPreviewSource).toContain('Menunggu TTD PJ Evaluator')
-    expect(productPreviewSource).not.toContain('Arsip dan validasi dokumen')
-    expect(productPreviewSource).not.toContain('Identitas institusi')
+    expect(productPreviewSource).not.toContain('OPD terhubung')
+    expect(productPreviewSource).not.toContain('SOP dalam proses')
+    expect(productPreviewSource).not.toContain('Validasi publik')
     expect(productPreviewSource).not.toContain('Kantor_Gubernur_Sumbar_belakang.jpg')
     expect(closingSource).toContain('Kantor_Gubernur_Sumbar_belakang.jpg')
   })
 
-  it('keeps public navigation and service entry points clear', () => {
-    expect(headerSource).toContain('Alur kerja')
-    expect(headerSource).toContain('Peran')
+  it('keeps global navigation focused on public destinations and login', () => {
+    expect(headerSource).not.toContain('Alur kerja')
+    expect(headerSource).not.toContain('Peran')
     expect(headerSource).toContain('Arsip SOP')
     expect(headerSource).toContain('Validasi PDF')
+    expect(headerSource).toContain('Masuk')
     expect(gatewaySource).toContain('Arsip SOP')
     expect(gatewaySource).toContain('Validasi PDF')
   })
 
-  it('keeps role, workflow, archive, and validation sections available', () => {
-    expect(landingSource).toContain('Evaluasi & Perbaikan')
-    expect(landingSource).toContain('Pengesahan & Arsip')
-    expect(workflowSource).toContain('WorkflowPreview')
+  it('keeps one workflow, one role section, and one public-service section', () => {
+    expect(landingSource).toContain('<PublicServiceGateway />')
+    expect(landingSource).toContain('<WorkflowStory stages={WORKFLOW_STAGES} />')
+    expect(landingSource).toContain('<RoleWorkspaceShowcase roles={ROLE_PROFILES} />')
+    expect(landingSource).not.toContain('DocumentTraceability')
+    expect(landingSource).not.toContain('Evaluasi & Perbaikan')
+    expect(landingSource).not.toContain('Pengesahan & Arsip')
     expect(workflowSource).toContain('stages.map')
-    expect(roleSource).toContain('Ruang kerja berbasis peran')
-    expect(roleSource).toContain('Satu sistem. Lima konteks kerja.')
-    expect(rolePreviewSource).toContain('Catatan evaluator')
-    expect(rolePreviewSource).toContain('Pengesahan internal')
-    expect(traceabilitySource).toContain('Satu dokumen. Satu riwayat yang dapat ditelusuri.')
-    expect(closingSource).toContain('Dokumen SOP tidak berhenti di folder.')
+    expect(workflowSource).not.toContain('WorkflowPreview')
+    expect(roleSource).toContain('Lima peran dalam pengelolaan SOP.')
+    expect(roleSource).not.toContain('RoleWorkspacePreview')
   })
 
   it('keeps role interaction accessible and motion restrained', () => {
@@ -104,8 +105,15 @@ describe('institutional SaaS public landing contract', () => {
     expect(closingSource).toContain('loading="lazy"')
   })
 
-  it('does not regress to decorative AI-SaaS styling or inaccurate signing claims', () => {
+  it('does not repeat lower-page actions or generic SaaS slogans', () => {
+    expect(closingSource).toContain('Masuk ke Sistem')
+    expect(closingSource).not.toContain('Jelajahi Arsip SOP')
+    expect(footerSource).not.toContain('Navigasi footer')
+
     for (const banned of [
+      'Satu sistem. Lima konteks kerja.',
+      'Satu dokumen. Satu riwayat yang dapat ditelusuri.',
+      'Dokumen SOP tidak berhenti di folder.',
       'bg-gradient',
       'blur-3xl',
       'shadow-xl',
@@ -114,7 +122,7 @@ describe('institutional SaaS public landing contract', () => {
       'TTE BSrE',
       'Komdigi certified',
     ]) {
-      expect(allSources).not.toContain(banned)
+      expect(allRenderedSources).not.toContain(banned)
     }
   })
 })

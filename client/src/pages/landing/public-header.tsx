@@ -26,8 +26,6 @@ export function PublicHeader({ governmentName, officeName }: PublicHeaderProps) 
 
         <div className="flex items-center gap-5">
           <nav className="hidden items-center gap-7 text-sm font-medium text-secondary-foreground md:flex" aria-label="Navigasi publik">
-            <a href="#alur" className="transition-colors hover:text-foreground">Alur kerja</a>
-            <a href="#peran" className="transition-colors hover:text-foreground">Peran</a>
             <Link to={ROUTES.ARSIP.PREFIX} className="transition-colors hover:text-foreground">Arsip SOP</Link>
             <Link to={ROUTES.VALIDASI.PDF} className="transition-colors hover:text-foreground">Validasi PDF</Link>
           </nav>
