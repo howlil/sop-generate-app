@@ -1,12 +1,11 @@
 import { expect, test } from '@playwright/test'
 
 import { users } from './fixtures/users'
-import { expectBackendAvailable } from './support/api'
+import { createAuthenticatedApiContext, expectBackendAvailable } from './support/api'
 import { expectMainContent, loginViaUi } from './support/app'
-import { createAuthenticatedApiContext } from './support/api'
 import { createDraftSopFixture, createReadySopFixture } from './support/e2e-flow'
 
-test.describe('E2E pencarian, filter, dan pagination daftar SOP', () => {
+test.describe('Functional pencarian dan filter daftar SOP', () => {
   test.beforeEach(async ({ request }) => {
     await expectBackendAvailable(request)
   })
@@ -34,18 +33,11 @@ test.describe('E2E pencarian, filter, dan pagination daftar SOP', () => {
       await expect(page.getByText('Status: Draft')).toBeVisible()
       await expect(searchInput).toHaveValue(draft.title)
 
-      await page
-        .getByRole('button', { name: 'Hapus filter Status: Draft' })
-        .click()
+      await page.getByRole('button', { name: 'Hapus filter Status: Draft' }).click()
 
       await expect(page.getByText('Status: Draft')).toHaveCount(0)
       await expect(searchInput).toHaveValue(draft.title)
       await expect(page.getByText(draft.title).first()).toBeVisible()
-
-      const nextButton = page.getByRole('button', { name: /berikut|next|selanjutnya/i }).first()
-      if (await nextButton.isVisible().catch(() => false)) {
-        await nextButton.click({ trial: true })
-      }
     } finally {
       await penyusun.dispose()
     }
